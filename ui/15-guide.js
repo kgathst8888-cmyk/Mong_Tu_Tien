@@ -1,4 +1,3 @@
-/* ui/15-guide.js */
 
 (function(){
 const o=document.getElementById('gdp'),bx=o.querySelector('.gdb'),K='kthm_guide';
@@ -24,4 +23,3 @@ try{inject()}catch(e){}
 /* game mới: mở cẩm nang cho người chơi mới */
 const _ng=ng;ng=function(){const r=_ng.apply(this,arguments);try{localStorage.removeItem('kthm_guide');setTimeout(()=>window.TUT&&TUT.start(),800)}catch(e){}return r};
 })();
-

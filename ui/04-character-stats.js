@@ -1,4 +1,3 @@
-/* ui/04-character-stats.js */
 
 /*==== BẢNG CHỈ SỐ NHÂN VẬT ====*/
 (function(){
@@ -36,5 +35,4 @@ window.stUI=stUI;
 addEventListener('pointerdown',e=>{if(e.target!==c||!started||bo)return;const hs=cl(Math.min(H/540,W/420),.6,1.1);if(W<640?(e.offsetX<64&&e.offsetY<64):(e.offsetX<104*hs&&e.offsetY<106*hs)){e.stopPropagation();e.stopImmediatePropagation();tab=11;sel=null;msg='';tg()}},true);
 const _dr=draw;draw=function(){_dr();const hs=cl(Math.min(H/540,W/420),.6,1.1);g.save();g.setTransform(DPR,0,0,DPR,0,0);g.fillStyle='#2a1a10';g.strokeStyle='#b8964e';g.lineWidth=2;const mb=W<640,cx=mb?15:22*hs,cy=mb?50:94*hs,cr=mb?9:13*hs;g.beginPath();g.arc(cx,cy,cr,0,6.283);g.fill();g.stroke();g.font=Math.round(mb?10:14*hs)+'px sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillStyle='#fff';g.fillText('📊',cx,cy+1);g.restore()};
 })();
-
 

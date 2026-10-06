@@ -1,4 +1,3 @@
-/* world/10-farming-map.js */
 
 /* ===================================================================
    BẢN ĐỒ LINH ĐIỀN ĐỘNG THIÊN
@@ -311,4 +310,3 @@ const _ng=ng;ng=function(){LCT.off();_ng()};
 const vlb=document.getElementById('vl'),_vl=vlb.onpointerdown;
 vlb.onpointerdown=e=>{if(LCT.on()){e.stopPropagation();if(started)LCT.leave();return}_vl(e)};
 })();
-

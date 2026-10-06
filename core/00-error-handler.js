@@ -1,4 +1,3 @@
-/* core/00-error-handler.js */
 /* ===== BỘ BẮT LỖI AN TOÀN / CROSS-BROWSER =====
    - Không che lỗi thật.
    - Không hiện "Script error." mơ hồ do script/resource khác origin.
@@ -50,4 +49,3 @@ window.addEventListener('unhandledrejection',function(e){
   window.__gameErrors.push(m2);show(m2);
 });
 })();
-

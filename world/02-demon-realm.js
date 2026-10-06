@@ -1,4 +1,3 @@
-/* world/02-demon-realm.js */
 
 /*==== MA THẦN + LINH GIỚI ====*/
 // Chỉnh độ khó Ma Thần tại đây (so với Boss Thế Giới Lv100):
@@ -62,4 +61,3 @@ const _dgFoe=dgFoe;dgFoe=function(e){if(!e.mt)return _dgFoe(e);const X=(e.x-cam)
  _dgFoe(e)};
 const _bgd2=bgd;bgd=function(gy){if(dg&&dg.mt){xbg(gy,7);g.save();g.fillStyle='rgba(60,0,90,.35)';g.fillRect(0,0,W,H);g.restore()}else _bgd2(gy)};
 const _stp2=step;step=function(){if(lg&&(PS[cur].lg|0)<1)lg=0;_stp2()};
-

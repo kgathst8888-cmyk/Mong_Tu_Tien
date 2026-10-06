@@ -1,4 +1,3 @@
-/* combat/18-enemies.js */
 
 (function(){
 const U={tree:{d:ASSET_PAYLOAD("p007"),w:84,ay:0.84},golem:{d:ASSET_PAYLOAD("p008"),w:100,ay:0.76},wolf:{d:ASSET_PAYLOAD("p009"),w:92,ay:0.8}},SUMI={};for(const k in U){const i=new Image();i.src='data:image/webp;base64,'+U[k].d;SUMI[k]=i}
@@ -54,4 +53,3 @@ window.pets=function(){drawEP();PETS.forEach(p=>{const im=SUMI[p.k],U0=U[p.k],C=
   if(p.st=='skl'||(p.k=='tree'&&p.st=='atk')){g.save();g.globalCompositeOperation='lighter';const r=72,gr=g.createRadialGradient(0,-34,6,0,-34,r);gr.addColorStop(0,C.col+'bb');gr.addColorStop(1,C.col+'00');g.fillStyle=gr;g.globalAlpha=.85*Math.sin(Math.min(1,fa)*PI);g.beginPath();g.arc(0,-34,r,0,PI*2);g.fill();g.restore()}
   g.globalAlpha=al;g.rotate(rot);g.scale(F*sx*sc,sy*sc);g.drawImage(im,-W0/2,-U0.ay*h,W0,h);g.restore()})};
 })();
-

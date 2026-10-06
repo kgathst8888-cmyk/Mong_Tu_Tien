@@ -1,4 +1,3 @@
-/* world/05-demon-boss.js */
 
 /*==== MA THẦN v2: thiết kế lại Boss + bản đồ "Huyết Nguyệt Ma Điện" (theo ảnh mẫu Gemini) ====
   - Boss vẽ bằng canvas: cánh dơi + giáp đen chạm rune cam + kiếm khổng lồ, vung kiếm linh hoạt (combo 1-3 nhát, 3 kiểu chém)
@@ -554,4 +553,3 @@ const _foe6=foe;foe=function(e){if(dg||e.mt||!MON[e.k])return _foe6(e);const mk=
  try{_foe6(e)}finally{MI[e.k]=o;m.f=of;m.n=on}};
 const _bgd7=bgd;bgd=function(gy){if(!dg&&!lg&&!vil)lvBg(gy);else _bgd7(gy)};
 })();
-

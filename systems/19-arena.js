@@ -1,4 +1,3 @@
-/* systems/19-arena.js */
 /* ===== ĐẤU TRƯỜNG v5 — REAL COMBAT / MAP-STYLE =====
    - Dùng chính renderer hero() của game map: sprite, tay/chân, vũ khí, cánh, animation đánh.
    - Dùng chính CHR/PS/sks()/cast()/fire()/dm() để nhân vật người chơi tung SKILL THẬT.
@@ -83,4 +82,3 @@ function init(){load();styles();addButton();baseStep=step;baseDraw=draw}
 window.Arena={open:openLobbyPublic,close:close,save:save,load:load,api:{challenge:challenge}};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
-

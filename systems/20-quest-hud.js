@@ -1,4 +1,3 @@
-/* systems/20-quest-hud.js */
 /* Bấm vào dòng nhiệm vụ 📜 trên màn hình chính để mở bảng nhiệm vụ chi tiết */
 (function(){
 var cv=document.getElementById('c');if(!cv)return;
@@ -13,4 +12,3 @@ cv.addEventListener('pointerdown',function(e){
   }catch(err){console.warn('[quest hud]',err)}
 });
 })();
-

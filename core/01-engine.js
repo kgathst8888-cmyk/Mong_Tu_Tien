@@ -1,4 +1,3 @@
-/* core/01-engine.js */
 
 const c=document.getElementById('c'),g=c.getContext('2d');let W,H,s;
 let GY,DPR=1,PORT=0;
@@ -1371,4 +1370,3 @@ if(n>0){draw();
  if(dt<100&&now-t0>4000){ema=ema*.93+dt*.07;if(++cnt>=90){cnt=0;
   if(ema>27&&window.QL<2){window.QL++;window.QCAP=[2,1.5,1][window.QL];ema=16.7;t0=now-2500;try{rs()}catch(e){}}}}}}
 requestAnimationFrame(loop)})();
-
