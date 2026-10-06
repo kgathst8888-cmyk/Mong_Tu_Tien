@@ -1,3 +1,4 @@
+/* combat/11-status-effects.js */
 
 /* ===== CƠ CHẾ TRẠNG THÁI: BỎNG · ĐỘC TỐ · CHOÁNG · XUYÊN GIÁP · ĐÓNG BĂNG ===== */
 (function(){
@@ -99,3 +100,4 @@ const _cast=cast;cast=function(i){if(PS_.stn>0||PS_.frz>0)return;return _cast.ap
 const _hero=hero;hero=function(){_hero.apply(this,arguments);try{draw1({x:P.x,b:0,sn:0,fm:{h:96},stt:{brn:PS_.brn,bs:1,psn:PS_.psn,ps:PS_.ps,stn:PS_.stn,frz:PS_.frz}})}catch(x){}};
 window.ST={apply,STP,tick,pApply};
 })();
+

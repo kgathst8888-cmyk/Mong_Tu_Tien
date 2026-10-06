@@ -1,3 +1,4 @@
+/* systems/08-farming-alchemy.js */
 
 /* ===================================================================
    LINH ĐIỀN (trồng cây) + LUYỆN ĐAN
@@ -244,3 +245,4 @@ return{isOn:()=>on,setOn:v=>{on=!!v},note,nt:()=>NT,tickNote:()=>{if(NT.t>0)NT.t
 (()=>{const _d=drop;drop=function(e){_d(e);try{FM.seedDrop(e)}catch(x){}}})();
 /* Game mới: xóa dữ liệu Linh Điền */
 (()=>{const _n=ng;ng=function(){try{FM.reset()}catch(x){}_n()}})();
+

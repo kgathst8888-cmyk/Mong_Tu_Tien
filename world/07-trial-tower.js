@@ -1,3 +1,4 @@
+/* world/07-trial-tower.js */
 
 /*==== THÁP THÍ LUYỆN · Tháp 9 tầng ở Thanh Vân Tiên Thôn ====
   - 9 tầng × 10 Boss, độ khó tăng dần. Hạ lần lượt từng Boss; hạ đủ 10 Boss thì lên tầng kế.
@@ -203,3 +204,4 @@ const _vstep4=vstep;vstep=function(){_vstep4();if(twGoF){if(mvDir)twGoF=0;else i
 const _charUI4=charUI;charUI=function(){let h=_charUI4();try{const st=twS();if(st.root>=0){const r=TW_ROOTS[st.root];h+='<div class="dt" style="margin-top:6px">🔷 <b style="color:'+r.c+'">'+r.e+' '+r.n+' Linh Căn</b><br><small>'+twDesc(r)+'</small></div>'}else if(st.pill)h+='<div class="dt" style="margin-top:6px">🔷 Bạn có Viên Linh Căn chưa dùng — chạm Tháp Thí Luyện ở Làng để chọn thuộc tính.</div>'}catch(e){}return h};
 
 const _ng4=ng;ng=function(){PS.forEach(x=>{delete x.tw});_ng4()};
+

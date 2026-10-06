@@ -1,3 +1,4 @@
+/* world/03-village.js */
 
 /*==== THÔN TÂN THỦ v2: THANH VÂN TIÊN THÔN (dựng lại theo ảnh mẫu) ====*/
 (function(){
@@ -351,4 +352,5 @@ function fgDraw(){
  g.restore()}
 const _vd=vdraw;vdraw=function(){_vd();fgDraw()};
 })();
+
 

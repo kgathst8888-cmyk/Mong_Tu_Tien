@@ -1,3 +1,4 @@
+/* ui/17-ranking-name.js */
 
 /* ================= XẾP HẠNG + TÊN NHÂN VẬT (RK) =================
    - Nút 🏆 nằm cạnh đồng hồ Boss Thế Giới ở HUD.
@@ -142,3 +143,4 @@ function act(a){
  if(a.indexOf('cls:')==0){S.cls=a.slice(4);render();load(false);return}}
 window.RK={open,close,push,chars,pows,name:i=>{S.mode='name';S.ni=i|0;S.nmsg='';S.on=true;ov.classList.add('on');render()},nameLeft,realm};
 })();
+

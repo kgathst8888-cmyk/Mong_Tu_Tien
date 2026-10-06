@@ -1,18 +1,17 @@
-PROMPT PHÁT TRIỂN GAME
+Đây là bản game modular hiện tại.
 
-Dùng project game modular hiện tại.
+Hãy thêm: [TÍNH NĂNG]
 
 QUY TẮC:
-1. Chỉ đọc các module liên quan trực tiếp đến yêu cầu.
-2. Không đọc assets/game-assets.js trừ khi tính năng cần asset.
-3. Không rewrite file lớn; ưu tiên patch nhỏ.
-4. Không inline Base64.
-5. Không thay đổi module/hệ thống khác nếu không bắt buộc.
-6. Ưu tiên data-driven/config/module mới.
-7. Giữ nguyên global API, save schema, gameplay và thứ tự load.
-8. Nếu cần hook mới, tạo module riêng thay vì sửa core lớn.
-9. Sau khi sửa: kiểm tra syntax, dependency, ReferenceError và thứ tự load.
-10. Chỉ trả về các file đã thay đổi.
-
-YÊU CẦU CỦA TÔI:
-[VIẾT TÍNH NĂNG Ở ĐÂY]
+- Không làm hỏng gameplay hiện tại.
+- Không thay đổi save cũ nếu không bắt buộc.
+- Không đọc/chạm Base64 nếu không liên quan.
+- Chỉ đọc module cần thiết.
+- Không rewrite toàn bộ file.
+- Ưu tiên tạo module/data mới.
+- Giữ backward compatibility.
+- Kiểm tra JavaScript syntax và dependency.
+- Kiểm tra ReferenceError.
+- Kiểm tra game khởi động được.
+- Kiểm tra Arena trên Safari/iPhone.
+- Trả lại ZIP hoàn chỉnh để tôi dùng làm bản tiếp theo.

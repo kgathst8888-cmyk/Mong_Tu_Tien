@@ -1,3 +1,4 @@
+/* ui/16-tutorial.js */
 
 (function(){
 const K='kthm_tut',qc=()=>((QS&&QS.T&&QS.T.cast)|0),sig=()=>EQ.map(i=>i?i.n+'|'+i.u:'').join(),ST=()=>typeof started!=='undefined'&&started;
@@ -48,3 +49,4 @@ function inject(){const b=document.querySelector('#mn .bx');if(!b||b.querySelect
 const _m=window.mn;if(typeof _m=='function')window.mn=function(){const r=_m.apply(this,arguments);try{inject()}catch(e){}return r};try{inject()}catch(e){}
 const h=document.querySelector('#gdp .gdh');if(h){const b=document.createElement('button');b.textContent='🎓';b.title='Làm lại hướng dẫn tân thủ';b.style.marginLeft='auto';b.style.marginRight='6px';b.onclick=()=>{GD.close();TUT.start()};h.insertBefore(b,h.lastElementChild)}
 })();
+

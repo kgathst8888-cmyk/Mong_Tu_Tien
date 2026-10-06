@@ -1,3 +1,4 @@
+/* world/13-mining.js */
 
 /* ===================================================================
    KHAI KHOÁNG: Mỏ Vàng · Quặng Sắt · Huyền Kim
@@ -317,3 +318,4 @@ const save=()=>JSON.parse(JSON.stringify(S));
 return{isOn:()=>on,ui:ui_,go,setAuto,tick,save,load:ld,reset:()=>ld(null),get:()=>S,VN}
 })();
 (()=>{const _n=ng;ng=function(){try{MN.reset()}catch(x){}_n()}})();
+

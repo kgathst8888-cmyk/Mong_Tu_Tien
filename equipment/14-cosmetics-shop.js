@@ -1,3 +1,4 @@
+/* equipment/14-cosmetics-shop.js */
 
 /*==== TIỆM Y PHỤC LINH VÂN · Ngoại trang (chỉ làm đẹp, không cộng chỉ số) ====
   Tiền tệ: 💠 Đồng Huyền Tinh — rơi từ Boss Thế Giới 🐲 và Boss Hoàng Kim 👑 (chỉnh ở HT_DROP).
@@ -154,3 +155,4 @@ const _ng=ng;ng=function(){close();ht=0;gL=null;gC=0;PS.forEach(x=>{delete x.fa}
 const _drop=drop;drop=function(e){_drop(e);if(!e.dg&&!e.tw&&!e.mt){if(e.b==2)award(rnd(HT_DROP.wb[0],HT_DROP.wb[1]),e.x);else if(e.b==3)award(rnd(HT_DROP.gb[0],HT_DROP.gb[1]),e.x)}};
 return{open:()=>on,show:open,close,buy,wear,tryOn,clear,cat:setCat,items:FSI,util:{glow,feather},
  ht:()=>ht,goldBonus,add:n=>{ht+=n|0;sv()},award,save:()=>({ht:ht}),load:o=>{ht=Math.max(0,(o&&o.ht)|0)}}})();
+

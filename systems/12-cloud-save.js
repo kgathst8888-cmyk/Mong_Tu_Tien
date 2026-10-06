@@ -1,3 +1,4 @@
+/* systems/12-cloud-save.js */
 
 /*==== ☁ LƯU GAME TRÊN MẠNG (Supabase) · đăng nhập + đồng bộ + bảng xếp hạng ====
   Điền 2 giá trị dưới đây (xem HUONG_DAN_CLOUD.md). Để trống = game chạy như cũ, chỉ lưu trên máy. */
@@ -195,3 +196,4 @@ try{if(sessionStorage.getItem('kthm_resume')){sessionStorage.removeItem('kthm_re
 window.KTHM_CLOUD={open:t=>open(t||'acc'),sync:()=>reconcile(),status:()=>S.st};window.KCL={OK,rpc,http,sess:()=>S.sess};
 if(window.__CLOUD_TEST)window.__CLOUD_TEST_API={S,reconcile,act,tick,flush,render,open,loadLb,doAuth,hashLocal,mine,applyData,stats,toast};
 })();
+

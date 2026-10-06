@@ -1,3 +1,4 @@
+/* ui/06-combat-icons.js */
 
 (function(){
 const P={
@@ -48,3 +49,4 @@ all();
 const ob=new MutationObserver(all);['sk','ult','zk','dock'].forEach(id=>{const e=document.getElementById(id);if(e)ob.observe(e,{childList:true,subtree:true})});
 window.__xiSheet=()=>Object.keys(P);
 })();
+
