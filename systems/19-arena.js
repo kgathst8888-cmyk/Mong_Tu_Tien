@@ -4,7 +4,7 @@
 */
 (function(){
 'use strict';
-var KEY='kthm2_arena_v2',ov=null,state=null,busy=false,timer=0,token=0,current=null;
+var KEY='kthm2_arena_v2_1',ov=null,state=null,busy=false,timer=0,token=0,current=null;
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]})}
 function load(){try{state=JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){state=null}if(!state||typeof state!=='object')state={points:1000,wins:0,losses:0,streak:0,season:1,last:0,today:0,day:'',lastBattle:null};var d=new Date().toISOString().slice(0,10);if(state.day!==d){state.day=d;state.today=0;save()}}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
@@ -47,14 +47,11 @@ function build(){
  '#arena-c .arena-result{margin-top:8px;text-align:center;background:#140d0a;border-radius:7px;padding:12px}.arena-result.win h3{color:#ffd86a}.arena-result.lose h3{color:#ff8a7a}'+
  '@media(max-width:640px){#arena-c .arena-fighters{grid-template-columns:1fr 34px 1fr}#arena-c .arena-avatar{font-size:26px}.arena-log{height:105px}}';document.head.appendChild(st)
 }
-function render(){
- load();if(busy)return;
- var c=ov.querySelector('#arena-c'),me=power(),ops=opponents(),left=Math.max(0,10-(state.today|0));
- c.innerHTML='<div class="arena-st"><b>'+esc(pname())+'</b><br><small>'+esc(realm())+' · Lực chiến '+me.toLocaleString()+' · Điểm '+state.points+' · Hạng #'+rank()+'</small><br><small>🏆 Thắng '+state.wins+' · Thua '+state.losses+' · 🔥 Chuỗi '+state.streak+' · Lượt hôm nay '+left+'/10</small></div>'+ops.map(function(o){var dis=left<=0?'disabled':'';return '<div class="arena-op"><div><b>'+esc(o.n)+'</b><br><small>Lv '+o.lv+' · Lực chiến '+o.pw.toLocaleString()+' · Hạng #'+o.rank+'</small></div><button data-id="'+o.id+'" '+dis+'>⚔️ Xem trận</button></div>'}).join('')+'<div class="arena-note">🎬 Bản v2 cho phép xem trận từng lượt, tạm dừng và tăng tốc. Kết quả vẫn là mô phỏng an toàn; chưa phải PvP server thật.</div>';
-}
+function bindChallenges(){var c=ov&&ov.querySelector('#arena-c');if(!c)return;c.querySelectorAll('[data-id]').forEach(function(btn){btn.onclick=function(e){if(e&&e.preventDefault)e.preventDefault();challenge(+btn.getAttribute('data-id'));return false;};});}
+function render(){load();if(busy)return;var c=ov.querySelector('#arena-c'),me=power(),ops=opponents(),left=Math.max(0,10-(state.today|0));c.innerHTML='<div class="arena-st"><b>'+esc(pname())+'</b><br><small>'+esc(realm())+' · Lực chiến '+me.toLocaleString()+' · Điểm '+state.points+' · Hạng #'+rank()+'</small><br><small>🏆 Thắng '+state.wins+' · Thua '+state.losses+' · 🔥 Chuỗi '+state.streak+' · Lượt hôm nay '+left+'/10</small></div>'+ops.map(function(o){var dis=left<=0?'disabled':'';return '<div class="arena-op"><div><b>'+esc(o.n)+'</b><br><small>Lv '+o.lv+' · Lực chiến '+o.pw.toLocaleString()+' · Hạng #'+o.rank+'</small></div><button type="button" data-id="'+o.id+'" '+dis+'>⚔️ Thách đấu</button></div>'}).join('')+'<div class="arena-note">⚔️ Bấm <b>Thách đấu</b> để vào trận ngay và xem trận đánh từng lượt. Nút <b>Xem lại trận</b> chỉ xuất hiện sau khi trận đã kết thúc.</div>';bindChallenges();}
 function battleView(op,b,isReplay){
  var c=ov.querySelector('#arena-c');
- c.innerHTML='<div class="arena-battle"><div class="arena-fighters"><div class="arena-fighter me"><div class="arena-avatar">🧙</div><div class="arena-name">'+esc(pname())+'</div><small>Lực chiến '+power().toLocaleString()+'</small><div class="arena-hp"><i id="arena-mep" style="width:100%"></i></div><div class="arena-hptext" id="arena-met">'+b.meMax+'/'+b.meMax+'</div></div><div class="arena-vs">VS</div><div class="arena-fighter op"><div class="arena-avatar">👹</div><div class="arena-name">'+esc(op.n)+'</div><small>Lực chiến '+op.pw.toLocaleString()+'</small><div class="arena-hp"><i id="arena-opp" style="width:100%"></i></div><div class="arena-hptext" id="arena-opt">'+b.opMax+'/'+b.opMax+'</div></div></div><div id="arena-turn" class="arena-turn">Trận đấu chuẩn bị bắt đầu...</div><div id="arena-dmg" class="arena-dmg">⚔️</div><div id="arena-log" class="arena-log"></div><div class="arena-controls"><button id="arena-pause">⏸ Tạm dừng</button><button data-speed="1" class="on">1×</button><button data-speed="2">2×</button><button data-speed="4">4×</button><button id="arena-skip">⏩ Bỏ qua</button></div></div>';
+ c.innerHTML='<div class="arena-battle"><div class="arena-fighters"><div class="arena-fighter me"><div class="arena-avatar">🧙</div><div class="arena-name">'+esc(pname())+'</div><small>Lực chiến '+power().toLocaleString()+'</small><div class="arena-hp"><i id="arena-mep" style="width:100%"></i></div><div class="arena-hptext" id="arena-met">'+b.meMax+'/'+b.meMax+'</div></div><div class="arena-vs">VS</div><div class="arena-fighter op"><div class="arena-avatar">👹</div><div class="arena-name">'+esc(op.n)+'</div><small>Lực chiến '+op.pw.toLocaleString()+'</small><div class="arena-hp"><i id="arena-opp" style="width:100%"></i></div><div class="arena-hptext" id="arena-opt">'+b.opMax+'/'+b.opMax+'</div></div></div><div id="arena-turn" class="arena-turn">🎬 Trận đấu bắt đầu...</div><div id="arena-dmg" class="arena-dmg">⚔️</div><div id="arena-log" class="arena-log"></div><div class="arena-controls"><button id="arena-pause">⏸ Tạm dừng</button><button data-speed="1" class="on">1×</button><button data-speed="2">2×</button><button data-speed="4">4×</button><button id="arena-skip">⏩ Bỏ qua</button></div></div>';
  var sp=1,paused=false,i=0,myToken=token;
  function append(ev){var log=document.getElementById('arena-log');if(!log)return;var row=document.createElement('div');row.className=ev.side==='me'?'hit-me':'hit-op';row.textContent='Lượt '+ev.r+': '+ev.text;log.appendChild(row);while(log.children.length>12)log.removeChild(log.firstChild);log.scrollTop=log.scrollHeight;var turn=document.getElementById('arena-turn');turn.textContent=ev.side==='me'?'⚔️ '+pname()+' tấn công!':'💥 '+op.n+' phản công!';var dmg=document.getElementById('arena-dmg');dmg.textContent=(ev.side==='me'?'⚔️ -':'💢 -')+ev.d+' HP';dmg.classList.remove('show');void dmg.offsetWidth;dmg.classList.add('show')}
  function paint(meHp,opHp){var mp=document.getElementById('arena-mep'),pp=document.getElementById('arena-opp'),mt=document.getElementById('arena-met'),pt=document.getElementById('arena-opt');if(mp)mp.style.width=Math.max(0,meHp/b.meMax*100)+'%';if(pp)pp.style.width=Math.max(0,opHp/b.opMax*100)+'%';if(mt)mt.textContent=meHp+'/'+b.meMax;if(pt)pt.textContent=opHp+'/'+b.opMax}
@@ -63,14 +60,14 @@ function battleView(op,b,isReplay){
  document.getElementById('arena-pause').onclick=function(){paused=!paused;this.textContent=paused?'▶ Tiếp tục':'⏸ Tạm dừng'};
  ov.querySelectorAll('[data-speed]').forEach(function(btn){btn.onclick=function(){sp=+btn.dataset.speed;ov.querySelectorAll('[data-speed]').forEach(function(x){x.classList.toggle('on',x===btn)})}});
  document.getElementById('arena-skip').onclick=function(){while(i<b.events.length){var ev=b.events[i++];paint(ev.me,ev.op);append(ev)}finish()};
- step();
+ timer=setTimeout(step,300);
 }
+
 function playReplay(op,b){stopTimer();token++;busy=true;current={op:op,b:b};battleView(op,b,true)}
 function challenge(id){
  load();if(busy)return;if(state.today>=10){alert('Đã hết 10 lượt Đấu Trường hôm nay.');return}
  var o=opponents().find(function(x){return x.id==id});if(!o)return;var me=power();var b=makeBattle(me,o);busy=true;token++;current={op:o,b:b};battleView(o,b)
 }
-document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('#arena-c [data-id]');if(b)challenge(+b.dataset.id)});
 window.Arena={open:open,close:close,save:save,load:load,api:{challenge:challenge}};
 function addButton(){var b=document.createElement('button');b.id='arena-btn';b.className='sb';b.title='Đấu Trường';b.innerHTML='⚔️<small>Đấu</small>';b.onclick=open;document.body.appendChild(b)}
 function init(){load();addButton()}
