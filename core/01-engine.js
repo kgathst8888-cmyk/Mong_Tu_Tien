@@ -1355,8 +1355,14 @@ dgBtn();
 
 try{document.fonts.load('700 16px "KTH Serif"');document.fonts.load('16px "KTH Serif"');document.fonts.load('22px "Ma Shan Zheng"','道玄天')}catch(e){}
 rf();init();mn(0);window.QL=0;window.QCAP=2;
-(function(){const d=Object.getOwnPropertyDescriptor(CanvasRenderingContext2D.prototype,'shadowBlur');
-Object.defineProperty(g,'shadowBlur',{configurable:true,get(){return d.get.call(this)},set(v){d.set.call(this,window.QL>=2?0:v)}})})();
+(function(){
+try{
+ if(typeof CanvasRenderingContext2D==='undefined')return;
+ const d=Object.getOwnPropertyDescriptor(CanvasRenderingContext2D.prototype,'shadowBlur');
+ if(!d||typeof d.get!=='function'||typeof d.set!=='function')return;
+ Object.defineProperty(g,'shadowBlur',{configurable:true,get(){return d.get.call(this)},set(v){d.set.call(this,window.QL>=2?0:v)}});
+}catch(e){try{console.warn('[Mong Tu Tien] shadowBlur optimization skipped',e)}catch(x){}}
+})();
 (function(){const STEP=1000/60;let last=performance.now(),acc=0,ema=16.7,cnt=0,t0=last;
 function loop(now){requestAnimationFrame(loop);let dt=now-last;last=now;if(dt>250)dt=250;acc+=dt;let n=0;
 while(acc>=STEP&&n<3){step();acc-=STEP;n++}if(n==3)acc=0;
