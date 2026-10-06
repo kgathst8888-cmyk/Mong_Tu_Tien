@@ -62,3 +62,13 @@ MAPPING MODULE CŨ → MỚI
 - Bộ skill lấy từ `CHR/PS` hiện tại; tên, icon, MP, cooldown và multiplier sát thương dùng trực tiếp từ skill data.
 - Arena vẫn là PvE/local simulation; chưa phải server-authoritative PvP.
 - Không inline Base64 và không sửa `assets/game-assets.js`.
+
+
+## Arena v5 — Real Map Combat
+- Đấu Trường không còn là battle log đứng yên. Khi vào trận, engine tạm chuyển canvas game sang Arena mode.
+- Nhân vật người chơi dùng trực tiếp `hero()` của map, vì vậy sprite thân/tay/chân, vũ khí, cánh và animation đánh dùng cùng renderer với đánh quái.
+- Skill người chơi đi qua `cast()`/`fire()`/`dm()` thật; các skill đặc biệt có dash/jump của engine được giữ nguyên.
+- Arena thêm lướt/nhảy giữa các đòn để tạo chuyển động trên màn hình nhỏ; nút kỹ năng hiển thị skill thật của nhân vật hiện tại.
+- Đối thủ cũng dùng `RIGI` + `WPI/WXI` thật, có chạy, nhảy, đánh và HP/MP.
+- Arena vẫn local PvE, không phải server-authoritative PvP.
+- Không chỉnh Base64/assets payload.
