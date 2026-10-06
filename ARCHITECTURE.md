@@ -55,3 +55,10 @@ MAPPING MODULE CŨ → MỚI
 - macOS/Linux: chay `PLAY_GAME.command` neu Python 3 co san.
 - Hoac mo `index.html` truc tiep trong Chrome/Edge.
 - De test tot nhat, dung local server: `python -m http.server 8765`.
+
+
+## Arena v4
+- `systems/19-arena.js` dùng sprite nhân vật thật từ `RIGI` và weapon assets đã được engine load sẵn.
+- Bộ skill lấy từ `CHR/PS` hiện tại; tên, icon, MP, cooldown và multiplier sát thương dùng trực tiếp từ skill data.
+- Arena vẫn là PvE/local simulation; chưa phải server-authoritative PvP.
+- Không inline Base64 và không sửa `assets/game-assets.js`.
