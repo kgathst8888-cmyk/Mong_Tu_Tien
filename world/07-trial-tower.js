@@ -182,7 +182,7 @@ const _bgd4=bgd;bgd=function(gy){if(dg&&dg.tw)twBgDraw(gy,dg.tn/10|0);else _bgd4
 /* ---------- phần thưởng ---------- */
 const _drop4=drop;drop=function(e){if(!e.tw)return _drop4(e);
  const n=e.tn,f=n/10|0,i=n%10,L=e.lv,st=twS(),first=n==st.p;
- gold+=Math.round(TW_GOLD*L*(1+n/30));const fr_=10+Math.floor(n/3);frag+=fr_;DT.push({x:e.x,y:120,s:'🔹 +'+fr_+' mảnh chế tạo',c:'#6ff',l:120});
+ gold+=gP(Math.round(TW_GOLD*L*(1+n/30)));const fr_=10+Math.floor(n/3);frag+=fr_;DT.push({x:e.x,y:120,s:'🔹 +'+fr_+' mảnh chế tạo',c:'#6ff',l:120});
  for(let j=0;j<3;j++)give(gen(L,R()<.35?4:3),e.x+(j-1)*40,150+j*34);
  if(i<9){if(R()<TW_DROP5){DT.push({x:e.x,y:270,s:'🌟 Trang bị THIÊN THẦN!',c:RC[5],l:200,g:1});give(gen(L,5),e.x,240)}}
  else if(!(st.fg>>f&1)){st.fg|=1<<f;DT.push({x:e.x,y:270,s:'🔷 Mảnh Linh Căn Tầng '+(f+1)+' ('+twPop(st.fg)+'/9)',c:'#8fe8ff',l:220,g:1});if(twPop(st.fg)>=9)DT.push({x:e.x,y:310,s:'✨ Đủ 9 mảnh! Về Tháp để hợp Viên Linh Căn',c:'#ffe08a',l:240,g:1})}

@@ -47,7 +47,7 @@ const rcTx=p=>Object.keys(p.rc).map(h=>HM[h].e+' '+HM[h].n+' ×'+p.rc[h]+' <span
 const save=()=>{try{if(typeof started!='undefined'&&started)sv()}catch(e){}};
 let on=false,NT={s:'',c:'#ffe9a0',t:0};
 const note=(s,c)=>{NT={s:String(s).replace(/<[^>]+>/g,''),c:c||'#ffe9a0',t:170}};
-const noF=()=>{if(on)return 0;msg='🌱 Cần vào bản đồ Linh Điền (cổng 🌱 trên trời Làng) để trồng và thu hoạch';ui();return 1};
+const noF=()=>0;   /* trồng/thu hoạch được ngay trong túi, không cần vào bản đồ Linh Điền */
 const fin=m=>{msg=m;if(on)note(m);save();ui()};
 const grow=p=>p.t0+HM[p.id].g*1000;
 
@@ -140,7 +140,7 @@ function farmSum(){
   return `<div class="fmp grow" style="--c:${b.c}"><span class="fe">${b.e}</span><b>${b.n}</b><div class="fmbar"><i data-fmb="${i}" style="width:${pc}%"></i></div><small data-fmt="${i}">${ft(rem)}</small></div>`}).join('')+'</div>';
  return h;
 }
-function farmUI(){return on?farmFull():farmSum()}
+function farmUI(){return farmFull()}
 
 /* ---------- Luyện đan ---------- */
 const maxBrew=p=>Math.max(0,Math.min(Math.floor(gold/gc(p)),...Object.keys(p.rc).map(h=>Math.floor((S.herbs[h]|0)/p.rc[h]))));

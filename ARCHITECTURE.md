@@ -91,3 +91,32 @@ MAPPING MODULE CŨ → MỚI
 - Thứ tự load: sau `pets/22-chu-tuoc.js`. Bản HTML đơn (`Mong_Tu_Tien_CLAUDE.html`) đã nhúng sẵn 2 module này.
 - `ui/25-pet-preview.js`: nhân vật dưới Lv20 (chưa chuyển chức) xem trước được tab 🐾 Thú (4 thần thú, tiến hoá, kỹ năng); chỉ xem, chưa chọn được. Bọc `petUI` gốc, không sửa engine.
 - `ui/26-pet-evo4-lock.js`: khoá tiến hoá cấp 4 của cả 4 thú nuôi (cờ `LOCK_EV4`) cho tới khi cập nhật đủ; thú đã cấp 4 từ trước giữ nguyên.
+
+
+## Boss Bất Tử hằng ngày — world/27-immortal-boss.js
+- Nút 💀 "Boss Bất Tử" nằm ngay bên trái nút 🏆 Xếp hạng (đặt theo vị trí `#rkb` của ui/17-ranking-name.js).
+- Mỗi ngày (giờ VN) một boss khác nhau theo thứ (bảng `BC.days`). Boss không thể bị hạ: mỗi nhịp module đo máu boss mất đi → cộng vào sát thương, rồi hồi đầy máu.
+- Mỗi lượt `BC.secs` = 60 giây (hoặc tới khi gục / bấm Thoát). 3 lượt/ngày/nhân vật. Mỗi lượt nhận 💰 `BC.gold` = 500.000.
+- Lượt sát thương cao nhất trong ngày lên bảng trên mây. Sang ngày mới, vào panel để nhận thưởng hạng hôm trước (bảng `RW`): Top1 = 2 Mảnh Thánh + rương (30% Thiên Thần / 70% Thần Thoại); Top2-3 = 5 Nguyệt Thạch + rương; Top4-10 = 2 Nguyệt Thạch + rương; còn lại = rương thường (mọi độ hiếm trừ Thánh).
+- Máy chủ: chạy `boss_hang_ngay.sql` 1 lần trong Supabase (SQL Editor). RPC: boss_status / boss_begin / boss_end / boss_claim_ack. Máy chủ tự kiểm tra 3 lượt/ngày và chỉ nhận kết quả của lượt đang chờ (≤10 phút), trần 1e12 sát thương/lượt.
+- Chưa đăng nhập ☁ hoặc chưa cài SQL: vẫn đánh được ở chế độ cục bộ (chỉ nhận vàng, không lên bảng).
+- Engine chỉ thêm `HL.addSH(k)` (cộng Mảnh Thánh) trong core/01-engine.js. Module móc vào `dgTick/dgExit/init/dgHurt/dgHud/dgFoe` giống Tháp Thí Luyện; dữ liệu cục bộ lưu ở `PS[cur].bs`.
+- Chỉnh độ khó/thưởng: khối hằng số `BC` và `RW` ở đầu file module.
+
+## Đổi tên nút Hầm Ngục → "Phụ bản"
+- Nút đáy màn hình 🕳 hiện chữ "Phụ bản" khi vào được (thay cho "Mở!"); phần đếm ngược giữ nguyên. Sửa trong `dgBtn()` (core/01-engine.js), index.html và đoạn Cẩm nang.
+
+## Cập nhật 2026-10-07 · Nhiệm vụ+ · Túi đồ+ · thuộc tính mới
+- `systems/20-quest-hud.js`: bấm vào phần nhiệm vụ 📜 ở màn hình chính (mobile: dòng dưới thanh EXP; máy tính: khung "Chương … · Chính tuyến") → mở bảng chi tiết: chính tuyến + quà, hằng ngày, hằng tuần, nút Nhận / Nhận tất cả / mở bảng đầy đủ.
+- `systems/29-quest-plus.js` (chỉ sửa dữ liệu): chính tuyến 11 → 27 chương (chương mới xen giữa; save cũ tự đổi chỉ số chương nên giữ nguyên vị trí), hằng ngày 8 → 14 nhiệm vụ, hằng tuần 6 → 10, thành tựu 9 → 12, tăng quà ×1.5-1.6, rương hoạt lực & thành tựu có thêm Nguyệt Thạch / Chìa Khóa Vòng Quay (khoá thưởng `kk`). Hệ số: `UP_CH`, `UP_WK` đầu file.
+- `ui/30-bag-plus.js`: icon trong túi nhỏ lại (lưới 6 cột, `--bg-cell`, `--bg-ico`), thanh "🔗 Ghép trang bị" ngay trong túi (chạm món Sử Thi/Thần Thoại → Chọn ghép, hoặc ⚡ Chọn tự động). Ghép không cần về Làng.
+- `core/01-engine.js`: bỏ dòng "So với đồ đang mặc"; Tự bán / Bán nhanh thêm bậc ≤Sử Thi (có hỏi xác nhận); thuộc tính mới `ls` Hút máu và `ms` Hút năng lượng (chỉ vũ khí, 1-7%), `goldp` Tăng vàng nhận được (1-20%, mọi trang bị) — khoảng giá trị cố định trong `AXF`, không đổi theo phẩm. Hút máu/năng lượng tối đa 10% HP/MP mỗi đòn. Vàng cộng thêm áp cho vàng rơi từ quái, hầm ngục, Tháp, Ma Thần và quà nhiệm vụ (hàm `gP`).
+
+## Cập nhật 2026-10-07 (lần 2) · sửa lỗi túi đồ / chuyển chức / trồng trọt / Nguyên Anh
+- `ui/31-bag-scroll.js`: túi đồ không còn bị cuộn lên đầu khi bấm nút trong tab (giữ vị trí cuộn khi vẽ lại cùng một tab; đổi tab/mục nhiệm vụ vẫn về đầu).
+- Nhiệm vụ chuyển chức: nhận và trả nhiệm vụ không còn bắt buộc ở Làng (`core/01-engine.js`, tab Nhiệm vụ › Chuyển chức); bảng nhiệm vụ ở màn hình chính cũng có mục 🎓 Chuyển chức để nhận / chọn nhánh.
+- Linh Điền: trồng, thu hoạch, mở ô đất ngay trong tab 🌱 của túi đồ, không cần vào bản đồ Linh Điền (`systems/08-farming-alchemy.js`: `noF` luôn cho phép, `farmUI` luôn hiện bảng đầy đủ).
+- Nguyên Anh thu thập vàng nhiều hơn (`world/13-mining.js`): gốc 300 → 1000/phút, nhân thêm (1 + Lv/`auLv`) và % "Tăng vàng nhận được" của trang bị, vẫn nhân theo (cảnh giới − Nguyên Anh + 1). Quặng sắt/Huyền Kim giữ nguyên.
+
+## Cập nhật 2026-10-07 (lần 3) · cấp độ trên icon trang bị
+- Mỗi ô trang bị (túi + ô đang mặc) hiện cấp độ ở góc dưới phải. Trang bị chưa mặc được (cấp cao hơn nhân vật, không phải đồ chế tác ✦) bị làm mờ + xám, số cấp màu đỏ nhạt. Sửa ở hàm `cell` trong `core/01-engine.js` và CSS trong `ui/30-bag-plus.js` (`.ce>i.il`, `.ce.nw>img`).

@@ -12,7 +12,8 @@ const FONT='KTH Serif,Songti SC,STKaiti,KaiTi,serif',PI=Math.PI,ORD=['au','fe','
 const CFG={
  capMs:8*3600e3,                 /* tối đa 8 giờ thu thập khi vắng mặt */
  goldMul:12,                     /* nhân lượng vàng mỗi nhát cuốc */
- rate:{au:300,fe:2,hk:.5},         /* tốc độ tự động mỗi phút, nhân (cảnh giới − Nguyên Anh + 1) */
+ rate:{au:1000,fe:2,hk:.5},      /* vàng: gốc 1000/phút (trước 300), nhân thêm theo cấp: (1+Lv/auLv) */
+ auLv:100,         /* tốc độ tự động mỗi phút, nhân (cảnh giới − Nguyên Anh + 1) */
  swing:36                         /* số khung hình mỗi nhát cuốc */
 };
 const VN={
@@ -27,6 +28,7 @@ const dur={au:VN.au.hits,fe:VN.fe.hits,hk:VN.hk.hits},until={au:0,fe:0,hk:0},PR=
 const tier=()=>{try{return ZC.rI()+1}catch(e){return 0}};
 const canAuto=()=>{try{return ZC.rI()>=3}catch(e){return false}};
 const rk=()=>Math.max(1,ZC.rI()-2);
+const rtOf=k=>CFG.rate[k]*rk()*(k=='au'?(1+Math.min((typeof P!='undefined'&&P?P.lv:1),100)/CFG.auLv)*(typeof gP=='function'?gP(1):1):1);
 const note=(m,c)=>{NT={s:String(m).replace(/<[^>]+>/g,''),c:c||'#ffe9a0',t:170}};
 const rt=x=>x<10?String(+x.toFixed(1)).replace('.',','):fmtN(x);
 const give=(k,n)=>{if(k=='au'){gold+=n;S.gm+=n}else S[k]+=n};
@@ -37,7 +39,7 @@ function tick(){
  if(!S.auto||!canAuto()){S.last=now;return}
  const raw=now-S.last;if(raw<1000)return;
  const dt=Math.min(raw,CFG.capMs);S.last=now;
- const k=S.auto;S.acc[k]+=CFG.rate[k]*rk()*dt/60000;
+ const k=S.auto;S.acc[k]+=rtOf(k)*dt/60000;
  const n=Math.floor(S.acc[k]);
  if(n>=1){S.acc[k]-=n;give(k,n);S.at[k]+=n;
   if(raw>180000){const m='🧿 Nguyên Anh đã thu thập '+fmtN(n)+' '+VN[k].n+' khi bạn vắng mặt';note(m,VN[k].c);if(!on)try{DT.push({x:P.x,y:190,s:m,c:VN[k].c,g:1,l:220})}catch(e){}}}
@@ -239,7 +241,7 @@ function mdraw(){
   g.font=Math.round(B.h*.46)+'px '+FONT;g.textAlign='center';g.fillStyle='#fff';g.fillText(k?VN[k].e:'⏹',B.x+B.w/2,B.y+B.h*.52);
   g.font='bold '+Math.round(Math.max(9,B.h*.22))+'px '+FONT;g.fillStyle=ok?'#ffe9a0':'#999';g.fillText(k?['Vàng','Sắt','Huyền'][i]:'Dừng',B.x+B.w/2,B.y+B.h*.9);g.globalAlpha=1;
  });
- const lab=ok?(S.auto?'🧿 Nguyên Anh đang thu thập: '+VN[S.auto].n+' (+'+rt(CFG.rate[S.auto]*rk())+'/phút)':'🧿 Chọn loại để Nguyên Anh tự động thu thập'):'🧿 Đạt Nguyên Anh để mở thu thập tự động';
+ const lab=ok?(S.auto?'🧿 Nguyên Anh đang thu thập: '+VN[S.auto].n+' (+'+rt(rtOf(S.auto))+'/phút)':'🧿 Chọn loại để Nguyên Anh tự động thu thập'):'🧿 Đạt Nguyên Anh để mở thu thập tự động';
  txt(lab,PORT?Math.max(8+(()=>{g.font='bold '+Math.round(Math.max(11,13*u))+'px '+FONT;return g.measureText(lab).width/2})(),0):W/2,top-8*u,Math.max(11,13*u),ok?'#e0d0ff':'#aaa',1);
  const nt=NT;if(nt.t>0){NT.t--;g.save();g.globalAlpha=Math.min(1,nt.t/30);txt(nt.s,W/2,ay-26*u,Math.max(12,14*u),nt.c,1);g.restore()}
 }

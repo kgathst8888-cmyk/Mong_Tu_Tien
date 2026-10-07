@@ -54,7 +54,7 @@ const _dgTick=dgTick;dgTick=function(){if(!dg||!dg.mt)return _dgTick();if(over||
  if(!dg.bs&&dg.t>45){dg.bs=1;mtSpawn()}
  else if(dg.bs&&!E.some(e=>e.k=='boss')&&!dg.done){dg.done=1;dg.out=300;PS[cur].lg=1;QE('mt');QE('boss');sv();DT.push({x:P.x,y:220,s:'🏆 Hạ Ma Thần! Cổng Linh Giới đã mở!',c:'#8fe8ff',g:1,l:220})}
  if(dg.done&&--dg.out<=0)mtExit()};
-const _drop2=drop;drop=function(e){if(!e.mt)return _drop2(e);const L=MT_LV;gold+=3000*L;const f=30+Math.floor(R()*10);frag+=f;DT.push({x:e.x,y:120,s:'🔹 +'+f+' mảnh chế tạo',c:'#6ff',l:140});for(let i=0;i<3;i++)give(gen(L,4),e.x+(i-1)*40,150+i*34);try{ZC.gain(5000)}catch(x){}};
+const _drop2=drop;drop=function(e){if(!e.mt)return _drop2(e);const L=MT_LV;gold+=gP(3000*L);const f=30+Math.floor(R()*10);frag+=f;DT.push({x:e.x,y:120,s:'🔹 +'+f+' mảnh chế tạo',c:'#6ff',l:140});for(let i=0;i<3;i++)give(gen(L,4),e.x+(i-1)*40,150+i*34);try{ZC.gain(5000)}catch(x){}};
 const _dgHud=dgHud;dgHud=function(){_dgHud();if(dg&&dg.mt){const b=E.find(e=>e.k=='boss');dgh.innerHTML='<div class="dgt">👹 MA THẦN · Lv'+MT_LV+' · ×'+MT_HP+'</div>'+(b?'<div class="dgp"><i style="width:'+cl(b.hp/b.max*100,0,100)+'%"></i></div>':'')}};
 const _dgFoe=dgFoe;dgFoe=function(e){if(!e.mt)return _dgFoe(e);const X=(e.x-cam)*s,Y=GY-((e.y||0)+110)*s,R0=150*s;
  g.save();g.globalCompositeOperation='lighter';const q=g.createRadialGradient(X,Y,R0*.1,X,Y,R0*1.5);q.addColorStop(0,'rgba(190,80,255,.55)');q.addColorStop(.5,'rgba(110,30,200,.28)');q.addColorStop(1,'rgba(40,0,80,0)');g.globalAlpha=.8+.2*Math.sin(fr*.1);g.fillStyle=q;g.beginPath();g.arc(X,Y,R0*1.5,0,6.283);g.fill();g.restore();
