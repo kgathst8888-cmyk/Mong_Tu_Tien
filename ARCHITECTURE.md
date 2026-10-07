@@ -120,3 +120,22 @@ MAPPING MODULE CŨ → MỚI
 
 ## Cập nhật 2026-10-07 (lần 3) · cấp độ trên icon trang bị
 - Mỗi ô trang bị (túi + ô đang mặc) hiện cấp độ ở góc dưới phải. Trang bị chưa mặc được (cấp cao hơn nhân vật, không phải đồ chế tác ✦) bị làm mờ + xám, số cấp màu đỏ nhạt. Sửa ở hàm `cell` trong `core/01-engine.js` và CSS trong `ui/30-bag-plus.js` (`.ce>i.il`, `.ce.nw>img`).
+
+## Cập nhật 2026-10-07 (lần 4) · Chợ Giao Dịch online + Linh Thạch
+- `systems/32-cho-giao-dich.js` (load sau `ui/31-bag-scroll.js`) + `cho_giao_dich.sql` (chạy 1 lần trong Supabase SQL Editor). Không sửa engine/assets.
+- Nút 🏮 ngay bên phải nút 💬 Chat. Ba tab: 🛒 Chợ (lọc loại/sắp xếp giá, mua) · 📦 Đăng bán (chọn trang bị trong túi, nhập giá) · 📜 Của tôi (hủy bán). Chạm một món để xem chi tiết/opt.
+- Tiền tệ 💎 Linh Thạch: ví nằm trên máy chủ theo tài khoản ☁ (dùng chung mọi nhân vật). Cách kiếm CHƯA có — tạm cấp thủ công: `select public.cho_admin_grant('<uuid>', 1000);`. API phía game: `window.LT.get()` / `.refresh()` / `.open()`. Khi làm cách kiếm, thêm RPC kiếm riêng trong SQL rồi gọi từ game (đừng cho client tự cộng số dư).
+- Luật: phí bán 5% · tối đa 10 món/tài khoản · hết hạn 48 giờ · giá 1 → 1.000.000.000 · không tự mua đồ của mình. Chỉnh ở khối `CF` (JS) và hằng số trong SQL.
+- An toàn nhân bản đồ: đăng bán → đồ rời túi trước, máy chủ giữ (ký gửi). Mua / hủy / hết hạn → đồ vào HÒM NHẬN trên máy chủ, game chuyển vào túi rồi mới xác nhận (`cho_ack`); túi đầy thì đồ nằm lại hòm. Mất mạng giữa chừng khi đăng: game tự kiểm tra mã `_mk` để không nhân/mất đồ.
+- Lưu ý: giống cloud save/boss, dữ liệu món đồ do client gửi lên; máy chủ chỉ kiểm tra giá trị hợp lệ cơ bản (loại, phẩm, cấp, kích thước), không chống được client bị sửa.
+- Bản HTML chạy trên Claude (không có mạng ngoài): nút chợ vẫn có, mở ra chỉ báo cần ☁ + mạng; không ảnh hưởng phần còn lại của game.
+
+## Linh Thạch từ Boss — systems/32-cho-giao-dich.js (khối "KIẾM LINH THẠCH TỪ BOSS") + cho_linh_thach_boss.sql
+- Mỗi boss hạ được = 1 💎 vào ví tài khoản ☁; tối đa 500/ngày (giờ VN). Máy chủ tự cắt trần qua RPC `cho_earn` (bảng `cho_daily`); client gom lô ≤ 50 viên/lần.
+- Hook: bọc `ZC.kill(e)` — tính khi `e.b >= 2` (boss thường, siêu boss, boss Hầm Ngục/Tháp/Ma Thần). Quái tinh anh (b=1) và quái thường không tính. Boss Bất Tử (world/27) tính 1 viên mỗi lượt đánh.
+- Chưa đăng nhập ☁ thì không nhận Linh Thạch (hiện nhắc 1 lần). Panel Chợ hiện "(+đã kiếm/500)". API: `LT.earn(n)`, `LT.today()`.
+
+## Đột phá tầng Linh Căn tốn Linh Thạch — systems/18-linh-can.js + cho_linh_thach_spend.sql
+- Luyện LÊN tầng t tốn thêm 💎 ngoài vàng (hàm `LTC` trong 18-linh-can.js): tầng 2-10 = 10💎 · tầng 11-14 = 20💎 · tầng 15 (Viên Mãn) = 300💎.
+- Linh Thạch trừ trong ví ☁ trên máy chủ qua RPC `cho_spend` (nguyên tử, không âm). Game giữ chỗ vàng trước, máy chủ từ chối/lỗi mạng thì hoàn vàng; chống bấm đúp bằng `lcBusy`.
+- API ví trong systems/32-cho-giao-dich.js: `LT.spend(n,why)`, `LT.sync()` (RPC `cho_bal`), `LT.logged()`. Chưa đăng nhập ☁ thì không luyện được tầng mới.

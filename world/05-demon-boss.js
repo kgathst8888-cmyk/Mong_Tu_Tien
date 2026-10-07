@@ -326,7 +326,7 @@ function mtAI(e){
 }
 function mtTick(){
  if(!dg||!dg.mt||!E.some(x=>x.mt&&x.hp>0)){MW.length=0;MM.length=0;return}
- if(over||bo||vil||!started)return;
+ if(over||vil||!started)return;
  for(let i=MW.length-1;i>=0;i--){const w=MW[i];w.x+=w.vx;w.l--;w.i++;if(w.i%2==0)PT.push({x:w.x-w.dir*40,y:20+rnd()*90,vx:-w.dir*rnd()*2,vy:-rnd()*2,l:20,c:rnd()<.5?'#ff9a40':'#c070ff'});
   if(!w.h&&Math.abs(P.x-(w.x+w.dir*30))<58){w.h=1;dgHurt(w.e,w.mu);w.l=Math.min(w.l,8)}
   if(w.l<=0||w.x<-120||w.x>vw()+120)MW.splice(i,1)}

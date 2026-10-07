@@ -71,7 +71,7 @@ function twSpawn(){dgSp('boss');const e=E[E.length-1],n=dg.tn,k=n%10==9;
  DT.push({x:P.x,y:220,s:'🗼 '+e.twN+(k?' · THÁP CHỦ':'')+' xuất hiện!',c:TW_COL[n/10|0],g:1,l:170})}
 function twBack(w){const st=twS();twF=Math.min(8,(w.tn/10|0)+(w.tn%10==9&&st.p>w.tn?1:0));lg=w.lg0|0;vil=1;vt=null;vgo=-1;P.x=cl(P.x,40,vw()-40);P.hp=mx();P.mp=mm();dgHud()}
 
-const _dgTick4=dgTick;dgTick=function(){if(!dg||!dg.tw)return _dgTick4();if(over||bo||vil||!started)return;SLT=[9e9,9e9,9e9,9e9,9e9];dg.t++;
+const _dgTick4=dgTick;dgTick=function(){if(!dg||!dg.tw)return _dgTick4();if(over||vil||!started)return;SLT=[9e9,9e9,9e9,9e9,9e9];dg.t++;
  if(!dg.bs&&dg.t>45){dg.bs=1;twSpawn()}
  else if(dg.bs&&!E.some(e=>e.k=='boss')&&!dg.done){dg.done=1;dg.out=240;DT.push({x:P.x,y:220,s:'🏆 Hạ '+twName(dg.tn)+'!',c:'#ffe08a',g:1,l:200})}
  if(dg.done&&--dg.out<=0){dgExit();twOpen()}};

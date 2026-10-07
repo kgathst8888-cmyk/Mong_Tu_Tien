@@ -21,6 +21,7 @@ function LC(){var p=PS[cur];if(!p.lc||!p.lc.lv||p.lc.lv.length<5)p.lc={root:-1,l
 function L0(){var c=LC();return c.root<0?0:c.lv[c.root]}
 function pow(){var c=LC();return c.root<0?1:1.2+.02*c.lv[c.root]}
 /* hook: nhân sức mạnh tiên thuật cùng hệ (i = 0..4 = Hỏa,Mộc,Thủy,Kim,Thổ) */
+window.lcMax=function(){try{var c=LC();return c.root>=0&&c.lv[c.root]>=MAXL}catch(e){return false}};
 window.lcMul=function(i){try{return LC().root===i?pow():1}catch(e){return 1}};
 
 function foes(){var w=vw();return E.filter(function(e){return e.hp>0&&e.x>-30&&e.x<w+30})}
@@ -34,7 +35,7 @@ if(typeof dm=='function'){var _dm=dm;dm=function(e,m,sl){if(S.kim>0)m*=1.25+.01*
 
 function cast(){
   var c=LC();if(c.root<0)return;
-  if(over||bo||vil||!started||P.pe||P.act||S.cd>0)return;
+  if(over||vil||!started||P.pe||P.act||S.cd>0)return;
   var L=c.lv[c.root],mp=mpC(L);if(P.mp<mp)return;
   var near=foes().filter(function(e){return Math.abs(e.x-P.x)<640});if(!near.length)return;
   P.mp-=mp;S.cd=S.cdMax=cdF(L);
@@ -235,11 +236,25 @@ setInterval(function(){
 
 /* ===== giao diện trong tab Tu Tiên ===== */
 var UPC=function(L){return 800*L*L};
+/* Linh Thạch 💎 cần thêm (ngoài vàng) khi luyện LÊN tầng t: tầng 2-10 = 10 · tầng 11-14 = 20 · tầng 15 (viên mãn) = 300 */
+var LTC=function(t){return t>=15?300:t>=11?20:10};
+var lcBusy=0;
+function nfL(n){return (Number(n)||0).toLocaleString('vi-VN')}
 window.lcUp=function(i){
+  if(lcBusy)return;
   var c=LC();if(c.root!==i)return;var L=c.lv[i];
   if(L>=MAXL){msg='Đã đạt tầng tối đa';ui();return}
-  var cost=UPC(L);if(gold<cost){msg='Không đủ vàng ('+cost+'💰)';ui();return}
-  gold-=cost;c.lv[i]=L+1;msg='🌟 '+ROOTS[i].sk+' lên tầng '+(L+1);ui();
+  var cost=UPC(L),st=LTC(L+1);
+  if(gold<cost){msg='Không đủ vàng ('+cost+'💰)';ui();return}
+  if(!window.LT||!LT.spend){msg='Chưa có ví Linh Thạch (cần module Chợ Giao Dịch)';ui();return}
+  if(!LT.logged()){msg='☁ Cần đăng nhập tài khoản để dùng Linh Thạch ('+st+'💎)';ui();return}
+  lcBusy=1;gold-=cost; /* giữ chỗ vàng trước; máy chủ từ chối thì hoàn lại */
+  LT.spend(st,'linhcan').then(function(r){
+    lcBusy=0;
+    if(r.ok){var c2=LC();c2.lv[i]=Math.max(c2.lv[i],L+1);msg='🌟 '+ROOTS[i].sk+' lên tầng '+(L+1)+(L+1>=MAXL?' · VIÊN MÃN!':'')+' (−'+st+'💎)';try{sv()}catch(e){}}
+    else{gold+=cost;msg=r.err==='poor'?'Không đủ Linh Thạch: cần '+st+'💎, bạn có '+nfL(r.lt)+'💎':'Không trừ được Linh Thạch ('+(r.msg||r.err)+')'}
+    ui();
+  });
 };
 function lcBody(){
   var c=LC(),t=PS[cur].tw||{},h='';
@@ -253,17 +268,20 @@ function lcBody(){
   h+='<div class="dt">🌟 <b>Linh Căn</b><br>Linh căn đã thức tỉnh từ Viên Linh Căn (cố định, không đổi). Tăng sức mạnh thần thông (tiên thuật) hệ <b>'+r.el+'</b> thêm <b>+'+Math.round((.2+.02*L)*100)+'%</b> (tối đa +50% ở tầng 15) và mở kỹ năng kèm theo: nút tròn cạnh cột tiên thuật, tự dùng khi bật AUTO. Tiên thuật tầng 1→5 lần lượt thuộc hệ Hỏa, Mộc, Thủy, Kim, Thổ.</div>';
   h+='<div class="dt" style="border:2px solid '+r.c+'"><b style="color:'+r.c+'">'+r.ic+' '+r.n+' · ĐÃ THỨC TỈNH</b><br>'+
     r.si+' <b>'+r.sk+'</b> · Tầng '+L+'/'+MAXL+'<br><small>'+r.d+'<br>'+mpC(L)+' MP · hồi '+(cdF(L)/60).toFixed(0)+'s</small><br>'+
-    (L<MAXL?'<button onclick="lcUp('+i+')">Luyện tầng '+(L+1)+' · '+cost+'💰</button>':'<span style="color:#ffe27a">✦ Đại thành</span>')+'</div>';
+    (L<MAXL?'<button onclick="lcUp('+i+')">Luyện tầng '+(L+1)+(L+1>=MAXL?' (Viên Mãn)':'')+' · '+cost+'💰 + '+LTC(L+1)+'💎</button><br><small>💎 Linh Thạch của bạn: '+((window.LT&&LT.logged&&LT.logged())?'<b>'+nfL(LT.get())+'</b> (ví ☁ · kiếm từ Boss, tối đa 500/ngày)':'<b>cần đăng nhập ☁</b>')+'</small>':'<span style="color:#ffe27a">✦ Đại thành</span>')+'</div>';
   h+='<div class="dt" style="opacity:.55">🔒 Các linh căn khác đã khóa vĩnh viễn với nhân vật này.</div>';
   return h;
 }
 var VIEW=0;
-window.lcTab=function(v){VIEW=v;ui()};
+window.lcTab=function(v){VIEW=v;ui();if(v==1)lcSync(true)};
+var lcT=0;
+function lcSync(f){try{if(!window.LT||!LT.sync||!LT.logged())return;if(!f&&Date.now()-lcT<15000)return;lcT=Date.now();LT.sync().then(function(){if(VIEW==1&&typeof bo!='undefined'&&bo)ui()})}catch(e){}}
 /* Tab Tu Tiên: 2 mục riêng — ☯ Tu Vi (cũ) và 🌟 Linh Căn */
 window.lcUI=function(){
   var nav='<div class="dt" style="display:flex;gap:6px">'+
     '<button style="flex:1;'+(VIEW==0?'border-color:#ffd76a;color:#ffd76a':'')+'" onclick="lcTab(0)">☯ Tu Vi</button>'+
     '<button style="flex:1;'+(VIEW==1?'border-color:#ffd76a;color:#ffd76a':'')+'" onclick="lcTab(1)">🌟 Linh Căn</button></div>';
+  if(VIEW==1)lcSync(false);
   return nav+(VIEW==1?lcBody():ZC.ui());
 };
 })();

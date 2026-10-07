@@ -191,7 +191,7 @@ function finish(w,why){
  if(w.fin)return;w.fin=1;w.out=150;
  const dmg=Math.max(0,Math.round(w.dmg)),b=bs();
  E=E.filter(e=>!e.bi);PJ=[];
- b.b=Math.max(b.b,dmg);gold+=BC.gold;try{sv()}catch(e){}
+ b.b=Math.max(b.b,dmg);gold+=BC.gold;try{sv()}catch(e){}try{window.LT&&LT.earn&&LT.earn(1)}catch(e){}
  const res={dmg,gold:BC.gold,cloud:w.cloud,rank:0,best:0,total:0,err:''};S.res=res;
  DT.push({x:P.x,y:200,s:(why==='dead'?'💀 Gục ngã! ':'⏱ Hết giờ! ')+'Sát thương: '+nf(dmg),c:'#ffe08a',g:1,l:190});
  if(w.cloud)KCL.rpc('boss_end',{p_slot:cur|0,p_dmg:dmg}).then(r=>{
@@ -202,7 +202,7 @@ function back(w){lg=w.lg0|0;vil=w.v0?1:0;vt=null;vgo=-1;try{P.x=cl(P.x,40,vw()-4
 /* ---------- móc vào engine (cùng cách Tháp Thí Luyện) ---------- */
 const _tick=dgTick;dgTick=function(){
  if(!dg||!dg.bi)return _tick();
- if(over||bo||vil||!started)return;
+ if(over||vil||!started)return;
  SLT=[9e9,9e9,9e9,9e9,9e9];dg.t++;
  if(!dg.bs&&dg.t>45){dg.bs=1;spawnBoss()}
  const b=E.find(e=>e.bi);

@@ -10,7 +10,7 @@ function mtEnter(){if(!started||!lgReq()||lgDone())return;if(bo)tg();vil=0;lg=0;
 function mtAsk(){if(!vil){msg='Hãy về 🏘 Làng để khiêu chiến Ma Thần';ui();return}gcf('Khiêu chiến MA THẦN (Lv'+MT_LV+', mạnh gấp '+MT_HP+' lần Boss Thế Giới)?\nThất bại sẽ phải hồi sinh, có thể thử lại bất cứ lúc nào.',mtEnter)}
 function mtExit(){dg=null;E=[];PETS=[];PJ=[];FX=[];SLT=[60,130,200,270,340];P.pe=null;P.atk=0;P.x=cl(P.x,40,vw()-40);P.hp=mx();P.mp=mm();vil=1;vt=null;vgo=-1;dgHud()}
 function lgEnter(){if(!started||!lgDone())return;lg=1;mapSel=4;vil=0;E=[];PETS=[];PJ=[];FX=[];SLT=[60,130,200,270,340];P.pe=null;P.atk=0;P.x=120;lm=mi();DT.push({x:P.x,y:190,s:'🌀 Đến Linh Giới',c:'#8fe8ff',g:1,l:130});if(bo)tg();sv()}
-function lgUI(){const p=PS[cur];if(lgDone())return'<div class="st" style="margin:4px 0"><button style="width:100%;text-align:left;'+(lg?'background:#8a6420':'')+'" onclick="lgEnter()">🌀 Linh Giới · quái Lv80-100 mạnh hơn · tu vi ×'+LGX+' · đột phá Luyện Hư → Hợp Thể → Đại Thừa'+(lg?' (đang ở đây)':'')+'</button></div>';
+function lgUI(){const p=PS[cur];if(lgDone())return'<div class="st" style="margin:4px 0"><button style="width:100%;text-align:left;'+(lg?'background:#8a6420':'')+'" onclick="lgEnter()">🌀 Linh Giới · quái Lv80-100 mạnh hơn · tu vi ×'+LGX+' · đột phá Luyện Hư → Hợp Thể (Đại Thừa 🔒 chưa mở)'+(lg?' (đang ở đây)':'')+'</button></div>';
  if(lgReq())return'<div class="dt">👹 <b>Ma Thần</b> đang phong ấn trên không của Thanh Vân Tiên Thôn.<br>'+(vil?'<button onclick="mtAsk()">⚔️ Khiêu chiến Ma Thần</button>':'Về 🏘 Làng rồi chạm vào Phong Ấn để khiêu chiến.')+'</div>';
  return'<div class="st" style="opacity:.6">🔒 Linh Giới: cần Hoá Thần tầng 9 + chuyển chức 3, sau đó hạ Ma Thần ở Làng.</div>'}
 
@@ -50,7 +50,7 @@ const _dgAI=dgAI;dgAI=function(e){_dgAI(e);if(!e.mt||e.in>0)return;e.mc=(e.mc|0)
  if(e.mc>=(en?300:480)){e.mc=0;e.mw=60;e.mxp=P.x;DT.push({x:e.x,y:230,s:'👹 Ma Khí Bạo!',c:'#d070ff',g:1,l:70});
   FX.push({x:e.mxp,l:60,m:60,fn:(f,p,X,gy)=>{g.save();g.translate(X,gy-4*s);g.scale(s,s*.25);g.fillStyle='rgba(180,60,255,'+(.1+.3*p)+')';g.strokeStyle='#d070ff';g.lineWidth=6;g.beginPath();g.arc(0,0,170,0,6.283);g.fill();g.stroke();g.restore()}})}
  if(e.mw>0&&--e.mw==0){const X0=e.mxp;FX.push({x:X0,l:24,m:24,fn:(f,p,X,gy)=>{g.save();g.globalCompositeOperation='lighter';const q=g.createLinearGradient(0,gy-400*s,0,gy);q.addColorStop(0,'rgba(190,80,255,0)');q.addColorStop(1,'rgba(220,140,255,'+(1-p)+')');g.fillStyle=q;g.fillRect(X-90*s*(1-p*.4),gy-400*s,180*s*(1-p*.4),400*s);g.restore()}});dgFl=6;if(Math.abs(P.x-X0)<170)dgHurt(e,1.1)}};
-const _dgTick=dgTick;dgTick=function(){if(!dg||!dg.mt)return _dgTick();if(over||bo||vil||!started)return;SLT=[9e9,9e9,9e9,9e9,9e9];dg.t++;
+const _dgTick=dgTick;dgTick=function(){if(!dg||!dg.mt)return _dgTick();if(over||vil||!started)return;SLT=[9e9,9e9,9e9,9e9,9e9];dg.t++;
  if(!dg.bs&&dg.t>45){dg.bs=1;mtSpawn()}
  else if(dg.bs&&!E.some(e=>e.k=='boss')&&!dg.done){dg.done=1;dg.out=300;PS[cur].lg=1;QE('mt');QE('boss');sv();DT.push({x:P.x,y:220,s:'🏆 Hạ Ma Thần! Cổng Linh Giới đã mở!',c:'#8fe8ff',g:1,l:220})}
  if(dg.done&&--dg.out<=0)mtExit()};

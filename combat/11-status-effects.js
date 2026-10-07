@@ -51,12 +51,12 @@ dm=function(e,m,sl){const T=e.stt,pf=(SKF&&window.STLAST&&fr-window.STLAST[1]<20
  if(touched){const q=e.stt;e.df=q.prc>0?q.df0*(1-q.pa):q.df0}
  if(pf&&e.hp<hp0&&e.hp>0){roll(e,pf);const q=e.stt;if(q&&q.prc>0)e.df=q.df0*(1-q.pa)}};
 const _step=step;
-step=function(){const hold=[],act=!(bo||vil||!started||over);
+step=function(){const hold=[],act=!(vil||!started||over);
  if(act)E.forEach(e=>{const T=e.stt;if(T&&(T.stn>0||T.frz>0)&&e.in<=0){hold.push([e,e.x,e.ph]);e.cd=Math.max(e.cd||0,3);if(typeof e.k1=='number')e.k1=Math.max(e.k1,3);if(typeof e.k2=='number')e.k2=Math.max(e.k2,3)}});
  const pre=act?E.map(e=>[e,e.cd||0]):[],hp0=P.hp,px0=P.x,pHold=act&&(PS_.stn>0||PS_.frz>0);if(pHold)P.atkT=Math.max(P.atkT||0,3);
  _step();
  if(vil||over){PS_.brn=PS_.psn=PS_.ps=PS_.stn=PS_.frz=PS_.imm=0}
- if(bo||vil||!started||over)return;
+ if(vil||!started||over)return;
  if(pHold){P.x=px0;P.mv=0}
  if(P.hp<hp0){let at=pre.filter(q=>q[0].in<=0&&(q[0].cd||0)>q[1]+5&&q[0].hp>0).map(q=>q[0]);if(!at.length){const nr=E.filter(e=>e.in<=0&&Math.abs(e.x-P.x)<420).sort((a,b)=>Math.abs(a.x-P.x)-Math.abs(b.x-P.x))[0];if(nr)at=[nr]}at.slice(0,2).forEach(inflict)}
  pTick();
