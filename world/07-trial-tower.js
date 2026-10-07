@@ -17,11 +17,11 @@ const TW_RK=['Hộ Vệ','Thống Lĩnh','Sứ Giả','Tướng Quân','Trưởn
 const TW_COL=['#c8b27a','#8fd0ff','#9fe8ff','#ff7a3a','#7be07a','#e0c060','#b070ff','#ffd860','#ff5ad0'];
 const TW_HUE=[0,200,170,-20,90,30,250,40,300];
 const TW_BG=[0,0,2,2,3,3,4,4,7];
-const TW_XN={dmgp:'Sát thương',hpp:'Máu',mpp:'Nội lực',crit:'Chí mạng',cdmg:'ST chí mạng',dred:'Giảm ST nhận',dodge:'Né tránh',cdr:'Giảm hồi chiêu',cspd:'Tốc độ niệm chú',aspd:'Tốc độ đánh',sdmg:'ST kỹ năng'};
+const TW_XN={dmgp:'Sát thương',hpp:'Máu',mpp:'Nội lực',crit:'Chí mạng',cdmg:'ST chí mạng',dred:'Giảm ST nhận',dodge:'Né tránh',cspd:'Tốc độ niệm chú',aspd:'Tốc độ đánh',sdmg:'ST kỹ năng'};
 const TW_ROOTS=[
  {n:'Kim',e:'⚔️',c:'#ffe08a',x:{dmgp:15,crit:8,cdmg:25}},
  {n:'Mộc',e:'🌿',c:'#7be07a',x:{hpp:20,dred:6,mpp:10}},
- {n:'Thủy',e:'💧',c:'#6fc8ff',x:{mpp:25,cdr:10,cspd:12}},
+ {n:'Thủy',e:'💧',c:'#6fc8ff',x:{mpp:25,cspd:12}},
  {n:'Hỏa',e:'🔥',c:'#ff7a3a',x:{dmgp:12,sdmg:20,aspd:10}},
  {n:'Thổ',e:'⛰️',c:'#d0a060',x:{hpp:15,dred:10,dodge:5}}];
 const twDesc=r=>Object.keys(r.x).map(k=>TW_XN[k]+' +'+r.x[k]+'%').join(' · ');

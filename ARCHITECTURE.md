@@ -72,3 +72,22 @@ MAPPING MODULE CŨ → MỚI
 - Đối thủ cũng dùng `RIGI` + `WPI/WXI` thật, có chạy, nhảy, đánh và HP/MP.
 - Arena vẫn local PvE, không phải server-authoritative PvP.
 - Không chỉnh Base64/assets payload.
+
+
+## Chu Tước (thay chim ưng) — pets/22-chu-tuoc.js
+- Thú số 1 (trước là Ưng) nay là Chu Tước, 4 cấp tiến hoá, mỗi cấp một hình (assets/phoenix-assets.js, base64 webp tách riêng).
+- Module `PHX` (pets/22-chu-tuoc.js) lo vẽ (lưới biến dạng vỗ cánh/đuôi), bay lượn, tấn công, kỹ năng theo cấp, hồi sinh Niết Bàn và điều kiện tiến hoá (khối `EVO`).
+- Engine chỉ có 11 hook nhỏ trong core/01-engine.js (`typeof PHX!='undefined'`): pimg/pcol/peg, PB, giao diện Tab Thú, pev, epstep, drawEP, hiệu ứng PF và hồi sinh khi chết. Thêm `window.PFH` để module dùng lại hiệu ứng của ZS.
+- Dữ liệu PT4[1]/PK[1]/PSK[1]/PTU[1] được module ghi đè lúc nạp, không sửa mảng gốc.
+
+## Bản chạy trên Claude — Mong_Tu_Tien_CLAUDE.html
+- File duy nhất, gộp toàn bộ script theo đúng thứ tự trong index.html (tạo bằng script ghép, không đổi mã nguồn).
+- Chạy được khi mở trang trong Claude (hoặc mở thẳng trong trình duyệt). Tiến trình lưu trong localStorage của trình duyệt.
+- Lưu mây (Supabase) cần gọi mạng ngoài nên không hoạt động trên trang Claude; các tính năng còn lại không ảnh hưởng.
+
+## Cập nhật 2026-10-07 · Thú triệu hồi v2 + icon trang bị
+- `pets/23-summon-beasts.js`: vẽ lại Sói Linh / Thạch Cự (golem) / Cổ Thụ bằng khung xương (IK): chân bước theo quãng đường, tay vung-đập-giơ, đầu/hàm/tai/đuôi/cành lá cử động. Chỉ đổi hiển thị, logic đánh vẫn ở `combat/18-enemies.js`. Chỉnh kích thước ở bảng `LOOK` (trường `z`).
+- `ui/24-equip-icon-fit.js`: thu nhỏ icon trong ô trang bị đang mặc (biến CSS `--eq-cell`, `--eq-ico`, `--eq-tip`). Hình trong túi đồ giữ nguyên.
+- Thứ tự load: sau `pets/22-chu-tuoc.js`. Bản HTML đơn (`Mong_Tu_Tien_CLAUDE.html`) đã nhúng sẵn 2 module này.
+- `ui/25-pet-preview.js`: nhân vật dưới Lv20 (chưa chuyển chức) xem trước được tab 🐾 Thú (4 thần thú, tiến hoá, kỹ năng); chỉ xem, chưa chọn được. Bọc `petUI` gốc, không sửa engine.
+- `ui/26-pet-evo4-lock.js`: khoá tiến hoá cấp 4 của cả 4 thú nuôi (cờ `LOCK_EV4`) cho tới khi cập nhật đủ; thú đã cấp 4 từ trước giữ nguyên.
