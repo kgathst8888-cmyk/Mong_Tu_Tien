@@ -13,7 +13,7 @@ const CFG={
  plotsMax:12,         /* số ô đất tối đa */
  plotCost:n=>4000*(n-5)*(n-5), /* vàng mở ô thứ (n+1), n = số ô hiện có */
  seedBack:.4,         /* xác suất nhận lại 1 hạt khi thu hoạch */
- gold:{tv1:150,tv2:450,pa:200,pd:200,ph:200,pm:200,pt:300} /* vàng cơ bản mỗi viên, nhân (cảnh giới+2)² */
+ gold:{tv1:150,tv2:450,pa:200,pd:200,ph:200,pm:200,pt:300,tt:300} /* vàng cơ bản mỗi viên, nhân (cảnh giới+2)² */
 };
 /* Dược thảo / hạt giống.  d = tỉ lệ rơi hạt [Tinh Anh, Boss Thế Giới, Boss Sử Thi, Trùm Hầm Ngục, Ma Thần] */
 const HB=[
@@ -23,19 +23,21 @@ const HB=[
  {id:'dang',n:'Huyền Quy Đằng',e:'🌿',c:'#9fd070',g:300,y:[3,5],d:[.08,.35,.25,.22,.45],u:'Kim Cang Đan (Thủ)'},
  {id:'thao',n:'Hồi Sinh Thảo', e:'🍀',c:'#7fe08a',g:300,y:[3,5],d:[.08,.35,.25,.22,.45],u:'Dưỡng Mệnh Đan (HP)'},
  {id:'lien',n:'Băng Tâm Liên', e:'❄️',c:'#8fe0ff',g:300,y:[3,5],d:[.08,.35,.25,.22,.45],u:'Ngưng Thần Đan (MP)'},
- {id:'truc',n:'Tị Lôi Trúc',   e:'🎋',c:'#c0a0ff',g:480,y:[2,4],d:[.05,.25,.18,.15,.40],u:'Tị Lôi Đan (giảm sát thương lôi kiếp)'}
+ {id:'truc',n:'Tị Lôi Trúc',   e:'🎋',c:'#c0a0ff',g:480,y:[2,4],d:[.05,.25,.18,.15,.40],u:'Tị Lôi Đan (giảm sát thương lôi kiếp)'},
+ {id:'cot', n:'Cốt Linh Thảo', e:'🦴',c:'#e8d8a8',g:540,y:[2,4],d:[.06,.28,.20,.18,.42],u:'Tôi Thể Đan (chuyển cấp Phàm Nhân → Đạo Thể)'}
 ];
 const HM={};HB.forEach(b=>HM[b.id]=b);
 const BN=['Tinh Anh','Boss Thế Giới','Boss Sử Thi','Trùm Hầm Ngục','Ma Thần'];
 /* Đan dược. k: tv = tu vi · a/d/h/m = thuộc tính · td = giảm sát thương lôi kiếp */
 const PL=[
- {id:'tv1',n:'Tụ Linh Đan',  e:'🔴',k:'tv',f:.20,sc:.95,rc:{chi:3},d:'Cộng <b>+20%</b> tu vi cần để lên tầng kế tiếp.'},
- {id:'tv2',n:'Thiên Tâm Đan',e:'🟣',k:'tv',f:.80,sc:.90,rc:{sam:2,chi:2},d:'Cộng <b>+80%</b> tu vi cần để lên tầng kế tiếp.'},
+ {id:'tv1',n:'Tụ Linh Đan',  e:'🔴',k:'tv',f:.05,sc:.95,rc:{chi:3},d:'Cộng <b>+5%</b> tu vi cần để lên tầng kế tiếp.'},
+ {id:'tv2',n:'Thiên Tâm Đan',e:'🟣',k:'tv',f:.10,sc:.90,rc:{sam:2,chi:2},d:'Cộng <b>+10%</b> tu vi cần để lên tầng kế tiếp.'},
  {id:'pa', n:'Phá Quân Đan', e:'🟠',k:'a', sc:.90,rc:{hoa:3},d:'Vĩnh viễn <b>+1,5% Công</b> mỗi viên.'},
  {id:'pd', n:'Kim Cang Đan', e:'🟤',k:'d', sc:.90,rc:{dang:3},d:'Vĩnh viễn <b>+1,5% Thủ</b> mỗi viên.'},
  {id:'ph', n:'Dưỡng Mệnh Đan',e:'🟢',k:'h',sc:.90,rc:{thao:3},d:'Vĩnh viễn <b>+1,5% HP</b> mỗi viên.'},
  {id:'pm', n:'Ngưng Thần Đan',e:'🔵',k:'m',sc:.90,rc:{lien:3},d:'Vĩnh viễn <b>+2% MP</b> mỗi viên.'},
- {id:'pt', n:'Tị Lôi Đan',   e:'🟡',k:'td',sc:.90,rc:{truc:3},d:'Giảm <b>12% sát thương Lôi Kiếp</b> của lần độ kiếp kế tiếp (tối đa 4 viên = −48%).'}
+ {id:'pt', n:'Tị Lôi Đan',   e:'🟡',k:'td',sc:.90,rc:{truc:3},d:'Giảm <b>12% sát thương Lôi Kiếp</b> của lần độ kiếp kế tiếp (tối đa 4 viên = −48%).'},
+ {id:'tt',n:'Tôi Thể Đan',  e:'⚪',k:'tt',sc:.85,rc:{cot:2,thao:1},d:'Dược liệu tôi luyện thân thể: <b>cần 100 viên</b> để chuyển cấp từ <b>Phàm Nhân lên Đạo Thể</b> (Hợp Đạo Đài). Không dùng trực tiếp.'}
 ];
 const PM={};PL.forEach(p=>PM[p.id]=p);
 const KN={a:'Công',d:'Thủ',h:'HP',m:'MP'};
@@ -158,12 +160,14 @@ function brew(id,n){
 function canUse(p){
  if(!(S.pills[p.id]>0))return 0;
  if(p.k=='tv')return ZC.tvInfo().done?0:1;
+ if(p.k=='tt')return 0;
  if(p.k=='td')return(ZC.rI()+1>=3&&ZC.tdn()<ZC.TDM)?1:0;
  return ZC.pCnt(p.k)<ZC.PLIM?1:0;
 }
 function use(id,n){
  const p=PM[id];if(!p)return;
  if(!(S.pills[id]>0)){msg='Hết '+p.n;ui();return}
+ if(p.k=='tt'){msg='Tôi Thể Đan dùng để chuyển cấp Đạo Thể ở Hợp Đạo Đài (cần 100 viên).';ui();return}
  let c=0;const lim=n<=0?9999:n;
  while(c<lim&&S.pills[id]>0){
   let ok=0;
@@ -190,11 +194,12 @@ function useAllTv(){
 }
 
 function alchUI(){
- let h='<div class="dt">⚗ <b>Luyện Đan</b><br><small>Dùng dược thảo từ Linh Điền + vàng để luyện đan (có thể hỏng lò).<br>• <b>Đan Tu Vi</b>: cộng tu vi — <b>từ Luyện Hư trở lên đây là cách duy nhất để lên tu vi</b>.<br>• <b>Đan thuộc tính</b>: tăng vĩnh viễn, giới hạn <b>'+ZC.PLIM+' viên/loại ở mỗi cảnh giới</b>.<br>• <b>Tị Lôi Đan</b>: giảm sát thương Lôi Kiếp lần độ kiếp kế tiếp.</small></div>';
+ let h='<div class="dt">⚗ <b>Luyện Đan</b><br><small>Dùng dược thảo từ Linh Điền + vàng để luyện đan (có thể hỏng lò).<br>• <b>Đan Tu Vi</b>: cộng tu vi — <b>từ Luyện Hư trở lên đây là cách duy nhất để lên tu vi</b>.<br>• <b>Đan thuộc tính</b>: tăng vĩnh viễn, giới hạn <b>'+ZC.PLIM+' viên/loại ở mỗi cảnh giới</b>.<br>• <b>Tị Lôi Đan</b>: giảm sát thương Lôi Kiếp lần độ kiếp kế tiếp.<br>• <b>Tôi Thể Đan</b>: cần 100 viên để chuyển cấp Phàm Nhân → Đạo Thể (Hợp Đạo Đài).</small></div>';
  PL.forEach(p=>{
   const have=S.pills[p.id]|0,mb=maxBrew(p);let ex='';
   if(p.k=='tv'){const I=ZC.tvInfo();ex=`<div class="st">Tu vi hiện tại: ${fmtN(I.q)}/${fmtN(I.need)}${ZC.auto()?'':' <span style="color:#ffb070">(không tự tăng)</span>'}</div>`}
   else if(p.k=='td'){ex=`<div class="st">Đang có hiệu lực: <b>${ZC.tdn()}/${ZC.TDM}</b> viên · giảm <b>${Math.round((1-ZC.tdm())*100)}%</b> sát thương lôi kiếp kế tiếp${ZC.rI()+1<3?' <span style="opacity:.7">(dùng khi sắp đột phá Nguyên Anh+)</span>':''}</div>`}
+  else if(p.k=='tt'){ex=`<div class="st">Đang có <b>${have}</b>/100 · dùng để chuyển cấp Phàm Nhân → Đạo Thể tại Hợp Đạo Đài (Thành Thị Linh Giới)</div>`}
   else{const u=ZC.pCnt(p.k),t=ZC.pTot(p.k);ex=`<div class="st">Cảnh giới này: <b>${u}/${ZC.PLIM}</b> · Tổng đã dùng ${t} → ${KN[p.k]} <b>+${(t*ZC.PEF[p.k]*100).toFixed(1)}%</b></div>`}
   h+=`<div class="dt fmpl"><div class="fmh">${p.e} <b>${p.n}</b><span class="fmc">Có ${have}</span></div><div class="st">${p.d}</div><div class="st">Nguyên liệu: ${rcTx(p)} · ${fmtN(gc(p))}💰 · thành ${Math.round(p.sc*100)}%</div>${ex}<div class="fmb"><button ${mb<1?'disabled':''} onclick="FM.brew('${p.id}',1)">Luyện ×1</button><button ${mb<5?'disabled':''} onclick="FM.brew('${p.id}',5)">×5</button><button ${mb<1?'disabled':''} onclick="FM.brew('${p.id}',0)">Tối đa (${mb})</button><button ${canUse(p)?'':'disabled'} onclick="FM.use('${p.id}',1)">💊 Dùng</button>${p.k=='tv'?`<button ${canUse(p)?'':'disabled'} onclick="FM.useAllTv()">Dùng hết</button>`:''}</div></div>`;
  });

@@ -39,7 +39,7 @@ function enter(){if(!started||!alive()||!LCT.on())return;if(bo)tg();try{LCT.off(
 function ask(){if(!started)return;if(!alive()){say('⏳ Kiếm Thánh hồi sinh sau '+fmt(left()),'#ffd98a',150);return}
  confirmBox('Khiêu chiến KIẾM THÁNH (Lv'+MT_LV+', mạnh gấp '+CF.hp+' lần Ma Thần)?\nThất bại sẽ phải hồi sinh. Hạ được Kiếm Thánh, '+Math.round(CF.respawn/60000)+' phút sau hắn hồi sinh. Rơi Mảnh Sách Thần Thông.','Khiêu chiến','Thôi',enter)}
 function exit(){mtExit();try{LCT.enter()}catch(e){}}
-function win(){var k=K();k.next=Date.now()+CF.respawn;k.an=0;try{QE('boss')}catch(e){}save();say('🏆 Hạ Kiếm Thánh! Hồi sinh sau '+Math.round(CF.respawn/60000)+' phút','#8fe8ff',220)}
+function win(){var k=K();k.next=Date.now()+CF.respawn;k.an=0;try{QE('boss')}catch(e){}try{if(window.LT&&LT.earnKS)LT.earnKS(2)}catch(e){}save();say('🏆 Hạ Kiếm Thánh! Hồi sinh sau '+Math.round(CF.respawn/60000)+' phút','#8fe8ff',220)}
 
 /* ---------- cổng trong Thành Thị ---------- */
 var G=LCT.gates[CF.gate];

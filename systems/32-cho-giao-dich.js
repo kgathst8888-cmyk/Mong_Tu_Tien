@@ -256,5 +256,21 @@ async function sync(){
   if(!logged())return;
   try{var r=await call('cho_bal');if(r&&r.status==='ok'){lt=+r.lt||0;if(r.earned!=null){earned=+r.earned||0;eDay=vnDay()}if(open)draw()}}catch(e){}
 }
-window.LT={get:function(){return lt==null?0:lt},refresh:load,open:function(){toggle(true)},close:function(){toggle(false)},earn:earn,today:function(){return earned},logged:logged,spend:spend,sync:sync};
+/* Linh Thạch từ boss Kiếm Thánh: KHÔNG giới hạn ngày (RPC cho_earn_ks, file cho_kiem_thanh.sql) */
+var ksQ=0,ksBusy=false,ksT=0;
+async function flushKS(){
+  clearTimeout(ksT);
+  if(ksBusy||ksQ<=0||!logged())return;
+  ksBusy=true;var n=Math.min(ksQ,20);ksQ-=n;
+  try{var r=await call('cho_earn_ks',{p_n:n});if(r&&r.status==='ok'&&r.lt!=null){lt=+r.lt;if(open)draw()}}
+  catch(e){ksQ=Math.min(ksQ+n,100)}
+  ksBusy=false;
+  if(ksQ>0)ksT=setTimeout(flushKS,3000);
+}
+function earnKS(n){
+  n=n|0;if(n<=0)return;
+  if(!logged()){eSay('💎 Đăng nhập ☁ để nhận Linh Thạch từ Kiếm Thánh','#ffd98a');return}
+  ksQ+=n;eSay('💎 +'+n+' Linh Thạch (Kiếm Thánh)');flushKS();
+}
+window.LT={earnKS:earnKS,get:function(){return lt==null?0:lt},refresh:load,open:function(){toggle(true)},close:function(){toggle(false)},earn:earn,today:function(){return earned},logged:logged,spend:spend,sync:sync};
 })();

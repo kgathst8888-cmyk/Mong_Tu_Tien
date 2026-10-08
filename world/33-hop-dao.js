@@ -13,7 +13,8 @@
 (function(){
 'use strict';
 if(typeof cast!=='function'||typeof ZC==='undefined'||typeof PS==='undefined')return;
-var CF={lv:100,xpMul:5,mapMin:8,itemLv:80,wipeId:'w80'};
+var CF={lv:100,xpMul:5,mapMin:8,itemLv:80,wipeId:'w80',gold:10000000,lt:300,tt:100};
+function ttHave(){try{return FM.get().pills.tt|0}catch(e){return 0}}
 var ov=null,busy=false;
 function st(){try{return PS[cur]&&PS[cur].hd}catch(e){return null}}
 function on(){var h=st();return !!(h&&h.d)}
@@ -72,12 +73,19 @@ function build(){
   document.body.appendChild(ov);
 }
 function render(){
-  var done=on(),ok=P.lv>=CF.lv;
-  var rq=done?'☯ Bạn đã hợp đạo — Đạo Cảnh Lv '+P.lv+'/100.':
-    'Điều kiện: Lv '+CF.lv+' · hiện tại <b style="color:'+(ok?'#7be07a':'#ff9a8a')+'">Lv '+P.lv+'</b>'+(ok?' ✔':'');
+  var done=on(),lvOk=P.lv>=CF.lv,gOk=gold>=CF.gold,tt=ttHave(),tOk=tt>=CF.tt;
+  var lgd=!!(window.LT&&LT.logged&&LT.logged()),lt=lgd?LT.get():0,lOk=lgd&&lt>=CF.lt;
+  var ok=lvOk&&gOk&&tOk&&lOk;
+  function rr(t,v,c){return '<div class="rq">'+t+' <b style="color:'+(v?'#7be07a':'#ff9a8a')+'">'+c+'</b>'+(v?' ✔':'')+'</div>'}
+  var rq=done?'☯ Bạn đã là Đạo Thể — Đạo Cảnh Lv '+P.lv+'/100.':
+    '<b style="color:#ffe27a">Nhiệm vụ chuyển cấp: Phàm Nhân → Đạo Thể</b>'+
+    rr('Cấp nhân vật Lv '+CF.lv+':',lvOk,'Lv '+P.lv)+
+    rr('Vàng '+nf(CF.gold)+'💰:',gOk,nf(gold))+
+    rr('Linh Thạch '+CF.lt+'💎:',lOk,lgd?nf(lt):'cần đăng nhập ☁')+
+    rr('Tôi Thể Đan ×'+CF.tt+':',tOk,nf(tt));
   ov.innerHTML='<div class="bx"><div class="tai">☯</div><h2>Hợp Đạo Đài</h2>'+
     '<div class="rq">'+rq+'</div>'+
-    '<ul><li>Tẩy luyện toàn bộ bản thân: trở về <b>Lv 1</b>, Đạo Linh (EXP) về 0.</li>'+
+    '<ul><li>Tiêu hao: <b>'+nf(CF.gold)+'💰</b>, <b>'+CF.lt+'💎 Linh Thạch</b>, <b>'+CF.tt+' Tôi Thể Đan</b> (luyện ở tab ⚗ Đan).</li><li>Tẩy luyện toàn bộ bản thân: trở về <b>Lv 1</b>, Đạo Linh (EXP) về 0.</li>'+
     '<li><b>Điểm tiềm năng giữ nguyên</b> (cả đã cộng và chưa cộng).</li>'+
     '<li>Cảnh giới được thay bằng <b>Đạo Cảnh Lv 1–100</b>; hiển thị là "Đạo Cảnh".</li>'+
     '<li>Lên Đạo Cảnh cần Đạo Linh <b>gấp '+CF.xpMul+' lần</b> lúc còn phàm thể.</li>'+
@@ -86,13 +94,26 @@ function render(){
     '<div class="row"><button class="g" data-a="x">Đóng</button>'+(done?'':'<button data-a="go"'+(ok?'':' disabled')+'>☯ Hợp Đạo</button>')+'</div></div>';
 }
 function open(){
-  if(!ov)build();render();ov.style.display='flex';
+  if(!ov)build();render();ov.style.display='flex';try{LT.sync().then(function(){if(ov&&ov.style.display==='flex'&&!busy)render()})}catch(e){}
 }
 function close(){if(ov)ov.style.display='none'}
 
 function ritual(){
   if(busy||on()||P.lv<CF.lv)return;
-  if(!confirm('Hợp Đạo sẽ đưa nhân vật về Lv 1, xoá kỹ năng phàm thể, Đạo Linh lên cấp ×'+CF.xpMul+'.\nĐiểm tiềm năng được giữ nguyên.\nKhông thể hoàn tác. Tiếp tục?'))return;
+  if(gold<CF.gold){say('Thiếu vàng: cần '+nf(CF.gold)+'💰');return}
+  if(ttHave()<CF.tt){say('Thiếu Tôi Thể Đan: cần '+CF.tt+' viên (đang có '+ttHave()+')');return}
+  if(!window.LT||!LT.spend||!LT.logged()){say('☁ Cần đăng nhập tài khoản để dùng Linh Thạch ('+CF.lt+'💎)');return}
+  if(!confirm('Chuyển cấp Phàm Nhân → Đạo Thể sẽ tiêu '+nf(CF.gold)+'💰, '+CF.lt+'💎 Linh Thạch và '+CF.tt+' Tôi Thể Đan.\nĐưa nhân vật về Lv 1, xoá kỹ năng phàm thể, Đạo Linh lên cấp ×'+CF.xpMul+'.\nĐiểm tiềm năng được giữ nguyên.\nKhông thể hoàn tác. Tiếp tục?'))return;
+  busy=true;
+  var bx0=ov.querySelector('.bx');
+  bx0.innerHTML='<div class="tai spin">☯</div><h2>Đang chuyển cấp…</h2><div class="rq">Trừ Linh Thạch…</div>';
+  LT.spend(CF.lt,'daothe').then(function(r){
+    if(!r.ok){busy=false;say(r.err==='poor'?'Không đủ Linh Thạch: cần '+CF.lt+'💎, bạn có '+nf(r.lt)+'💎':'Không trừ được Linh Thạch ('+(r.msg||r.err)+')');render();return}
+    try{gold=Math.max(0,gold-CF.gold);var pl=FM.get().pills;pl.tt=Math.max(0,(pl.tt|0)-CF.tt)}catch(e){}
+    ritualGo();
+  });
+}
+function ritualGo(){
   busy=true;
   var bx=ov.querySelector('.bx');
   bx.innerHTML='<div class="tai spin">☯</div><h2>Đang hợp đạo…</h2><div class="rq">Tẩy luyện thân tâm, dung hợp đại đạo.</div>';
