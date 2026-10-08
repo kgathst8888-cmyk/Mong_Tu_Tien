@@ -168,3 +168,32 @@ MAPPING MODULE CŨ → MỚI
 
 ## Kiếm Thánh (Fix15)
 - world/35-kiem-thanh.js: boss Kiếm Thánh, cổng ở Thành Thị Linh Giới (ô 3), mạnh gấp 10 lần Ma Thần, hồi sinh 10 phút, thông báo hồi sinh trên màn hình chính. Chỉnh khối CF đầu file.
+
+## Thần thú bay tự do — pets/24-than-thu-bay.js (load sau ui/26-pet-evo4-lock.js)
+- API global `PFLY` (không dùng tên HD/THB: dễ trùng biến engine). Cả 4 thần thú bay lượn khắp bản đồ (toàn chiều ngang `vw()`), nhiều độ cao, lao tới địch ở bất cứ đâu; không còn bị kéo về khi ở xa chủ.
+- Ở Làng / Thành Thị Linh Giới / Mỏ / Linh Điền (không có vòng lặp thú của engine) module tự lượn bằng `PFLY.idle()` (rAF riêng, nhường engine khi đang ở bản đồ chiến đấu).
+- Móc trong engine: `epstep` (bỏ teleport >480px, tìm địch bán kính 9999, đích đến/tốc độ lấy từ `PFLY.tx/run`), `vstep` (không dính chủ), `pets/22-chu-tuoc.js` step (Chu Tước). Bọc `epstep` để giữ độ cao bay khi không tung đòn.
+- Bật/tắt bằng nút "🕊 Bay tự do" trong tab 🐾 Thú (`PS[cur].thb`: 0 = tắt → hành vi cũ; mặc định bật). Khoá tiến hoá cấp 4 (ui/26) không bị đụng tới.
+
+## Bản đồ Linh Giới — world/36-linh-gioi-maps.js
+- Cổng 1 (Chiến Trường) của Thành Thị Linh Giới mở bảng chọn 6 bản đồ (`LGMAP.open()`); Đạo Thể còn có danh sách bản đồ trong tab 🗺 (bọc `lgUI`). Chọn bản đồ lưu `PS[cur].lgm` (0..4); vẫn là `lg=1`, `mapSel=4`, `mi()=8` nên Đạo Cảnh vẫn nhận EXP.
+- Bản đồ 1 = quái hiện tại Lv80-100. Bản đồ 2–5 = quái mới cho Đạo Thể Lv1-20/21-40/41-60/61-80 (chỉ Đạo Thể): `LR[4]` đổi theo bản đồ mỗi khung (bọc `step`), `spawn()` được bọc để tính lại máu/thủ/sức đánh theo `LGS`. Bản đồ 6 Thánh Địa: Đạo Thể Lv100, tạm khóa (`LGMAP.holy.open=false`).
+- Quái/nền mới: 4 chủ đề thêm vào `LVX.LT` (chỉ số 5–8), tên quái trong `window.LGNMN`; `05-demon-boss.js` được sửa 4 chỗ nhỏ để đọc `e.lgi` / `window.LGI` / `LGNMN` (hình dáng quái dùng chung khung `MON`, đổi màu + tên).
+- Fix27: Đạo Thể chỉ vào bản đồ 2–6 khi đủ cấp Đạo Cảnh tối thiểu (Lv1/21/41/61/100); Đạo Linh (EXP) chỉ tăng ở bản đồ Đạo Thể (`LGMAP.expOk()`, `HDAO.xg` đọc hàm này; bản đồ 1 không cho EXP Đạo Thể); mỗi cấp Đạo Cảnh nhận 10 điểm tiềm năng (engine dòng lên cấp: `HDAO.on()?10:5`).
+ - Fix28: quái bản đồ Đạo Thể (2–5) mạnh hơn nhiều: bảng `LGS` (máu ×5–8, thủ ×1,8–2,4, sức đánh ×4–6 qua `e.m`), Đạo Linh nhận ×`LGS[i].exp` (0,5) qua `LGMAP.expMul()` (HDAO.xg trả hệ số này). Muốn dễ/khó hơn chỉ sửa `LGS`.
+- Fix29: máu quái Đạo Thể cố định `LGS[i].hpn` (bản đồ 2 = 100k, gấp đôi mỗi bản đồ sau), Tinh Anh ×`LGE.e`=3, Boss ×`LGE.b`=10; sức đánh `at` 12/14/16/20 (Tinh Anh ×1,5, Boss ×2 thêm). Chỉnh trong module 36.
+
+## Cường hóa trang bị — hệ số chỉ số + hiệu ứng +7/+10 (Fix30)
+- `UM(u)` trong core/01-engine.js: hệ số chỉ số cơ bản (Công/Thủ/HP) theo cấp cường hóa +0..+10 = [1,1.3,1.6,1.9,2.2,2.5,2.8,3.4,3.8,4.2,10] (cũ: 1+0,15×cấp, tối đa ×2,5). Mốc +7 nhảy 0,6 và +10 = ×10 (Fix31). Dùng trong `sm()` (chỉ số thật) và `ev()` (hiển thị).
+- world/37-cuong-hoa-fx.js: huy hiệu +N trên ô trang bị; +7 viền xanh quay, +10 viền vàng-lửa; bùng nổ toàn màn hình khi cường hóa lên đúng +7/+10 (bọc `en1`); hào quang quanh nhân vật khi mặc đồ +7 (xanh) / +10 (vàng-lửa) (bọc `hero`).
+
+## Đá cường hóa — world/38-da-cuong-hoa.js (Fix32)
+- Cường hóa lần 1–7 (+0→+7) tốn 💰 + 1 🪨 Đá Cường Hóa. Từ +7 lên +8/+9/+10 tốn 💰 + 1 💠 Đá Cường Hóa Cao Cấp; thất bại ở giai đoạn này → trang bị về +0 (có hộp xác nhận). Kho đá `PS[cur].dch={a,b}`. Rơi từ quái (Boss/Ma Thần/Kiếm Thánh rơi đá cao cấp) + mua ở Thợ Rèn (`DCH.price`). Module nạp TRƯỚC 37 để hiệu ứng +7/+10 bọc được `en1`; nút Cường hóa trong engine gọi `DCH.need/buyBtn`.
+
+
+## Vẽ lại boss phụ bản (Fix33)
+- world/39-dg-boss-art.js: thay DGI.boss (ảnh webp) bằng sprite canvas theo phong cách Ma Thần v2; DGI.bossKS (trường kiếm, rune xanh) cho Kiếm Thánh. Engine: nhãn tên boss đọc e.nm.
+
+
+## Phụ Bản 2 (Fix34)
+- world/40-phu-ban-2.js: nút 🕳 mở bảng chọn phụ bản; Phụ Bản 2 "Địa Long Điện" (Lv80, vào lại sau 10 phút, boss Ngục Long Vương ×5 Trùm Hầm Ngục) rơi Mảnh Đan Đột Phá Cảnh Giới 4 Thần Thú (2-5/lần, 100 mảnh ghép 1 Đan; Thú dùng Đan khi tiến hoá cấp 4). Sprite boss: DGI.boss2 trong world/39. Engine: e.big (cỡ boss), e.gc (màu hào quang).

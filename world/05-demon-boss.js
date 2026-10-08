@@ -402,7 +402,7 @@ function lvBuild(gy,T){
 let LBG=null,LBK='';
 function lvFlame(x,y,h,w,seed,t,c){const sw=Math.sin(t*.22+seed)*w*.5,sw2=Math.sin(t*.31+seed*2)*w*.3,q=g.createLinearGradient(0,y,0,y-h);q.addColorStop(0,c[0]);q.addColorStop(.35,c[1]);q.addColorStop(1,c[2]);g.fillStyle=q;g.beginPath();g.moveTo(x-w,y);g.quadraticCurveTo(x-w*.9+sw2,y-h*.5,x+sw,y-h);g.quadraticCurveTo(x+w*.9+sw2,y-h*.5,x+w,y);g.closePath();g.fill()}
 function lvBg(gy){
- const i=cl(mapSel|0,0,4),T=LT[i],k=[W,H,s.toFixed(3),gy|0,DPR,i].join('|');if(k!==LBK||!LBG){LBG=lvBuild(gy,T);LBK=k}
+ const i=window.LGI!=null?window.LGI:cl(mapSel|0,0,4),T=LT[i],k=[W,H,s.toFixed(3),gy|0,DPR,i].join('|');if(k!==LBK||!LBG){LBG=lvBuild(gy,T);LBK=k}
  g.drawImage(LBG,0,0,W,H);
  const t=fr,u=s,cx=W*.5,cy=gy*.36,r=Math.min(W*.3,gy*.52);
  lvDrawCircle(cx,cy,r,T.ca+.12*Math.sin(t*.05),t*.004,T);
@@ -548,8 +548,8 @@ const MSZ={gob:[170,170],wolf:[270,150],scorp:[260,150],arch:[210,270],mage:[200
 const MVC={};
 function lvMon(k,i){const key=k+'@'+i;if(MVC[key])return MVC[key];const d=MSZ[k],f=MON[k];if(!d||!f)return null;const cv=mkc(d[0]*Q,d[1]*Q),ct=cv.getContext('2d');ct.scale(Q,Q);ct.lineJoin='round';ct.lineCap='round';f(ct,LT[i].m,d[0],d[1]);cv.naturalWidth=cv.width;cv.naturalHeight=cv.height;return MVC[key]=cv}
 window.LVX={lvMon,LT,MSZ,MON};
-const _foe6=foe;foe=function(e){if(dg||e.mt||!MON[e.k])return _foe6(e);const mk=e.m==8?1:Math.max(0,MPX.indexOf(e.m)),sp=lvMon(e.k,mk);if(!sp)return _foe6(e);
- const m=MS[e.k],o=MI[e.k],on=m.n,of=m.f;MI[e.k]=sp;m.f=1;m.n=e.k=='pal'?on:((NMN[mk]||{})[e.k]||on);
+const _foe6=foe;foe=function(e){if(dg||e.mt||!MON[e.k])return _foe6(e);const mk=e.lgi!=null?e.lgi:(e.m==8?1:Math.max(0,MPX.indexOf(e.m))),sp=lvMon(e.k,mk);if(!sp)return _foe6(e);
+ const m=MS[e.k],o=MI[e.k],on=m.n,of=m.f;MI[e.k]=sp;m.f=1;m.n=e.k=='pal'?on:((NMN[mk]||(window.LGNMN||{})[mk]||{})[e.k]||on);
  try{_foe6(e)}finally{MI[e.k]=o;m.f=of;m.n=on}};
-const _bgd7=bgd;bgd=function(gy){if(!dg&&!lg&&!vil)lvBg(gy);else _bgd7(gy)};
+const _bgd7=bgd;bgd=function(gy){if(!dg&&!vil&&(!lg||window.LGI!=null))lvBg(gy);else _bgd7(gy)};
 })();

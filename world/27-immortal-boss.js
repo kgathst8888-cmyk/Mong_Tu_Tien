@@ -53,7 +53,7 @@ const S={on:false,busy:false,st:null,err:'',msg:'',res:null,got:null};
 const css=document.createElement('style');css.textContent=`
 #bsw{position:fixed;z-index:2;width:58px;margin-left:-12px;display:none;text-align:center;pointer-events:none}
 #bsb{pointer-events:auto;width:34px;height:34px;box-sizing:border-box;border-radius:50%;border:2px solid #c95a4f;background:radial-gradient(circle at 50% 30%,#5a2a2a,#120808 78%);box-shadow:0 3px 8px #000b,inset 0 0 8px #000;color:#ffb0a0;font-size:16px;line-height:28px;text-align:center;padding:0;cursor:pointer;margin-left:12px}
-#bsw span{display:block;margin:1px 0 0 0;font:bold 9px/10px KTH Serif,Songti SC,STKaiti,KaiTi,serif;color:#ffd0c0;text-shadow:0 0 3px #000,0 0 3px #000;white-space:nowrap;pointer-events:none}
+#bsw span{display:block;margin:1px 0 0 0;font:bold 8px/9px KTH Serif,Songti SC,STKaiti,KaiTi,serif;color:#ffd0c0;text-shadow:0 0 3px #000,0 0 3px #000;white-space:nowrap;pointer-events:none}
 #bsw.hot #bsb{animation:bsg 1.4s ease-in-out infinite}@keyframes bsg{50%{box-shadow:0 0 12px #ff5a40,inset 0 0 8px #000}}
 #bs-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:32;align-items:center;justify-content:center;font-family:'KTH Serif','Songti SC',STKaiti,KaiTi,serif;color:#f2e3b3}
 #bs-ov.on{display:flex}
@@ -83,7 +83,7 @@ function place(){
  const rk=document.getElementById('rkb');
  const show=!!(rk&&rk.style.display==='block'&&!(typeof dg!=='undefined'&&dg&&dg.bi));
  if(!show){if(wrap.style.display!=='none')wrap.style.display='none';return}
- const x=parseFloat(rk.style.left)-46,y=parseFloat(rk.style.top),k=Math.round(x)+','+Math.round(y);
+ const x=parseFloat(rk.style.left)-52,y=parseFloat(rk.style.top),k=Math.round(x)+','+Math.round(y);
  if(k!==lastPos){lastPos=k;wrap.style.left=Math.round(x)+'px';wrap.style.top=Math.round(y)+'px'}
  if(wrap.style.display!=='block')wrap.style.display='block';
  const hot=!!(S.st&&S.st.pending&&S.st.pending.some(p=>!bs().cl[p.day]))||bs().n<BC.tries;

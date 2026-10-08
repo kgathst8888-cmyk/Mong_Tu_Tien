@@ -6,7 +6,7 @@
  *  - Cảnh giới thay bằng Đạo Cảnh Lv1-100 (chính là cấp nhân vật). Hiển thị "Đạo Cảnh". Không đột phá cảnh giới nữa;
  *    dữ liệu cảnh giới cũ (PS[cur].cv) giữ nguyên bên dưới để các Thần Thông (tiên thuật) đã mở vẫn dùng được.
  *  - EXP lên cấp ×CF.xpMul (engine: nx() nhân HDAO.xm()).
- *  - EXP từ quái chỉ nhận ở Linh Giới trở lên (mi()>=CF.mapMin=8). Mặc mọi trang bị không cần cấp (engine: so cấp dùng HDAO.on()).
+ *  - EXP từ quái chỉ nhận ở BẢN ĐỒ ĐẠO THỂ (Linh Giới bản đồ 2–6, LGMAP.expOk() trong world/36-linh-gioi-maps.js); nếu thiếu module 36 thì dùng mi()>=CF.mapMin=8. Mặc mọi trang bị không cần cấp (engine: so cấp dùng HDAO.on()).
  *  - Cấp trang bị tối đa CF.itemLv=80 (gen() chặn). Xoá toàn bộ trang bị cũ 1 lần (wipe, cờ CF.wipeId).
  *  - Xoá kỹ năng phàm thể: cast() bị chặn, ẩn nút #sk/#ult. Chỉ còn Thần Thông (#zk) và đánh thường.
  * Chỉnh: khối CF. Phụ thuộc: cast, ZC, PS, cur, P, nx, mx, mm, sv, ui (engine). */
@@ -142,9 +142,9 @@ setInterval(function(){if(document.hidden)return;sync();try{if(started)wipe()}ca
 var lastHint=0;
 function xg(){
   if(!on())return 1;
-  var ok=false;try{ok=typeof mi==='function'&&mi()>=CF.mapMin}catch(e){}
-  if(ok)return 1;
-  if(Date.now()-lastHint>8000){lastHint=Date.now();try{DT.push({x:P.x,y:150,s:'☯ Đạo Linh chỉ tăng khi đánh ở Linh Giới',g:1,l:90})}catch(e){}}
+  var ok=false;try{ok=(window.LGMAP&&LGMAP.expOk)?LGMAP.expOk():(typeof mi==='function'&&mi()>=CF.mapMin)}catch(e){}
+  if(ok)return (window.LGMAP&&LGMAP.expMul)?LGMAP.expMul():1;
+  if(Date.now()-lastHint>8000){lastHint=Date.now();try{DT.push({x:P.x,y:150,s:'☯ Đạo Linh chỉ tăng ở bản đồ Đạo Thể (Linh Giới 2–6)',g:1,l:90})}catch(e){}}
   return 0;
 }
 /* Đợt xoá trang bị cũ (1 lần / nhân vật, cờ PS[i].wp = CF.wipeId): xoá toàn bộ trang bị trong túi + đang mặc để nhận đồ mới

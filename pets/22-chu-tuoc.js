@@ -162,8 +162,8 @@ function step(p,T,K,M,e){
  /* ---- bay lượn theo chủ ---- */
  let tx=Math.max(40,P.x-(72+ev*8)*P.d+Math.sin(EP.t*.017)*(44+ev*9)),run=1;
  if(e){const s2=EP.x<e.x?-1:1;tx=cl(e.x+s2*K.sd,Math.max(40,P.x-150),P.x+150)}
- if(Math.abs(EP.x-P.x)>480){EP.x=P.x-60*P.d;EP.vx=0}
- const dx=tx-EP.x,far=Math.abs(EP.x-P.x)>220;if(far)run=1.9;
+ const FLY_=window.PFLY&&PFLY.on();if(FLY_){tx=PFLY.tx(tx,e,1);run=PFLY.run(run)}else if(Math.abs(EP.x-P.x)>480){EP.x=P.x-60*P.d;EP.vx=0}
+ const dx=tx-EP.x,far=!FLY_&&Math.abs(EP.x-P.x)>220;if(far)run=1.9;
  const des=Math.max(-K.sp*run,Math.min(K.sp*run,dx*.06*run));
  EP.vx+=(des-EP.vx)*.12;if(Math.abs(dx)<4&&Math.abs(EP.vx)<.3)EP.vx*=.5;EP.x+=EP.vx;
  if(Math.abs(EP.vx)>.35)EP.d=Math.sign(EP.vx);else if(e)EP.d=Math.sign(e.x-EP.x)||EP.d;else EP.d=P.d;

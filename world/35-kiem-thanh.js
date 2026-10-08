@@ -34,7 +34,7 @@ function confirmBox(text,yesLabel,noLabel,yes){if(document.getElementById('ks-cf
 
 /* ---------- vào / ra / thắng ---------- */
 function stats(){var b=mtStats();return{hp:b.hp*CF.hp,df:b.df/MT_DEF*CF.def}}
-function spawn(){dgSp('boss');var e=E[E.length-1],st=stats();e.ks=1;e.lv=MT_LV;e.m=7;e.hp=e.max=st.hp;e.df=st.df;say('🗡️ KIẾM THÁNH giáng thế!','#8fe8ff',170)}
+function spawn(){dgSp('boss');var e=E[E.length-1],st=stats();e.ks=1;e.nm='🗡️ Kiếm Thánh';e.gc=['#2a78c8','#9fe8ff'];if(DGI.bossKS)e.sp='bossKS';e.lv=MT_LV;e.m=7;e.hp=e.max=st.hp;e.df=st.df;say('🗡️ KIẾM THÁNH giáng thế!','#8fe8ff',170)}
 function enter(){if(!started||!alive()||!LCT.on())return;if(bo)tg();try{LCT.off()}catch(e){}vil=0;lg=0;E=[];PETS=[];PJ=[];FX=[];P.pe=null;P.atk=0;P.x=120;P.hp=mx();P.mp=mm();dg={t:0,n:20,kill:20,ks:1};say('🗡️ Khiêu chiến Kiếm Thánh!','#8fe8ff',130)}
 function ask(){if(!started)return;if(!alive()){say('⏳ Kiếm Thánh hồi sinh sau '+fmt(left()),'#ffd98a',150);return}
  confirmBox('Khiêu chiến KIẾM THÁNH (Lv'+MT_LV+', mạnh gấp '+CF.hp+' lần Ma Thần)?\nThất bại sẽ phải hồi sinh. Hạ được Kiếm Thánh, '+Math.round(CF.respawn/60000)+' phút sau hắn hồi sinh. Rơi Mảnh Sách Thần Thông.','Khiêu chiến','Thôi',enter)}
