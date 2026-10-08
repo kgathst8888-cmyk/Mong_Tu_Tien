@@ -216,7 +216,7 @@ window.LCT=(()=>{
 const FONT='KTH Serif,Songti SC,STKaiti,KaiTi,serif';
 const LCG=[
  {sn:'Chiến Trường',n:'Chiến Trường Linh Giới',e:'⚔️',c:'#5ff0ff',rgb:'80,240,255',sub:'Quái Lv80-100 · chạm để vào',open:1,go:()=>{on=false;lgEnter()}},
- {sn:'Bí Cảnh',n:'Linh Mạch Bí Cảnh',e:'💎',c:'#7dffb0',rgb:'120,255,170',sub:'Sắp mở',open:0},
+ {sn:'Hợp Đạo',n:'Hợp Đạo Đài',e:'☯️',c:'#ffe27a',rgb:'255,226,122',sub:'Lv100 · hợp đạo tẩy luyện',open:1,go:()=>{if(window.HDAO)HDAO.open()}},
  {sn:'Thí Luyện',n:'Thiên Giới Thí Luyện',e:'🏯',c:'#ffd870',rgb:'255,210,110',sub:'Sắp mở',open:0},
  {sn:'Truyền Tống',n:'Hư Không Truyền Tống',e:'🌌',c:'#d890ff',rgb:'210,140,255',sub:'Sắp mở',open:0}];
 const GX=i=>vw()*(PORT?[.14,.34,.54,.74][i]:[.27,.45,.63,.81][i]);

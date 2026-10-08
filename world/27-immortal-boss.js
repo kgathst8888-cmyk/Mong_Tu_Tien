@@ -28,10 +28,10 @@ const BC={
 /* Phần thưởng theo hạng. w = bảng tỉ lệ trang bị trong rương: [[độ hiếm, trọng số],...]
    Độ hiếm: 0 Thường · 1 Tinh Anh · 2 Hiếm · 3 Sử Thi · 4 Thần Thoại (huyền thoại) · 5 Thiên Thần. Không có Thánh. */
 const RW=[
- {t:'Top 1',    a:1,b:1,  sh:2,nt:0,w:[[5,30],[4,70]]},
- {t:'Top 2-3',  a:2,b:3,  sh:0,nt:5,w:[[5,10],[4,55],[3,35]]},
- {t:'Top 4-10', a:4,b:10, sh:0,nt:2,w:[[5,5],[4,35],[3,45],[2,15]]},
- {t:'Còn lại',  a:11,b:9e9,sh:0,nt:0,w:[[0,20],[1,25],[2,25],[3,18],[4,9],[5,3]]}];
+ {t:'Top 1',    a:1,b:1,  sh:2,nt:0,w:[[5,3],[4,97]]},
+ {t:'Top 2-3',  a:2,b:3,  sh:0,nt:5,w:[[5,1],[4,64],[3,35]]},
+ {t:'Top 4-10', a:4,b:10, sh:0,nt:2,w:[[5,.5],[4,39.5],[3,45],[2,15]]},
+ {t:'Còn lại',  a:11,b:9e9,sh:0,nt:0,w:[[0,20],[1,25],[2,25],[3,18],[4,11.7],[5,.3]]}];
 const RNAME=['Thường','Tinh Anh','Hiếm','Sử Thi','Thần Thoại','Thiên Thần'];
 const COL=['#cccccc','#6fdc6f','#5aa8ff','#c070ff','#ffa733','#ff5ad0'];
 

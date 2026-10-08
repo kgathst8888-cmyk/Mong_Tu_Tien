@@ -139,3 +139,32 @@ MAPPING MODULE CŨ → MỚI
 - Luyện LÊN tầng t tốn thêm 💎 ngoài vàng (hàm `LTC` trong 18-linh-can.js): tầng 2-10 = 10💎 · tầng 11-14 = 20💎 · tầng 15 (Viên Mãn) = 300💎.
 - Linh Thạch trừ trong ví ☁ trên máy chủ qua RPC `cho_spend` (nguyên tử, không âm). Game giữ chỗ vàng trước, máy chủ từ chối/lỗi mạng thì hoàn vàng; chống bấm đúp bằng `lcBusy`.
 - API ví trong systems/32-cho-giao-dich.js: `LT.spend(n,why)`, `LT.sync()` (RPC `cho_bal`), `LT.logged()`. Chưa đăng nhập ☁ thì không luyện được tầng mới.
+
+## Hợp Đạo · Đạo Cảnh — world/33-hop-dao.js
+- Cửa vào: Thành Thị Linh Giới → cổng 2 "☯ Hợp Đạo Đài" (mảng `LCG` trong world/10-farming-map.js, thay ô "Bí Cảnh" cũ). Mở bảng Hợp Đạo Đài (overlay), không phải bản đồ chiến đấu.
+- Điều kiện: Lv100, mỗi nhân vật hợp đạo 1 lần (`PS[cur].hd={d:1,t,lv0}`), không hoàn tác.
+- Hợp đạo: về Lv1/EXP 0 · điểm tiềm năng (`pts`, `al`) giữ nguyên · cảnh giới thay bằng Đạo Cảnh Lv1-100 (= cấp nhân vật; hiển thị "Đạo Cảnh Lv N" ở HUD/tab 🧘/tên nhân vật) · EXP lên cấp ×5 (`nx()` nhân `HD.xm()`; chỉnh `CF.xpMul`) · xoá kỹ năng phàm thể (chặn `cast()`, ẩn `#sk`/`#ult`), chỉ còn Thần Thông (`zcast`) + đánh thường.
+- Dữ liệu cảnh giới cũ `PS[cur].cv` được giữ nguyên bên dưới để Thần Thông đã mở vẫn dùng được; nút Đột phá cảnh giới bị chặn sau khi hợp đạo.
+- API global là `HDAO` (KHÔNG dùng tên `HD` — trùng biến có sẵn trong engine). Engine sửa: `nx` (EXP ×HDAO.xm()), kill EXP (nhân `HDAO.xg()`), 6 chỗ so cấp trang bị (`.l>P.lv` → bỏ qua cấp khi Đạo Cảnh), `gen()` chặn cấp ≤80. Module bọc `cast`, `ZC.nm/rn/tx/pg/col/bt/ui`.
+- Đạo Cảnh chỉ nhận EXP từ quái khi `mi()>=8` (Linh Giới trở lên); chỉnh `CF.mapMin`. Quà nhiệm vụ/rương EXP không bị chặn.
+- Cấp trang bị tối đa 80 (`CF.itemLv`, và hằng số trong `gen`); đồ cũ vượt cấp trong túi/đang mặc tự về 80.
+- Đạo Cảnh mặc được mọi trang bị bất kể cấp.
+- Lưu ý: trang bị cấp cao hơn nhân vật không mặc được → sau khi về Lv1 cần lên cấp lại hoặc dùng đồ cấp thấp.
+- Xoá trang bị cũ 1 lần: `HDAO.wipe()` chạy sau khi vào game, xoá toàn bộ trang bị (túi + đang mặc) của nhân vật Lv>1 hoặc đã hợp đạo, rồi đặt cờ `PS[i].wp=CF.wipeId` ('w80'). Nhân vật Lv1 chưa hợp đạo giữ đồ khởi đầu. Vàng/nguyên liệu/thú/cánh giữ nguyên. Muốn xoá lại: đổi `CF.wipeId`.
+- Tối ưu Đạo Cảnh: chuỗi EXP trên HUD chỉ định dạng lại khi số đổi (bớt toLocaleString mỗi khung hình); gộp 2 timer thành 1 (1s, bỏ qua khi tab ẩn); hoạt ảnh nghi lễ chỉ dùng transform/opacity (will-change) và tắt khi hệ thống bật "giảm chuyển động".
+- HUD (mobile + máy tính): nhãn "EXP" đổi thành "Đạo Linh" khi nhân vật đã hợp đạo (engine: `HDAO.on()` ở 2 chỗ vẽ thanh EXP). Các bảng của Đạo Cảnh cũng gọi EXP là Đạo Linh.
+
+## Thần Thông · Đạo Cảnh — world/34-than-thong.js
+- Chỉ nhân vật đã hợp đạo (`HDAO.on()`). 6 hệ × 5 thần thông, xếp theo ngũ hành tương sinh từ linh căn sở trường: ô1 ★ chiến đấu (tự mở khi hợp đạo), ô2 chiến đấu, ô3 buff, ô4 chiến đấu cực nghĩa, ô5 nội tại. Bảng `K` (kỹ năng) và `SC` (hệ số, hồi chiêu, MP, số mảnh: 0/10/20/35/60) chỉnh ở đầu file.
+- Hệ = lớp (`CHR[cur].t`) + nhánh (`PS[cur].br`): 0 Kiếm Khách, 1 Thương Thủ, 2 Triệu Hồi Sư, 3 Ma Thuật Sư, 4 Xạ Thủ, 5 Thích Khách. Dữ liệu học: `PS[cur].tt={on:[5 cờ]}`.
+- Linh căn: sát thương/buff/nội tại nhân `lcMul(e)` (e: 0 Hỏa, 1 Mộc, 2 Thủy, 3 Kim, 4 Thổ) khi trùng linh căn nhân vật (×1,2–1,5).
+- Mảnh Sách Thần Thông = vật phẩm xếp chồng trong túi `{s:5,r:4,c:1,tt:{h,e,q[,k]}}` (h hệ, e linh căn, q số lượng) → bán/mua được ở Chợ giao dịch (module 32). Chạm mảnh trong túi mở bảng Thần Thông (`pk`/`fzt` được bọc để không mặc/bán/hợp nhầm); c:1 giữ khỏi Bán nhanh/Dọn đồ. Hệ khác không học được mảnh của hệ này. Nút ⇄ đổi 5 mảnh bất kỳ → 1 mảnh tùy chọn; nút Tách chia chồng để đăng bán một phần.
+- Nguồn mảnh: chỉ boss Kiếm Thánh (chưa có) gọi `TTHONG.drop()` = 5–20 mảnh, linh căn ngẫu nhiên, cho hệ nhân vật hạ boss. Test: thêm `?ttest` vào URL để hiện nút "Nhặt thử".
+- Nút thần thông riêng `#tt-bar` (4 nút: 3 chiến đấu + buff; nội tại không có nút). Ẩn `#zk` khi `body.hd-on`. Bọc: `dm` (buff/nội tại sát thương, chí mạng), `ZC.shd/dg` (giảm sát thương, né), `ZC.kill` (Minh Thổ Ảnh Tâm), `ZC.zauto/zcast` (AUTO + phím ZXCV), `ZC.ui` (nút mở bảng trong tab 🧘).
+- Thẻ "Thần thông Linh căn" trong bảng Thần Thông chỉ hiển thị thần thông tự động thi triển của linh căn (module systems/18-linh-can.js, `PS[cur].lc`). Nó độc lập với 5 ô của hệ, không dùng mảnh, hợp đạo không xóa.
+- Tối ưu hoạt ảnh Thần Thông: đo thời gian khung hình (EMA) → `fps.q` 0/1/2; máy yếu tự giảm hiệu ứng phụ (sigil/gwave/vcol/flash/shake, số mục tiêu có hiệu ứng, số hạt vệt kiếm), bỏ hiệu ứng phụ khi hàng đợi `FX` > 50. Sát thương và hồi chiêu không đổi. `pass()` cache 200ms, nút #tt-bar chỉ ghi DOM khi đổi trạng thái, CSS dùng opacity thay filter.
+- Hoạt ảnh tung chiêu Thần Thông: thời gian dựng chiêu `WU=[11,14,8,18]` khung hình (★/ô2/buff/cực nghĩa; trước là 18 cho tất cả) + hồi thế 7 khung; bấm khi đang tung chiêu khác thì lệnh được đệm 0,45s (`pend`, xử lý mỗi khung trong `flush()`); tự quay mặt về địch gần nhất; chỉ cực nghĩa hiện tên nổi.
+
+
+## Kiếm Thánh (Fix15)
+- world/35-kiem-thanh.js: boss Kiếm Thánh, cổng ở Thành Thị Linh Giới (ô 3), mạnh gấp 10 lần Ma Thần, hồi sinh 10 phút, thông báo hồi sinh trên màn hình chính. Chỉnh khối CF đầu file.

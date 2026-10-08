@@ -2,16 +2,16 @@
 /*==== THÁP THÍ LUYỆN · Tháp 9 tầng ở Thanh Vân Tiên Thôn ====
   - 9 tầng × 10 Boss, độ khó tăng dần. Hạ lần lượt từng Boss; hạ đủ 10 Boss thì lên tầng kế.
   - Boss mạnh hơn Trùm Thần Thoại (Hầm Ngục, màu cam-vàng "hoàng kim") ngay từ Boss đầu tiên.
-  - Boss 1-9 mỗi tầng: 10% rơi trang bị Thiên Thần. Boss 10: rơi 1 Mảnh Linh Căn (nhận 1 lần/tầng).
+  - Boss 1-9 mỗi tầng: 1% rơi trang bị Thiên Thần. Boss 10: rơi 1 Mảnh Linh Căn (nhận 1 lần/tầng).
   - Đủ 9 mảnh -> hợp thành Viên Linh Căn -> chọn thuộc tính Linh Căn (Kim/Mộc/Thủy/Hỏa/Thổ), cộng chỉ số vĩnh viễn.
   Chỉnh độ khó / tỉ lệ rơi ngay tại khối hằng số bên dưới. */
 const TW_HP0=75,TW_HPS=5.5;      // Máu boss = Trùm Hầm Ngục ×(TW_HP0 + n*TW_HPS)/60  (n=0..89)
 const TW_A0=1.3,TW_AS=.10;       // Sát thương boss gây ra = ×(TW_A0 + n*TW_AS) so với Trùm Hầm Ngục
 const TW_DFS=.012;               // Giáp boss tăng thêm mỗi boss
 const TW_B10=1.25;               // Boss 10 mỗi tầng (Tháp Chủ) máu ×1.25, sát thương ×1.15
-const TW_DROP5=.10;              // Tỉ lệ rơi trang bị Thiên Thần (Boss 1-9 mỗi tầng)
+const TW_DROP5=.01;              // Tỉ lệ rơi trang bị Thiên Thần (Boss 1-9 mỗi tầng)
 const TW_GOLD=600;               // Vàng thưởng = TW_GOLD × cấp boss × (1+n/30)
-const TW_REPLAY=true;            // Cho đánh lại boss đã hạ (vẫn có 10% Thiên Thần, KHÔNG nhận thêm mảnh Linh Căn)
+const TW_REPLAY=true;            // Cho đánh lại boss đã hạ (vẫn có 1% Thiên Thần, KHÔNG nhận thêm mảnh Linh Căn)
 const TW_TH=['Thạch Linh','Phong Lôi','Hàn Băng','Liệt Hỏa','Thanh Mộc','Hoàng Sa','U Minh','Kim Cang','Hỗn Độn'];
 const TW_RK=['Hộ Vệ','Thống Lĩnh','Sứ Giả','Tướng Quân','Trưởng Lão','Hộ Pháp','Yêu Vương','Chiến Thần','Quân Chủ','Tháp Chủ'];
 const TW_COL=['#c8b27a','#8fd0ff','#9fe8ff','#ff7a3a','#7be07a','#e0c060','#b070ff','#ffd860','#ff5ad0'];
@@ -42,11 +42,11 @@ function twRender(){
  const f=twF,col=TW_COL[f],nf=twPop(st.fg);
  let h='<div class="bx"><div class="bh"><span><b>🗼 Tháp Thí Luyện</b></span><span><button onclick="twClose()">✕</button></span></div>';
  if(twMsg){h+='<div class="twm">'+twMsg+'</div>';twMsg=''}
- h+='<div class="dt">9 tầng · mỗi tầng 10 Boss, <b>khó hơn cả Trùm Thần Thoại</b> (Hầm Ngục). Hạ lần lượt từng Boss để mở Boss kế và tầng kế.<br>🌟 Boss 1-9: <b>10%</b> rơi trang bị <b style="color:#ff5ad0">Thiên Thần</b> · 🔷 Boss 10: rơi <b>Mảnh Linh Căn</b> (lần đầu hạ).</div>';
+ h+='<div class="dt">9 tầng · mỗi tầng 10 Boss, <b>khó hơn cả Trùm Thần Thoại</b> (Hầm Ngục). Hạ lần lượt từng Boss để mở Boss kế và tầng kế.<br>🌟 Boss 1-9: <b>1%</b> rơi trang bị <b style="color:#ff5ad0">Thiên Thần</b> · 🔷 Boss 10: rơi <b>Mảnh Linh Căn</b> (lần đầu hạ).</div>';
  h+='<div class="qb" style="margin:6px 0"><i style="width:'+(p/90*100)+'%"></i><span>Tiến độ '+p+'/90 Boss</span></div>';
  h+='<div class="twf">'+Array.from({length:9},(_,i)=>{const lk=i>fl,dn=p>=(i+1)*10;return'<button class="'+(i==f?'on':'')+(lk?' lk':'')+'" '+(lk?'disabled':'onclick="twSel('+i+')"')+'>'+(dn?'✔':lk?'🔒':'T')+(dn||lk?'':(i+1))+'</button>'}).join('')+'</div>';
  h+='<div class="st" style="margin:2px 0 4px;color:'+col+'"><b>Tầng '+(f+1)+' · '+TW_TH[f]+'</b> — Boss: máu ×'+(twHp(f*10)/60).toFixed(1)+'→×'+(twHp(f*10+9)/60).toFixed(1)+' · sát thương ×'+twAt(f*10).toFixed(1)+'→×'+twAt(f*10+9).toFixed(1)+' (so với Trùm Thần Thoại)</div>';
- for(let i=0;i<10;i++){const n=f*10+i,dn=n<p,nx=n==p,ok=n<=p&&(TW_REPLAY||nx),rw=i<9?'🌟 10%':(st.fg>>f&1?'🔷 đã nhận':'🔷 Mảnh Linh Căn');
+ for(let i=0;i<10;i++){const n=f*10+i,dn=n<p,nx=n==p,ok=n<=p&&(TW_REPLAY||nx),rw=i<9?'🌟 1%':(st.fg>>f&1?'🔷 đã nhận':'🔷 Mảnh Linh Căn');
   h+='<div class="ar"><div><b style="color:'+(nx?'#ffe08a':dn?'#7fe0a0':'#8a7a68')+'">'+(dn?'✔':nx?'▶':'🔒')+' '+(i+1)+'. '+twName(n)+'</b><br><small>HP ×'+(twHp(n)/60).toFixed(1)+' · ST ×'+twAt(n).toFixed(1)+' · '+rw+'</small></div>'+(ok?'<button class="sm" onclick="twGo('+n+')">'+(dn?'Đánh lại':'Khiêu chiến')+'</button>':'')+'</div>'}
  const rt=st.root>=0?TW_ROOTS[st.root]:null;
  h+='<div class="qc"><h4>🔷 Linh Căn</h4>';
