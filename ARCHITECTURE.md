@@ -197,3 +197,9 @@ MAPPING MODULE CŨ → MỚI
 
 ## Phụ Bản 2 (Fix34)
 - world/40-phu-ban-2.js: nút 🕳 mở bảng chọn phụ bản; Phụ Bản 2 "Địa Long Điện" (Lv80, vào lại sau 10 phút, boss Ngục Long Vương ×5 Trùm Hầm Ngục) rơi Mảnh Đan Đột Phá Cảnh Giới 4 Thần Thú (2-5/lần, 100 mảnh ghép 1 Đan; Thú dùng Đan khi tiến hoá cấp 4). Sprite boss: DGI.boss2 trong world/39. Engine: e.big (cỡ boss), e.gc (màu hào quang).
+
+## Opt nhẫn "Cấp thần thông" — equipment/43-nhan-than-thong.js
+- `it.ttl` (1-3) chỉ trên Nhẫn (s=7/8): nhẫn thường siêu hiếm (`CF.chance` theo phẩm), nhẫn Bộ Thánh chắc chắn có (ngẫu nhiên 1-3). Mỗi +1 cấp: kỹ năng Linh Căn +1 tầng (`L0()`/cast trong systems/18-linh-can.js), thần thông/tiên thuật +10% sức mạnh (bọc `lcMul`). Cộng dồn các món đang mặc.
+- Patch nhỏ: engine (xHtml hiển thị, HL.gen nhẫn Thánh, SPK/autoKeep/sa/pk không bán đồ có ttl), systems/18-linh-can.js (2 chỗ). `holyAll=true` trong CF nếu muốn mọi món Thánh đều có opt này.
+- Túi đồ: nút "💰 Bán nhanh < Thần Thoại (N)" cạnh "↕ Sắp xếp" gọi sa(4) có sẵn (bán Thường→Sử Thi, giữ đồ chế tác, đã cường hóa, nhẫn Cấp Thần Thông), có hộp xác nhận; N = số món sẽ bán.
+- Túi đồ: nút "💰 Bán nhanh < Thần Thoại" mở bảng chọn từng món (ui/44-ban-nhanh-chon.js, API `BNC`): tick từng món, chọn/bỏ theo phẩm, xem tổng vàng, bấm Bán. Vẫn bảo vệ đồ chế tác/cường hóa/nhẫn Cấp Thần Thông/đồ Thánh. Không tải module thì nút tự quay về sa(4).

@@ -18,7 +18,7 @@ var S={cd:0,cdMax:1,fires:[],cols:[],god:null,rain:null,blades:[],drag:[],kim:0,
 
 var MAPTW=[3,1,2,0,4]; /* thứ tự linh căn của Tháp (Kim,Mộc,Thủy,Hỏa,Thổ) -> thứ tự ở đây (Hỏa,Mộc,Thủy,Kim,Thổ) */
 function LC(){var p=PS[cur];if(!p.lc||!p.lc.lv||p.lc.lv.length<5)p.lc={root:-1,lv:[1,1,1,1,1]};var t=p.tw;p.lc.root=(t&&t.root>=0&&t.root<5)?MAPTW[t.root]:-1;return p.lc}
-function L0(){var c=LC();return c.root<0?0:c.lv[c.root]}
+function L0(){var c=LC();return c.root<0?0:c.lv[c.root]+(window.TTLB?TTLB.n():0)}
 function pow(){var c=LC();return c.root<0?1:1.2+.02*c.lv[c.root]}
 /* hook: nhân sức mạnh tiên thuật cùng hệ (i = 0..4 = Hỏa,Mộc,Thủy,Kim,Thổ) */
 window.lcMax=function(){try{var c=LC();return c.root>=0&&c.lv[c.root]>=MAXL}catch(e){return false}};
@@ -36,7 +36,7 @@ if(typeof dm=='function'){var _dm=dm;dm=function(e,m,sl){if(S.kim>0)m*=1.25+.01*
 function cast(){
   var c=LC();if(c.root<0)return;
   if(over||vil||!started||P.pe||P.act||S.cd>0)return;
-  var L=c.lv[c.root],mp=mpC(L);if(P.mp<mp)return;
+  var L=c.lv[c.root]+(window.TTLB?TTLB.n():0),mp=mpC(L);if(P.mp<mp)return;
   var near=foes().filter(function(e){return Math.abs(e.x-P.x)<640});if(!near.length)return;
   P.mp-=mp;S.cd=S.cdMax=cdF(L);
   var R_=ROOTS[c.root];an(18);P.ln=R_.sk;
