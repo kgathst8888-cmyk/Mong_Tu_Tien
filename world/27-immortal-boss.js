@@ -83,7 +83,7 @@ function place(){
  const rk=document.getElementById('rkb');
  const show=!!(rk&&rk.style.display==='block'&&!(typeof dg!=='undefined'&&dg&&dg.bi));
  if(!show){if(wrap.style.display!=='none')wrap.style.display='none';return}
- const x=parseFloat(rk.style.left)-38,y=parseFloat(rk.style.top),k=Math.round(x)+','+Math.round(y);
+ const x=parseFloat(rk.style.left)-46,y=parseFloat(rk.style.top),k=Math.round(x)+','+Math.round(y);
  if(k!==lastPos){lastPos=k;wrap.style.left=Math.round(x)+'px';wrap.style.top=Math.round(y)+'px'}
  if(wrap.style.display!=='block')wrap.style.display='block';
  const hot=!!(S.st&&S.st.pending&&S.st.pending.some(p=>!bs().cl[p.day]))||bs().n<BC.tries;

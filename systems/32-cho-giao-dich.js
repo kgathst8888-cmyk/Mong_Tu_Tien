@@ -29,7 +29,7 @@ function call(fn,a){return KCL.rpc(fn,a||{})}
 function build(){
   var st=document.createElement('style');
   st.textContent='#cho-btn{position:fixed;left:54px;top:calc(132px + env(safe-area-inset-top,0px));width:40px;height:40px;border-radius:50%;border:2px solid #b8964e;background:radial-gradient(#3a2a22,#140d0a);color:#fff;font-size:18px;display:none;align-items:center;justify-content:center;z-index:3;cursor:pointer}'+
-  '#cho-btn i{position:absolute;top:-4px;right:-4px;min-width:16px;height:16px;border-radius:8px;background:#e33;color:#fff;font:700 10px/16px sans-serif;text-align:center;font-style:normal;display:none;padding:0 3px}'+
+  '#cho-btn::after{content:"Chợ online";position:absolute;left:50%;top:100%;transform:translateX(-50%);margin-top:1px;font:bold 9px/10px KTH Serif,Songti SC,STKaiti,KaiTi,serif;color:#ffe9b0;text-shadow:0 0 3px #000,0 0 3px #000;white-space:nowrap;pointer-events:none;font-style:normal}'+'#cho-btn i{position:absolute;top:-4px;right:-4px;min-width:16px;height:16px;border-radius:8px;background:#e33;color:#fff;font:700 10px/16px sans-serif;text-align:center;font-style:normal;display:none;padding:0 3px}'+
   '#cho-pnl{position:fixed;left:0;right:0;bottom:0;height:78%;max-height:600px;background:rgba(14,10,8,.97);border-top:2px solid #b8964e;z-index:11;display:none;flex-direction:column;color:#f2e3b3;font-family:system-ui,sans-serif;padding-bottom:env(safe-area-inset-bottom,0px)}'+
   '#cho-pnl .ch{display:flex;align-items:center;gap:8px;padding:8px 12px;font-weight:700;border-bottom:1px solid #4a3a2a}#cho-pnl .ch span{flex:1}'+
   '#cho-pnl .ch b{color:#7fe0ff;font-size:14px}#cho-pnl .ch button{background:none;border:0;color:#f2e3b3;font-size:20px}'+

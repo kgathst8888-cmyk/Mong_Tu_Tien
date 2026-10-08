@@ -15,6 +15,7 @@ const S={on:false,mode:'rank',tab:'cult',cls:'w',busy:false,err:'',legacy:false,
 /* ---------- CSS + DOM ---------- */
 const st=document.createElement('style');st.textContent=`
 #rkb{position:fixed;z-index:2;width:34px;height:34px;box-sizing:border-box;border-radius:50%;border:2px solid #c9a24f;background:radial-gradient(circle at 50% 30%,#4b3a2c,#120b08 78%);box-shadow:0 3px 8px #000b,inset 0 0 8px #000;color:#ffe27a;font-size:16px;line-height:28px;text-align:center;padding:0;display:none;cursor:pointer}
+#rkb::after{content:"Xếp hạng";position:absolute;left:50%;top:100%;transform:translateX(-50%);margin-top:1px;font:bold 9px/10px KTH Serif,Songti SC,STKaiti,KaiTi,serif;color:#ffe9b0;text-shadow:0 0 3px #000,0 0 3px #000;white-space:nowrap;pointer-events:none;font-style:normal}
 #rk-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:32;align-items:center;justify-content:center;font-family:'KTH Serif','Songti SC',STKaiti,KaiTi,serif;color:#f2e3b3}
 #rk-ov.on{display:flex}
 .rk-bx{background:#2a1a12;border:3px solid #b8964e;border-radius:10px;padding:10px;width:min(400px,94vw);max-height:90vh;overflow:auto;font-size:13px;box-sizing:border-box;-webkit-user-select:text;user-select:text}
@@ -37,12 +38,13 @@ ov.addEventListener('click',e=>{let n=e.target;while(n&&n!==ov&&!(n.getAttribute
 let lastPos='';
 function place(){
  let show=false;try{show=!!started&&document.getElementById('mn').style.display==='none'}catch(e){}
- if(!show){if(btn.style.display!=='none')btn.style.display='none';return}
+ if(!show){if(btn.style.display!=='none')btn.style.display='none';const ab0=document.getElementById('arena-btn');if(ab0&&ab0.style.display!=='none')ab0.style.display='none';return}
  let x,y;
  if(W<640){const t=E.some(e=>e.b==2)?'🐲 Boss Thế Giới!':'🐲 00:00',n='⭐ 29/30 · 👑 99/100';g.save();g.font='bold 12px KTH Serif,Songti SC,STKaiti,KaiTi,serif';const tw=Math.max(g.measureText(t).width,g.measureText(n).width);g.restore();x=W-8-tw-8-34;y=103-17}
  else{const hs=cl(Math.min(H/540,W/420),.6,1.1);x=W-210*hs-6-34;y=(12+76)*hs-5*hs-17}
  const k=Math.round(x)+','+Math.round(y);
  if(k!==lastPos){lastPos=k;btn.style.left=Math.round(x)+'px';btn.style.top=Math.round(y)+'px'}
+ const ab=document.getElementById('arena-btn');if(ab){const ax=Math.round(x-92)+'px',ay=Math.round(y)+'px';if(ab.style.left!==ax)ab.style.left=ax;if(ab.style.top!==ay)ab.style.top=ay;if(ab.style.display!=='flex')ab.style.display='flex'}
  if(btn.style.display!=='block')btn.style.display='block'}
 const _draw=window.draw;if(typeof _draw=='function')window.draw=function(){const r=_draw.apply(this,arguments);try{place()}catch(e){}return r};
 /* ---------- dữ liệu nhân vật ---------- */
