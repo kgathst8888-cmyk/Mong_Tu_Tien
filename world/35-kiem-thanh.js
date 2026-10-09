@@ -1,5 +1,6 @@
 /* ===== 🗡️ KIẾM THÁNH · BOSS THÀNH THỊ LINH GIỚI =====
  * Dựa trên Ma Thần (world/02-demon-realm.js): cùng kiểu trận đấu (dg), cùng công thức chỉ số nhưng mạnh gấp CF.hp / CF.atk lần.
+ * CHỈ nhân vật ĐẠO THỂ (đã Hợp Đạo, HDAO.on()) mới đánh được: ask()/enter() chặn, ô cổng hiện "Chỉ Đạo Thể được đánh".
  * Cổng vào: Thành Thị Linh Giới → cổng 3 "Kiếm Thánh Đài" (thay ô "Thiên Giới Thí Luyện" sắp mở; vá trực tiếp mảng LCT.gates, không sửa file 10).
  * Hồi sinh: hạ Kiếm Thánh → CF.respawn (10 phút) sau boss mới xuất hiện. Mốc giờ lưu theo từng nhân vật: PS[cur].ks = {next:mốc ms (0 = đang sống), an:0/1 đã báo hồi sinh}.
  * Thông báo: mỗi lần hồi sinh hiện biển báo trên cùng màn hình (#ks-ann, ~8 giây) + chữ nổi trên màn hình chính, ở mọi bản đồ.
@@ -35,8 +36,8 @@ function confirmBox(text,yesLabel,noLabel,yes){if(document.getElementById('ks-cf
 /* ---------- vào / ra / thắng ---------- */
 function stats(){var b=mtStats();return{hp:b.hp*CF.hp,df:b.df/MT_DEF*CF.def}}
 function spawn(){dgSp('boss');var e=E[E.length-1],st=stats();e.ks=1;e.nm='🗡️ Kiếm Thánh';e.gc=['#2a78c8','#9fe8ff'];if(DGI.bossKS)e.sp='bossKS';e.lv=MT_LV;e.m=7;e.hp=e.max=st.hp;e.df=st.df;say('🗡️ KIẾM THÁNH giáng thế!','#8fe8ff',170)}
-function enter(){if(!started||!alive()||!LCT.on())return;if(bo)tg();try{LCT.off()}catch(e){}vil=0;lg=0;E=[];PETS=[];PJ=[];FX=[];P.pe=null;P.atk=0;P.x=120;P.hp=mx();P.mp=mm();dg={t:0,n:20,kill:20,ks:1};say('🗡️ Khiêu chiến Kiếm Thánh!','#8fe8ff',130)}
-function ask(){if(!started)return;if(!alive()){say('⏳ Kiếm Thánh hồi sinh sau '+fmt(left()),'#ffd98a',150);return}
+function enter(){if(!started||!alive()||!LCT.on())return;if(!(window.HDAO&&HDAO.on())){say('☯ Chỉ nhân vật Đạo Thể (đã Hợp Đạo) mới được đánh Kiếm Thánh','#ffd98a',160);return}if(bo)tg();try{LCT.off()}catch(e){}vil=0;lg=0;E=[];PETS=[];PJ=[];FX=[];P.pe=null;P.atk=0;P.x=120;P.hp=mx();P.mp=mm();dg={t:0,n:20,kill:20,ks:1};say('🗡️ Khiêu chiến Kiếm Thánh!','#8fe8ff',130)}
+function ask(){if(!started)return;if(!(window.HDAO&&HDAO.on())){say('☯ Chỉ nhân vật Đạo Thể (đã Hợp Đạo) mới được đánh Kiếm Thánh','#ffd98a',160);return}if(!alive()){say('⏳ Kiếm Thánh hồi sinh sau '+fmt(left()),'#ffd98a',150);return}
  confirmBox('Khiêu chiến KIẾM THÁNH (Lv'+MT_LV+', mạnh gấp '+CF.hp+' lần Ma Thần)?\nThất bại sẽ phải hồi sinh. Hạ được Kiếm Thánh, '+Math.round(CF.respawn/60000)+' phút sau hắn hồi sinh. Rơi Mảnh Sách Thần Thông.','Khiêu chiến','Thôi',enter)}
 function exit(){mtExit();try{LCT.enter()}catch(e){}}
 function win(){var k=K();k.next=Date.now()+CF.respawn;k.an=0;try{QE('boss')}catch(e){}try{if(window.LT&&LT.earnKS)LT.earnKS(2)}catch(e){}save();say('🏆 Hạ Kiếm Thánh! Hồi sinh sau '+Math.round(CF.respawn/60000)+' phút','#8fe8ff',220)}
@@ -44,7 +45,7 @@ function win(){var k=K();k.next=Date.now()+CF.respawn;k.an=0;try{QE('boss')}catc
 /* ---------- cổng trong Thành Thị ---------- */
 var G=LCT.gates[CF.gate];
 if(G){G.sn='Kiếm Thánh';G.n='Kiếm Thánh Đài';G.e='🗡️';G.c='#ff7a8a';G.rgb='255,122,138';G.open=1;G.go=ask;
- Object.defineProperty(G,'sub',{configurable:true,enumerable:true,get:function(){try{return alive()?'Boss Lv'+MT_LV+' · chạm để đánh':'⏳ Hồi sinh '+fmt(left())}catch(e){return'Boss Lv'+MT_LV}}})}
+ Object.defineProperty(G,'sub',{configurable:true,enumerable:true,get:function(){try{if(!(window.HDAO&&HDAO.on()))return'☯ Chỉ Đạo Thể được đánh';return alive()?'Boss Lv'+MT_LV+' · chạm để đánh':'⏳ Hồi sinh '+fmt(left())}catch(e){return'Boss Lv'+MT_LV}}})}
 
 /* ---------- sức mạnh: sát thương boss gây ra ×MT_ATK×CF.atk (Ma Thần chỉ ×MT_ATK) ---------- */
 var _hurt=dgHurt;dgHurt=function(e,mu){return _hurt.call(this,e,e&&e.ks?mu*MT_ATK*CF.atk*2:mu)};
