@@ -33,14 +33,13 @@ function html(){
    +card(1,'#ff9a70','🕳','1. Hầm Ngục','20 quái + Trùm Thần Thoại · mở mỗi 5 phút · rơi trang bị, mảnh cánh')
    +card(2,'#7dffc0','🐉','2. Địa Long Điện','Cần cấp '+CF.lv+' · 20 quái + Boss <b>Ngục Long Vương</b> (mạnh gấp '+CF.hp+' lần Trùm Hầm Ngục) · vào lại sau '+Math.round(CF.cd/60000)+' phút · rơi trang bị + <b>Mảnh Đan Đột Phá Cảnh Giới 4 Thần Thú</b> ('+CF.fmin+'–'+CF.fmax+' mảnh/lần)')
    +card(3,'#ffd54a','💰','3. Phụ Bản Vàng','1 <b>Boss Bất Tử</b> không thể hạ · <b>'+(window.PBV?window.PBV.cfg.secs:180)+' giây</b> khiêu chiến · 💰 vàng thưởng theo <b>sát thương</b> bạn gây ra')
-   +(window.PBMT?window.PBMT.html(card):'')+'<div style="border:1px solid #6a5a3a;border-radius:10px;padding:8px;margin:8px 0;background:#1a120d"><div style="font-size:13.5px">💊 <b>Đan Đột Phá Cảnh Giới 4 Thần Thú</b> · đang có: <b id="pb-d">0</b></div><div style="margin-top:5px;height:9px;background:#000a;border-radius:5px;overflow:hidden"><div id="pb-bar" style="height:100%;width:0;background:linear-gradient(90deg,#16c46a,#7dffc0)"></div></div><div style="font-size:12.5px;margin-top:4px">Mảnh: <b id="pb-f">0</b>/'+CF.need+'</div><button data-comb="1" style="width:100%;margin-top:6px;background:#5a3a22;color:#fff;border:1px solid #b8964e;border-radius:8px;padding:8px">⚒ Ghép Đan ('+CF.need+' mảnh)</button><div style="font-size:11.5px;opacity:.7;margin-top:4px">Đan dùng cho Thú nuôi khi tiến hoá cấp 3 → cấp 4.</div></div>'
+   +'<div style="border:1px solid #6a5a3a;border-radius:10px;padding:8px;margin:8px 0;background:#1a120d"><div style="font-size:13.5px">💊 <b>Đan Đột Phá Cảnh Giới 4 Thần Thú</b> · đang có: <b id="pb-d">0</b></div><div style="margin-top:5px;height:9px;background:#000a;border-radius:5px;overflow:hidden"><div id="pb-bar" style="height:100%;width:0;background:linear-gradient(90deg,#16c46a,#7dffc0)"></div></div><div style="font-size:12.5px;margin-top:4px">Mảnh: <b id="pb-f">0</b>/'+CF.need+'</div><button data-comb="1" style="width:100%;margin-top:6px;background:#5a3a22;color:#fff;border:1px solid #b8964e;border-radius:8px;padding:8px">⚒ Ghép Đan ('+CF.need+' mảnh)</button><div style="font-size:11.5px;opacity:.7;margin-top:4px">Đan dùng cho Thú nuôi khi tiến hoá cấp 3 → cấp 4.</div></div>'
    +'<div id="pb-msg" style="min-height:18px;font-size:13px;color:#ffd98a;text-align:center"></div>'
    +'<button data-x="1" style="width:100%;margin-top:6px;background:#3a3a3a;color:#fff;border:1px solid #777;border-radius:8px;padding:8px">Đóng</button>'}
 function refresh(){if(!ov||ov.style.display==='none')return;
   var a=document.getElementById('pb-st1'),b=document.getElementById('pb-st2');
   try{if(a){var o=dgOpen();a.textContent=o?'✅ Đang mở · chạm để vào':'⏳ Mở sau '+fmt(d1Left()*1000);a.style.color=o?'#9dffa0':'#ffd98a'}}catch(e){}
   if(b){if(!lvOk()){b.textContent='🔒 Cần cấp '+CF.lv+' (hiện Lv'+P.lv+')';b.style.color='#ff9a9a'}else if(left()>0){b.textContent='⏳ Vào lại sau '+fmt(left());b.style.color='#ffd98a'}else{b.textContent='✅ Sẵn sàng · chạm để vào';b.style.color='#9dffa0'}}
-  try{var c4=document.getElementById('pb-st4');if(c4&&window.PBMT){var q4=window.PBMT.status();c4.textContent=q4.txt;c4.style.color=q4.col;window.PBMT.refresh()}}catch(e){}
   try{var c3=document.getElementById('pb-st3');if(c3&&window.PBV){var q3=window.PBV.status();c3.textContent=q3.txt;c3.style.color=q3.col}}catch(e){}
   var s=SD(),f=s.f|0,df=document.getElementById('pb-f'),dd=document.getElementById('pb-d'),br=document.getElementById('pb-bar');
   if(df)df.textContent=f;if(dd)dd.textContent=PS[cur].dan|0;if(br)br.style.width=Math.min(100,f/CF.need*100)+'%'}
@@ -58,7 +57,6 @@ setInterval(refresh,1000);
 function go(i){
   if(!started||dg)return;
   if(i===1){if(!dgOpen()){note('Hầm Ngục chưa mở, chờ đếm ngược');return}close();dgEnter();return}
-  if(i===4){if(over)return;if(!window.PBMT){note('Phụ Bản Ma Thần chưa sẵn sàng');return}var r4=window.PBMT.canEnter();if(r4!==true){note(r4);return}close();window.PBMT.enter();return}
   if(i===3){if(over)return;if(!window.PBV){note('Phụ Bản Vàng chưa sẵn sàng');return}var r3=window.PBV.canEnter();if(r3!==true){note(r3);return}close();window.PBV.enter();return}
   if(over)return;
   if(!lvOk()){note('🔒 Cần cấp '+CF.lv+' để vào Địa Long Điện (hiện Lv'+P.lv+')');return}

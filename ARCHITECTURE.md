@@ -207,10 +207,3 @@ MAPPING MODULE CŨ → MỚI
 
 ## Ý Cảnh (Fix39)
 - world/45-y-canh.js: Ý Cảnh Tiên Đạo / Ma Đạo trong Hợp Đạo Đài (Linh Giới). Chọn 1 đạo, 5 cảnh giới × 3 tiểu cảnh; sát thương phụ 10-50% cho kỹ năng + Thần Thông (bọc dm() khi SKF=1). Chưa có cách tu luyện (YCANH.up(n) chừa sẵn). Patch nhỏ: engine DT đọc d.sc (màu viền), world/33-hop-dao.js thêm khối YCANH.mini() + nút data-a="yc".
-
-## Phụ Bản 4 "Ma Thần" + Kiếm Thánh chỉ Đạo Thể — world/47-phu-ban-ma-than.js
-- Thẻ số 4 trong bảng 🕳 Phụ Bản (world/40 gọi `PBMT.html/refresh/canEnter/enter`). Tái dùng Boss Ma Thần + bản đồ Huyết Nguyệt Ma Điện của world/02 + 05 (cờ `dg.mt=1`, thêm cờ `dg.pm=1` để tách phần thưởng/thoát trận). API global `PBMT`.
-- Chỉ mở sau khi hạ Ma Thần lần đầu (`lgDone()`). Hồi chiêu 1 giờ tính từ lúc vào (`PS[cur].pmt.cd`). Rơi "Ma Thần Tinh Huyết" 5–10/lần (+ vàng, mảnh chế tạo, tu vi như Ma Thần; trang bị Thần Thoại `CF.gear=0`).
-- Tinh Huyết nâng Ý Cảnh Ma Đạo qua `YCANH.up(1)`: giá = `CF.base + CF.step × (cấp − 1)`. Chỉ Ma Đạo dùng được; Tiên Đạo vẫn tích luỹ.
-- Thoát trận / chết giữa trận → `back(w)` đưa về đúng bản đồ trước đó (Làng / Linh Giới). Lần hạ Ma Thần đầu tiên (không có `dg.pm`) giữ nguyên.
-- Kiếm Thánh (world/35): `ask()`/`enter()` chặn nếu không phải Đạo Thể (`HDAO.on()`); ô cổng hiện "Chỉ Đạo Thể được đánh".
