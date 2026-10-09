@@ -203,3 +203,7 @@ MAPPING MODULE CŨ → MỚI
 - Patch nhỏ: engine (xHtml hiển thị, HL.gen nhẫn Thánh, SPK/autoKeep/sa/pk không bán đồ có ttl), systems/18-linh-can.js (2 chỗ). `holyAll=true` trong CF nếu muốn mọi món Thánh đều có opt này.
 - Túi đồ: nút "💰 Bán nhanh < Thần Thoại (N)" cạnh "↕ Sắp xếp" gọi sa(4) có sẵn (bán Thường→Sử Thi, giữ đồ chế tác, đã cường hóa, nhẫn Cấp Thần Thông), có hộp xác nhận; N = số món sẽ bán.
 - Túi đồ: nút "💰 Bán nhanh < Thần Thoại" mở bảng chọn từng món (ui/44-ban-nhanh-chon.js, API `BNC`): tick từng món, chọn/bỏ theo phẩm, xem tổng vàng, bấm Bán. Vẫn bảo vệ đồ chế tác/cường hóa/nhẫn Cấp Thần Thông/đồ Thánh. Không tải module thì nút tự quay về sa(4).
+
+
+## Ý Cảnh (Fix39)
+- world/45-y-canh.js: Ý Cảnh Tiên Đạo / Ma Đạo trong Hợp Đạo Đài (Linh Giới). Chọn 1 đạo, 5 cảnh giới × 3 tiểu cảnh; sát thương phụ 10-50% cho kỹ năng + Thần Thông (bọc dm() khi SKF=1). Chưa có cách tu luyện (YCANH.up(n) chừa sẵn). Patch nhỏ: engine DT đọc d.sc (màu viền), world/33-hop-dao.js thêm khối YCANH.mini() + nút data-a="yc".

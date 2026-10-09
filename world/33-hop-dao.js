@@ -68,7 +68,7 @@ function build(){
   ['pointerdown','touchstart','keydown','keyup','keypress'].forEach(function(t){ov.addEventListener(t,function(e){e.stopPropagation()})});
   ov.addEventListener('click',function(e){
     var b=e.target.closest&&e.target.closest('button[data-a]');if(!b||busy)return;
-    if(b.dataset.a==='x')close();else if(b.dataset.a==='go')ritual();
+    if(b.dataset.a==='x')close();else if(b.dataset.a==='go')ritual();else if(b.dataset.a==='yc'){close();if(window.YCANH)YCANH.open()}
   });
   document.body.appendChild(ov);
 }
@@ -91,7 +91,7 @@ function render(){
     '<li>Lên Đạo Cảnh cần Đạo Linh <b>gấp '+CF.xpMul+' lần</b> lúc còn phàm thể.</li>'+
     '<li><b>Xoá toàn bộ kỹ năng phàm thể</b> — chỉ dùng được kỹ năng Thần Thông.</li>'+
     '<li style="color:#ff9a8a">Chỉ hợp đạo được 1 lần, không thể hoàn tác.</li></ul>'+
-    '<div class="row"><button class="g" data-a="x">Đóng</button>'+(done?'':'<button data-a="go"'+(ok?'':' disabled')+'>☯ Hợp Đạo</button>')+'</div></div>';
+    (window.YCANH?YCANH.mini():'')+'<div class="row"><button class="g" data-a="x">Đóng</button>'+(done?'':'<button data-a="go"'+(ok?'':' disabled')+'>☯ Hợp Đạo</button>')+'</div></div>';
 }
 function open(){
   if(!ov)build();render();ov.style.display='flex';try{LT.sync().then(function(){if(ov&&ov.style.display==='flex'&&!busy)render()})}catch(e){}
