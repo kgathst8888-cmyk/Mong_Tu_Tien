@@ -214,3 +214,7 @@ MAPPING MODULE CŨ → MỚI
 - Tinh Huyết nâng Ý Cảnh Ma Đạo qua `YCANH.up(1)`: giá = `CF.base + CF.step × (cấp − 1)`. Chỉ Ma Đạo dùng được; Tiên Đạo vẫn tích luỹ.
 - Thoát trận / chết giữa trận → `back(w)` đưa về đúng bản đồ trước đó (Làng / Linh Giới). Lần hạ Ma Thần đầu tiên (không có `dg.pm`) giữ nguyên.
 - Kiếm Thánh (world/35): `ask()`/`enter()` chặn nếu không phải Đạo Thể (`HDAO.on()`); ô cổng hiện "Chỉ Đạo Thể được đánh".
+
+
+## Thần Thông Ý Cảnh (Fix43)
+- world/49-y-canh-than-thong.js: 3 thần thông riêng cho Tiên Đạo (vàng kim) và Ma Đạo (tím đen), mở khoá theo cảnh giới Ý Cảnh [1,3,5]; nút #yt-bar (tự dịch khi có #fb-bar), tự dùng khi AUTO (bọc step()/cast() trong vòng AUTO + ZC.zauto dự phòng). world/45-y-canh.js render thêm YCTT.card().

@@ -33,7 +33,9 @@
       "world/46-dao-the-fx.js",
       "world/41-lang-online.js",
       "world/47-phu-ban-ma-than.js",
-      "world/48-phap-bao-bon-menh.js"
+      "world/48-phap-bao-bon-menh.js",
+      "world/49-y-canh-than-thong.js",
+      "world/50-y-canh-hieu-ung.js"
     ],
     "systems": [
       "systems/08-farming-alchemy.js",

@@ -63,7 +63,7 @@ function render(){if(!ov||ov.style.display==='none')return;
       +'<div class="row">'+[0,1,2].map(function(i){return'<div class="sd'+(i<=y.s?' on':'')+'"></div>'}).join('')+'</div>'
       +'<div style="font-size:13px">Sát thương phụ: <b style="color:'+c.col+'">'+pct(y)+'%</b> sát thương kỹ năng / Thần Thông ('+c.fx+')</div></div>'
       +'<table>'+c.names.map(function(n,i){var cur_=i+1===y.r,dn=i+1<y.r;return'<tr style="'+(cur_?'background:rgba(138,96,200,.25);font-weight:700':'')+'"><td>'+(dn?'✔':cur_?'▶':'·')+' '+(i+1)+'. '+n+'</td><td style="text-align:right;color:'+c.col+'">'+CF.pct[i]+'%</td></tr>'}).join('')+'</table>'
-      +'<div style="font-size:12.5px;opacity:.75;margin-top:8px;text-align:center">📜 Cách tu luyện: sẽ cập nhật sau.</div>'}
+      +(window.YCTT?YCTT.card():'')+'<div style="font-size:12.5px;opacity:.75;margin-top:8px;text-align:center">📜 Cách tu luyện: sẽ cập nhật sau.</div>'}
   h+='<button data-a="x" style="background:#3a3a3a">Đóng</button>';
   ov.innerHTML='<div class="bx">'+h+'</div>'}
 function open(){if(!started)return;if(!ov)build();ov.style.display='flex';render()}
