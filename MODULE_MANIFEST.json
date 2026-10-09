@@ -35,7 +35,8 @@
       "world/47-phu-ban-ma-than.js",
       "world/48-phap-bao-bon-menh.js",
       "world/49-y-canh-than-thong.js",
-      "world/50-y-canh-hieu-ung.js"
+      "world/50-y-canh-hieu-ung.js",
+      "world/51-toc-huy-hieu.js"
     ],
     "systems": [
       "systems/08-farming-alchemy.js",
@@ -70,7 +71,8 @@
     ],
     "equipment": [
       "equipment/14-cosmetics-shop.js",
-      "equipment/43-nhan-than-thong.js"
+      "equipment/43-nhan-than-thong.js",
+      "equipment/51-dao-the-outfit.js"
     ]
   },
   "added_files": [
