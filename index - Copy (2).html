@@ -1,0 +1,334 @@
+<!DOCTYPE html><html lang="vi"><head><script src="assets/game-assets.js"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>Kiếm Tiên Hoang Mạc · Modular Architecture</title><meta name="game-build" content="modular-architecture-2026-10-07-immortal-boss-v1"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
+<style>
+
+:root{--bg:#1a0f14;--fg:#f2e3b3;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1a0f14;--fg:#f2e3b3}}
+:root[data-theme="dark"]{--bg:#1a0f14;--fg:#f2e3b3}
+html,body{height:100%;margin:0}body{background:var(--bg);color:var(--fg);font-family:'KTH Serif','Songti SC',STKaiti,KaiTi,serif;letter-spacing:.2px;overflow:hidden;user-select:none;-webkit-user-select:none}
+canvas{display:block;width:100%;height:100%;touch-action:none}
+.sb{position:relative;width:54px;height:54px;border-radius:50%;border:3px solid #b8964e;background:radial-gradient(#3a2a22,#140d0a);color:var(--fg);font-size:22px;display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden}
+.sb small{position:absolute;bottom:1px;font-size:9px}.sb::after{content:'';position:absolute;inset:0;background:conic-gradient(rgba(0,0,0,.72) var(--c,0deg),transparent 0)}
+#sk{position:fixed;right:96px;bottom:calc(14px + env(safe-area-inset-bottom,0px));display:grid;grid-template-columns:repeat(3,54px);gap:8px}
+#ult{position:fixed;right:12px;bottom:calc(14px + env(safe-area-inset-bottom,0px));width:76px;height:76px;font-size:32px}
+#au{position:fixed;left:12px;bottom:calc(14px + env(safe-area-inset-bottom,0px));width:64px;height:64px;font:bold 15px KTH Serif,Songti SC,STKaiti,KaiTi,serif;border-color:#7fe0a0}#bg{position:fixed;left:88px;bottom:calc(14px + env(safe-area-inset-bottom,0px));width:64px;height:64px;border-color:#e0b050;font-size:28px}
+#bag{display:none;position:fixed;inset:0;background:#000a;align-items:center;justify-content:center;z-index:9}
+.bx{background:#2a1a12;border:3px solid #b8964e;border-radius:10px;padding:10px;width:min(360px,94vw);max-height:92%;overflow:auto;font-size:13px}
+.bh{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-weight:bold}
+.gr6,.gr5{display:grid;gap:6px;margin:6px 0}.gr6{grid-template-columns:repeat(6,1fr)}.gr5{grid-template-columns:repeat(5,1fr)}
+.ce{aspect-ratio:1;border:2px solid;border-radius:6px;background:#140d0a;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer}
+.dt{background:#140d0a;border-radius:6px;padding:8px;min-height:64px;line-height:1.5}.bx button{margin:4px 4px 0 0;background:#5a4220;color:var(--fg);border:1px solid #b8964e;border-radius:5px;padding:5px 9px;font:inherit;cursor:pointer}
+.st{font-size:12px;opacity:.85}
+.bh button{margin:2px;padding:4px 7px;font-size:16px}.bh{align-items:flex-start;gap:4px}.bh span{display:flex;flex-wrap:wrap}
+.bx button:disabled{opacity:.4;cursor:default}.bx button.sm{padding:3px 10px;margin:0 0 0 4px;font-size:12px}
+.tg{display:inline-block;background:#3a2a20;border-radius:10px;padding:1px 8px;font-size:11px;vertical-align:middle}
+.cc{display:flex;gap:10px;align-items:center;background:linear-gradient(135deg,#1c120d,#2e1f14);border:1px solid #6a5030;border-radius:10px;padding:8px;margin:6px 0}.cc img{width:60px;height:84px;object-fit:contain;flex:none;filter:drop-shadow(0 2px 6px #000)}
+.cs{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin:5px 0}.cs>div{background:#140d0a;border-radius:6px;padding:5px 8px;font-size:12px;display:flex;justify-content:space-between;align-items:center}.cs b{color:#ffe9a0}
+.cs.c3{grid-template-columns:repeat(3,1fr)}.cs.c3>div{flex-direction:column;text-align:center;gap:1px}
+.ar{display:flex;align-items:center;justify-content:space-between;padding:4px 0;border-top:1px solid #2e2018}.ar small{opacity:.65;font-size:11px}
+.sk{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin:4px 0}.sk>div{display:flex;gap:7px;align-items:center;background:#140d0a;border-radius:6px;padding:5px 7px;font-size:12px;line-height:1.3;min-width:0}.sk small{opacity:.7}
+.wd{margin-top:6px;background:#140d0a;border-radius:6px;padding:4px 6px}.wd summary{cursor:pointer;padding:4px 0;font-size:12px}.wd .dt{padding:2px 0;background:none}
+.nyc{position:relative;text-align:center;margin:0 0 6px;padding:8px 0 4px;border-radius:6px;overflow:hidden;background:radial-gradient(ellipse at 50% 58%,color-mix(in srgb,var(--g) 38%,#140d0a) 0,#140d0a 72%)}.nyc img{height:150px;max-width:100%;object-fit:contain;filter:drop-shadow(0 0 10px var(--g));animation:nyf 4.5s ease-in-out infinite}.nyc small{display:block;margin-top:2px;color:var(--g);opacity:.9}@keyframes nyf{50%{transform:translateY(-5px)}}@media (prefers-reduced-motion:reduce){.nyc img{animation:none}}
+#vl{position:fixed;left:160px;bottom:calc(14px + env(safe-area-inset-bottom,0px));width:64px;height:64px;border-color:#7fc0ff;font-size:26px}
+#mn{display:flex;position:fixed;inset:0;background:#000c;align-items:center;justify-content:center;z-index:10}
+#mn .bx{text-align:center}.bh{flex-wrap:wrap;gap:4px}.bx button:disabled{opacity:.4}
+@media (max-height:460px) and (orientation:landscape){.sb{width:44px;height:44px;font-size:17px}#sk{right:72px;bottom:calc(8px + env(safe-area-inset-bottom,0px));grid-template-columns:repeat(5,44px);gap:5px}#ult{width:58px!important;height:58px!important;right:8px;bottom:calc(8px + env(safe-area-inset-bottom,0px))}#au{width:46px!important;height:46px!important;left:8px;bottom:calc(8px + env(safe-area-inset-bottom,0px));font-size:11px!important}#bg{left:60px;width:46px;height:46px;font-size:20px;bottom:calc(8px + env(safe-area-inset-bottom,0px))}#vl{left:112px;width:46px;height:46px;font-size:20px;bottom:calc(8px + env(safe-area-inset-bottom,0px))}.bx{max-height:96%}}
+@media (max-width:640px){.sb{width:46px;height:46px;font-size:18px}#sk{right:8px;bottom:calc(84px + env(safe-area-inset-bottom,0px));grid-template-columns:repeat(3,46px);gap:6px}#ult{width:62px!important;height:62px!important;right:8px}#au{left:8px;width:50px!important;height:50px!important;font-size:12px!important}#bg{left:64px;width:50px;height:50px;font-size:22px}#vl{left:120px;width:50px;height:50px;font-size:22px}}
+.ce{position:relative;overflow:hidden}
+.spk::before{content:'';position:absolute;inset:-60%;background:linear-gradient(115deg,transparent 40%,rgba(255,255,255,.7) 50%,transparent 60%);animation:shn 2.2s linear infinite;pointer-events:none}
+.spk::after{content:'✦';position:absolute;top:1px;right:3px;font-size:11px;color:#8ff;animation:twk 1.1s ease-in-out infinite;text-shadow:0 0 6px currentColor;pointer-events:none}
+.ete{box-shadow:0 0 12px #ff5ad0,0 0 6px #5ff;animation:hue 3s linear infinite}@keyframes hue{to{filter:hue-rotate(360deg)}}
+.my{box-shadow:0 0 10px #ffa733,inset 0 0 8px #ffa73366;animation:gl 2s ease-in-out infinite}.my::after{color:#ffe08a}.cf{box-shadow:0 0 9px #6ff,inset 0 0 7px #66ffff55}
+@keyframes shn{from{transform:translateX(-60%)}to{transform:translateX(60%)}}@keyframes twk{0%,100%{opacity:.2;transform:scale(.5)}50%{opacity:1;transform:scale(1.25) rotate(45deg)}}@keyframes gl{50%{filter:brightness(1.35)}}
+@media (prefers-reduced-motion:reduce){.spk::before,.spk::after,.my,.ete{animation:none}}
+#mpb{position:fixed;left:232px;bottom:calc(14px + env(safe-area-inset-bottom,0px));width:64px;height:64px;border-color:#c090ff;font-size:26px}
+@media (max-width:640px){#mpb{left:176px;width:50px;height:50px;font-size:22px}}
+@media (max-height:460px) and (orientation:landscape){#mpb{left:164px;width:46px;height:46px;font-size:20px;bottom:calc(8px + env(safe-area-inset-bottom,0px))}}
+.eqd{display:grid;grid-template-columns:52px 1fr 52px;grid-template-rows:repeat(5,52px);gap:6px;margin:6px 0}.eqd .ce{width:52px;height:52px;aspect-ratio:auto;padding:0}
+.chp{grid-column:2;grid-row:1/5;position:relative;border:2px solid #b8964e;border-radius:8px;background:radial-gradient(#4a3426,#140d0a);overflow:hidden;display:flex;align-items:flex-end;justify-content:center}.chp img{max-width:100%;max-height:100%;object-fit:contain}.chp span{position:absolute;bottom:0;left:0;right:0;text-align:center;font-size:11px;background:#000a;padding:1px 0}
+#zk{position:fixed;right:8px;top:calc(8px + env(safe-area-inset-top,0px));display:flex;flex-direction:column;gap:6px;z-index:2}.zb{width:46px;height:46px;font-size:19px}@media (max-width:640px){#zk{top:calc(124px + env(safe-area-inset-top,0px))}.zb{width:42px;height:42px;font-size:17px}}@media (max-height:460px) and (orientation:landscape){.zb{width:38px;height:38px;font-size:15px}#zk{gap:4px}}#dgb{position:fixed;left:304px;bottom:calc(14px + env(safe-area-inset-bottom,0px));width:64px;height:64px;border-color:#ff7a5a;font-size:26px}.dgo{box-shadow:0 0 14px #ff5a30;animation:gl 1.2s ease-in-out infinite}
+#dgh{position:fixed;left:58%;top:calc(8px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:2;text-align:center;pointer-events:none;width:min(320px,60vw)}.dgt{font:bold 14px KTH Serif,Songti SC,STKaiti,KaiTi,serif;color:#ffd0a0;text-shadow:0 0 4px #000,0 0 4px #000}.dgp{height:12px;border:2px solid #b8964e;background:#000a;border-radius:6px;overflow:hidden;margin-top:4px}.dgp i{display:block;height:100%;background:linear-gradient(#ff6a3a,#a01810)}
+@media (max-width:640px){#dgb{left:232px;width:50px;height:50px;font-size:22px}#dgh{left:50%;top:calc(124px + env(safe-area-inset-top,0px))}}@media (max-height:460px) and (orientation:landscape){#dgb{left:216px;width:46px;height:46px;font-size:20px;bottom:calc(8px + env(safe-area-inset-bottom,0px))}}
+button,input,select,textarea{font-family:inherit}.qpl{display:flex;gap:4px;margin:6px 0;overflow-x:auto}.qpl button{flex:1;min-width:0;white-space:nowrap;padding:6px 1px;font-size:12px;position:relative;background:#3a2a1a;color:var(--fg);border:1px solid #6a5030;border-radius:6px;cursor:pointer;font:inherit;font-size:12px}.qpl button.on{background:#8a6420;border-color:#ffd54a}.qpl .nd2{position:absolute;top:2px;right:3px;width:8px;height:8px;border-radius:50%;background:#ff4a4a}
+.qc{background:linear-gradient(135deg,#1c120d,#2e1f14);border:1px solid #6a5030;border-radius:10px;padding:9px;margin:6px 0}.qc.done{border-color:#7fe0a0}.qc h4{margin:2px 0 3px;font-size:15px;color:#ffe9a0}
+.qs{font-size:12px;opacity:.82;font-style:italic;line-height:1.5;margin:4px 0 6px}
+.qo{margin:5px 0;font-size:12px}.qb{position:relative;height:15px;background:#000a;border-radius:8px;overflow:hidden;margin-top:2px}.qb i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#5a8f3a,#b6e060)}.qb span{position:relative;font-size:10px;display:block;text-align:center;line-height:15px;text-shadow:0 1px 2px #000}
+.qr{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0}.qr span{background:#140d0a;border:1px solid #4a3828;border-radius:10px;padding:1px 7px;font-size:11px}
+.qa{display:flex;gap:5px;margin:6px 0 2px}.qa button{flex:1;padding:7px;background:#5a4220;color:var(--fg);border:1px solid #b8964e;border-radius:6px;font:inherit;cursor:pointer}.qa button:disabled,.qc button:disabled{opacity:.4;cursor:default}.qm{display:flex;gap:5px;margin:8px 0}.qm button{flex:1;padding:6px 0;background:#3a2a1a;color:var(--fg);border:1px solid #6a5030;border-radius:6px;font:inherit;cursor:pointer}.qm button.rdy{background:#8a6420;border-color:#ffd54a}.qm button.got{opacity:.35}
+</style><style>
+/* menu tab bar */
+.bhw{position:sticky;top:-10px;z-index:3;margin:-10px -10px 8px;padding:10px 10px 8px;background:linear-gradient(#37241b,#2a1a12);border-radius:8px 8px 0 0;border-bottom:1px solid #6a5030}
+.bhd{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.bti{display:flex;align-items:center;gap:8px;color:#ffe9a0;font-size:15px;min-width:0}
+.bti svg{width:20px;height:20px;color:#ffd54a;flex:none}
+.bti b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bac{display:flex;gap:6px;flex:none}
+.bx .bac .ib{margin:0;width:32px;height:32px;padding:0;display:flex;align-items:center;justify-content:center;border-radius:50%;background:#3a2818;color:#d9c08a;border:1px solid #7a5f36}
+.bx .bac .ib svg{width:16px;height:16px}
+.bx .bac .ib:active{background:#5e4416}
+.bx .bac .ib.x{color:#ff9a8a;border-color:#8a4a3a}
+.tbar{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}
+.bx .tbar .tbt{position:relative;margin:0;min-width:0;min-height:46px;padding:6px 0 4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:#33231a;border:1px solid #5f4a2c;border-radius:9px;color:#bfa77a;font-size:10px;line-height:1.2;transition:background .15s,color .15s,box-shadow .15s}
+.tbt svg{width:22px;height:22px;flex:none}
+.tbt span{max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.45;margin-top:-1px}
+.bx .tbar .tbt.on{background:linear-gradient(#a37a28,#5e4416);border-color:#ffd54a;color:#fff3c0;box-shadow:0 0 8px #ffd54a55,inset 0 1px 0 #ffffff30}
+.bx .tbar .tbt.lk{opacity:.5}
+.bx .tbar .tbt.lk.on{opacity:.85}
+.tbt .nd{position:absolute;top:3px;right:5px;width:8px;height:8px;border-radius:50%;background:#ff4a3a;border:1.5px solid #2a1a12}
+.rsr{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px}
+.bx .rsr .chip{margin:0;display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:12px;background:#140d0a;border:1px solid #5a4630;color:#ffe9a0;font-size:12px}
+.bx .rsr button.chip{cursor:pointer}
+.chip small{color:#8fffa0;font-size:10px;margin-left:2px}
+.msgl{margin:2px 0 6px;color:#ffe9a0;opacity:1}
+#bag .bx{max-height:calc(100% - 30px)}
+@media (max-height:520px){.bhw{position:static;margin-bottom:6px}.bx .tbar .tbt{min-height:36px;padding:4px 0}.tbt span{display:none}}
+
+/* item popup floats over the bag */
+.ipb{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:20}
+.ipp{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:21;width:min(330px,90vw);max-height:76vh;overflow:auto;box-sizing:border-box;background:linear-gradient(#37241b,#241610);border:2px solid #d9b25c;border-radius:12px;padding:12px;box-shadow:0 10px 34px #000d;font-size:13px;line-height:1.5;animation:ipin .12s ease-out}
+@keyframes ipin{from{opacity:0}}
+.bx .ipx{float:right;margin:0 0 4px 8px;width:30px;height:30px;padding:0;border-radius:50%;background:#3a2818;color:#ffb0a0;border:1px solid #8a4a3a;font-size:14px;line-height:1}
+.ipa{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid #4a3622;clear:both}
+.bx .ipa button{margin:0;flex:1 1 auto;padding:9px 10px;font-size:13px}
+
+/* ===== tu tiên control set (mọi kích thước màn hình) ===== */
+:root{--sk:52px;--ult:72px;--dk:54px}
+@media (max-width:640px){:root{--sk:48px;--ult:64px;--dk:46px}}
+@media (max-height:460px) and (orientation:landscape){:root{--sk:34px;--ult:46px;--dk:36px}}
+@keyframes xspin{to{transform:rotate(360deg)}}
+.sb::after{border-radius:50%}
+.xi{display:flex;align-items:center;justify-content:center;pointer-events:none}
+.xi svg{width:100%;height:100%;filter:drop-shadow(0 0 3px currentColor) drop-shadow(0 1px 1px #000)}
+#sk .xi,#ult .xi,.zb .xi{width:58%;height:58%}
+#dock{display:flex;position:fixed;left:calc(10px + env(safe-area-inset-left,0px));bottom:calc(10px + env(safe-area-inset-bottom,0px));gap:6px;padding:6px;z-index:2;background:linear-gradient(rgba(52,34,24,.82),rgba(18,10,8,.88));border:1px solid #9a7a40;border-radius:22px;box-shadow:0 5px 16px #000b,inset 0 1px 0 #ffffff22;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+#dock::before{content:'';position:absolute;inset:3px;border:1px solid #b8964e40;border-radius:19px;pointer-events:none}
+#dock .sb{position:relative;left:auto;right:auto;top:auto;bottom:auto;width:var(--dk)!important;height:calc(var(--dk) + 6px)!important;border:1px solid rgba(184,150,78,.28);border-radius:12px;flex-direction:column;gap:2px;font-size:12px!important;line-height:1;background:radial-gradient(circle at 50% 25%,#4a382a,#150d09 80%);box-shadow:inset 0 1px 0 #ffffff26,inset 0 -8px 10px #0008;overflow:hidden}
+#dock .sb small{position:static;font-size:10px;line-height:1.1;color:#f2e3b3;white-space:nowrap;letter-spacing:0;text-shadow:0 1px 2px #000}
+#dock .xi{width:calc(var(--dk)*.5);height:calc(var(--dk)*.5)}
+#dock #au:not([style*="0.5"]) .xi svg{animation:xspin 7s linear infinite}
+#dock #dgb.dgo{box-shadow:inset 0 1px 0 #ffffff26,inset 0 -8px 10px #0008;animation:none}
+#dock #dgb.dgo .xi{animation:gl 1.2s ease-in-out infinite}
+#sk{right:calc(10px + (var(--ult) - var(--sk))/2 + env(safe-area-inset-right,0px));bottom:calc(20px + var(--ult) + env(safe-area-inset-bottom,0px));grid-template-columns:repeat(3,var(--sk));gap:8px}
+#sk .sb:nth-child(1){grid-row:2;grid-column:2}#sk .sb:nth-child(2){grid-row:2;grid-column:3}
+#sk .sb:nth-child(3){grid-row:1;grid-column:1}#sk .sb:nth-child(4){grid-row:1;grid-column:2}#sk .sb:nth-child(5){grid-row:1;grid-column:3}
+#sk .sb,.zb{width:var(--sk);height:var(--sk);border:2px solid #c9a24f;background:radial-gradient(circle at 50% 30%,#4b3a2c,#120b08 78%);box-shadow:0 3px 8px #000b,inset 0 0 0 2px #140d09,inset 0 0 0 3px #7a5f3699,inset 0 0 12px #000}
+#zk .zb{width:calc(var(--sk) - 6px);height:calc(var(--sk) - 6px)}
+#sk .sb small,#ult.sb small,.zb small{display:none}
+#ult.sb{width:var(--ult)!important;height:var(--ult)!important;right:calc(10px + env(safe-area-inset-right,0px));bottom:calc(10px + env(safe-area-inset-bottom,0px));border:2.5px solid #ffd25a;overflow:visible;background:radial-gradient(circle at 50% 30%,#5a4326,#150d09 78%);box-shadow:0 0 14px #ffb02e88,0 3px 8px #000b,inset 0 0 0 2px #140d09,inset 0 0 0 3px #b8964e99,inset 0 0 12px #000}
+#ult.sb::before{content:'';position:absolute;inset:-6px;border-radius:50%;border:1.5px dashed rgba(255,210,90,.6);animation:xspin 20s linear infinite;pointer-events:none}
+@media (prefers-reduced-motion:reduce){#ult.sb::before,#dock #au .xi svg{animation:none!important}}
+@media (min-width:641px){#zk{top:calc(128px + env(safe-area-inset-top,0px))}}
+@media (max-height:460px) and (orientation:landscape){
+#dock{gap:3px;padding:4px;border-radius:15px}#dock::before{border-radius:12px}#dock .sb{height:calc(var(--dk) + 4px)!important;border-radius:10px}#dock .sb small{font-size:8.5px}#ult.sb::before{inset:-4px}
+#zk .zb{width:30px;height:30px}
+#zk{top:calc(112px + env(safe-area-inset-top,0px))}
+#sk{right:calc(22px + var(--ult) + env(safe-area-inset-right,0px));bottom:calc(10px + (var(--ult) - var(--sk))/2 + env(safe-area-inset-bottom,0px));grid-template-columns:repeat(5,var(--sk));gap:6px}
+#sk .sb:nth-child(1){grid-row:1;grid-column:5}#sk .sb:nth-child(2){grid-row:1;grid-column:4}#sk .sb:nth-child(3){grid-row:1;grid-column:3}#sk .sb:nth-child(4){grid-row:1;grid-column:2}#sk .sb:nth-child(5){grid-row:1;grid-column:1}
+}
+</style>
+<style>
+/* ===== Linh Điền · Luyện Đan ===== */
+.tbar{grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}.bx .tbar .tbt{font-size:9px}
+.fm-g{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;margin:6px 0}
+.bx .fmsel{margin:0;padding:6px 4px;display:flex;flex-direction:column;align-items:center;gap:1px;background:#33231a;border:1px solid #5f4a2c;border-radius:8px;color:#e8d5a0;text-align:center;font-size:12px;line-height:1.25}
+.bx .fmsel.on{background:linear-gradient(#4a3a1c,#2d2110);border-color:var(--c);box-shadow:0 0 8px var(--c)}
+.fmsel .fe,.fmp .fe{font-size:22px;line-height:1.1}.fmsel small{font-size:10px;opacity:.85}
+.fm-p{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin:4px 0}
+.bx .fmp{margin:0;min-height:76px;padding:5px 3px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border-radius:9px;background:#1b120d;border:1px dashed #6a5434;color:#e8d5a0;font-size:11px;text-align:center;box-sizing:border-box}
+.bx .fmp.grow{border:1px solid var(--c);background:#241810;cursor:default}
+.bx .fmp.ready{border:1px solid var(--c);background:linear-gradient(#4a3a1c,#2d2110);box-shadow:0 0 10px var(--c);animation:fmg 1.2s ease-in-out infinite;cursor:pointer}
+@keyframes fmg{50%{box-shadow:0 0 3px var(--c)}}
+.fmbar{width:90%;height:6px;background:#000a;border:1px solid #5a4630;border-radius:3px;overflow:hidden}.fmbar i{display:block;height:100%;background:var(--c)}
+.fmp small{font-size:10px;opacity:.9}
+.fmb{display:flex;flex-wrap:wrap}
+.fmh{display:flex;justify-content:space-between;align-items:center}.fmc{background:#000a;border:1px solid #5a4630;border-radius:10px;padding:0 8px;font-size:11px;color:#ffe9a0}
+.fmpl{margin-top:6px}
+.fmt{width:100%;border-collapse:collapse;font-size:10px}.fmt th,.fmt td{border:1px solid #3d2e1c;padding:2px 3px;text-align:center}.fmt td:first-child{text-align:left;white-space:nowrap}
+</style>
+<style>html,body{overscroll-behavior:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}canvas{touch-action:none}#bag{-webkit-overflow-scrolling:touch;overscroll-behavior:contain}</style><style>.tbar{grid-template-columns:repeat(8,minmax(0,1fr));gap:3px}.bx .tbar .tbt{font-size:8.5px}</style>
+</head><body>
+<script src="core/00-error-handler.js"></script>
+<canvas id="c"></canvas>
+<div id="sk"></div><div id="ult" class="sb"></div><div id="au" class="sb">AUTO</div><div id="bg" class="sb">🎒<small>Túi</small></div><div id="vl" class="sb">🏘<small>Làng</small></div><div id="mpb" class="sb">🗺<small>Bản đồ</small></div><div id="dgb" class="sb">🕳<small>Phụ bản</small></div><div id="dgh"></div><div id="bag"></div><div id="mn"></div>
+<script src="core/01-engine.js"></script>
+<script src="world/02-demon-realm.js"></script>
+<script src="world/03-village.js"></script>
+<script src="world/41-lang-online.js"></script>
+<script src="ui/04-character-stats.js"></script>
+<script src="world/05-demon-boss.js"></script>
+<script src="ui/06-combat-icons.js"></script>
+<script src="world/07-trial-tower.js"></script>
+<script src="systems/08-farming-alchemy.js"></script>
+<script src="systems/09-input-guard.js"></script>
+<script src="world/10-farming-map.js"></script>
+
+<script src="combat/11-status-effects.js"></script>
+<script src="systems/12-cloud-save.js"></script>
+<script src="world/13-mining.js"></script>
+<script src="equipment/14-cosmetics-shop.js"></script>
+<style>
+#gdp{display:none;position:fixed;inset:0;background:#000b;z-index:99990;align-items:center;justify-content:center;font-size:14px;line-height:1.6;color:#f2e3b3}#gdp.on{display:flex}
+#gdp .gdb{width:min(580px,96vw);max-height:94%;overflow:auto;background:#2a1a12;border:3px solid #b8964e;border-radius:10px;padding:0 12px 16px;-webkit-overflow-scrolling:touch;user-select:text;-webkit-user-select:text}
+#gdp .gdt{position:sticky;top:0;z-index:3;margin:0 -12px;padding:8px 12px 6px;background:linear-gradient(#37241b,#2a1a12);border-bottom:1px solid #6a5030}
+#gdp .gdh{display:flex;justify-content:space-between;align-items:center;font-size:17px;font-weight:bold;color:#ffd54a}
+#gdp .gdn{display:flex;gap:6px;overflow-x:auto;margin-top:6px;padding-bottom:2px}#gdp .gdn a{flex:none;border:1px solid #6a5030;border-radius:14px;padding:2px 11px;font-size:12px;background:#140d0a;cursor:pointer}
+#gdp button{font:inherit;background:#5a4220;color:#f2e3b3;border:1px solid #b8964e;border-radius:6px;padding:4px 10px;cursor:pointer}
+#gdp h2{color:#ffd54a;font-size:17px;margin:18px 0 6px;border-bottom:1px solid #6a5030;padding-bottom:3px}
+#gdp .c{background:#140d0a;border:1px solid #4a3828;border-radius:8px;padding:8px 10px;margin:6px 0}#gdp .c b,#gdp summary{color:#ffd54a}
+#gdp .g{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:6px}
+#gdp details{background:#140d0a;border:1px solid #4a3828;border-radius:8px;margin:6px 0;padding:0 10px}#gdp summary{cursor:pointer;padding:8px 0;font-weight:bold}#gdp details[open] summary{border-bottom:1px solid #4a3828;margin-bottom:5px}
+#gdp ul{margin:3px 0 8px;padding-left:18px}#gdp li{margin:3px 0}#gdp .t{color:#b8a47a;font-size:12px}
+#gdp table{border-collapse:collapse;width:100%;font-size:12px;margin:5px 0}#gdp td,#gdp th{border:1px solid #4a3828;padding:3px 6px;text-align:left}#gdp th{color:#ffd54a}#gdp .sc{overflow-x:auto}
+#gdp .tip{border-left:4px solid #b8964e;background:#140d0a;padding:7px 10px;margin:8px 0;border-radius:0 8px 8px 0}#gdp .warn{border-color:#d05a4a}
+#gdp .ck{display:flex;gap:9px;align-items:flex-start;padding:6px 0;border-top:1px solid #3a2a20;cursor:pointer}#gdp .ck input{margin-top:4px;width:18px;height:18px;flex:none;accent-color:#7fe0a0}#gdp .ck.on span{opacity:.55;text-decoration:line-through}#gdp .ck i{color:#9fe0ff;font-style:normal}
+#gdp .pb{height:9px;background:#4a3828;border-radius:6px;overflow:hidden;margin:5px 0}#gdp .pb i{display:block;height:100%;width:0;background:#7fe0a0;transition:width .3s}
+#gdp .r0{color:#b0b0b0}#gdp .r1{color:#6fdc8a}#gdp .r2{color:#6fb0ff}#gdp .r3{color:#c080ff}#gdp .r4{color:#ffa733}#gdp .r5{color:#ff6ac0}
+</style><div id="gdp"><div class="gdb"><div class="gdt"><div class="gdh"><span>📖 Cẩm Nang Kiếm Tiên Hoang Mạc</span><button id="gd-x">✕</button></div><div class="gdn"><a data-t="gd-bd">Bắt đầu</a><a data-t="gd-lt">Lộ trình</a><a data-t="gd-cd">Chiến đấu</a><a data-t="gd-tb">Trang bị</a><a data-t="gd-tt">Tu tiên</a><a data-t="gd-hd">Hoạt động</a><a data-t="gd-hk">Khác</a><a data-t="gd-me">Mẹo</a></div></div><h2 id="gd-bd">1. Bắt đầu trong 1 phút</h2>
+<div class="g">
+<div class="c"><b>Chọn nhân vật</b><br>Elowen ⚔️ chiến binh (máu dày), Aldric 🔮 phù thủy (nhiều MP, phép diện rộng), Kaelen 🏹 cung thủ (công cao, tầm xa). Mỗi nhân vật có túi đồ, trang bị và tiến trình riêng.</div>
+<div class="c"><b>Đánh tự động</b><br>Nút <b>AUTO</b> bật/tắt tự đánh. Khi tắt: bấm nút kỹ năng để đánh. Nút tròn lớn là tuyệt kỹ. Phím tắt: <b>Q</b> dùng bình HP, <b>E</b> dùng bình MP.</div>
+<div class="c"><b>Các nút ở đáy màn hình</b><br>🎒 Túi (menu chính) · 🏘 Làng · 🗺 Bản đồ · 🕳 Phụ bản (đếm ngược, hiện “Phụ bản” khi vào được).</div>
+<div class="c"><b>Thanh trạng thái</b><br>HP đỏ · MP xanh · EXP vàng · thanh <b>cảnh giới tu tiên</b> bên dưới. Dòng ⭐ x/30 là đếm tới quái Tinh Anh, 👑 x/100 là đếm tới Boss Sử Thi, 🐲 là đồng hồ Boss Thế Giới.</div>
+</div>
+<div class="tip"><b>Lưu game:</b> game lưu trên máy, bấm nút 💾 trong menu để lưu ngay. Muốn chơi nhiều thiết bị thì đăng nhập ở nút <b>☁ Tài khoản &amp; Xếp hạng</b> (xem mục 7).</div>
+
+<h2 id="gd-lt">2. Lộ trình cho người mới</h2>
+<div class="c"><div class="t">Các bước có dấu ✦ tự nhận khi bạn đạt được; còn lại tự tick</div><div class="pb"><i id="gd-bar"></i></div><div id="gd-cnt" class="t"></div>
+<div id="gd-cl">
+<label class="ck"><input type="checkbox"><span><b>Lv1–5:</b> bật AUTO, đánh ở Thanh Vân Sơn Môn. Vào menu → ❗ <b>Nhiệm vụ</b> để nhận thưởng chương 1.</span></label>
+<label class="ck"><input type="checkbox"><span>Vào 🏘 Làng, mua thuốc ở <b>Dược</b> (HP tự dùng khi dưới 35%, MP dưới 20%). Mỗi lần lên cấp cộng điểm ở tab <b>Nhân vật</b>.</span></label>
+<label class="ck"><input type="checkbox"><span>Mặc đồ mới (tab <b>Túi</b>), bán đồ yếu, cường hóa món đang mặc.</span></label>
+<label class="ck"><input type="checkbox"><span>Tab <b>Tu tiên</b>: đủ tu vi + 100💰 thì đột phá <b>Luyện Khí</b>. Tu tiên không phụ thuộc cấp nhân vật.</span></label>
+<label class="ck"><input type="checkbox"><span><b>Lv20:</b> ở Làng nhận <b>nhiệm vụ chuyển chức</b>, hoàn thành rồi chọn nhánh nghề.</span></label>
+<label class="ck"><input type="checkbox"><span>Tab <b>Thú</b>: chọn 1 trong 4 thần thú (Hổ, Chu Tước, Rắn, Huyền Vũ). Không đổi được.</span></label>
+<label class="ck"><input type="checkbox"><span>Vào 🕳 <b>Hầm Ngục</b> mỗi 5 phút để lấy mảnh cánh, hạt giống, đồ tốt.</span></label>
+<label class="ck"><input type="checkbox"><span>Đổi 🗺 bản đồ khó hơn khi hạ quái nhanh. Săn <b>Boss Thế Giới</b> (30 phút/lần) lấy 🔹 mảnh chế tạo.</span></label>
+<label class="ck"><input type="checkbox"><span>Mở <b>Linh Điền</b> trồng thuốc, <b>Luyện đan</b>, tiến lên Kim Đan → Nguyên Anh (có Lôi Kiếp).</span></label>
+<label class="ck"><input type="checkbox"><span><b>Đích cuối:</b> Hoá Thần tầng 9 + chuyển chức 3, hạ <b>Ma Thần</b>, bước vào Linh Giới.</span></label>
+</div><button id="gd-rs">Làm lại</button></div>
+
+<h2 id="gd-cd">3. Chiến đấu &amp; nhân vật</h2>
+<details open><summary>Nhân vật, nghề, chuyển chức</summary><ul>
+<li>Cấp tối đa phụ thuộc chuyển chức: <b>20 → 40 → 60 → 100</b>. Chuyển chức cần đủ cấp (Lv20/40/60) và làm nhiệm vụ ở Làng.</li>
+<li>Chuyển chức 1 chọn nhánh: Elowen = <b>Kiếm Khách</b> hoặc <b>Thương Thủ</b>; Aldric = <b>Triệu Hồi Sư</b> hoặc <b>Ma Thuật Sư</b>; Kaelen = <b>Xạ Thủ</b> hoặc <b>Thích Khách</b>.</li>
+<li>Mỗi lần chuyển chức mở thêm kỹ năng và đổi vũ khí; tuyệt kỹ mạnh nhất mở ở chuyển chức 3.</li>
+<li>Điểm tiềm năng: <b>Lực</b> +3 công · <b>Thể</b> +25 HP, +1 thủ · <b>Linh</b> +8 MP, −1% hồi chiêu · <b>Mẫn</b> +1% bạo kích.</li>
+<li>Thua trận thì hồi sinh tại chỗ, không mất đồ.</li></ul></details>
+<details><summary>Bản đồ &amp; quái đặc biệt</summary>
+<div class="sc"><table><tr><th>Bản đồ</th><th>Quái</th></tr><tr><td>Thanh Vân Sơn Môn</td><td>Lv1–20</td></tr><tr><td>Tuyết Hàn Tiên Phong</td><td>Lv20–40</td></tr><tr><td>Xích Viêm Luyện Ngục</td><td>Lv40–60</td></tr><tr><td>U Minh Quỷ Cốc</td><td>Lv60–80</td></tr><tr><td>Hư Không Ma Điện</td><td>Lv80–100</td></tr></table></div>
+<ul><li>Bản đồ cao rơi nhiều vàng và đồ tốt hơn nhưng quái và boss khó hơn.</li>
+<li>⭐ <b>Tinh Anh</b>: xuất hiện mỗi 30 quái. 👑 <b>Boss Sử Thi</b>: mỗi 100 quái. 🐲 <b>Boss Thế Giới</b>: mỗi 30 phút, rơi 🔹 mảnh chế tạo.</li></ul></details>
+
+<h2 id="gd-tb">4. Trang bị</h2>
+<details open><summary>Phẩm chất &amp; thuộc tính</summary>
+<p><span class="r0">Thường</span> › <span class="r1">Tinh Anh</span> › <span class="r2">Hiếm</span> › <span class="r3">Sử Thi</span> › <span class="r4">Thần Thoại</span> › <span class="r5">Thiên Thần</span></p>
+<ul><li>Phẩm chất càng cao càng nhiều dòng thuộc tính phụ (Thường 1 dòng … Thiên Thần 6 dòng) trong 17 loại: né, chính xác, chí mạng, ST chí mạng, giảm ST nhận, % máu, % sát thương, % năng lượng, giảm hồi chiêu, ST kỹ năng, tốc đánh, tốc niệm, ST độc/bỏng, xuyên giáp, kháng hiệu ứng, tỉ lệ choáng, tỉ lệ đóng băng.</li>
+<li><b>Vòng Quay May Mắn (tab 🎡):</b> 10 ô bí ẩn, quay miễn phí mỗi 15 phút hoặc dùng Chìa Khóa (Boss Thế Giới rơi 10%). Có thể ra Mảnh Nguyệt Thạch, trang bị Thiên Thần, túi vàng 1-2 triệu.</li>
+<li><b>Bộ Thánh (Lò Thánh, tab ✨ ở Làng):</b> không rơi từ Boss nào. Luyện Mảnh Thánh từ 1000 Quặng Sắt + 1000 Huyền Kim + 10 Mảnh Nguyệt Thạch; 10 Mảnh Thánh có 30% kết hợp thành 1 món Thánh (Lv80, mạnh gấp 3 lần Thiên Thần cao nhất). Mặc 2/4/6/8/10 món mở dần 5 opt ẩn.</li>
+<li><b>Bộ Thần Thoại:</b> mặc đủ 6 món Thần Thoại trở lên thì tăng mạnh công, máu và chí mạng.</li>
+<li>Tab Túi hiện so sánh với đồ đang mặc (xanh = tốt hơn, đỏ = kém hơn).</li></ul></details>
+<details><summary>Cường hóa, chế tạo, dung hợp (ở Làng)</summary><ul>
+<li><b>Cường hóa +1 → +10</b> (chạm món đồ ở Túi): tỉ lệ giảm dần từ 100% xuống 15%, mỗi cấp tăng chỉ số cơ bản 15%. Đừng dồn vàng vào đồ sắp thay.</li>
+<li><b>Chế tạo</b> (tab Rèn): Sử Thi = 5🔹 + 100×Lv vàng · Thần Thoại = 12🔹 + 600×Lv vàng.</li>
+<li><b>Dung hợp</b> (tab Hợp): 3 món cùng phẩm chất Sử Thi hoặc Thần Thoại → <b>10%</b> ra 1 món cao hơn một bậc, <b>90% mất cả 3 món</b>. Phí = 300 × cấp × (bậc − 2).</li>
+<li><b>Tạp Hóa:</b> bán đồ nhanh; Rương trang bị giá 150×Lv vàng cho đồ ngẫu nhiên.</li>
+<li>Sức chứa túi 90, thêm 30 ở chuyển chức 2 và 30 ở chuyển chức 3. Nút “Dọn đồ yếu”, “Bán nhanh” giúp đỡ chật.</li></ul></details>
+<details><summary>Cánh 🪽 &amp; Hầm Ngục 🕳</summary><ul>
+<li><b>Hầm Ngục</b> mở mỗi 5 phút, mỗi lượt: hạ 20 quái rồi đấu Trùm Thần Thoại. Thoát giữa chừng là mất lượt.</li>
+<li>Trùm rơi <b>mảnh cánh</b>, hạt giống, mảnh chế tạo. Tỉ lệ mảnh: 10% / 8% / 6% theo cấp cánh đang có.</li>
+<li>Cánh 1 <b>Bạch Vũ Dực</b> (3 mảnh, chuyển chức 2) · Cánh 2 <b>Lam Phụng Dực</b> (4 mảnh, chuyển chức 3) · Cánh 3 <b>Thiên Phượng Dực</b> (5 mảnh, chuyển chức 3). Mỗi cấp +8% công, +8% máu, +4% né.</li></ul></details>
+<details><summary>Thú nuôi 🐾 (mở sau chuyển chức 1)</summary><ul>
+<li>🐯 Hổ: cận chiến, +% sát thương · 🔥 Chu Tước: bay lượn tầm xa, đốt cháy, +chí mạng/chính xác, mỗi lần tiến hóa thêm kỹ năng · 🐍 Rắn: làm chậm, +ST chí mạng/giảm hồi chiêu · 🐢 Huyền Vũ (rùa-rắn, 4 hình thái tiến hóa): cắn nhanh, hồi máu cho chủ, +giảm ST/máu.</li>
+<li>Thú nhận EXP khi bạn hạ quái; cho ăn ở Làng (Thịt 50💰 = +30 EXP, Linh nhục 500💰 = +400 EXP).</li>
+<li>Tiến hóa 4 bậc, cấp tối đa 10/20/35/50, phí 3.000 / 20.000 / 100.000 vàng. Mỗi thú có kỹ năng riêng.</li></ul></details>
+
+<h2 id="gd-tt">5. Tu tiên (cảnh giới)</h2>
+<details open><summary>Cách đột phá</summary><ul>
+<li>Mỗi cảnh giới có 9 tầng. Đủ tu vi + vàng → bấm <b>Đột phá</b> ở tab Tu tiên. Tu vi tăng khi hạ quái.</li>
+<li>Thất bại không mất cảnh giới, chỉ hao tu vi; mỗi lần thất bại cộng thêm <b>5%</b> tỉ lệ cho lần sau.</li></ul>
+<div class="sc"><table><tr><th>Lên</th><th>Vàng</th><th>Tỉ lệ gốc</th><th>Ghi chú</th></tr>
+<tr><td>Luyện Khí</td><td>100</td><td>100%</td><td></td></tr><tr><td>Trúc Cơ</td><td>1.000</td><td>80%</td><td></td></tr><tr><td>Kim Đan</td><td>8.000</td><td>65%</td><td></td></tr>
+<tr><td>Nguyên Anh</td><td>50.000</td><td>50%</td><td>⚡ Lôi Kiếp</td></tr><tr><td>Hoá Thần</td><td>300.000</td><td>35%</td><td>⚡ Lôi Kiếp</td></tr>
+<tr><td>Luyện Hư</td><td>800.000</td><td>30%</td><td>⚡ cần ở Linh Giới</td></tr><tr><td>Hợp Thể</td><td>2.500.000</td><td>25%</td><td>⚡ cần ở Linh Giới</td></tr><tr><td>Đại Thừa</td><td>8.000.000</td><td>20%</td><td>⚡ cần ở Linh Giới</td></tr></table></div></details>
+<details><summary>Lôi Kiếp ⚡</summary><ul>
+<li>Độ kiếp phải <b>ra ngoài bản đồ</b>, không đứng trong Làng. Số đạo sét tăng theo cảnh giới (tối đa 9).</li>
+<li>Chuẩn bị: đầy HP/MP, bình thuốc, kỹ năng hộ thể, đồ có né/giảm ST. Dùng <b>Tị Lôi Đan</b> (−12% mỗi viên, tối đa 4 viên = −48%).</li></ul></details>
+<details><summary>Tiên thuật &amp; hình ảnh cảnh giới</summary><ul>
+<li>Mỗi nghề có 5 tiên thuật riêng mở theo cảnh giới (ví dụ chiến binh: Ngự Kiếm Trảm, Kim Cang Hộ Thể…). Đó là bộ kỹ năng tu tiên, tách khỏi kỹ năng chuyển chức.</li>
+<li>Tên cảnh giới hiện sau tên nhân vật; từ Kim Đan có hào quang trên đầu. Nguyên Anh <b>tự động thu thập</b> quặng ở hầm mỏ.</li></ul></details>
+
+<h2 id="gd-hd">6. Hoạt động &amp; mục tiêu</h2>
+<details open><summary>Nhiệm vụ ❗ (4 loại)</summary><ul>
+<li><b>Chủ tuyến:</b> 11 chương từ “Hoang Mạc Sơ Hiện” đến “Linh Giới Chung Chiến”. Làm theo thứ tự là cách học game tốt nhất.</li>
+<li><b>Hằng ngày:</b> 6 nhiệm vụ ngẫu nhiên, cho hoạt lực; rương mốc 20/40/60/80/100. <b>Hằng tuần:</b> 4 nhiệm vụ lớn hơn.</li>
+<li><b>Thành tựu:</b> 9 nhóm, mỗi nhóm 4 bậc, thưởng vàng, mảnh, điểm tiềm năng, đồ.</li></ul></details>
+<details><summary>Linh Điền 🌱 &amp; Luyện Đan ⚗</summary><ul>
+<li>Vào cổng 🌱 trên trời Làng. Ban đầu 6 ô đất, mở tới 12 ô (phí ô mới = 4.000 × (số ô − 5)²).</li>
+<li><b>Hạt giống</b> rơi từ mọi loại boss. Cây lớn theo <b>thời gian thật</b>, cả khi bạn tắt game. Thu hoạch có 40% nhận lại 1 hạt.</li>
+<li>Đan: <b>Tụ Linh</b> (+20% tu vi tầng kế), <b>Thiên Tâm</b> (+80%), <b>Phá Quân</b> (+1,5% công), <b>Kim Cang</b> (+1,5% thủ), <b>Dưỡng Mệnh</b> (+1,5% HP), <b>Ngưng Thần</b> (+2% MP), <b>Tị Lôi</b>. Đan thuộc tính tối đa 8 viên mỗi cảnh giới.</li>
+<li>Từ Luyện Hư, tu vi không tự tăng nữa, chỉ tăng bằng Đan Tu Vi.</li></ul></details>
+<details><summary>Hầm mỏ ⛏ &amp; Tháp Thí Luyện 🗼</summary><ul>
+<li><b>Mỏ:</b> chạm ngọn núi ở Thanh Vân Sơn Môn để vào, chạm mạch khoáng để đào. Vàng cộng thẳng; Quặng Sắt, Huyền Kim được lưu kho. Từ Nguyên Anh, “Nguyên Anh” tự đào tối đa 8 giờ khi bạn vắng mặt.</li>
+<li><b>Tháp 9 tầng</b> ở Làng, mỗi tầng 10 boss. Boss 1–9 có 10% rơi trang bị <b>Thiên Thần</b>; boss 10 (Tháp Chủ) rơi <b>Mảnh Linh Căn</b> (1 lần mỗi tầng). Đủ 9 mảnh → chọn <b>Linh Căn</b> Kim/Mộc/Thủy/Hỏa/Thổ, cộng chỉ số vĩnh viễn.</li></ul></details>
+<details><summary>Ma Thần 👹 &amp; Linh Giới 🌀</summary><ul>
+<li>Điều kiện: <b>Hoá Thần tầng 9 + chuyển chức 3</b>. Về Làng, chạm Phong Ấn trên trời để khiêu chiến. Ma Thần Lv100, mạnh gấp 10 lần Boss Thế Giới; thua thì thử lại bất cứ lúc nào.</li>
+<li>Thắng: nhận vàng, mảnh, 3 món Thần Thoại, tu vi, và mở <b>Cổng Linh Giới</b>.</li>
+<li><b>Linh Giới:</b> Thành Thị an toàn có 4 cổng; hiện mở Chiến Trường (quái Lv80–100, tu vi ×8). Đột phá Luyện Hư → Đại Thừa phải đứng ở Linh Giới.</li></ul></details>
+
+<h2 id="gd-hk">7. Hệ thống khác</h2>
+<details><summary>Tài khoản đám mây &amp; xếp hạng ☁</summary><ul>
+<li>🏆 <b>Bảng xếp hạng trong game</b>: nút 🏆 cạnh đồng hồ Boss Thế Giới. Có 3 bảng: Tu vi, Cấp độ và Lực chiến (xếp riêng từng hệ Chiến binh / Phù thủy / Cung thủ). Mỗi nhân vật là một dòng riêng.</li>
+<li>✏ <b>Tên nhân vật</b>: mỗi nhân vật một tên riêng, đặt ở tab Nhân vật (nút ✏). Đặt lần đầu miễn phí, sau đó đổi lại được 1 lần.</li>
+<li>Không đăng nhập vẫn chơi bình thường (lưu trên máy). Đăng nhập email để lưu lên mạng và chơi nhiều thiết bị; tự đồng bộ ~30 giây khi có thay đổi.</li>
+<li>Có nút đồng bộ ngay, khôi phục bản sao lưu, đổi mật khẩu. Bảng xếp hạng xếp theo bậc, cấp độ rồi cảnh giới của nhân vật mạnh nhất.</li></ul></details>
+<details><summary>Tiệm Y Phục Linh Vân &amp; 💠 Đồng Huyền Tinh</summary><ul>
+<li>Ngoại trang (y phục, cánh, hào quang, đầu quan) chỉ để làm đẹp, không cộng chỉ số.</li>
+<li>Tiền tệ 💠 rơi từ Boss Thế Giới (3–6) và Boss Hoàng Kim (1–2). Mỗi nhân vật có tủ đồ riêng, số 💠 dùng chung.</li></ul></details>
+
+<h2 id="gd-me">8. Mẹo &amp; lỗi hay gặp</h2>
+<div class="tip"><b>Đừng vội lên bản đồ cao.</b> Nếu hạ quái chậm hoặc chết liên tục, quay lại bản đồ trước và cường hóa đồ.</div>
+<div class="tip"><b>Luôn mang bình thuốc</b> trước Hầm Ngục, Boss và Lôi Kiếp.</div>
+<div class="tip"><b>Cất đồ có ích trước khi dung hợp:</b> 90% thất bại sẽ mất cả 3 món.</div>
+<div class="tip warn"><b>Túi đầy</b> thì đồ rơi bị bán lấy vàng; dùng “Dọn đồ yếu” thường xuyên.</div>
+<div class="tip"><b>Vào Làng để dùng dịch vụ:</b> Rèn, Tạp hóa, Dược điếm, chuyển chức, tiến hóa thú, dung hợp đều cần ở 🏘 Làng.</div>
+</div></div><script src="ui/15-guide.js"></script><style>
+#tut{position:fixed;z-index:99983;left:8px;top:calc(124px + env(safe-area-inset-top,0px));width:min(400px,calc(100vw - 70px));background:linear-gradient(#3a2618,#1a0f0a);border:2px solid #ffd54a;border-radius:12px;color:#f2e3b3;font:13px/1.5 inherit;box-shadow:0 6px 22px #000c;display:none;padding:8px 10px}
+@media (min-width:640px){#tut{left:auto;right:64px;top:calc(8px + env(safe-area-inset-top,0px))}}
+#tut.bo{top:auto;left:8px;right:8px;width:auto;bottom:calc(6px + env(safe-area-inset-bottom,0px))}
+#tut .th{display:flex;justify-content:space-between;align-items:center;gap:8px;color:#ffd54a;font-size:14px}#tut .th small{color:#b8a47a}
+#tut .tp{color:#9fe0ff;font-weight:bold}#tut .tt{color:#ffd54a;margin-top:2px}
+#tut .ta{display:flex;align-items:center;gap:12px;margin-top:6px}#tut button{font:inherit;background:#8a6420;color:#fff;border:1px solid #ffd54a;border-radius:6px;padding:4px 12px;cursor:pointer}#tut a{color:#b8a47a;text-decoration:underline;cursor:pointer;font-size:12px}
+#tut.mini{width:auto;padding:4px 10px}#tut.mini .tb,#tut.mini .ta{display:none}
+#tut-r{position:fixed;z-index:99984;pointer-events:none;border:3px solid #ffd54a;border-radius:12px;box-shadow:0 0 14px #ffd54a,inset 0 0 10px #ffd54a88;animation:tutp 1s ease-in-out infinite;display:none}
+#tut-a{position:fixed;z-index:99985;pointer-events:none;font-size:26px;display:none;animation:tutb .7s ease-in-out infinite;text-shadow:0 0 6px #000}
+@keyframes tutp{50%{box-shadow:0 0 26px #ffd54a,inset 0 0 16px #ffd54acc;transform:scale(1.05)}}@keyframes tutb{50%{margin-top:-8px}}
+
+.evo{position:fixed;inset:0;z-index:99999;background:radial-gradient(circle at 50% 46%,rgba(255,255,255,0),rgba(0,0,0,.8) 70%);animation:evIn .35s ease-out both;overflow:hidden;touch-action:manipulation}
+.evo .evr{position:absolute;left:50%;top:46%;width:150vmax;height:150vmax;margin:-75vmax 0 0 -75vmax;background:repeating-conic-gradient(from 0deg,transparent 0 9deg,var(--c) 9deg 11deg,transparent 11deg 24deg);-webkit-mask:radial-gradient(circle,#000 0,transparent 42%);mask:radial-gradient(circle,#000 0,transparent 42%);animation:evSpin 6s linear infinite,evRay 3.4s ease-out both}
+.evo .evc{position:absolute;left:50%;top:46%;width:40vmin;height:40vmin;margin:-20vmin 0 0 -20vmin;border-radius:50%;border:3px solid var(--c);box-shadow:0 0 24px var(--c),inset 0 0 24px var(--c);opacity:0;animation:evRing 1.6s ease-out infinite}
+.evo .evc.c2{animation-delay:.5s}.evo .evc.c3{animation-delay:1s}
+.evo .evo-o,.evo .evo-n{position:absolute;left:50%;top:46%;width:min(56vmin,300px);height:min(40vmin,220px);object-fit:contain;transform:translate(-50%,-50%)}
+.evo .evo-o{animation:evOld 1.5s ease-in both}
+.evo .evo-n{opacity:0;animation:evNew 1.5s 1.3s cubic-bezier(.2,1.6,.4,1) both;filter:drop-shadow(0 0 18px var(--c))}
+.evo .evt{position:absolute;left:0;right:0;top:calc(46% + min(30vmin,170px));text-align:center;color:#fff3c0;font:bold 22px/1.3 'KTH Serif',serif;text-shadow:0 0 12px var(--c),0 2px 4px #000;opacity:0;animation:evTxt .8s 1.9s both}
+.evo .evt b{display:block;font-size:30px;color:var(--c)}
+.evo s{position:absolute;left:50%;top:46%;width:6px;height:6px;border-radius:50%;background:var(--c);box-shadow:0 0 10px 2px var(--c);text-decoration:none;opacity:0;animation:evSp 1.8s var(--d) ease-out both}
+@keyframes evIn{from{opacity:0}to{opacity:1}}
+@keyframes evSpin{to{transform:rotate(360deg)}}
+@keyframes evRay{0%{opacity:0}30%{opacity:.7}100%{opacity:.35}}
+@keyframes evRing{0%{transform:scale(.2);opacity:.9}100%{transform:scale(2.2);opacity:0}}
+@keyframes evOld{0%{transform:translate(-50%,-50%) scale(1);filter:brightness(1)}60%{transform:translate(-50%,-50%) scale(1.15);filter:brightness(3) saturate(0)}100%{transform:translate(-50%,-50%) scale(1.5);filter:brightness(8) saturate(0);opacity:0}}
+@keyframes evNew{0%{opacity:0;transform:translate(-50%,-50%) scale(.2);filter:brightness(8) saturate(0)}60%{opacity:1;filter:brightness(2.2) saturate(.6)}100%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+@keyframes evTxt{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes evSp{0%{opacity:0;transform:translate(0,0) scale(.4)}15%{opacity:1}100%{opacity:0;transform:translate(var(--x),var(--y)) scale(1.4)}}
+.pvw{animation:pvf 2.6s ease-in-out infinite}
+@keyframes pvf{0%,100%{transform:translateY(0) scaleY(1)}50%{transform:translateY(-3px) scaleY(1.03)}}
+.evs{display:flex;gap:6px;margin:6px 0}.evs>div{flex:1;text-align:center;opacity:.38;filter:grayscale(1);border:1px solid #6a5026;border-radius:8px;padding:4px 2px;background:#1b120d}
+.evs>div.on{opacity:1;filter:none}.evs>div.cur{border-color:#ffd54a;box-shadow:0 0 8px #ffd54a88}
+.evs img{width:100%;height:44px;object-fit:contain}.evs small{display:block;font-size:10px;line-height:1.15;margin-top:2px}
+
+#arena-btn{position:fixed;left:0;top:0;display:none;align-items:center;justify-content:center;width:34px;height:34px;box-sizing:border-box;border-radius:50%;border:2px solid #ff766f;background:radial-gradient(circle at 50% 30%,#5a3030,#120808 78%);box-shadow:0 3px 8px #000b,inset 0 0 8px #000;color:#ffd0c0;font-size:16px;padding:0;cursor:pointer;z-index:3}#arena-btn::after{content:"Đấu trường";position:absolute;left:50%;top:100%;transform:translateX(-50%);margin-top:1px;font:bold 8px/9px KTH Serif,Songti SC,STKaiti,KaiTi,serif;color:#ffe9b0;text-shadow:0 0 3px #000,0 0 3px #000;white-space:nowrap;pointer-events:none;font-style:normal}.arena-bx{background:#2a1a12;border:3px solid #b8964e;border-radius:10px;padding:10px;width:min(390px,94vw);max-height:92%;overflow:auto;font-size:13px}.arena-h{display:flex;justify-content:space-between;align-items:center;font-weight:bold;font-size:17px;margin-bottom:8px}.arena-h button{background:#5a4220;color:#f2e3b3;border:1px solid #b8964e;border-radius:5px;padding:4px 8px}.arena-st{background:#140d0a;border-radius:7px;padding:8px;margin-bottom:7px;line-height:1.5}.arena-op{display:flex;align-items:center;justify-content:space-between;gap:8px;background:#140d0a;border:1px solid #5b4327;border-radius:7px;padding:8px;margin:6px 0}.arena-op button,.arena-result button{background:#5a4220;color:#f2e3b3;border:1px solid #b8964e;border-radius:5px;padding:6px 9px;font:inherit}.arena-note{opacity:.72;font-size:11px;line-height:1.4;margin-top:8px}.arena-result{text-align:center;background:#140d0a;border-radius:7px;padding:12px}.arena-result.win h3{color:#ffd86a}.arena-result.lose h3{color:#ff8a7a}.arena-log{text-align:left;max-height:180px;overflow:auto;background:#0c0806;border-radius:6px;padding:7px;margin:8px 0;font-size:11px;line-height:1.5}.arena-op button:disabled{opacity:.4}
+#arena-ov{display:none;position:fixed;inset:0;background:#000c;align-items:center;justify-content:center;z-index:99990}#arena-ov.on{display:flex}
+</style><script src="ui/16-tutorial.js"></script>
+<script src="ui/17-ranking-name.js"></script><script src="combat/18-enemies.js"></script><script src="systems/18-linh-can.js"></script><script src="systems/19-arena.js"></script><script src="systems/20-quest-hud.js"></script><script src="systems/21-bulk-fuse.js"></script><script src="assets/phoenix-assets.js"></script><script src="pets/22-chu-tuoc.js"></script><script src="pets/23-summon-beasts.js"></script><script src="ui/24-equip-icon-fit.js"></script><script src="ui/25-pet-preview.js"></script><script src="ui/26-pet-evo4-lock.js"></script><script src="pets/24-than-thu-bay.js"></script><script src="world/27-immortal-boss.js"></script><script src="systems/28-chat.js"></script><script src="systems/29-quest-plus.js"></script><script src="ui/30-bag-plus.js"></script><script src="ui/31-bag-scroll.js"></script><script src="systems/32-cho-giao-dich.js"></script><script src="world/33-hop-dao.js"></script><script src="world/34-than-thong.js"></script><script src="world/35-kiem-thanh.js"></script><script src="world/36-linh-gioi-maps.js"></script><script src="world/38-da-cuong-hoa.js"></script><script src="world/37-cuong-hoa-fx.js"></script><script src="world/39-dg-boss-art.js"></script><script src="world/40-phu-ban-2.js"></script>
+<script src="world/42-phu-ban-vang.js"></script><script src="systems/36-hop-the-tieu-canh.js"></script><script src="equipment/43-nhan-than-thong.js"></script><script src="ui/44-ban-nhanh-chon.js"></script><script src="world/45-y-canh.js"></script><!-- Arena v5: reuse real map hero renderer + real CHR skill engine -->
+</body></html>
