@@ -242,3 +242,9 @@ MAPPING MODULE CŨ → MỚI
 
 ## Tố Tâm (Fix58)
 - world/47-phu-ban-ma-than.js: Phụ Bản Ma Thần rơi thêm Tố Tâm (5-10/lần, CF.tt) cùng Ma Thần Tinh Huyết. Mỗi phe chỉ nâng Ý Cảnh bằng nguyên liệu phe mình: Ma Đạo = Tinh Huyết (PS[cur].pmt.m), Tiên Đạo = Tố Tâm (PS[cur].pmt.t). Giá = CF.base + CF.step x (cấp-1), tối đa cấp 15. Bảng Phụ Bản hiện cả hai nguyên liệu; nút nâng tự theo phe.
+
+## Hệ opt trang bị mới — equipment/55-opt-moi.js (API `OPT2`)
+- Khoảng giá trị mỗi dòng (không còn tăng theo cấp/phẩm; 11 bậc roll z=0..10 chia đều): Sát thương 2-10 · %HP 2-10 · %mana 2-10 · ST kỹ năng 5-15 · Chí mạng/Né/Chính xác/Xuyên giáp/Giảm ST/Tỉ lệ choáng/Tỉ lệ đóng băng 2-5 · ST kỹ năng theo thời gian (`dotd`) 10-20 · ST chí mạng 5-15 · Tốc độ thi triển kỹ năng (`aspd`, Chiến binh+Cung thủ) 10-20 · Tốc độ niệm chú (`cspd`, chỉ Pháp sư) 10-20 · MỚI `ndr` Bỏ qua giảm ST 2-5 · MỚI `defp` +% giáp 5-10. Giữ: hút máu/hút năng lượng (vũ khí)/tăng vàng; `eres` thu về 2-5.
+- Thay `rollXM`, `kxv` (rèn lại opt), HL.gen (đồ Thánh: 7 dòng ở mức tối đa). Đồ cũ được chuẩn hoá 1 lần (cờ `it.o2`; bậc cũ → khoảng mới; đổi aspd↔cspd theo lớp nhân vật).
+- Hiệu lực: `defp` nhân `df()`; `ndr` giảm giáp mục tiêu trong `dm()` (trần 50%); `aspd`/`cspd` rút ngắn thời gian thi triển kỹ năng thường (engine `cast`) và thần thông (world/34, 49 qua `OPT2.cs()`); đánh thường không còn nhận `aspd`; `dotd` nhân sát thương theo thời gian của world/11 và world/50 (`dotX`).
+- Vũ khí +10: ngẫu nhiên `it.sk` = `mb` (Triệt tiêu mana 10% mỗi lần thi triển, phá 20% mana tối đa) hoặc `hb` (Triệt tiêu HP 5%, phá 10% HP tối đa); không áp dụng Boss; quái chưa có mana dùng thanh ảo 100 (cạn → mất lượt đánh ~2,5s). Gán qua bọc `en1` + quét nền 2 giây (đồ đã +10 sẵn). Chỉ kích hoạt khi tung kỹ năng thường và tiên thuật (thần thông world/34, 49 chưa gắn).

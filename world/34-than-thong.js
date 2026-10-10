@@ -81,7 +81,7 @@ function castTT(j,buf){
   var tg=null;if(!s.b){tg=nearE()[0];if(!tg)return false}
   P.mp-=sc.mp;cd[j]=t+sc.cd*1000*(1-(bOn()?B.cdr:0));
   if(tg){var near=nearE().sort(function(a,b){return Math.abs(a.x-P.x)-Math.abs(b.x-P.x)})[0];P.d=near.x>=P.x?1:-1}
-  var w=WU[j];try{an(w);P.atk=P.atkT=w+7}catch(e){}P.ln=s.n;
+  var w=Math.max(6,Math.round(WU[j]/(window.OPT2?OPT2.cs():1)));try{an(w);P.atk=P.atkT=w+7}catch(e){}P.ln=s.n;
   P.pe={l:w,t:j===3?5:2,n:s.n,f:function(){try{fire(j,s)}catch(e){}}};
   if(j===3)say(s.i+' '+s.n);return true}
 function flush(){if(pend<0)return;if(Date.now()>pendT){pend=-1;return}if(!P.pe&&!P.act){var j=pend;pend=-1;castTT(j)}}

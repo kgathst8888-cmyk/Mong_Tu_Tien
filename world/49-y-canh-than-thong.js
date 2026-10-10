@@ -77,7 +77,7 @@ function castY(j,buf){
   var tg=nearE()[0];if(!tg&&!(s.k==='S'&&alive().length))return false;
   P.mp-=s.mp;cd[j]=t+s.cd*1000;
   if(tg)P.d=tg.x>=P.x?1:-1;
-  var w=[11,14,18][j];try{an(w);P.atk=P.atkT=w+7}catch(e){}P.ln=s.n;
+  var w=Math.max(6,Math.round([11,14,18][j]/(window.OPT2?OPT2.cs():1)));try{an(w);P.atk=P.atkT=w+7}catch(e){}P.ln=s.n;
   P.pe={l:w,t:j===2?5:2,n:s.n,f:function(){try{fire(j,s,inf)}catch(e){}}};
   if(j===2)say(s.i+' '+s.n,PAL[inf.path].col);
   return true}

@@ -76,7 +76,8 @@
     "equipment": [
       "equipment/14-cosmetics-shop.js",
       "equipment/43-nhan-than-thong.js",
-      "equipment/51-dao-the-outfit.js"
+      "equipment/51-dao-the-outfit.js",
+      "equipment/55-opt-moi.js"
     ]
   },
   "added_files": [

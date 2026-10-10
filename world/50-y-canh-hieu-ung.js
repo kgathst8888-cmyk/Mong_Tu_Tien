@@ -19,7 +19,7 @@ var PROF={
 Object.keys(PROF).forEach(function(n){ST.STP[n]=PROF[n].stp});
 function boss(e){return e.b>=2||e.k==='boss'}
 function lab(e,t,c){DT.push({x:e.x,y:(e.hh||100)*SZ+30,s:t,c:c,l:55})}
-function dotX(e,d,c,ic){d=Math.max(1,Math.round(Math.min(d,(e.max||d)*(boss(e)?.012:.08))));e.hp-=d;DT.push({x:e.x,y:(e.hh||100)*SZ,s:ic+d,c:c,l:40})}
+function dotX(e,d,c,ic){d*=(1+SX('dotd')/100);d=Math.max(1,Math.round(Math.min(d,(e.max||d)*(boss(e)?.012:.08))));e.hp-=d;DT.push({x:e.x,y:(e.hh||100)*SZ,s:ic+d,c:c,l:40})}
 function near2(e,r){var b=null,bd=r;E.forEach(function(q){if(q===e||q.in>0||q.hp<=0)return;var d=Math.abs(q.x-e.x);if(d<bd){bd=d;b=q}});return b}
 function ap(e,k){var T=e.stt||(e.stt={}),bs=boss(e);
   if(k==='bld'){var was=T.bld>0;T.bld=bs?240:360;T.bls=was?Math.min(5,(T.bls||1)+1):1;if(!was)lab(e,'🩸 Chảy máu','#ff4a6a')}
