@@ -22,7 +22,9 @@ var CF={
  gear:0,              /* số trang bị Thần Thoại rơi mỗi lần (0 = không) */
  col:'#d070ff',name:'Ma Thần Tinh Huyết',ic:'🩸',
  tt:[5,10],           /* số Tố Tâm rơi mỗi lần hạ (nâng Ý Cảnh TIÊN ĐẠO, cùng giá như Tinh Huyết) */
- col2:'#ffd84a',name2:'Tố Tâm',ic2:'🌸'
+ col2:'#ffd84a',name2:'Tố Tâm',ic2:'🌸',
+ skMul:[1,2,3],        /* hệ số giá theo thần thông: thần thông sau tốn nhiều hơn thần thông trước */
+ realmUp:false         /* true = cho dùng Tinh Huyết/Tố Tâm nâng cả tiểu cảnh Ý Cảnh (cách cũ); mặc định CHỈ nâng cấp thần thông */
 };
 
 /* ---------- tiện ích + dữ liệu ---------- */
@@ -46,9 +48,11 @@ function canEnter(){
 
 /* ---------- Ý Cảnh Ma Đạo ---------- */
 function yinfo(){try{return window.YCANH&&YCANH.info?YCANH.info():null}catch(e){return null}}
-function cost(){var i=yinfo();return(i&&(i.path==='m'||i.path==='t')&&i.level<15)?CF.base+CF.step*(i.level-1):0}
+function cost(j,L){return(CF.base+CF.step*(L-1))*(CF.skMul[j]||1)}   /* giá nâng thần thông j từ cấp L → L+1 */
+function costRealm(){var i=yinfo();return(i&&(i.path==='m'||i.path==='t')&&i.level<15)?CF.base+CF.step*(i.level-1):0}
 function say(t){try{var el=document.getElementById('pm-msg');if(el)el.textContent=t}catch(e){}try{DT.push({x:P.x,y:190,s:t,c:'#ffd98a',l:90})}catch(e){}}
-function upgrade(){
+function upRealm(){   /* cách cũ: nâng tiểu cảnh Ý Cảnh bằng nguyên liệu — TẮT mặc định (CF.realmUp) vì nguyên liệu chỉ dùng nâng cấp thần thông */
+ if(!CF.realmUp){say('Tinh Huyết / Tố Tâm chỉ dùng để nâng cấp thần thông Ý Cảnh');return}
  var i=yinfo(),d=D();
  if(!window.YCANH||!i){say('Chưa chọn Ý Cảnh (vào Hợp Đạo Đài ở Thành Thị Linh Giới)');return}
  var p=i.path;
@@ -56,12 +60,28 @@ function upgrade(){
  /* mỗi phe chỉ dùng nguyên liệu của phe mình: Ma Đạo = Ma Thần Tinh Huyết (d.m), Tiên Đạo = Tố Tâm (d.t) */
  var key=p==='t'?'t':'m',nm=p==='t'?CF.name2:CF.name,pn=p==='t'?'Tiên Đạo':'Ma Đạo';
  if(i.level>=15){say('Ý Cảnh '+pn+' đã viên mãn');return}
- var c=cost();
+ var c=costRealm();
  if((d[key]|0)<c){say('Thiếu '+nm+': '+(d[key]|0)+'/'+c);return}
  d[key]-=c;d.u=(d.u|0)+1;
  if(!YCANH.up(1)){d[key]+=c;d.u--;say('Không nâng được lúc này');return}
  try{sv()}catch(e){}
  var j=yinfo();say((p==='t'?'☯':'🌑')+' Ý Cảnh '+pn+' lên cấp '+(j?j.level:'?')+'/15!');refresh()}
+/* Nâng cấp RIÊNG từng thần thông Ý Cảnh (cấp 1..15). Mỗi phe chỉ dùng nguyên liệu của phe mình: Ma Đạo = Tinh Huyết (d.m), Tiên Đạo = Tố Tâm (d.t).
+   Giá = (CF.base + CF.step × (cấp hiện tại − 1)) × CF.skMul[j] → thần thông sau tốn nhiều hơn thần thông trước ở mọi cấp; cấp càng cao càng đắt.
+   Cho nâng cả thần thông chưa mở khoá (dùng được khi mở). Cấp lưu ở world/49 (PS[cur].yc.sl). */
+function upSkill(j){
+ var i=yinfo(),d=D();j=j|0;
+ if(!window.YCANH||!i||(i.path!=='m'&&i.path!=='t')){say('Chưa chọn Ý Cảnh (vào Hợp Đạo Đài ở Thành Thị Linh Giới)');return}
+ if(!window.YCTT||!YCTT.lv||!YCTT.lvUp||j<0||j>2){say('Thần thông Ý Cảnh chưa sẵn sàng');return}
+ var p=i.path,key=p==='t'?'t':'m',nm=p==='t'?CF.name2:CF.name,sn=YCTT.cfg.sk[p][j].n,L=YCTT.lv(j);
+ if(L>=15){say(sn+' đã đạt cấp tối đa');return}
+ var c=cost(j,L);
+ if((d[key]|0)<c){say('Thiếu '+nm+': '+(d[key]|0)+'/'+c);return}
+ d[key]-=c;
+ var n=YCTT.lvUp(j);
+ if(!n){d[key]+=c;say('Không nâng được lúc này');return}
+ d.u=(d.u|0)+1;try{sv()}catch(e){}
+ say((p==='t'?'☯':'🌑')+' '+sn+' lên cấp '+n+'/15!');refresh()}
 
 /* ---------- vào / ra trận ---------- */
 function enter(){
@@ -107,20 +127,28 @@ var _hud=dgHud;dgHud=function(){_hud.apply(this,arguments);
 
 /* ---------- giao diện trong bảng Phụ Bản (world/40 gọi html/refresh/canEnter/enter) ---------- */
 function html(card){
- return card(4,CF.col,'👹','4. Phụ Bản Ma Thần','Đánh lại <b>Boss Ma Thần</b> trên bản đồ Huyết Nguyệt Ma Điện · <b>chỉ Đạo Thể được vào</b> · <b>chỉ mở sau khi hạ Ma Thần</b> · vào lại sau <b>'+Math.round(CF.cd/60000)+' phút</b> · rơi <b>'+CF.name+'</b> ('+CF.mat[0]+'–'+CF.mat[1]+'/lần, nâng <b>Ý Cảnh Ma Đạo</b>) + <b>'+CF.name2+'</b> ('+CF.tt[0]+'–'+CF.tt[1]+'/lần, nâng <b>Ý Cảnh Tiên Đạo</b>)')
+ return card(4,CF.col,'👹','4. Phụ Bản Ma Thần','Đánh lại <b>Boss Ma Thần</b> trên bản đồ Huyết Nguyệt Ma Điện · <b>chỉ Đạo Thể được vào</b> · <b>chỉ mở sau khi hạ Ma Thần</b> · vào lại sau <b>'+Math.round(CF.cd/60000)+' phút</b> · rơi <b>'+CF.name+'</b> ('+CF.mat[0]+'–'+CF.mat[1]+'/lần, nâng cấp <b>thần thông Ma Đạo</b>) + <b>'+CF.name2+'</b> ('+CF.tt[0]+'–'+CF.tt[1]+'/lần, nâng cấp <b>thần thông Tiên Đạo</b>)')
  +'<div style="border:1px solid #6a4a8a;border-radius:10px;padding:8px;margin:8px 0;background:#150d1c"><div style="font-size:13.5px">'+CF.ic+' <b>'+CF.name+'</b> · đang có: <b id="pm-m" style="color:'+CF.col+'">0</b> <span style="opacity:.7">(Ma Đạo)</span></div><div style="font-size:13.5px">'+CF.ic2+' <b>'+CF.name2+'</b> · đang có: <b id="pm-t" style="color:'+CF.col2+'">0</b> <span style="opacity:.7">(Tiên Đạo)</span></div>'
- +'<div id="pm-y" style="font-size:12.5px;margin-top:4px"></div>'
- +'<button id="pm-b" onclick="PBMT.up()" style="width:100%;margin-top:6px;background:#4a2a6a;color:#fff;border:1px solid #b070ff;border-radius:8px;padding:8px">⬆ Nâng Ý Cảnh</button>'
- +'<div id="pm-msg" style="font-size:12px;color:#ffd98a;margin-top:4px;min-height:15px"></div></div>'}
+ +'<div id="pm-y" style="font-size:12.5px;margin:4px 0"></div>'
+   +[0,1,2].map(function(j){return'<div style="border:1px solid #4a3a60;border-radius:8px;padding:6px;margin-top:6px"><div style="display:flex;justify-content:space-between;font-size:13px"><b id="pm-sn'+j+'">Thần thông '+(j+1)+'</b><span id="pm-sl'+j+'" style="color:#ffd98a"></span></div><div id="pm-sd'+j+'" style="font-size:12px;opacity:.85;margin-top:2px"></div><button id="pm-b'+j+'" onclick="PBMT.up('+j+')" style="width:100%;margin-top:4px;background:#4a2a6a;color:#fff;border:1px solid #b070ff;border-radius:8px;padding:7px">⬆ Nâng</button></div>'}).join('')
+   +'<div id="pm-msg" style="font-size:12px;color:#ffd98a;margin-top:4px;min-height:15px"></div></div>'}
 function refresh(){
  try{
-  var m=document.getElementById('pm-m'),t=document.getElementById('pm-t'),y=document.getElementById('pm-y'),b=document.getElementById('pm-b'),d=D(),i=yinfo(),c=cost(),
-   p=i&&(i.path==='m'||i.path==='t')?i.path:'',pn=p==='t'?'Tiên Đạo':'Ma Đạo',have=p==='t'?(d.t|0):(d.m|0),ic=p==='t'?CF.ic2:CF.ic,nm=p==='t'?CF.name2:CF.name;
+  var m=document.getElementById('pm-m'),t=document.getElementById('pm-t'),y=document.getElementById('pm-y'),d=D(),i=yinfo(),
+   p=i&&(i.path==='m'||i.path==='t')?i.path:'';
   if(m)m.textContent=nf(d.m|0);if(t)t.textContent=nf(d.t|0);
-  if(y){y.textContent=!window.YCANH||!i?'Ý Cảnh: chưa chọn (Hợp Đạo Đài · Thành Thị Linh Giới)':!p?'Ý Cảnh: chưa chọn':(p==='t'?'☯':'🌑')+' '+pn+' · cấp '+i.level+'/15 · '+i.name+(i.level>=15?' (viên mãn)':' · nâng cần '+c+' '+ic+' '+nm)+' — '+(p==='t'?'Tinh Huyết chỉ dùng cho Ma Đạo':'Tố Tâm chỉ dùng cho Tiên Đạo')}
-  if(b){var can=!!p&&i.level<15&&have>=c;b.disabled=!can;b.style.opacity=can?1:.5;b.style.background=p==='t'?'#6a4a10':'#4a2a6a';b.style.borderColor=p==='t'?'#ffd84a':'#b070ff';
-   b.textContent=!p?'⬆ Chọn Ý Cảnh để nâng':i.level>=15?'⬆ Ý Cảnh '+pn+' viên mãn':'⬆ Nâng Ý Cảnh '+pn+' ('+c+' '+ic+')'}
+  if(y)y.textContent=!window.YCANH||!i||!p?'Ý Cảnh: chưa chọn (Hợp Đạo Đài · Thành Thị Linh Giới)':(p==='t'?'☯ Tiên Đạo':'🌑 Ma Đạo')+' · '+i.name+' — '+(p==='t'?'nâng bằng Tố Tâm 🌸 (Tinh Huyết chỉ dùng cho Ma Đạo)':'nâng bằng Tinh Huyết 🩸 (Tố Tâm chỉ dùng cho Tiên Đạo)');
+  for(var j=0;j<3;j++){
+   var sn=document.getElementById('pm-sn'+j),sl=document.getElementById('pm-sl'+j),sd=document.getElementById('pm-sd'+j),b=document.getElementById('pm-b'+j);
+   if(!sn)continue;
+   if(!p||!window.YCTT||!YCTT.cfg||!YCTT.lv){sn.textContent='Thần thông '+(j+1);sl.textContent='';sd.textContent='Chưa chọn Ý Cảnh';if(b){b.disabled=true;b.style.opacity=.5;b.textContent='⬆ Chọn Ý Cảnh để nâng'}continue}
+   var s=YCTT.cfg.sk[p][j],L=YCTT.lv(j),mx=L>=15,c=cost(j,L),have=p==='t'?(d.t|0):(d.m|0),ic=p==='t'?CF.ic2:CF.ic,cur=YCTT.mul(j),ls=YCTT.cfg.lvScale||0,nx=YCTT.lvFactor?cur*YCTT.lvFactor(L+1)/YCTT.lvFactor(L):cur*(1+ls*L)/(1+ls*(L-1)),star=((YCTT.cfg.milestones||[]).indexOf(L+1)>=0);
+   sn.textContent=s.i+' '+s.n;sl.textContent='Lv '+L+'/15';
+   sd.textContent='Sát thương ×'+cur.toFixed(1)+(mx?'':' → ×'+nx.toFixed(1)+(star?' ⭐ mốc: tăng nhiều hơn':''))+(YCTT.unlocked(j)?'':' · 🔒 chưa mở khoá (vẫn nâng cấp trước được)');
+   if(b){var can=!mx&&have>=c;b.disabled=!can;b.style.opacity=can?1:.5;b.style.background=p==='t'?'#6a4a10':'#4a2a6a';b.style.borderColor=p==='t'?'#ffd84a':'#b070ff';
+    b.textContent=mx?'⬆ Đã tối đa':'⬆ Nâng Lv'+(L+1)+(star?' ⭐':'')+' ('+c+' '+ic+')'}
+  }
  }catch(e){}}
 
-window.PBMT={cfg:CF,canEnter:canEnter,enter:enter,status:status,html:html,refresh:refresh,up:upgrade,data:D,left:left,unlocked:unlocked,cost:cost};
+window.PBMT={cfg:CF,canEnter:canEnter,enter:enter,status:status,html:html,refresh:refresh,up:upSkill,upRealm:upRealm,data:D,left:left,unlocked:unlocked,cost:cost};
 })();

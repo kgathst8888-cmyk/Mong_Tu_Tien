@@ -248,3 +248,12 @@ MAPPING MODULE CŨ → MỚI
 - Thay `rollXM`, `kxv` (rèn lại opt), HL.gen (đồ Thánh: 7 dòng ở mức tối đa). Đồ cũ được chuẩn hoá 1 lần (cờ `it.o2`; bậc cũ → khoảng mới; đổi aspd↔cspd theo lớp nhân vật).
 - Hiệu lực: `defp` nhân `df()`; `ndr` giảm giáp mục tiêu trong `dm()` (trần 50%); `aspd`/`cspd` rút ngắn thời gian thi triển kỹ năng thường (engine `cast`) và thần thông (world/34, 49 qua `OPT2.cs()`); đánh thường không còn nhận `aspd`; `dotd` nhân sát thương theo thời gian của world/11 và world/50 (`dotX`).
 - Vũ khí +10: ngẫu nhiên `it.sk` = `mb` (Triệt tiêu mana 10% mỗi lần thi triển, phá 20% mana tối đa) hoặc `hb` (Triệt tiêu HP 5%, phá 10% HP tối đa); không áp dụng Boss; quái chưa có mana dùng thanh ảo 100 (cạn → mất lượt đánh ~2,5s). Gán qua bọc `en1` + quét nền 2 giây (đồ đã +10 sẵn). Chỉ kích hoạt khi tung kỹ năng thường và tiên thuật (thần thông world/34, 49 chưa gắn).
+
+
+## Cấp riêng từng thần thông Ý Cảnh (Fix62)
+- world/49-y-canh-than-thong.js: mỗi thần thông có cấp 1-15 (PS[cur].yc.sl=[l0,l1,l2]), mỗi cấp +10% sát thương (CF.lvScale); API YCTT.lv/lvUp/mul/unlocked.
+- world/47-phu-ban-ma-than.js: Tinh Huyết (Ma Đạo) / Tố Tâm (Tiên Đạo) CHỈ dùng nâng cấp thần thông; giá = (base+step*(cấp-1)) x CF.skMul[j] (1,2,3) nên thần thông sau tốn nhiều hơn. Cách cũ nâng tiểu cảnh bằng nguyên liệu đã tắt (CF.realmUp=false, PBMT.upRealm).
+
+
+## Mốc cấp thần thông 5/10/15 (Fix63)
+- world/49-y-canh-than-thong.js: lvFactor(L): mỗi cấp +10% (CF.lvScale), riêng cấp 5/10/15 (CF.milestones) cộng +30% (CF.msScale) => cấp 5 x1.6, cấp 10 x2.3, cấp 15 x3.0. world/47 hiện ⭐ mốc trên nút/mô tả.

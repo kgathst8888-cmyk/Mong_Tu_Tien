@@ -9,7 +9,7 @@
 (function(){
 'use strict';
 if(typeof PS==='undefined'||!window.YCANH||typeof dm!=='function'||typeof an!=='function'||typeof ZC==='undefined')return;
-var CF={unlock:[1,3,5],scale:.12,sk:{
+var CF={unlock:[1,3,5],scale:.12,lvMax:15,lvScale:.10,milestones:[5,10,15],msScale:.30,sk:{
  t:[{n:'Kim Quang Phổ Chiếu',i:'☀️',k:'B',mul:4.2,r:300,cd:12,mp:40,heal:.02,d:'Trụ kim quang giáng xuống quanh địch gần nhất, diện rộng, hồi 2% máu. Choáng 30% · xuyên giáp 35% · bạo kích +30%.'},
     {n:'Vô Ngã Kiếm Vũ',i:'🗡️',k:'M',h:5,mul:7.5,cd:20,mp:70,d:'5 đạo kim kiếm từ trời truy đuổi địch gần nhất. Choáng 20% · xuyên giáp 60% · bạo kích +40%.'},
     {n:'Quy Nhất Thiên Phạt',i:'⚡',k:'S',mul:16,cd:40,mp:130,d:'Thiên lôi kim sắc giáng xuống toàn bộ địch trên màn hình. Choáng 60% · xuyên giáp 60% · bạo kích +55%.'}],
@@ -45,7 +45,13 @@ function vortex(wx,rad,life){FX.push({x:wx,l:life,m:life,fn:function(f,p,X,gy){v
 function sparks(x,cols,n){for(var i=0;i<n;i++)PT.push({x:x,y:60,vx:(R()-.5)*4,vy:R()*-4,l:26,c:cols[i%cols.length]})}
 
 /* ---------- thi triển ---------- */
-function mulOf(s,inf){return s.mul*(1+CF.scale*(inf.realm-1))}
+/* Cấp RIÊNG từng thần thông (1..CF.lvMax) lưu PS[cur].yc.sl=[l0,l1,l2]; mỗi cấp +CF.lvScale sát thương, riêng các MỐC CF.milestones (cấp 5/10/15) tăng CF.msScale (nhiều hơn hẳn); cộng dồn với hệ số cảnh giới.
+   Nâng cấp bằng Ma Thần Tinh Huyết (Ma Đạo) / Tố Tâm (Tiên Đạo) ở bảng Phụ Bản Ma Thần (world/47-phu-ban-ma-than.js) qua YCTT.lvUp(j). */
+function skIdx(s,inf){return(CF.sk[inf.path]||[]).indexOf(s)}
+function slv(j){var p=PS[cur],y=p&&p.yc;if(!y||j<0||j>2)return 1;if(!Array.isArray(y.sl))y.sl=[1,1,1];return Math.max(1,Math.min(CF.lvMax,(y.sl[j]|0)||1))}
+function lvFactor(L){var f=1;for(var k=2;k<=L;k++)f+=CF.milestones.indexOf(k)>=0?CF.msScale:CF.lvScale;return f}   /* hệ số sát thương theo cấp thần thông: cấp 5/10/15 cộng nhiều hơn */
+function mulOf(s,inf){return s.mul*(1+CF.scale*(inf.realm-1))*lvFactor(slv(skIdx(s,inf)))}
+function lvUp(j){var p=PS[cur],y=p&&p.yc;if(!y||j<0||j>2)return 0;var L=slv(j);if(L>=CF.lvMax)return 0;y.sl[j]=L+1;try{sv()}catch(e){}return L+1}
 function fire(j,s,inf){
   try{window.STLAST=[s.n,fr]}catch(e){}  /* ghi tên chiêu để combat/11 + world/50 áp trạng thái */
   var T=inf.path,px=P.x,dd=P.d||1,mul=mulOf(s,inf),lg=light(),
@@ -110,7 +116,10 @@ setInterval(function(){if(document.hidden)return;try{
 /* ---------- thẻ trong bảng Ý Cảnh ---------- */
 function card(){var inf=info();if(!inf)return'';var pl=PAL[inf.path],S=CF.sk[inf.path];
   return'<div style="margin-top:10px;font-size:13px"><b style="color:'+pl.col+'">📜 Thần Thông Ý Cảnh</b><div style="font-size:11.5px;opacity:.7">Nút riêng bên trái cột Thần Thông · tự dùng khi bật AUTO.</div>'+S.map(function(s,j){var ok=okJ(j,inf);
-    return'<div style="display:flex;gap:8px;align-items:flex-start;border:1px solid '+(ok?pl.bd:'#4a3a60')+';border-radius:9px;padding:6px;margin:5px 0;opacity:'+(ok?1:.6)+'"><div style="font-size:24px;width:30px;text-align:center">'+(ok?s.i:'🔒')+'</div><div style="flex:1"><b style="color:'+pl.col+'">'+s.n+'</b> <span style="opacity:.75">· '+(ok?'đã mở':(window.YCTOC?YCTOC.lockMsg(j,inf):'mở ở cảnh giới '+CF.unlock[j]))+'</span><div style="font-size:12px;opacity:.85;line-height:1.4">'+s.d+'<br>×'+mulOf(s,inf).toFixed(1)+(s.k==='M'?' tổng':s.k==='S'?' mỗi địch':'')+' sát thương · hồi '+s.cd+'s · '+s.mp+' MP</div></div></div>'}).join('')+(window.YCTOC?YCTOC.card(inf):'')+'</div>'}
+    return'<div style="display:flex;gap:8px;align-items:flex-start;border:1px solid '+(ok?pl.bd:'#4a3a60')+';border-radius:9px;padding:6px;margin:5px 0;opacity:'+(ok?1:.6)+'"><div style="font-size:24px;width:30px;text-align:center">'+(ok?s.i:'🔒')+'</div><div style="flex:1"><b style="color:'+pl.col+'">'+s.n+'</b> <b style="color:'+pl.col+'">Lv '+slv(j)+'/'+CF.lvMax+'</b> <span style="opacity:.75">· '+(ok?'đã mở':(window.YCTOC?YCTOC.lockMsg(j,inf):'mở ở cảnh giới '+CF.unlock[j]))+'</span><div style="font-size:12px;opacity:.85;line-height:1.4">'+s.d+'<br>×'+mulOf(s,inf).toFixed(1)+(s.k==='M'?' tổng':s.k==='S'?' mỗi địch':'')+' sát thương · hồi '+s.cd+'s · '+s.mp+' MP</div></div></div>'}).join('')+(window.YCTOC?YCTOC.card(inf):'')+'</div>'}
 
-window.YCTT={cast:castY,card:card,cfg:CF,cd:cd};
+window.YCTT={cast:castY,card:card,cfg:CF,cd:cd,
+  lv:slv,lvUp:lvUp,lvFactor:lvFactor,
+  mul:function(j){var inf=info();return inf?mulOf(CF.sk[inf.path][j],inf):0},
+  unlocked:function(j){var inf=info();return !!inf&&okJ(j,inf)}};
 })();
