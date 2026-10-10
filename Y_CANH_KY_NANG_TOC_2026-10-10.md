@@ -8,3 +8,7 @@
 - Giữ nguyên TÊN, MP, hồi chiêu, hệ số sát thương và trạng thái (STLAST) của 3 thần thông. Chỉnh số liệu: khối CF.
 ## world/52-skill-layout.js
 - Gom #lc-btn (18), #fb-bar (48), #yt-bar (49) vào khung #sk-side để không chồng lên nhau (trước đó cả 3 cùng right≈60-62px, top≈124px).
+
+## Vẽ lại hiệu ứng (Fix64)
+- Tiên: thiên thần có cánh lông vũ 3 lớp, giáp, hào quang, kiếm; hai rồng có vảy, chân vuốt, sừng, râu; khe nứt hư không có sao bên trong + thiên thạch đá nứt lửa.
+- Ma: bàn tay quỷ nhiều đốt có móng, oán linh áo choàng rách + vệt bóng, hố đen xoáy + tia ma khí xúc tu, quỷ xương đủ bộ.
