@@ -86,7 +86,7 @@ function harvOne(i,o){
  const b=HM[p.id],n=b.y[0]+Math.floor(R()*(b.y[1]-b.y[0]+1));
  S.herbs[b.id]=(S.herbs[b.id]|0)+n;o.h[b.id]=(o.h[b.id]|0)+n;
  if(R()<CFG.seedBack){S.seeds[b.id]=(S.seeds[b.id]|0)+1;o.s[b.id]=(o.s[b.id]|0)+1}
- S.plots[i]=null;return 1;
+ S.plots[i]=null;try{window.YCTOC&&YCTOC.ngo(1)}catch(e){}return 1;
 }
 function harvTx(o){
  const a=Object.keys(o.h).map(k=>HM[k].e+HM[k].n+' ×'+o.h[k]).join(', '),b=Object.keys(o.s).map(k=>'🌱'+HM[k].n+' ×'+o.s[k]).join(', ');
@@ -153,7 +153,7 @@ function brew(id,n){
  let ok=0;
  for(let i=0;i<n;i++){
   Object.keys(p.rc).forEach(h=>S.herbs[h]-=p.rc[h]);gold-=gc(p);
-  if(R()<p.sc){ok++;S.pills[id]=(S.pills[id]|0)+1}
+  if(R()<p.sc){ok++;S.pills[id]=(S.pills[id]|0)+1;try{window.YCTOC&&YCTOC.ngo(1)}catch(e){}}
  }
  fin(ok==n?'⚗ Luyện thành '+ok+' '+p.n+' ✨':'⚗ Luyện '+n+' lò: thành '+ok+' '+p.n+', hỏng '+(n-ok));
 }

@@ -14,17 +14,17 @@ document.head.appendChild(st);
 var ov=document.createElement('div');ov.id='qd-ov';ov.innerHTML='<div class="qd-bx"></div>';document.body.appendChild(ov);
 var box=ov.firstChild;
 function dailyHtml(){
-  var h='<div class="qc"><div class="qd-row"><b>📅 Hằng ngày</b><span class="st">⚡ Hoạt lực '+QS.act+' / 100</span></div>';
+  var h='<div class="qst-card"><div class="qd-row"><b>📅 Hằng ngày</b><span class="st">⚡ Hoạt lực '+QS.act+' / 100</span></div>';
   QS.dq.forEach(function(q,k){var d=QDP[q.i],v=qsP(d,QS.sd),ok=!q.c&&v>=d[1];
     h+='<div class="qo"><div class="qd-row"><span>'+(q.c?'🏁':v>=d[1]?'✅':'⬜')+' '+d[2]+' <span class="st">· '+d[3].replace('{n}',fmtN(d[1]))+'</span></span>'+(ok?'<button class="qd-sm" data-a="dq:'+k+'">Nhận</button>':'')+'</div>'+qsBar(v,d[1])+'</div>'});
   return h+'</div>'}
 function weeklyHtml(){
-  var h='<div class="qc"><b>🗓 Hằng tuần</b>';
+  var h='<div class="qst-card"><b>🗓 Hằng tuần</b>';
   QS.wq.forEach(function(q,k){var d=QWP[q.i],v=qsP(d,QS.sw),ok=!q.c&&v>=d[1];
     h+='<div class="qo"><div class="qd-row"><span>'+(q.c?'🏁':v>=d[1]?'✅':'⬜')+' '+d[2]+' <span class="st">· '+d[3].replace('{n}',fmtN(d[1]))+'</span></span>'+(ok?'<button class="qd-sm" data-a="wq:'+k+'">Nhận</button>':'')+'</div>'+qsBar(v,d[1])+(q.c?'':qsChips(d[4]))+'</div>'});
   return h+'</div>'}
 function classHtml(){
-  var p=PS[cur],t=p.tier,h='<div class="qc"><b>🎓 Chuyển chức</b> <span class="st">'+TN[t]+'</span>';
+  var p=PS[cur],t=p.tier,h='<div class="qst-card"><b>🎓 Chuyển chức</b> <span class="st">'+TN[t]+'</span>';
   if(t>=3)return h+'<div class="st">Đã đạt cảnh giới tối cao.</div></div>';
   if(P.lv<20*(t+1))return h+'<div class="st">Cần đạt cấp '+20*(t+1)+' (hiện Lv'+P.lv+').</div>'+qsBar(P.lv,20*(t+1))+'</div>';
   if(!cq)return h+'<div class="st">'+cqDesc(t)+'</div><button data-a="cq">📜 Nhận nhiệm vụ chuyển chức</button></div>';
@@ -35,15 +35,15 @@ function render(){
   try{
     qsChk();
     var h='<div class="qd-h"><b>📜 Nhiệm vụ</b><button data-a="x">✕</button></div>',c=QCH[QS.ch];
-    if(!c)h+='<div class="qc done"><h4>🏆 Hoang Mạc Truyện — Hoàn tất</h4><div class="qs">Ngươi đã đi hết chính tuyến. Hãy tiếp tục với nhiệm vụ hằng ngày, hằng tuần và thành tựu.</div></div>';
+    if(!c)h+='<div class="qst-card done"><h4>🏆 Hoang Mạc Truyện — Hoàn tất</h4><div class="qs">Ngươi đã đi hết chính tuyến. Hãy tiếp tục với nhiệm vụ hằng ngày, hằng tuần và thành tựu.</div></div>';
     else{
       var dn=qsChD();
-      h+='<div class="qc'+(dn?' done':'')+'"><div class="st">Chương '+(QS.ch+1)+' / '+QCH.length+' · Chính tuyến</div><h4>📖 '+c.t+'</h4><div class="qs">'+c.s+'</div>'
+      h+='<div class="qst-card'+(dn?' done':'')+'"><div class="st">Chương '+(QS.ch+1)+' / '+QCH.length+' · Chính tuyến</div><h4>📖 '+c.t+'</h4><div class="qs">'+c.s+'</div>'
         +c.o.map(function(o){return qsOb(o,QS.sc)}).join('')
         +'<div class="st" style="margin-top:6px">🎁 Phần thưởng</div>'+qsChips(c.r)
         +(dn?'<button data-a="claim">🎁 Nhận thưởng chương</button>':'')+'</div>';
       var nx=QCH[QS.ch+1];
-      if(nx)h+='<div class="qc" style="opacity:.65"><div class="st">Chương kế</div><b>🔒 '+nx.t+'</b><div class="st">'+nx.o.map(qsTx).join(' · ')+'</div></div>'}
+      if(nx)h+='<div class="qst-card" style="opacity:.65"><div class="st">Chương kế</div><b>🔒 '+nx.t+'</b><div class="st">'+nx.o.map(qsTx).join(' · ')+'</div></div>'}
     h+=dailyHtml()+weeklyHtml()+classHtml();
     h+='<button data-a="all">🎁 Nhận tất cả</button><button data-a="tab">📖 Mở bảng nhiệm vụ đầy đủ</button>';
     box.innerHTML=h;

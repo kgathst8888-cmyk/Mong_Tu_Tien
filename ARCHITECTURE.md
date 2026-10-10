@@ -218,3 +218,27 @@ MAPPING MODULE CŨ → MỚI
 
 ## Thần Thông Ý Cảnh (Fix43)
 - world/49-y-canh-than-thong.js: 3 thần thông riêng cho Tiên Đạo (vàng kim) và Ma Đạo (tím đen), mở khoá theo cảnh giới Ý Cảnh [1,3,5]; nút #yt-bar (tự dịch khi có #fb-bar), tự dùng khi AUTO (bọc step()/cast() trong vòng AUTO + ZC.zauto dự phòng). world/45-y-canh.js render thêm YCTT.card().
+
+## Sửa lỗi ô đồ: ngôi sao ✦ bị đơ + đồ +7 "xanh màn" (world/37-cuong-hoa-fx.js)
+- **Triệu chứng:** ô đồ Sử Thi trở lên mất hiệu ứng lấp lánh (ngôi sao ✦ đứng yên, vệt sáng lạ), đồ cường hóa +7 phủ một khung xanh lên cả ô; vài máy còn bị xanh màn vài giây khi cường hóa lên +7/+10.
+- **Nguyên nhân:** hiệu ứng +7/+10 từng dùng `.ce::before/::after`, trùng với `.spk::before` (vệt sáng, `inset:-60%`) và `.spk::after` (ngôi sao ✦) của đồ Sử Thi+ → huy hiệu bị kéo giãn thành khung màu phủ ô, ngôi sao mất nội dung nhưng giữ animation. Màn bùng nổ dựa hoàn toàn vào animation CSS nên khi animation bị tắt thì lớp phủ đứng yên.
+- **Cách sửa (đã nằm sẵn trong bản này):** huy hiệu `+N` (`.ufb`) và vòng sáng (`.ufr`) là PHẦN TỬ CON do `skin()` thêm vào ô, không đụng pseudo-element của `.spk`; `skin()` chỉ ghi DOM khi đổi và gọi `MutationObserver.takeRecords()` để không tự kích hoạt lại. Bùng nổ `burst()` mặc định `opacity:0`, tự bỏ lớp phủ nếu `animationName==='none'`, QL2 chỉ còn ít tia (không toàn màn). Hào quang nhân vật tính theo đúng `EQ` đang vẽ (Làng Online/Đấu trường mượn `EQ`) và tắt ở QL2; vòng sáng ẩn ở `html[data-ql="2"]`.
+- **File:** chỉ `world/37-cuong-hoa-fx.js` (+ bản nhúng trong `Mong_Tu_Tien_CLAUDE.html`). Quy ước: module khác KHÔNG được thêm `::before/::after` lên `.ce` (đã chiếm bởi `.spk`); muốn thêm nhãn lên ô đồ thì thêm phần tử con như `.ufb`.
+
+
+
+## Nâng cấp mỏ (Fix53)
+- world/13-mining.js: mỗi mỏ có cấp S.ml[k] (1-5) và đồng hồ nâng cấp S.ut[k]; 50 Linh Thạch/lần (LT.spend, cần đăng nhập), chờ 1 giờ (đồng hồ thật, tính cả offline). Mỏ Vàng x2^(cấp-1) số lượng; Quặng Sắt/Huyền Kim +(cấp-1); áp dụng đào tay + Nguyên Anh tự thu thập. Giao diện: khối "Nâng cấp mỏ" trong tab Khai khoáng; chỉnh ở CFG.up.
+
+## Sàn sát thương Thần Thông + Phụ Bản Ma Thần chỉ Đạo Thể
+- `world/54-than-thong-sat-thuong.js` (API `TTSAT`): nâng "sàn" hệ số nhân của thần thông để không thua kỹ năng phàm thể. Bậc nhỏ 7,5 (> chiêu thường mạnh nhất ~6,2) · bậc vừa 9,5 · bậc lớn 17 (> tuyệt kỹ thường ~12,6). Chỉ nâng khi thấp hơn sàn. Sửa trực tiếp `TTHONG.cfg[j].m` (world/34: 3,5→7,5 · 6→9,5 · 14→17) và `YCTT.cfg.sk.*.mul` (world/49, dùng chung cho world/53: ô1 →7,5 · ô3 16→17; ô2 5 đòn giữ nguyên); tiên thuật (engine ZC) bọc `ZS.zf(i,col,f)` nhân `f` với hệ số bù (ô1 ×2,5 · ô3 ×1,58 · ô4/ô5 ×1,06). `CF.on=false` để tắt; chỉnh `CF.small/mid/big`.
+- `world/47-phu-ban-ma-than.js`: thêm `daoThe()` (HDAO.on()) vào `canEnter()`/`status()`: chỉ nhân vật Đạo Thể mới vào Phụ Bản Ma Thần.
+
+## Bảo vệ túi đồ: không tự mặc · không tự bán mảnh Ý Cảnh (ui/45-bao-ve-tui-do.js)
+- **Không tự mặc:** nhánh "🔄 Tự mặc" trong `give()` của engine chỉ chạy khi `window.AUTOEQ===1` (patch 1 điều kiện). Mặc định `AUTOEQ=0`; bật lại bằng `BAOVE.autoEquip(true)`.
+- **Không tự bán mảnh Ý Cảnh:** vật phẩm có `it.yc` hoặc tên chứa "Ý Cảnh" được gắn `it.c=1` khi rơi (bọc `give`) và khi quét túi (bọc `ui`, mỗi 3 giây) → engine bỏ qua ở tự bán khi nhặt, Bán nhanh, Dọn đồ yếu, bán 1 chạm. Nguyên liệu Ý Cảnh hiện có (Tinh Huyết, Ngộ Đạo, Ma Khí) là bộ đếm trong `PS`, vốn không bán được; muốn tạo mảnh dạng đồ trong túi thì đặt `yc:1`.
+
+
+
+## Tố Tâm (Fix58)
+- world/47-phu-ban-ma-than.js: Phụ Bản Ma Thần rơi thêm Tố Tâm (5-10/lần, CF.tt) cùng Ma Thần Tinh Huyết. Mỗi phe chỉ nâng Ý Cảnh bằng nguyên liệu phe mình: Ma Đạo = Tinh Huyết (PS[cur].pmt.m), Tiên Đạo = Tố Tâm (PS[cur].pmt.t). Giá = CF.base + CF.step x (cấp-1), tối đa cấp 15. Bảng Phụ Bản hiện cả hai nguyên liệu; nút nâng tự theo phe.

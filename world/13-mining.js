@@ -16,19 +16,21 @@ const CFG={
  auLv:100,         /* tốc độ tự động mỗi phút, nhân (cảnh giới − Nguyên Anh + 1) */
  swing:36                         /* số khung hình mỗi nhát cuốc */
 };
+/* nâng cấp mỏ: tối đa Lv5, 50 Linh Thạch / lần, chờ 1 giờ */
+CFG.up={max:5,cost:50,ms:3600e3};
 const VN={
  au:{n:'Mỏ Vàng',   e:'🪙',c:'#ffd24a',hits:8, resp:45e3},
  fe:{n:'Quặng Sắt', e:'🔩',c:'#cfc4b8',hits:8, resp:60e3},
  hk:{n:'Huyền Kim', e:'🌑',c:'#a58bff',hits:12,resp:120e3}
 };
-const fresh=()=>({fe:0,hk:0,gm:0,auto:null,last:Date.now(),acc:{au:0,fe:0,hk:0},at:{au:0,fe:0,hk:0}});
+const fresh=()=>({fe:0,hk:0,gm:0,auto:null,last:Date.now(),acc:{au:0,fe:0,hk:0},at:{au:0,fe:0,hk:0},ml:{au:1,fe:1,hk:1},ut:{au:0,fe:0,hk:0}});
 let broken=false;
 let S=fresh(),on=false,NT={s:'',c:'#ffe9a0',t:0},pend=null,back=0,mine=null,chips=[];
 const dur={au:VN.au.hits,fe:VN.fe.hits,hk:VN.hk.hits},until={au:0,fe:0,hk:0},PR=[],PU=[];
 const tier=()=>{try{return ZC.rI()+1}catch(e){return 0}};
 const canAuto=()=>{try{return ZC.rI()>=3}catch(e){return false}};
 const rk=()=>Math.max(1,ZC.rI()-2);
-const rtOf=k=>CFG.rate[k]*rk()*(k=='au'?(1+Math.min((typeof P!='undefined'&&P?P.lv:1),100)/CFG.auLv)*(typeof gP=='function'?gP(1):1):1);
+const rtOf=k=>CFG.rate[k]*rk()*(k=='au'?(1+Math.min((typeof P!='undefined'&&P?P.lv:1),100)/CFG.auLv)*(typeof gP=='function'?gP(1):1)*mulAu():1)+(k=='au'?0:addOf(k));
 const note=(m,c)=>{NT={s:String(m).replace(/<[^>]+>/g,''),c:c||'#ffe9a0',t:170}};
 const rt=x=>x<10?String(+x.toFixed(1)).replace('.',','):fmtN(x);
 const give=(k,n)=>{if(k=='au'){gold+=n;S.gm+=n}else S[k]+=n};
@@ -49,6 +51,47 @@ function setAuto(k){
  tick();S.auto=(k&&VN[k]&&S.auto!=k)?k:null;S.last=Date.now();
  const m=S.auto?'🧿 Nguyên Anh bắt đầu thu thập '+VN[S.auto].n:'🧿 Nguyên Anh dừng thu thập';
  msg=m;note(m,S.auto?VN[S.auto].c:'#ccc');try{sv()}catch(e){}ui();
+}
+
+/* ---------- Nâng cấp mỏ (Lv1→Lv5) ----------
+   Mỗi mỏ có cấp riêng S.ml[k] (1..CFG.up.max). Nâng 1 cấp: trả CFG.up.cost Linh Thạch (LT.spend, cần đăng nhập) rồi chờ CFG.up.ms (đồng hồ thật, tính cả lúc offline).
+   Mỗi mỏ chạy đồng hồ riêng S.ut[k] (mốc ms hoàn thành, 0 = không nâng). Hiệu quả: Mỏ Vàng ×2^(cấp-1) số lượng; Quặng Sắt / Huyền Kim +(cấp-1) số lượng
+   — áp dụng cho cả đào tay (mỗi nhát) lẫn Nguyên Anh thu thập tự động (mỗi phút). Chỉnh ở CFG.up. */
+const lvOf=k=>Math.max(1,Math.min(CFG.up.max,((S.ml&&S.ml[k])|0)||1));
+const mulAu=()=>Math.pow(2,lvOf('au')-1);
+const addOf=k=>lvOf(k)-1;
+const upLeft=k=>Math.max(0,(+(S.ut&&S.ut[k])||0)-Date.now());
+const ltOk=()=>{try{return !!(window.LT&&LT.logged&&LT.logged()&&LT.spend)}catch(e){return false}};
+const clk=ms=>{const t=Math.ceil(ms/1000),hr=Math.floor(t/3600),mi=Math.floor(t%3600/60),sec=t%60;return (hr?hr+':'+String(mi).padStart(2,'0'):mi)+':'+String(sec).padStart(2,'0')};
+const effTx=(k,l)=>k=='au'?'×'+Math.pow(2,l-1)+' số lượng vàng':'+'+(l-1)+' số lượng';
+let upBusy=false;
+function upStart(k){
+ if(!VN[k]||upBusy)return;
+ const l=lvOf(k);
+ if(upLeft(k)>0){note('Đang nâng cấp '+VN[k].n+': còn '+clk(upLeft(k)),VN[k].c);return}
+ if(l>=CFG.up.max){note(VN[k].n+' đã đạt cấp tối đa',VN[k].c);return}
+ if(!ltOk()){msg='☁ Cần đăng nhập tài khoản để dùng Linh Thạch ('+CFG.up.cost+'💎)';ui();return}
+ const ref=S;upBusy=true;ui();
+ LT.spend(CFG.up.cost,'mine').then(r=>{upBusy=false;
+  if(!r||!r.ok){msg=r&&r.err==='poor'?'Không đủ Linh Thạch: cần '+CFG.up.cost+'💎, bạn có '+fmtN(r.lt|0)+'💎':'Không trừ được Linh Thạch ('+((r&&(r.msg||r.err))||'lỗi')+')';ui();return}
+  ref.ut[k]=Date.now()+CFG.up.ms;try{sv()}catch(e){}
+  msg='⬆ Bắt đầu nâng cấp '+VN[k].n+' lên Lv'+(l+1)+' (xong sau '+Math.round(CFG.up.ms/60000)+' phút, −'+CFG.up.cost+'💎)';note(msg,VN[k].c);ui();
+ }).catch(()=>{upBusy=false;msg='Không trừ được Linh Thạch (lỗi mạng)';ui()});
+}
+function upTick(){
+ const now=Date.now();
+ ORD.forEach(k=>{const u=+(S.ut&&S.ut[k])||0;
+  if(u>0&&now>=u){S.ut[k]=0;S.ml[k]=Math.min(CFG.up.max,lvOf(k)+1);
+   const m='⬆ '+VN[k].n+' đã lên cấp '+S.ml[k]+'!';note(m,VN[k].c);
+   try{DT.push({x:P.x,y:190,s:m,c:VN[k].c,g:1,l:200})}catch(e){}
+   try{sv()}catch(e){}}});
+}
+function upUI(){
+ let h='<div class="dt"><div class="fmh">⬆ <b>Nâng cấp mỏ</b></div><div class="st" style="opacity:.85">Cấp 1 → '+CFG.up.max+'. Mỗi lần nâng tốn <b>'+CFG.up.cost+' 💎 Linh Thạch</b>, chờ <b>'+Math.round(CFG.up.ms/60000)+' phút</b>. Mỏ Vàng: <b>×2</b> số lượng mỗi cấp. Quặng Sắt, Huyền Kim: <b>+1</b> số lượng mỗi cấp (đào tay và thu thập tự động).'+(ltOk()?'':' <b style="color:#ff9a8a">Cần đăng nhập ☁ để dùng Linh Thạch.</b>')+'</div>';
+ ORD.forEach(k=>{const l=lvOf(k),left=upLeft(k),top=l>=CFG.up.max;
+  h+='<div class="st" style="border-top:1px solid #4a3a28;padding-top:5px;margin-top:5px"><b style="color:'+VN[k].c+'">'+VN[k].e+' '+VN[k].n+'</b> · Cấp <b>'+l+'/'+CFG.up.max+'</b><br><span style="opacity:.9">Hiện tại: '+effTx(k,l)+(top?'':' → <span style="color:#7be07a">'+effTx(k,l+1)+'</span>')+'</span><br>'
+   +(top?'<span style="opacity:.7">Đã đạt cấp tối đa</span>':left>0?'<button disabled>⏳ Đang nâng lên Lv'+(l+1)+': '+clk(left)+'</button>':'<button onclick="MN.upgrade(\''+k+'\')"'+(upBusy?' disabled':'')+'>⬆ Nâng lên Lv'+(l+1)+' ('+CFG.up.cost+'💎 · '+Math.round(CFG.up.ms/60000)+' phút)</button>')+'</div>'});
+ return h+'</div>';
 }
 
 /* ---------- Hình học ---------- */
@@ -138,9 +181,9 @@ function popup(m,x,y,c){PU.push({m,x,y,l:70,c})}
 function hit(k){
  const i=ORD.indexOf(k),X=VX(i)*s,Y=GY-RV()*.7,t=tier();let m='';
  burst(X,Y,k,10);
- if(k=='au'){const n=Math.round((6+R()*5)*CFG.goldMul*(1+.5*t)*(1+Math.min(P.lv,100)/40));give('au',n);m='+'+n+' 🪙'}
- else if(k=='fe'){const n=1+(R()<.4?1:0)+(t>=3?1:0);S.fe+=n;m='+'+n+' 🔩'}
- else{if(R()<.45){const n=1+(R()<.2?1:0);S.hk+=n;m='+'+n+' 🌑'}}
+ if(k=='au'){const n=Math.round((6+R()*5)*CFG.goldMul*(1+.5*t)*(1+Math.min(P.lv,100)/40))*mulAu();give('au',n);m='+'+n+' 🪙'}
+ else if(k=='fe'){const n=1+(R()<.4?1:0)+(t>=3?1:0)+addOf('fe');S.fe+=n;m='+'+n+' 🔩'}
+ else{if(R()<.45){const n=1+(R()<.2?1:0)+addOf('hk');S.hk+=n;m='+'+n+' 🌑'}}
  if(m)popup(m,X+(R()-.5)*30*s,Y-RV()*.6,VN[k].c);
  if(--dur[k]<=0){dur[k]=VN[k].hits;/* khai thác vô hạn: hết chu kỳ thì thưởng thêm, mạch không cạn */
   if(k=='hk'){S.hk+=2;popup('+2 🌑 (thưởng chu kỳ)',X,Y-RV()*.9,VN[k].c)}
@@ -284,7 +327,7 @@ const _vdraw=vdraw;vdraw=function(){if(on){try{mdraw()}catch(x){fail(x)}if(!on)_
 const _bgd=bgd;bgd=function(gy){_bgd(gy);if(!broken&&!vil&&!dg&&!lg&&mi()===0&&started){try{mtDraw(gy)}catch(x){g.restore&&0;fail(x)}}};
 const _step=step;step=function(){
  if(on&&!vil){on=false;pend=null;mine=null;back=0}
- if(started&&fr%60==0){try{tick()}catch(e){}}
+ if(started&&fr%60==0){try{tick()}catch(e){}try{upTick()}catch(e){}}
  if(tab==14&&bo&&fr%120==0){try{ui()}catch(e){}}
  _step();
 };
@@ -300,10 +343,11 @@ function ui_(){
  <div class="st">🪙 Vàng đã khai thác: <b>${fmtN(S.gm)}</b> <span style="opacity:.7">(đã cộng vào 💰)</span></div>
  <div class="st">🔩 Quặng Sắt: <b>${fmtN(S.fe)}</b> <span style="opacity:.7">· công dụng cập nhật sau</span></div>
  <div class="st">🌑 Huyền Kim: <b>${fmtN(S.hk)}</b> <span style="opacity:.7">· công dụng cập nhật sau</span></div></div>`;
+ h+=upUI();
  h+='<div class="dt fmpl"><div class="fmh">🧿 <b>Nguyên Anh thu thập tự động</b>'+(S.auto?'<span class="fmc">'+VN[S.auto].e+' '+VN[S.auto].n+'</span>':'')+'</div>';
  if(!ok)h+='<div class="st">🔒 Đạt cảnh giới <b>Nguyên Anh</b> để mở. Quặng sắt và Huyền Kim nhận được sẽ dùng cho các tính năng cập nhật sau.</div></div>';
  else{
-  h+='<div class="st">Chọn 1 loại. Tốc độ phụ thuộc cảnh giới hiện tại.</div><div class="fmb">'+ORD.map(x=>`<button${S.auto==x?' style="border-color:'+VN[x].c+';box-shadow:0 0 6px '+VN[x].c+'"':''} onclick="MN.setAuto('${x}')">${VN[x].e} ${VN[x].n}<br><small>+${rt(CFG.rate[x]*k)}/phút</small></button>`).join('')+`<button onclick="MN.setAuto(null)" ${S.auto?'':'disabled'}>⏹ Dừng</button></div>`;
+  h+='<div class="st">Chọn 1 loại. Tốc độ phụ thuộc cảnh giới hiện tại.</div><div class="fmb">'+ORD.map(x=>`<button${S.auto==x?' style="border-color:'+VN[x].c+';box-shadow:0 0 6px '+VN[x].c+'"':''} onclick="MN.setAuto('${x}')">${VN[x].e} ${VN[x].n}<br><small>+${rt(rtOf(x))}/phút</small></button>`).join('')+`<button onclick="MN.setAuto(null)" ${S.auto?'':'disabled'}>⏹ Dừng</button></div>`;
   h+='<div class="st">Đã thu thập: 🪙 '+fmtN(S.at.au)+' · 🔩 '+fmtN(S.at.fe)+' · 🌑 '+fmtN(S.at.hk)+'</div></div>';
  }
  return h;
@@ -312,10 +356,11 @@ function ui_(){
 /* ---------- Lưu / tải ---------- */
 function ld(o){S=fresh();on=false;pend=null;mine=null;
  if(o&&typeof o=='object'){S.fe=o.fe|0;S.hk=o.hk|0;S.gm=o.gm|0;S.auto=VN[o.auto]?o.auto:null;S.last=+o.last||Date.now();
+  ORD.forEach(k=>{S.ml[k]=Math.max(1,Math.min(CFG.up.max,((o.ml&&o.ml[k])|0)||1));S.ut[k]=+(o.ut&&o.ut[k])||0});
   ['au','fe','hk'].forEach(k=>{S.acc[k]=+(o.acc&&o.acc[k])||0;S.at[k]=(o.at&&o.at[k])|0})}
  ORD.forEach(k=>{dur[k]=VN[k].hits;until[k]=0});
 }
 const save=()=>JSON.parse(JSON.stringify(S));
-return{isOn:()=>on,ui:ui_,go,setAuto,tick,save,load:ld,reset:()=>ld(null),get:()=>S,VN}
+return{isOn:()=>on,ui:ui_,go,setAuto,tick,save,load:ld,reset:()=>ld(null),get:()=>S,VN,upgrade:upStart,dbg:{hit,upTick,mulAu,addOf,rtOf}}
 })();
 (()=>{const _n=ng;ng=function(){try{MN.reset()}catch(x){}_n()}})();

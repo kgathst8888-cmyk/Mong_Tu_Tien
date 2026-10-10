@@ -19,6 +19,7 @@ var CF={unlock:[1,3,5],scale:.12,sk:{
 var PAL={t:{col:'#ffd84a',lite:'#fff3b0',rgb:'255,226,122',bd:'#ffd84a',bg:'radial-gradient(circle at 50% 35%,#fff6cf,#b8862a 70%,#3a2a08)'},
          m:{col:'#c070ff',lite:'#ff2a6a',rgb:'160,80,255',bd:'#a050ff',bg:'radial-gradient(circle at 50% 35%,#6a2a9a,#1a0828 70%,#050208)'}};
 var cd=[0,0,0],pend=-1,pendT=0;
+function okJ(j,inf){return window.YCTOC?YCTOC.ok(j,inf):inf.realm>=CF.unlock[j]}
 
 /* ---------- tiện ích ---------- */
 function G(n){try{return(0,eval)('typeof '+n+'==="function"?'+n+':null')}catch(e){return null}}
@@ -51,6 +52,7 @@ function fire(j,s,inf){
     P_=T==='t'?['#fff3b0','#ffd84a']:['#7a40c0','#ff2a6a'];
   function hit(e,k){var f=typeof SKF!=='undefined';if(f)SKF=1;try{dm(e,mul*(k||1),s.sl?1:0)}finally{if(f)SKF=0}}
   var es=alive(),near=es.slice().sort(function(a,b){return Math.abs(a.x-px)-Math.abs(b.x-px)})[0];
+  if(window.YCTOC&&YCTOC.fire(j,s,inf,hit,es,near,mul))return;
   if(s.k==='B'){var cx=near?near.x:px+dd*140;
     ring(cx,s.r,24,'rgba(255,226,122,.25)','#fff3b0',true);pillarT(cx,70,22);if(!lg)ring(cx,s.r*.6,18,null,'#fffbe0',true);
     es.forEach(function(e){if(Math.abs(e.x-cx)<s.r){hit(e);sparks(e.x,P_,3)}});
@@ -69,7 +71,7 @@ function fire(j,s,inf){
 function castY(j,buf){
   var inf=info();if(!inf||typeof started==='undefined'||!started||over||vil)return false;
   var s=CF.sk[inf.path][j];if(!s)return false;
-  if(inf.realm<CF.unlock[j]){if(buf)say('🔒 '+s.n+': mở ở cảnh giới '+CF.unlock[j]+' Ý Cảnh','#ff9a8a');return false}
+  if(!okJ(j,inf)){if(buf)say('🔒 '+s.n+': '+(window.YCTOC?YCTOC.lockMsg(j,inf):'mở ở cảnh giới '+CF.unlock[j]+' Ý Cảnh'),'#ff9a8a');return false}
   if(P.pe||P.act){if(buf&&cd[j]<=Date.now()&&P.mp>=s.mp){pend=j;pendT=Date.now()+450}return false}
   var t=Date.now();if(cd[j]>t||P.mp<s.mp)return false;
   var tg=nearE()[0];if(!tg&&!(s.k==='S'&&alive().length))return false;
@@ -101,14 +103,14 @@ setInterval(function(){if(document.hidden)return;try{
   var inf=info(),act=!!inf&&typeof started!=='undefined'&&started&&!(typeof vil!=='undefined'&&vil);bar.style.display=act?'flex':'none';if(!act)return;
   var fb=document.getElementById('fb-bar'),ro=(fb&&fb.style.display&&fb.style.display!=='none')?'110px':'62px';if(bar._ro!==ro){bar._ro=ro;bar.style.right=ro}
   var t=Date.now(),pl=PAL[inf.path],S=CF.sk[inf.path];
-  for(var j=0;j<3;j++){var b=btn[j],s=S[j],ok=inf.realm>=CF.unlock[j],rem=Math.max(0,Math.ceil((cd[j]-t)/1000)),key=inf.path+'|'+(ok?1:0)+'|'+rem;
-    if(b._k!==key){b._k=key;b.className=(ok?'':'lk')+(rem?' cd':'');b.style.borderColor=pl.bd;b.style.background=pl.bg;b.style.boxShadow='0 0 8px '+pl.bd;b.innerHTML=ok?s.i+(rem?'<small>'+rem+'s</small>':''):'🔒<small>CG'+CF.unlock[j]+'</small>'}}
+  for(var j=0;j<3;j++){var b=btn[j],s=S[j],ok=okJ(j,inf),rem=Math.max(0,Math.ceil((cd[j]-t)/1000)),key=inf.path+'|'+(ok?1:0)+'|'+rem;
+    if(b._k!==key){b._k=key;b.className=(ok?'':'lk')+(rem?' cd':'');b.style.borderColor=pl.bd;b.style.background=pl.bg;b.style.boxShadow='0 0 8px '+pl.bd;b.innerHTML=ok?s.i+(rem?'<small>'+rem+'s</small>':''):'🔒<small>'+(window.YCTOC?YCTOC.lockShort(j,inf):'CG'+CF.unlock[j])+'</small>'}}
 }catch(e){}},250);
 
 /* ---------- thẻ trong bảng Ý Cảnh ---------- */
 function card(){var inf=info();if(!inf)return'';var pl=PAL[inf.path],S=CF.sk[inf.path];
-  return'<div style="margin-top:10px;font-size:13px"><b style="color:'+pl.col+'">📜 Thần Thông Ý Cảnh</b><div style="font-size:11.5px;opacity:.7">Nút riêng bên trái cột Thần Thông · tự dùng khi bật AUTO.</div>'+S.map(function(s,j){var ok=inf.realm>=CF.unlock[j];
-    return'<div style="display:flex;gap:8px;align-items:flex-start;border:1px solid '+(ok?pl.bd:'#4a3a60')+';border-radius:9px;padding:6px;margin:5px 0;opacity:'+(ok?1:.6)+'"><div style="font-size:24px;width:30px;text-align:center">'+(ok?s.i:'🔒')+'</div><div style="flex:1"><b style="color:'+pl.col+'">'+s.n+'</b> <span style="opacity:.75">· '+(ok?'đã mở':'mở ở cảnh giới '+CF.unlock[j])+'</span><div style="font-size:12px;opacity:.85;line-height:1.4">'+s.d+'<br>×'+mulOf(s,inf).toFixed(1)+(s.k==='M'?' tổng':s.k==='S'?' mỗi địch':'')+' sát thương · hồi '+s.cd+'s · '+s.mp+' MP</div></div></div>'}).join('')+'</div>'}
+  return'<div style="margin-top:10px;font-size:13px"><b style="color:'+pl.col+'">📜 Thần Thông Ý Cảnh</b><div style="font-size:11.5px;opacity:.7">Nút riêng bên trái cột Thần Thông · tự dùng khi bật AUTO.</div>'+S.map(function(s,j){var ok=okJ(j,inf);
+    return'<div style="display:flex;gap:8px;align-items:flex-start;border:1px solid '+(ok?pl.bd:'#4a3a60')+';border-radius:9px;padding:6px;margin:5px 0;opacity:'+(ok?1:.6)+'"><div style="font-size:24px;width:30px;text-align:center">'+(ok?s.i:'🔒')+'</div><div style="flex:1"><b style="color:'+pl.col+'">'+s.n+'</b> <span style="opacity:.75">· '+(ok?'đã mở':(window.YCTOC?YCTOC.lockMsg(j,inf):'mở ở cảnh giới '+CF.unlock[j]))+'</span><div style="font-size:12px;opacity:.85;line-height:1.4">'+s.d+'<br>×'+mulOf(s,inf).toFixed(1)+(s.k==='M'?' tổng':s.k==='S'?' mỗi địch':'')+' sát thương · hồi '+s.cd+'s · '+s.mp+' MP</div></div></div>'}).join('')+(window.YCTOC?YCTOC.card(inf):'')+'</div>'}
 
 window.YCTT={cast:castY,card:card,cfg:CF,cd:cd};
 })();

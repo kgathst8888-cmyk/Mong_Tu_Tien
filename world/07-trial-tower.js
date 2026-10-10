@@ -49,7 +49,7 @@ function twRender(){
  for(let i=0;i<10;i++){const n=f*10+i,dn=n<p,nx=n==p,ok=n<=p&&(TW_REPLAY||nx),rw=i<9?'🌟 1%':(st.fg>>f&1?'🔷 đã nhận':'🔷 Mảnh Linh Căn');
   h+='<div class="ar"><div><b style="color:'+(nx?'#ffe08a':dn?'#7fe0a0':'#8a7a68')+'">'+(dn?'✔':nx?'▶':'🔒')+' '+(i+1)+'. '+twName(n)+'</b><br><small>HP ×'+(twHp(n)/60).toFixed(1)+' · ST ×'+twAt(n).toFixed(1)+' · '+rw+'</small></div>'+(ok?'<button class="sm" onclick="twGo('+n+')">'+(dn?'Đánh lại':'Khiêu chiến')+'</button>':'')+'</div>'}
  const rt=st.root>=0?TW_ROOTS[st.root]:null;
- h+='<div class="qc"><h4>🔷 Linh Căn</h4>';
+ h+='<div class="qst-card"><h4>🔷 Linh Căn</h4>';
  if(rt)h+='<div>Linh căn của bạn: <b style="color:'+rt.c+'">'+rt.e+' '+rt.n+' Linh Căn</b><br><small>'+twDesc(rt)+'</small></div>';
  else if(st.pill)h+='<div class="qs">Viên Linh Căn đã thành! Chọn thuộc tính Linh Căn cho nhân vật này (không thể đổi lại):</div>'+TW_ROOTS.map((r,i)=>'<div class="ar"><div><b style="color:'+r.c+'">'+r.e+' '+r.n+' Linh Căn</b><br><small>'+twDesc(r)+'</small></div><button class="sm" onclick="twPick('+i+')">Chọn</button></div>').join('');
  else{h+='<div class="twfr">'+Array.from({length:9},(_,i)=>st.fg>>i&1?'🔷':'◇').join('')+'</div><div class="st" style="text-align:center">Mảnh Linh Căn '+nf+'/9 (mỗi tầng 1 mảnh từ Boss 10)</div>';
