@@ -39,8 +39,7 @@
       "world/51-toc-huy-hieu.js",
       "world/52-skill-layout.js",
       "world/53-y-canh-ky-nang-toc.js",
-      "world/54-than-thong-sat-thuong.js",
-      "world/56-thon-tan-thu.js"
+      "world/54-than-thong-sat-thuong.js"
     ],
     "systems": [
       "systems/08-farming-alchemy.js",
