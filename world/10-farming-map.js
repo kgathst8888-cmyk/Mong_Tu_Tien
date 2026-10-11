@@ -93,7 +93,7 @@ function ambient(gy,t){
 }
 
 /* ----- Cổng vào ở Làng (vẽ đè lên cảnh làng) ----- */
-function gateDraw(){
+function gateDraw(){if(window.HUDX){HUDX.gate=fr;if(HUDX.on)return}
  const x=ex()*s,y=ey(),t=fr,r=er();
  g.save();
  const q=g.createRadialGradient(x,y,3,x,y,r*1.1);q.addColorStop(0,'#f2ffd8');q.addColorStop(.5,'#4aa84c');q.addColorStop(1,'#0e3a1c');
@@ -115,7 +115,7 @@ function enter(){
  FM.setOn(true);P.x=cl(rx()+70,40,vw()-40);vt=null;vgo=-1;F.go=F.back=0;F.pend=null;cam=0;P.atk=0;P.pe=null;
  FM.note('🌱 Vào Linh Điền Động Thiên · chạm ô đất để gieo / thu hoạch','#b8ff9a');
 }
-function leave(){FM.setOn(false);vt=null;vgo=-1;F.pend=null;F.back=0;F.go=0;P.x=cl(ex(),40,vw()-40)}
+function leave(){FM.setOn(false);vt=null;vgo=-1;F.pend=null;F.back=0;F.go=0;P.x=cl(ex(),40,vw()-40)} window.FGATE={enter:enter,leave:leave};
 
 /* ----- Cảnh bản đồ ----- */
 function fdraw(){
@@ -183,7 +183,7 @@ document.addEventListener('pointerdown',e=>{
  if(e.target!==c||!vil||bo||!started||(typeof MN!='undefined'&&MN.isOn()))return;
  const px=e.offsetX,py=e.offsetY;
  if(FM.isOn()){e.stopPropagation();fhit(px,py);return}
- if(Math.abs(px-ex()*s)<Math.max(er()*1.4,34)&&Math.abs(py-ey())<Math.max(er()*1.6,40)){e.stopPropagation();vt=cl(ex(),40,vw()-40);vgo=-1;gateGo=0;twGoF=0;F.go=1}
+ if(!(window.HUDX&&HUDX.on)&&Math.abs(px-ex()*s)<Math.max(er()*1.4,34)&&Math.abs(py-ey())<Math.max(er()*1.6,40)){e.stopPropagation();vt=cl(ex(),40,vw()-40);vgo=-1;gateGo=0;twGoF=0;F.go=1}
 },true);
 
 /* ----- Nối vào vòng lặp game ----- */

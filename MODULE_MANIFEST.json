@@ -39,7 +39,9 @@
       "world/51-toc-huy-hieu.js",
       "world/52-skill-layout.js",
       "world/53-y-canh-ky-nang-toc.js",
-      "world/54-than-thong-sat-thuong.js"
+      "world/54-than-thong-sat-thuong.js",
+      "world/56-thon-tan-thu.js",
+      "world/57-hon-phach.js"
     ],
     "systems": [
       "systems/08-farming-alchemy.js",
@@ -66,7 +68,8 @@
       "ui/30-bag-plus.js",
       "ui/31-bag-scroll.js",
       "ui/44-ban-nhanh-chon.js",
-      "ui/45-bao-ve-tui-do.js"
+      "ui/45-bao-ve-tui-do.js",
+      "ui/58-hud-tiem-linh-dien.js"
     ],
     "pets": [
       "pets/22-chu-tuoc.js",
@@ -82,7 +85,9 @@
   },
   "added_files": [
     "CLAUDE_MODULAR_GUIDE.md",
-    "MODULE_MANIFEST.json"
+    "MODULE_MANIFEST.json",
+    "assets/hon-phach-assets.js",
+    "world/57-hon-phach.js"
   ],
   "principle": "All original files are retained unchanged; only workspace metadata is added."
 }

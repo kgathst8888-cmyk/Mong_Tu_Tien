@@ -137,7 +137,7 @@ function banner(){const t=fr,x=bx()*s,y=by(),u=s,sw=Math.sin(t*.04)*2.2*u;g.save
  g.fillStyle='#f2c24a';g.beginPath();g.arc(x+sw,y+36*u,2.6*u,0,6.283);g.fill();
  const L=(tx,yy,px,fill)=>{g.font='bold '+Math.round(px)+'px '+FONT;g.lineWidth=Math.max(3,px*.28);g.strokeStyle='#000c';g.strokeText(tx,x,yy);g.fillStyle=fill;g.fillText(tx,x,yy)};
  L('👘 Tiệm Y Phục',y+52*u,Math.max(11,13*u),'#ffe9a0');g.restore()}
-c.addEventListener('pointerdown',e=>{go=0;if(on||!vil||bo||!started||busy())return;const px=e.offsetX,py=e.offsetY,u=s;if(Math.abs(px-bx()*s)<30*u&&py>by()-40*u&&py<by()+72*u){vt=cl(bx(),40,vw()-40);vgo=-1;go=1;try{gateGo=0;twGoF=0}catch(x){}}});
+c.addEventListener('pointerdown',e=>{go=0;if(on||!vil||bo||!started||busy()||(window.HUDX&&HUDX.on))return;const px=e.offsetX,py=e.offsetY,u=s;if(Math.abs(px-bx()*s)<30*u&&py>by()-40*u&&py<by()+72*u){vt=cl(bx(),40,vw()-40);vgo=-1;go=1;try{gateGo=0;twGoF=0}catch(x){}}});
 
 
 /* ---------- hiệu ứng: + % vàng nhận được (tính theo phần vàng tăng lên mỗi khung hình, mọi nguồn) ---------- */
@@ -145,7 +145,7 @@ let gL=null,gC=0;
 const goldBonus=()=>{const f=PS[cur]&&PS[cur].fa;if(!f)return 0;const M=FMAP();let b=0;for(const k in f.eq){const i=M[f.eq[k]];if(i&&i.fx&&i.fx.gold&&can(i))b+=i.fx.gold}return b};
 function goldTick(){if(!started){gL=null;return}if(gL==null){gL=gold;return}const d=gold-gL;if(d>0){const b=goldBonus();if(b>0){gC+=d*b;const a=Math.floor(gC);if(a>0){gC-=a;gold+=a}}}gL=gold}
 /* ---------- nối vào vòng lặp ---------- */
-const _vd=vdraw;vdraw=function(){if(on){stage();return}_vd();if(vil&&!bo&&started&&!busy())banner()};
+const _vd=vdraw;vdraw=function(){if(on){stage();return}_vd();if(vil&&!bo&&started&&!busy()){if(window.HUDX){HUDX.shop=fr;if(HUDX.on)return}banner()}};
 const _vs=vstep;vstep=function(){if(on){vt=null;return}_vs();if(go){if(mvDir)go=0;else if(vt==null){go=0;if(Math.abs(P.x-cl(bx(),40,vw()-40))<12)open()}}};
 const _st=step;step=function(){if(on&&!vil)close();goldTick();_st()};
 const _ld=ld;ld=function(){const r=_ld.apply(this,arguments);gL=null;gC=0;return r};

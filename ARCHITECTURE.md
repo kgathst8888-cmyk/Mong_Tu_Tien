@@ -257,3 +257,10 @@ MAPPING MODULE CŨ → MỚI
 
 ## Mốc cấp thần thông 5/10/15 (Fix63)
 - world/49-y-canh-than-thong.js: lvFactor(L): mỗi cấp +10% (CF.lvScale), riêng cấp 5/10/15 (CF.milestones) cộng +30% (CF.msScale) => cấp 5 x1.6, cấp 10 x2.3, cấp 15 x3.0. world/47 hiện ⭐ mốc trên nút/mô tả.
+
+## Đúc luyện Hồn Phách + Bế Quan Đài — world/57-hon-phach.js (+ assets/hon-phach-assets.js, API `HONP`)
+- Tab 🧘 Tu tiên trong túi: mục "🔮 Hồn Phách" nằm dưới Tu vi + Linh căn (bọc `window.lcUI`). Chọn 1 trong 4 (Phật Tôn · Yêu Hoàng · Tiên Đế · Minh Vương), chọn xong KHÔNG đổi được (`PS[cur].hpc={t,r,x,b}`).
+- Cổng 4 Thành Thị Linh Giới (`LCT.gates[3]`) → "Bế Quan Đài": cảnh dựng theo mẫu Thành Thị Linh Giới (bọc `vdraw`/`vstep`, nút 🏘 quay lại). Nền = ảnh 2; hồn phách ngồi giữa đài. Phải đi tới đài và chạm vào hồn phách mới mở bảng tu luyện (chạm từ xa → tự đi tới).
+- 9 cảnh giới (tên như `RN`: Sơ Khai … Hợp Thể, Đại Thừa). Lúc đầu chỉ có hồn phách; đạt cảnh giới cuối thì hiệu ứng phía sau hiện (ảnh 1 tách thành `fig` = chỉ người ngồi, `fx` = hiệu ứng, `card` = tranh đầy đủ, `meta` = căn khung).
+- "Đúc thần thể" 0..`CF.theMax`(10): phải tối đa mới đột phá được Hợp Thể → Đại Thừa.
+- Cách tu luyện CHƯA có: dùng `HONP.addXp(n)`, `HONP.forge(n)`, `HONP.breakthrough()` khi làm sau; nút Tu luyện/Đúc thần thể đang báo "cập nhật sau". Chưa có chỉ số thưởng từ hồn phách.
