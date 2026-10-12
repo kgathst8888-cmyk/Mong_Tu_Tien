@@ -5,7 +5,7 @@
  *   - #yt-bar  (world/49-y-canh-than-thong.js) 3 thần thông Ý Cảnh
  * Cách sửa (không đụng logic 3 module trên): gom 3 phần tử vào MỘT khung #sk-side (flex ngang, cột nào ẩn thì không chiếm chỗ),
  * xếp từ phải sang trái: Linh Căn → Pháp Bảo → Ý Cảnh, ngay bên trái cột Thần Thông (#zk / #tt-bar, right:8px).
- * Nút giữ nguyên id, sự kiện, trạng thái hiện/ẩn của từng module; chỉ đổi cách định vị (position:static trong khung).
+ * Nút giữ nguyên id, sự kiện, trạng thái hiện/ẩn của từng module; chỉ đổi cách định vị (position:relative trong khung — KHÔNG dùng static, vì static làm mất khung chứa của ::after nên vòng tròn đen hồi chiêu .sb::after phình ra bằng cả khung).
  * Khung không chặn chạm (pointer-events:none), chỉ các nút bên trong nhận chạm. */
 (function(){
 'use strict';
@@ -15,7 +15,7 @@ function css(){
  var c=document.createElement('style');
  c.textContent='#sk-side{position:fixed;right:62px;top:calc(124px + env(safe-area-inset-top,0px));display:flex;flex-direction:row-reverse;align-items:flex-start;gap:6px;z-index:2;pointer-events:none}'
  +'@media (min-width:641px){#sk-side{top:calc(128px + env(safe-area-inset-top,0px))}}'
- +'#sk-side>*{position:static!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;margin:0!important;flex:none;pointer-events:auto}';
+ +'#sk-side>*{position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;margin:0!important;flex:none;pointer-events:auto}';
  (document.head||document.documentElement).appendChild(c)}
 function ensure(){
  if(wrap)return wrap;

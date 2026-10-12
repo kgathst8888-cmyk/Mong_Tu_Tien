@@ -1,0 +1,3 @@
+# Sửa 2 lỗi trong video (Fix72)
+1. Vòng tròn đen hồi chiêu quá to ở nút kỹ năng góc phải: do world/52-skill-layout.js đặt các nút trong khung #sk-side bằng position:static. Lớp phủ hồi chiêu `.sb::after{position:absolute;inset:0}` mất khung chứa là chính nút, nên phình ra bằng cả khung #sk-side. Đổi sang position:relative → vòng đen chỉ phủ đúng nút.
+2. Ngược hướng: trong lúc đang tung đòn (P.act) nhân vật không quay mặt theo mục tiêu nên khi quái đổi bên vẫn đánh/nhìn ngược. Nay luôn quay mặt về mục tiêu khi đứng yên (core/01-engine.js, bước di chuyển tự động). Khi chạy lùi vẫn quay mặt vào quái (bản vá cũ).
