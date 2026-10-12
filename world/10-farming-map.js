@@ -219,7 +219,7 @@ const LCG=[
  {sn:'Hợp Đạo',n:'Hợp Đạo Đài',e:'☯️',c:'#ffe27a',rgb:'255,226,122',sub:'Lv100 · hợp đạo tẩy luyện',open:1,go:()=>{if(window.HDAO)HDAO.open()}},
  {sn:'Thí Luyện',n:'Thiên Giới Thí Luyện',e:'🏯',c:'#ffd870',rgb:'255,210,110',sub:'Sắp mở',open:0},
  {sn:'Truyền Tống',n:'Hư Không Truyền Tống',e:'🌌',c:'#d890ff',rgb:'210,140,255',sub:'Sắp mở',open:0}];
-const GX=i=>vw()*(PORT?[.14,.34,.54,.74][i]:[.27,.45,.63,.81][i]);
+const GX=i=>vw()*((window.LGART&&LGART.fx)?LGART.fx(i):(PORT?[.14,.34,.54,.74][i]:[.27,.45,.63,.81][i]));
 const GA=()=>Math.min(44,vw()*.058);
 let on=false,tgt=-1,cv=null,ck='',WF=[],CR=[];
 const rgbm=(a,b,t)=>'rgb('+a.map((v,i)=>Math.round(v+(b[i]-v)*t)).join(',')+')';
@@ -264,7 +264,7 @@ function sparkles(t){const gy=GY,u=s;g.save();g.fillStyle='#fff';for(let i=0;i<2
 function falls(t){const u=s;g.save();WF.forEach((f,i)=>{const w=f.w,gr=g.createLinearGradient(0,f.y,0,H);gr.addColorStop(0,'rgba(220,250,255,'+(.55-f.k*.3)+')');gr.addColorStop(1,'rgba(220,250,255,0)');g.fillStyle=gr;g.fillRect(f.x-w/2,f.y,w,Math.min(H-f.y,GY*.6));g.fillStyle='rgba(255,255,255,.5)';for(let j=0;j<5;j++){const y=f.y+((t*1.2+j*40+i*17)%(GY*.5));g.fillRect(f.x-w*.3,y,w*.6,5*u)}});g.restore()}
 function lanterns(t){const gy=GY,u=s;for(let i=0;i<8;i++){const x=(i*211+t*.1*(1+i%3))%(W+40)-20,y=gy*.95-((t*.17*(.5+(i%3)*.3)+i*101)%(gy*.9)),sw=Math.sin(t*.03+i)*4*u;glw(x+sw,y,16*u,.5,'255,170,70');g.fillStyle='#ffb34a';g.fillRect(x+sw-3*u,y-4*u,6*u,8*u);g.fillStyle='#fff0b0';g.fillRect(x+sw-1.6*u,y-2*u,3.2*u,4*u);g.fillStyle='#7a3a12';g.fillRect(x+sw-3.4*u,y-5*u,6.8*u,1.4*u)}}
 function sprite(x,y,t,ph,c){const u=s,b=Math.sin(t*.05+ph)*4*u;glw(x,y+b,22*u,.55,c);g.save();g.translate(x,y+b);g.fillStyle='rgba(235,255,255,.95)';g.beginPath();g.ellipse(0,0,6*u,5*u,0,0,6.283);g.fill();g.beginPath();g.moveTo(-3*u,-3*u);g.lineTo(-6*u,-10*u);g.lineTo(-.5*u,-4*u);g.moveTo(3*u,-3*u);g.lineTo(6*u,-10*u);g.lineTo(.5*u,-4*u);g.fill();g.strokeStyle='rgba(200,250,255,.8)';g.lineWidth=2.2*u;g.lineCap='round';g.beginPath();g.moveTo(5*u,1*u);g.quadraticCurveTo(14*u,Math.sin(t*.08+ph)*6*u,20*u,-3*u);g.stroke();g.fillStyle='#3a5a7a';g.fillRect(-2.6*u,-1.2*u,1.6*u,1.6*u);g.fillRect(1*u,-1.2*u,1.6*u,1.6*u);g.restore()}
-function gate(i,t){const G=LCG[i],a=GA()*s,x=GX(i)*s,base=GY-2*s,h=a*3.5,cy=base-h*.47,rx=a*.62,ry=a*1.33,op=G.open,pu=.5+.5*Math.sin(t*.07+i);
+function gate(i,t){if(window.LGART&&LGART.gate&&LGART.gate(LCG[i],i,GX(i)*s,t,tgt))return;const G=LCG[i],a=GA()*s,x=GX(i)*s,base=GY-2*s,h=a*3.5,cy=base-h*.47,rx=a*.62,ry=a*1.33,op=G.open,pu=.5+.5*Math.sin(t*.07+i);
  g.save();
  g.save();g.translate(x,base+5*s);g.scale(1,.22);g.strokeStyle='rgba('+G.rgb+','+(op?.75:.4)+')';g.lineWidth=2.2*s/.22*.5;g.beginPath();g.arc(0,0,a*1.2,0,6.283);g.stroke();g.setLineDash([6*s,8*s]);g.lineDashOffset=-t*.3;g.beginPath();g.arc(0,0,a*.82,0,6.283);g.stroke();g.restore();
  glw(x,cy,a*3.1,(op?.28:.16)+.1*pu,G.rgb);
@@ -278,13 +278,13 @@ function gate(i,t){const G=LCG[i],a=GA()*s,x=GX(i)*s,base=GY-2*s,h=a*3.5,cy=base
  const ty=base-h*1.36-(PORT&&i%2?34*s:0);txt(G.e+' '+(PORT?G.sn:G.n),x,ty,Math.max(PORT?9.5:11,(PORT?11:13)*s),op?'#fff2c0':'#d8d0f0',1);txt(op?G.sub:'🔒 '+G.sub,x,ty+Math.max(13,14*s),Math.max(9,10.5*s),op?'#bff4ff':'#b8a8d8');
  if(tgt==i||op){g.fillStyle='#ffd54a';g.font='bold '+Math.max(12,14*s)+'px '+FONT;g.textAlign='center';g.fillText('▼',x,ty+Math.max(26,30*s)+Math.sin(t*.12)*3)}
  g.restore()}
-function draw(){const t=fr,gy=GY,k=W+'|'+H+'|'+DPR+'|'+gy+'|'+(PORT?1:0);
- if(ck!==k){ck=k;cv=document.createElement('canvas');cv.width=Math.round(W*DPR);cv.height=Math.round(H*DPR);const q=cv.getContext('2d');q.setTransform(DPR,0,0,DPR,0,0);stat(q)}
- g.drawImage(cv,0,0,W,H);aurora(t);sparkles(t);falls(t);CR.forEach((c,i)=>glw(c.x,c.y,50*s,.16+.1*Math.sin(t*.05+i),i%2?'140,200,255':'180,150,255'));
+function draw(){const t=fr,gy=GY,k=W+'|'+H+'|'+DPR+'|'+gy+'|'+(PORT?1:0)+'|'+(window.LGART?LGART.ver:0);
+ if(ck!==k){ck=k;cv=document.createElement('canvas');cv.width=Math.round(W*DPR);cv.height=Math.round(H*DPR);const q=cv.getContext('2d');q.setTransform(DPR,0,0,DPR,0,0);if(window.LGART&&LGART.paint&&LGART.paint(q,W,H,gy)){try{WF.length=0;CR.length=0}catch(e){}}else stat(q)}
+ g.drawImage(cv,0,0,W,H);if(!(window.LGART&&LGART.ok&&LGART.ok())){aurora(t);sparkles(t);falls(t)}CR.forEach((c,i)=>glw(c.x,c.y,50*s,.16+.1*Math.sin(t*.05+i),i%2?'140,200,255':'180,150,255'));
  /* mây trôi dưới sàn */
- g.save();for(let i=0;i<7;i++){const x=((i*173+t*(.15+(i%3)*.08))%(W+260))-130,y=gy+(34+(i%3)*14)*s+(H-gy)*.12*(i%2),w=(120+(i%4)*40)*s;g.fillStyle='rgba(255,236,236,'+(.5+.12*(i%3))+')';g.beginPath();g.ellipse(x,y,w*.5,16*s,0,0,6.283);g.ellipse(x-w*.28,y+4*s,w*.3,12*s,0,0,6.283);g.ellipse(x+w*.3,y+5*s,w*.32,11*s,0,0,6.283);g.fill()}g.restore();
- lanterns(t);sprite(W*.3+Math.sin(t*.012)*W*.07,gy*.58,t,0,'120,255,255');sprite(W*.74+Math.sin(t*.01+2)*W*.06,gy*.5,t,2,'255,170,240');
- for(let i=0;i<4;i++)gate(i,t);
+ g.save();for(let i=0;i<(window.LGART&&LGART.ok&&LGART.ok()?0:7);i++){const x=((i*173+t*(.15+(i%3)*.08))%(W+260))-130,y=gy+(34+(i%3)*14)*s+(H-gy)*.12*(i%2),w=(120+(i%4)*40)*s;g.fillStyle='rgba(255,236,236,'+(.5+.12*(i%3))+')';g.beginPath();g.ellipse(x,y,w*.5,16*s,0,0,6.283);g.ellipse(x-w*.28,y+4*s,w*.3,12*s,0,0,6.283);g.ellipse(x+w*.3,y+5*s,w*.32,11*s,0,0,6.283);g.fill()}g.restore();
+ if(!(window.LGART&&LGART.ok&&LGART.ok()))lanterns(t);sprite(W*.3+Math.sin(t*.012)*W*.07,gy*.58,t,0,'120,255,255');sprite(W*.74+Math.sin(t*.01+2)*W*.06,gy*.5,t,2,'255,170,240');
+ for(let i=0;i<LCG.length;i++)gate(i,t);
  if(vt!=null){const a=(t%40)/40;g.strokeStyle='rgba(255,230,140,'+(1-a)+')';g.lineWidth=3;g.beginPath();g.ellipse(vt*s,gy+12*s,(10+a*22)*s,(4+a*8)*s,0,0,6.28);g.stroke()}
  drawEP();hero();nameTag();
  const tx=PORT?'Chạm cổng để dịch chuyển':'Chạm cổng để dịch chuyển · nút 🏘 Làng để về Làng',ty=gy+(H-gy)*.55;g.font='bold '+Math.max(12,14*s)+'px '+FONT;g.textAlign='center';const tw=g.measureText(tx).width;g.fillStyle='#000b';g.fillRect(W/2-tw/2-12,ty-18*Math.max(.8,s),tw+24,28*Math.max(.8,s));g.fillStyle='#ffe9a0';g.fillText(tx,W/2,ty)}
@@ -294,7 +294,7 @@ function enter(){if(!started||!vil)return;on=true;tgt=-1;vt=null;vgo=-1;gateGo=0
 function leave(){on=false;tgt=-1;vt=null;vgo=-1;gateGo=0;P.x=cl(gateX(),40,vw()-40);P.atk=0;P.pe=null;DT.push({x:P.x,y:200,s:'🏘 Về Làng Thanh Vân',c:'#ffe9a0',g:1,l:110})}
 function act(i){const G=LCG[i];if(G.go)G.go();else DT.push({x:P.x,y:200,s:'🔒 '+G.n+' — sắp mở, nội dung sẽ thêm sau',c:'#e0b0ff',g:1,l:150})}
 function tap(e){if(!on||!vil||bo||!started)return;e.stopImmediatePropagation();e.stopPropagation();const px=e.offsetX,py=e.offsetY,a=GA()*s,gy=GY;tgt=-1;vgo=-1;
- for(let i=0;i<4;i++)if(Math.abs(px-GX(i)*s)<a*1.5&&py>gy-a*5.2&&py<gy+44*s){tgt=i;vt=cl(GX(i),40,vw()-40);return}
+ for(let i=0;i<LCG.length;i++)if(Math.abs(px-GX(i)*s)<a*1.5&&py>gy-a*5.2&&py<gy+44*s){tgt=i;vt=cl(GX(i),40,vw()-40);return}
  vt=cl(px/s,40,vw()-40)}
 return{on:()=>on,enter,leave,draw,tap,gates:LCG,
  step:()=>{if(!on)return;vgo=-1;gateGo=0;try{twGoF=0}catch(e){}},

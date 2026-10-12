@@ -42,6 +42,7 @@
       "world/54-than-thong-sat-thuong.js",
       "world/56-thon-tan-thu.js",
       "world/57-hon-phach.js",
+      "world/58-linh-gioi-city-art.js",
       "world/59-hon-phach-than-thong.js"
     ],
     "systems": [
@@ -88,7 +89,8 @@
     "CLAUDE_MODULAR_GUIDE.md",
     "MODULE_MANIFEST.json",
     "assets/hon-phach-assets.js",
-    "world/57-hon-phach.js"
+    "world/57-hon-phach.js",
+    "world/58-linh-gioi-city-art.js"
   ],
   "principle": "All original files are retained unchanged; only workspace metadata is added."
 }

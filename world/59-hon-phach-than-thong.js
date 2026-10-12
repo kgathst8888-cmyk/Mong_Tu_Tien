@@ -6,6 +6,7 @@
  *   Minh Vương 👹 U Minh Hồi Nguyên  — CHỦ ĐỘNG: XOÁ toàn bộ thời gian hồi chiêu của mọi kỹ năng đang có (kỹ năng thường, tiên thuật, thần thông hệ,
  *                                       thần thông Ý Cảnh). Hồi chiêu 25s.
  * Tu vi hồn phách càng cao càng mạnh: giá trị buff nhân (1 + CF.scale × cảnh giới hồn phách) — Sơ Khai đúng số liệt kê, Đại Thừa ×1,8. Đặt scale=0 để cố định.
+ * MẢNH ĐÚC THẦN THỂ: mọi Boss rơi 1% (HONP.cfg.shardChance), ghép/đúc ở Bế Quan Đài (world/57: craft/anvil).
  * HỒN PHÁCH RƠI: quái thường rơi 1, Boss rơi 5 (HONP.cfg.dropN/dropB) — bay về phía nhân vật như tiền nhặt, cộng vào túi hồn phách; vào Bế Quan Đài nạp để tăng tu vi.
  * Nút #hp-bar (chỉ hiện với 2 hồn phách có kỹ năng chủ động, xếp vào #sk-side của world/52). Tự dùng khi bật AUTO (cách của world/49).
  * Móc: dm (nhân sát thương khi đang buff), ZC.shd (bất tử), ZS.zf (tiên thuật), PETS (p.m), world/49 mulOf (HONSK.skMul), world/34 TTHONG.cdReset, drop (rơi hồn phách).
@@ -110,6 +111,7 @@ function orb(e,i,col){
   setTimeout(function(){try{HONP.collect(1)}catch(x){}},640+i*70)}
 if(typeof drop==='function'){var _drop=drop;drop=function(e){var r=_drop.apply(this,arguments);
   try{var o=soul();if(o&&e&&typeof e.x==='number'&&!e.arena){var n=isBoss(e)?HONP.cfg.dropB:HONP.cfg.dropN;if(FX.length<80)for(var i=0;i<n;i++)orb(e,i,o.S.c);else HONP.collect(n);
+    if(isBoss(e)&&R()<HONP.cfg.shardChance){HONP.shard(1);DT.push({x:e.x,y:210,s:'🧩 +1 Mảnh Đúc Thần Thể',c:'#ffb050',g:1,l:110})}
     DT.push({x:e.x,y:(isBoss(e)?170:130),s:'🔮 +'+n,c:o.S.c,l:42})}}catch(x){}return r}}
 
 /* ---------- thông tin trong mục Hồn Phách (Tu tiên) và bảng Bế Quan Đài ---------- */
