@@ -264,3 +264,10 @@ MAPPING MODULE CŨ → MỚI
 - 9 cảnh giới (tên như `RN`: Sơ Khai … Hợp Thể, Đại Thừa). Lúc đầu chỉ có hồn phách; đạt cảnh giới cuối thì hiệu ứng phía sau hiện (ảnh 1 tách thành `fig` = chỉ người ngồi, `fx` = hiệu ứng, `card` = tranh đầy đủ, `meta` = căn khung).
 - "Đúc thần thể" 0..`CF.theMax`(10): phải tối đa mới đột phá được Hợp Thể → Đại Thừa.
 - Cách tu luyện CHƯA có: dùng `HONP.addXp(n)`, `HONP.forge(n)`, `HONP.breakthrough()` khi làm sau; nút Tu luyện/Đúc thần thể đang báo "cập nhật sau". Chưa có chỉ số thưởng từ hồn phách.
+
+## Hồn Phách: tu vi nạp hồn phách + thần thông BUFF — world/57, world/59 (API `HONP`, `HONSK`)
+- Ảnh hồn phách được tách lại (assets/hon-phach-assets.js): khử viền tối, mép mềm, đáy mờ hoà vào đài; cảnh Bế Quan Đài thêm bóng đổ, vòng ấn xoay (nhiều vòng hơn khi cảnh giới cao), tia sáng bay, nhãn dạng viên mờ.
+- Tu vi hồn phách = số HỒN PHÁCH đã nạp. Quái thường rơi 1, Boss rơi 5 (`HONP.cfg.dropN/dropB`; chỉ rơi khi đã chọn hồn phách; bay về nhân vật rồi cộng vào `hpc.bag`). Vào Bế Quan Đài → nút "Nạp hồn phách" (`HONP.deposit()`) chuyển `bag` vào tu vi. Đủ `CF.need[r]` mới đột phá. `CF.need=[200…25600]` là số tạm.
+- Chỉ số: mỗi CẢNH GIỚI +10% HP / sát thương / phòng thủ nhân vật (`HONP.sm()` nhân vào `atk/mx/df` trong engine, 3 chỗ); tiểu cảnh không tăng.
+- Đúc thần thể KHÔNG liên quan cảnh giới/tu vi (cập nhật sau); đã bỏ điều kiện chặn Hợp Thể → Đại Thừa (`CF.breakNeedsBody=-1`).
+- Thần thông hồn phách (world/59), giá trị nhân (1 + `CF.scale`(0,1) × cảnh giới): Phật Tôn ☸️ Đại Nhật Chân Thân (chủ động: bất tử 3s + 10% sát thương 10s, hồi 25s; bất tử = `ZC.shd()` trả 0 + giữ HP) · Yêu Hoàng 🐉 Vạn Yêu Quy Tâm (nội tại: +20% sát thương kỹ năng triệu hồi = `PETS[].m` + thần thông Ý Cảnh Ma Đạo qua `mulOf`) · Tiên Đế ⚡ Tiên Đạo Thánh Vận (nội tại: +20% kỹ năng tiên tu = Ý Cảnh Tiên Đạo + tiên thuật `ZS.zf`) · Minh Vương 👹 U Minh Hồi Nguyên (chủ động: xoá hồi chiêu kỹ năng thường `cd`, tiên thuật `cz`, thần thông hệ `TTHONG.cdReset`, Ý Cảnh `YCTT.cd`; hồi 25s). Nút `#hp-bar` (xếp vào `#sk-side`), tự dùng khi bật AUTO.

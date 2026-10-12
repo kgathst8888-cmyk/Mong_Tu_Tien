@@ -41,7 +41,8 @@
       "world/53-y-canh-ky-nang-toc.js",
       "world/54-than-thong-sat-thuong.js",
       "world/56-thon-tan-thu.js",
-      "world/57-hon-phach.js"
+      "world/57-hon-phach.js",
+      "world/59-hon-phach-than-thong.js"
     ],
     "systems": [
       "systems/08-farming-alchemy.js",

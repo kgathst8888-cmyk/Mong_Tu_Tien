@@ -5,7 +5,8 @@
  *   Hồn phách đã chọn ngồi tu luyện giữa đài. Nhân vật PHẢI đi tới đài và chạm vào hồn phách mới mở bảng tu luyện (chạm từ xa → tự đi tới).
  * - Hồn phách có 9 cảnh giới (tên cảnh giới như RN: Sơ Khai … Hợp Thể, Đại Thừa). Lúc đầu CHỈ có hồn phách; đạt cảnh giới cuối (Đại Thừa)
  *   thì hiệu ứng phía sau xuất hiện (HPA.fx).
- * - "Đúc thần thể" (cấp 0..CF.theMax) phải TỐI ĐA thì mới đột phá được Hợp Thể → Đại Thừa.
+ * - Tu vi hồn phách = số HỒN PHÁCH đã nạp: quái thường rơi 1, Boss rơi 5 (nhặt tự bay vào túi hồn phách), nạp tại Bế Quan Đài. Mỗi CẢNH GIỚI +10% HP/sát thương/phòng thủ nhân vật (HONP.sm(), engine nhân vào atk/mx/df); tiểu cảnh không tăng.
+ * - "Đúc thần thể" KHÔNG liên quan cảnh giới/tu vi (cập nhật sau); không còn chặn đột phá Hợp Thể → Đại Thừa.
  * - CÁCH TU LUYỆN: CHƯA CÓ (cập nhật sau). Đã chừa API: HONP.addXp(n) (tu vi hồn phách), HONP.forge(n) (đúc thần thể +n cấp),
  *   HONP.canBreak()/breakthrough(). Nút "Tu luyện"/"Đúc thần thể" trong bảng hiện báo "sẽ cập nhật sau".
  * Dữ liệu: PS[cur].hpc = {t:0..3 hồn phách, r:0..8 cảnh giới, x:tu vi đang có, b:cấp thần thể}.
@@ -17,9 +18,10 @@ if(typeof LCT==='undefined'||!LCT.gates||!LCT.gates[3]||typeof vdraw!=='function
 
 var CF={
  theMax:10,                                    /* cấp tối đa của "Đúc thần thể" */
- need:[1000,2000,4000,8000,16000,32000,64000,128000], /* tu vi để đột phá từ cảnh giới r lên r+1 (8 lần đột phá) */
+ need:[200,400,800,1600,3200,6400,12800,25600],   /* tu vi = số hồn phách đã nạp (1 quái thường = 1, 1 Boss = 5) */
+ stat:.10,dropN:1,dropB:5, /* tu vi để đột phá từ cảnh giới r lên r+1 (8 lần đột phá) */
  gate:3,                                       /* chỉ số cổng trong LCT.gates (cổng 4) */
- breakNeedsBody:7                              /* từ cảnh giới index 7 (Hợp Thể) lên 8 (Đại Thừa) cần thần thể tối đa */
+ breakNeedsBody:-1                              /* từ cảnh giới index 7 (Hợp Thể) lên 8 (Đại Thừa) cần thần thể tối đa */
 };
 var SOULS=[
  {n:'Phật Tôn',e:'☸️',c:'#ffd76a',d:'Kim thân bất hoại, từ bi mà uy nghiêm — pháp tướng ba đầu sáu tay hiện sau lưng.'},
@@ -47,10 +49,16 @@ function save(){try{sv()}catch(e){}try{ui()}catch(e){}}
 function say(t,col){try{DT.push({x:P.x,y:200,s:t,c:col||'#ffe9a0',g:1,l:150})}catch(e){}}
 function choose(t){
   if(D()||t<0||t>3)return false;
-  PS[cur].hpc={t:t,r:0,x:0,b:0,ts:Date.now()};
+  PS[cur].hpc={t:t,r:0,x:0,b:0,bag:0,ts:Date.now()};
   save();say('🔮 Hồn phách '+SOULS[t].n+' đã nhập thể! Đến Bế Quan Đài để tu luyện','#d9b8ff');return true}
 function addXp(n){var d=chosen();if(!d||maxed(d))return false;d.x=(d.x|0)+Math.max(0,n|0);save();return true}
 function forge(n){var d=chosen();if(!d)return false;d.b=Math.min(CF.theMax,(d.b|0)+Math.max(0,(n===undefined?1:n)|0));save();return true}
+/* chỉ số cộng thẳng vào nhân vật: mỗi CẢNH GIỚI +CF.stat (10%) HP / sát thương / phòng thủ (tiểu cảnh không tăng) */
+function sm(){var d=chosen();return d?1+CF.stat*Math.min(8,d.r|0):1}
+function statPct(){return Math.round((sm()-1)*100)}
+/* hồn phách rơi: quái thường +dropN, Boss +dropB (nhặt vào túi hồn phách, rồi nạp tại Bế Quan Đài) */
+function collect(n){var d=chosen();if(!d||!(n>0))return 0;d.bag=(d.bag|0)+n;return d.bag}
+function deposit(){var d=chosen(),n=d?(d.bag|0):0;if(!d)return 0;if(maxed(d)){say('Hồn phách đã đạt cảnh giới cuối','#ff9a9a');return 0}if(n<=0){say('Chưa có hồn phách để nạp — hạ quái để nhặt','#ff9a9a');return 0}d.x=(d.x|0)+n;d.bag=0;save();say('🔮 Nạp '+nf(n)+' hồn phách → tu vi +'+nf(n),SOULS[d.t].c);return n}
 function canBreak(){
   var d=chosen();if(!d||maxed(d))return{ok:false,why:maxed(d||{r:0})?'Đã đạt cảnh giới cuối':'Chưa có hồn phách'};
   if((d.x|0)<need(d.r))return{ok:false,why:'Chưa đủ tu vi hồn phách ('+nf(d.x)+'/'+nf(need(d.r))+')'};
@@ -71,8 +79,8 @@ function section(){
   }else{
     var S=SOULS[d.t],nd=need(d.r),pc=maxed(d)?100:nd?Math.floor((d.x|0)/nd*100):0;
     h+='<div style="display:flex;gap:8px;align-items:center;margin-top:4px"><img src="'+HPA.card[d.t]+'" style="width:96px;height:34px;object-fit:cover;border-radius:6px;border:1px solid '+S.c+'"><div style="flex:1;font-size:13px"><b style="color:'+S.c+'">'+S.e+' '+S.n+'</b><br>Cảnh giới <b>'+REALMS[d.r]+'</b> ('+(d.r+1)+'/9)</div></div>'+
-       bar(pc,'linear-gradient(90deg,#6a3fb0,'+S.c+')')+'<div style="font-size:12px">Tu vi hồn phách: '+(maxed(d)?'viên mãn':nf(d.x)+' / '+nf(nd))+' · Thần thể: <b>'+(d.b|0)+'/'+CF.theMax+'</b></div>'+
-       '<div style="font-size:11.5px;opacity:.75;margin-top:4px">Đến <b>🧘 Bế Quan Đài</b> (cổng 4 · Thành Thị Linh Giới), chạm vào hồn phách để tu luyện. '+(d.r>=8?'Hiệu ứng hồn phách đã hiển lộ.':'Đạt '+REALMS[8]+' sẽ hiện hiệu ứng phía sau.')+'</div>';
+       bar(pc,'linear-gradient(90deg,#6a3fb0,'+S.c+')')+'<div style="font-size:12px">Tu vi hồn phách: '+(maxed(d)?'viên mãn':nf(d.x)+' / '+nf(nd))+' · Đã nhặt: <b>'+nf(d.bag|0)+'</b> 🔮 · Thần thể: <b>'+(d.b|0)+'/'+CF.theMax+'</b> <span style="opacity:.6">(cập nhật sau)</span></div><div style="font-size:12px;margin-top:2px;color:#9fe0a0">Chỉ số nhân vật: +'+statPct()+'% HP / sát thương / phòng thủ (mỗi cảnh giới +'+Math.round(CF.stat*100)+'%)</div>'+
+       '<div style="font-size:11.5px;opacity:.75;margin-top:4px">Đến <b>🧘 Bế Quan Đài</b> (cổng 4 · Thành Thị Linh Giới), chạm vào hồn phách để tu luyện. '+(d.r>=8?'Hiệu ứng hồn phách đã hiển lộ.':'Đạt '+REALMS[8]+' sẽ hiện hiệu ứng phía sau.')+'</div>'+(window.HONSK?HONSK.line():'');
   }
   return h+'</div>'}
 if(typeof window.lcUI==='function'){var _l=window.lcUI;window.lcUI=function(){var h=_l.apply(this,arguments);return(typeof h==='string')?h+section():h}}
@@ -117,17 +125,30 @@ function drawSoul(t){
   var S=SOULS[d.t],breath=1+.012*Math.sin(t*.045),r9=d.r>=8,glow=.12+.28*(d.r/8);
   g.save();g.globalCompositeOperation='lighter';
   var q=g.createRadialGradient(x,feet-hh*.5,2,x,feet-hh*.5,hh*(r9?1.1:.8));q.addColorStop(0,S.c+(r9?'66':'33'));q.addColorStop(1,'rgba(0,0,0,0)');g.globalAlpha=glow+.1*Math.sin(t*.05);g.fillStyle=q;g.beginPath();g.arc(x,feet-hh*.5,hh*(r9?1.1:.8),0,6.283);g.fill();g.restore();
+  /* bóng đổ mềm dưới hồn phách + vòng ấn xoay trên mặt đài (nhiều vòng hơn khi cảnh giới cao) */
+  g.save();g.translate(x,feet);g.scale(1,.2);var sg=g.createRadialGradient(0,0,2,0,0,hh*.62);sg.addColorStop(0,'rgba(18,28,22,.42)');sg.addColorStop(1,'rgba(18,28,22,0)');g.fillStyle=sg;g.beginPath();g.arc(0,0,hh*.62,0,6.283);g.fill();g.restore();
+  g.save();g.translate(x,feet-2*s);g.scale(1,.2);g.lineCap='round';
+  for(var rg=0;rg<1+(d.r>=3?1:0)+(d.r>=6?1:0);rg++){g.setLineDash([9*s,13*s]);g.lineDashOffset=(rg%2?1:-1)*t*.45;g.strokeStyle=S.c;g.globalAlpha=.30+.12*Math.sin(t*.04+rg);g.lineWidth=(2.4-rg*.4)*s;g.beginPath();g.arc(0,0,(hh*.52+rg*hh*.16),0,6.283);g.stroke()}
+  g.restore();
   var M=HPA.meta&&HPA.meta[d.t],fxi=IM.fx[d.t],f=IM.fig[d.t],Hp=hh/.72,Wp=ok(fxi)?Hp*fxi.naturalWidth/fxi.naturalHeight:Hp*2.8,topY=feet-hh;
   g.save();g.translate(x,feet);g.scale(breath,breath);g.translate(-x,-feet);
   if(M){
     var pt=feet-M.y1*Hp;topY=pt+M.y0*Hp;
     if(r9&&ok(fxi)){g.save();g.globalAlpha=.84+.12*Math.sin(t*.04);g.drawImage(fxi,x-Wp/2,pt,Wp,Hp);g.restore()}   /* cảnh giới cuối: hiệu ứng phía sau hiển lộ */
-    if(ok(f)){g.save();g.shadowColor=S.c;g.shadowBlur=14*s;g.drawImage(f,x-Wp/2+M.x0*Wp,topY,(M.x1-M.x0)*Wp,(M.y1-M.y0)*Hp);g.restore()}
+    if(ok(f)){g.save();g.globalAlpha=.97;g.shadowColor=S.c;g.shadowBlur=14*s;g.drawImage(f,x-Wp/2+M.x0*Wp,topY,(M.x1-M.x0)*Wp,(M.y1-M.y0)*Hp);g.restore()}
   }else if(ok(f)){var fw2=hh*f.naturalWidth/f.naturalHeight;g.save();g.shadowColor=S.c;g.shadowBlur=14*s;g.drawImage(f,x-fw2/2,feet-hh,fw2,hh);g.restore()}
   g.restore();
-  g.save();g.font='bold '+Math.max(12,14*s)+'px '+FONT;g.textAlign='center';g.lineWidth=Math.max(3,4*s);g.strokeStyle='#000c';g.fillStyle=S.c;
-  var nm=S.e+' '+S.n+' · '+REALMS[d.r]+' ('+(d.r+1)+'/9)',ly=Math.min(topY,feet-hh*.55)-8*s;g.strokeText(nm,x,ly);g.fillText(nm,x,ly);
-  g.font=Math.max(10,11*s)+'px '+FONT;g.fillStyle='#fff';var h2='chạm để tu luyện';g.strokeText(h2,x,ly+15*s);g.fillText(h2,x,ly+15*s);g.restore()}
+  /* tia sáng nhỏ bay lên quanh hồn phách */
+  g.save();g.globalCompositeOperation='lighter';g.fillStyle=S.c;
+  for(var k=0;k<12;k++){var ph=((t*.010)+k/12)%1,px_=x+Math.sin(k*7.3+t*.012)*hh*(.18+.30*((k*37)%10)/10),py_=feet-hh*.15-ph*hh*1.05;g.globalAlpha=Math.sin(ph*3.1416)*(r9?.8:.55);g.beginPath();g.arc(px_,py_,(1.2+((k*13)%3)*.7)*s,0,6.283);g.fill()}
+  g.restore();
+  /* nhãn: viên mờ + viền theo màu hồn phách */
+  g.save();var nm=S.e+' '+S.n+' · '+REALMS[d.r]+' ('+(d.r+1)+'/9)',ly=Math.min(topY,feet-hh*.55)-12*s,fs=Math.max(11,12.5*s);g.font='bold '+fs+'px '+FONT;g.textAlign='center';
+  var tw=g.measureText(nm).width+22*s,th=fs+10*s;g.fillStyle='rgba(18,10,30,.66)';g.strokeStyle=S.c;g.lineWidth=1.2*s;g.beginPath();
+  if(g.roundRect)g.roundRect(x-tw/2,ly-th*.72,tw,th,th/2);else g.rect(x-tw/2,ly-th*.72,tw,th);g.fill();g.stroke();
+  g.fillStyle=S.c;g.fillText(nm,x,ly+fs*.22);
+  if(Math.abs(P.x-soulWX())<260){g.font=Math.max(10,10.5*s)+'px '+FONT;g.fillStyle='rgba(255,255,255,.9)';g.globalAlpha=.65+.3*Math.sin(t*.08);g.fillText('▾ chạm để tu luyện',x,ly+th*.95)}
+  g.restore()}
 function draw(){
   var t=fr,gy=GY,gm=geom();
   if(gm)g.drawImage(IM.bg,gm.ox,gm.oy,gm.iw,gm.ih);else{g.fillStyle='#9fb9c8';g.fillRect(0,0,W,H)}
@@ -185,12 +206,12 @@ function renderPanel(){
    '<div style="margin:8px 0 2px;font-size:14px">Cảnh giới: <b style="color:'+S.c+'">'+REALMS[d.r]+'</b> ('+(d.r+1)+'/9)</div>'+chips+
    '<div style="margin-top:8px;font-size:13px">Tu vi hồn phách: <b>'+(maxed(d)?'viên mãn':nf(d.x)+' / '+nf(nd))+'</b></div>'+bar(pc,'linear-gradient(90deg,#6a3fb0,'+S.c+')')+
    '<div style="font-size:13px">🔥 Đúc thần thể: <b>'+(d.b|0)+' / '+CF.theMax+'</b></div>'+bar((d.b|0)/CF.theMax*100,'linear-gradient(90deg,#b8641e,#ffd76a)')+
-   '<div style="font-size:12px;opacity:.8;margin:2px 0 8px">Đúc thần thể tới <b>cấp tối đa</b> mới đột phá được <b>'+REALMS[7]+' → '+REALMS[8]+'</b>. Đạt <b>'+REALMS[8]+'</b> sẽ hiện hiệu ứng phía sau hồn phách.</div>'+
-   '<div style="display:flex;gap:6px"><button data-a="tl" style="flex:1;padding:10px;border:0;border-radius:9px;background:#3a2a50;color:#fff">🧘 Tu luyện</button><button data-a="ft" style="flex:1;padding:10px;border:0;border-radius:9px;background:#5a3a1a;color:#fff">🔥 Đúc thần thể</button></div>'+
+   '<div style="font-size:12px;opacity:.8;margin:2px 0 8px">Hạ quái nhặt <b>hồn phách</b> (quái thường 1, Boss 5), nạp tại đây để tăng tu vi. Mỗi <b>cảnh giới</b> +'+Math.round(CF.stat*100)+'% HP / sát thương / phòng thủ cho nhân vật (hiện +'+statPct()+'%), tiểu cảnh không tăng. Đạt <b>'+REALMS[8]+'</b> sẽ hiện hiệu ứng phía sau hồn phách. Đúc thần thể <b>không liên quan</b> cảnh giới/tu vi (cập nhật sau).</div>'+
+   (window.HONSK?HONSK.info():'')+'<div style="display:flex;gap:6px"><button data-a="dp" style="flex:1;padding:10px;border:0;border-radius:9px;background:#3a2a50;color:#fff">🔮 Nạp hồn phách ('+nf(d.bag|0)+')</button><button data-a="ft" style="flex:1;padding:10px;border:0;border-radius:9px;background:#5a3a1a;color:#fff">🔥 Đúc thần thể</button></div>'+
    '<button data-a="bt" style="width:100%;margin-top:6px;padding:10px;border:0;border-radius:9px;background:'+(cb.ok?'#7a4ad0':'#333')+';color:#fff;font-weight:700;opacity:'+(cb.ok?1:.6)+'">⚡ Đột phá cảnh giới'+(cb.ok?'':' — '+cb.why)+'</button>'+
-   '<div style="font-size:11.5px;opacity:.65;margin-top:6px;text-align:center">Cách tu luyện: cập nhật sau</div></div>';
+   '<div style="font-size:11.5px;opacity:.65;margin-top:6px;text-align:center">Tu vi cần để đột phá cảnh giới: '+nf(nd)+' · Đúc thần thể: cập nhật sau</div></div>';
   ov.onclick=function(e){var a=e.target.closest&&e.target.closest('[data-a]');if(!a){if(e.target===ov)closePanel();return}
-    var k=a.dataset.a;if(k==='x')closePanel();else if(k==='tl'||k==='ft')later();else if(k==='bt'){if(breakthrough())renderPanel();else renderPanel()}}}
+    var k=a.dataset.a;if(k==='x')closePanel();else if(k==='dp'){deposit();renderPanel()}else if(k==='ft')later();else if(k==='bt'){if(breakthrough())renderPanel();else renderPanel()}}}
 
 /* ---------- móc vào cảnh làng (cùng mẫu Thành Thị Linh Giới) ---------- */
 var _vd=vdraw;vdraw=function(){if(on){draw();return}_vd()};
@@ -207,5 +228,5 @@ var G=LCT.gates[CF.gate];
 G.sn='Bế Quan';G.n='Bế Quan Đài';G.e='🧘';G.c='#9fe0c0';G.rgb='150,230,190';G.open=1;G.go=enter;
 Object.defineProperty(G,'sub',{configurable:true,enumerable:true,get:function(){try{var d=chosen();return d?SOULS[d.t].n+' · '+REALMS[d.r]+' · chạm để vào':'Chọn hồn phách trong Túi → Tu tiên'}catch(e){return'Hồn phách · chạm để vào'}}});
 
-window.HONP={cfg:CF,souls:SOULS,get:D,chosen:chosen,choose:choose,pick:pick,addXp:addXp,forge:forge,canBreak:canBreak,breakthrough:breakthrough,enter:enter,leave:leave,on:function(){return on},open:openPanel,realms:REALMS};
+window.HONP={sm:sm,statPct:statPct,collect:collect,deposit:deposit,cfg:CF,souls:SOULS,get:D,chosen:chosen,choose:choose,pick:pick,addXp:addXp,forge:forge,canBreak:canBreak,breakthrough:breakthrough,enter:enter,leave:leave,on:function(){return on},open:openPanel,realms:REALMS};
 })();

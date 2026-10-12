@@ -156,5 +156,5 @@ if(typeof pk==='function'){var _pk=pk;pk=function(k,i){var it=k=='b'?BAG[i]:null
 if(typeof fzt==='function'){var _fzt=fzt;fzt=function(i){if(isS(BAG[i]))return;return _fzt.apply(this,arguments)}}
 var sk=0,obs=null;function skin(){sk=0;try{var bg=document.getElementById('bag');if(!bg)return;BAG.forEach(function(it,i){if(!isS(it))return;var c=bg.querySelector('[onclick="pk(\'b\','+i+')"]');if(!c||c.dataset.tt)return;c.dataset.tt=1;c.style.borderColor=ELC[it.tt.e];c.style.display='flex';c.style.flexDirection='column';c.style.alignItems='center';c.style.justifyContent='center';c.innerHTML='<div style="font-size:22px;line-height:1">📜</div><div style="font-size:10px;font-weight:700;color:'+ELC[it.tt.e]+'">'+EL[it.tt.e]+' ×'+it.tt.q+'</div>'});if(obs)obs.takeRecords()}catch(e){}}
 try{var bgE=document.getElementById('bag');if(bgE&&window.MutationObserver)(obs=new MutationObserver(function(){if(!sk)sk=requestAnimationFrame(skin)})).observe(bgE,{childList:true,subtree:true})}catch(e){}
-window.TTHONG={drop:drop,give:give,open:open,close:close,on:on,hid:hid,cnt:cnt,cfg:SC,data:K};
+window.TTHONG={cdReset:function(){for(var i=0;i<cd.length;i++)cd[i]=0},drop:drop,give:give,open:open,close:close,on:on,hid:hid,cnt:cnt,cfg:SC,data:K};
 })();

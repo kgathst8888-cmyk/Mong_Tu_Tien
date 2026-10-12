@@ -50,7 +50,7 @@ function sparks(x,cols,n){for(var i=0;i<n;i++)PT.push({x:x,y:60,vx:(R()-.5)*4,vy
 function skIdx(s,inf){return(CF.sk[inf.path]||[]).indexOf(s)}
 function slv(j){var p=PS[cur],y=p&&p.yc;if(!y||j<0||j>2)return 1;if(!Array.isArray(y.sl))y.sl=[1,1,1];return Math.max(1,Math.min(CF.lvMax,(y.sl[j]|0)||1))}
 function lvFactor(L){var f=1;for(var k=2;k<=L;k++)f+=CF.milestones.indexOf(k)>=0?CF.msScale:CF.lvScale;return f}   /* hệ số sát thương theo cấp thần thông: cấp 5/10/15 cộng nhiều hơn */
-function mulOf(s,inf){return s.mul*(1+CF.scale*(inf.realm-1))*lvFactor(slv(skIdx(s,inf)))}
+function mulOf(s,inf){return s.mul*(1+CF.scale*(inf.realm-1))*lvFactor(slv(skIdx(s,inf)))*(window.HONSK?HONSK.skMul(inf.path):1)}
 function lvUp(j){var p=PS[cur],y=p&&p.yc;if(!y||j<0||j>2)return 0;var L=slv(j);if(L>=CF.lvMax)return 0;y.sl[j]=L+1;try{sv()}catch(e){}return L+1}
 function fire(j,s,inf){
   try{window.STLAST=[s.n,fr]}catch(e){}  /* ghi tên chiêu để combat/11 + world/50 áp trạng thái */
