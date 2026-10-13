@@ -258,6 +258,7 @@ function drawTree(o){
 function drawBeast(p){
  const L=LOOK[p.k];if(!L)return;
  dep=0;
+ {const X=(p.x-cam)*s;if(X<-260*s||X>c.width+260*s)return}   /* ngoài màn hình: bỏ qua */
  const st=p.st||'idle',fa=st!='idle'?p.tm/p.dur:0,F=p.face<0?-1:1,t=p.t||0;
  if(p._lx===undefined){p._lx=p.x;p._ph=0;p._sp=0}
  const dx=abs(p.x-p._lx);p._lx=p.x;p._sp+=(dx-p._sp)*.35;

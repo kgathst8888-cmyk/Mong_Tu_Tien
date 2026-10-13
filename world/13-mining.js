@@ -110,7 +110,7 @@ const pill=(m,x,y,px,bg,fg)=>{g.font='bold '+Math.round(px)+'px '+FONT;const tw=
 const ft=ms=>{const t=Math.max(0,Math.ceil(ms/1000));return Math.floor(t/60)+':'+String(t%60).padStart(2,'0')};
 
 /* ---------- Núi + cửa hầm ở bản đồ tân thủ ---------- */
-function mtGeo(gy){const bw=Math.min(310*s,W*(PORT?.62:.46)),hm=bw*.58,cx=W*(PORT?.42:.34);return{bw,hm,cx,ax:cx+bw*.1}}
+function mtGeo(gy){const K=(window.BDTT&&BDTT.on&&BDTT.ready)?.45:1,bw=Math.min(310*s,W*(PORT?.62:.46))*K,hm=bw*.58,cx=W*(PORT?.42:.34);return{bw,hm,cx,ax:cx+bw*.1}}
 function mtHit(px,py,gy){const o=mtGeo(gy);if(py>gy+8*s||py<gy-o.hm)return false;return Math.abs(px-o.cx)<(1-(gy-py)/o.hm)*o.bw/2+14*s}
 function mtDraw(gy){
  const o=mtGeo(gy),t=fr,u=s,{bw,hm,cx,ax}=o,p=XP[0];
@@ -324,7 +324,7 @@ const _vstep=vstep;vstep=function(){
  }catch(x){fail(x)}
 };
 const _vdraw=vdraw;vdraw=function(){if(on){try{mdraw()}catch(x){fail(x)}if(!on)_vdraw();return}_vdraw()};
-const _bgd=bgd;bgd=function(gy){_bgd(gy);if(!broken&&!vil&&!dg&&!lg&&mi()===0&&started){try{mtDraw(gy)}catch(x){g.restore&&0;fail(x)}}};
+const _bgd=bgd;bgd=function(gy){_bgd(gy);if(!broken&&!vil&&!dg&&!lg&&mi()===0&&started&&!(window.BDTT&&BDTT.on&&BDTT.ready)){try{mtDraw(gy)}catch(x){g.restore&&0;fail(x)}}};
 const _step=step;step=function(){
  if(on&&!vil){on=false;pend=null;mine=null;back=0}
  if(started&&fr%60==0){try{tick()}catch(e){}try{upTick()}catch(e){}}

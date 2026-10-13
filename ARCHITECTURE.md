@@ -278,3 +278,28 @@ MAPPING MODULE CŨ → MỚI
 - 5 cổng: ⚔️ Chiến Trường Linh Giới (chọn bản đồ) · ☯️ Hợp Đạo Đài · 🗡️ Kiếm Thánh Đài · 🌀 Hư Không Truyền Tống (TẠM KHÓA, `open:0`) · 🧘 Bế Quan Đài (Hồn Phách). Muốn mở cổng khóa: sửa `open:1` + viết `go` cho phần tử `LCT.gates[3]`.
 - Vá world/10: `GX` đọc `LGART.fx`, khóa cache thêm `LGART.ver`, `stat`→`LGART.paint`, `gate`→`LGART.gate`, vòng cổng theo `LCG.length` (cả vẽ và chạm), bỏ mây/đèn/cực quang vẽ tay khi đã có ảnh. Chỉnh vị trí cổng/nhãn/đường sàn ở đầu module 58 (`FX`, `LBL`, `BASEY`).
 
+## Thành Thị Linh Giới: bản đồ ảnh + 5 cổng + camera đi theo nhân vật (world/58 + vá nhỏ world/10, core/01-engine.js vstep)
+- Nền = ảnh người chơi gửi (đã xoá nhãn/nhân vật mẫu, kéo dài thêm trời sao phía trên + mây phía dưới cho màn hình dọc); nhãn cổng vẽ lại sắc nét + hiệu ứng động. 5 cổng: ⚔️ Chiến Trường Linh Giới · ☯️ Hợp Đạo Đài · 🗡️ Kiếm Thánh Đài · 🌀 Hư Không Truyền Tống (TẠM KHÓA, `open:0`) · 🧘 Bế Quan Đài. Muốn mở cổng khóa: sửa `open:1` + viết `go` cho `LCT.gates[3]`.
+- **Không khóa cứng/co vào:** thế giới thành thị cố định `WW=IW×K` đơn vị logic (K≥0,95; màn ngang rộng thì vừa khít). Màn dọc chỉ thấy một phần; **camera `cam` đi theo nhân vật** (nhân vật ở giữa, mượt, dừng ở mép bản đồ), `cam=0` khi rời thành thị.
+- Toạ độ: cổng `GX(i)=LGART.gx(i)` (toạ độ thế giới); vẽ/chạm dùng `(GX-cam)*s`; chạm di chuyển `vt=px/s+cam`; biên đi lại ở `vstep` = `LGART.ww()` (rộng hơn màn hình khi ở thành thị, bằng `vw()` nơi khác). Ảnh vẽ mỗi khung theo camera (`LGART.blit`).
+- Sửa lỗi "Attempted to assign to readonly property @58:22": đối tượng cổng bị đóng băng được sao chép thay vì gán trực tiếp.
+- Chỉnh: `KB` (độ phóng), `FX` (vị trí cổng), `LBL`, `BASEY`, `ET/EB` ở đầu module 58.
+
+
+
+## Bản đồ quái từ ảnh + quái tách từ ảnh
+- assets/ban-do-assets.js (ảnh nền đã xoá quái/bảng tên + 5 sprite quái) và world/60-ban-do-tu-tien.js: nền 5 map luyện cấp = ảnh người dùng gửi (map 0 nguyên màu, map 1-4 chỉnh màu + thời tiết riêng) có hoạt ảnh phủ; quái (MON wolf/gob/scorp/arch/mage/ogre/golem/pal) dùng sprite tách từ ảnh, hoạt ảnh mượt bọc foe(). NẠP SAU world/05. world/13-mining vá 2 chỗ: không vẽ ngọn núi lớn khi nền ảnh chạy, hệ số K thu nhỏ vùng chạm; cửa hầm vẽ trong world/60. Tắt: BDTT.on=false.
+
+## Bạch Hổ (thay Hổ) — pets/27-bach-ho.js + assets/bach-ho-assets.js
+- Thú số 0 nay là Bạch Hổ, 4 cấp tiến hoá, mỗi cấp một hình (webp trong suốt, `window.PTG_URIS`): Sơ Sinh → Chiến Binh → Cổ Đại Đại Sư (hổ-rồng hợp thể) → Tối Thượng Thần Thú (có cánh).
+- Module `PTG` (cơ chế như `PHX` của Chu Tước) lo vẽ (lưới biến dạng: chân bước, đuôi lượn, bờm/đầu rồng đung đưa, cánh vỗ cấp 4), chạy trên mặt đất, đánh (cào liên hoàn · vồ nhảy chảy máu · kỹ năng riêng), kỹ năng theo cấp, hồi sinh Thần Hổ Thủ Hộ (cấp 4) và điều kiện tiến hoá (khối `EVO`: vàng + dược thảo Linh Điền + cảnh giới).
+- Móc trong engine (`typeof PTG!='undefined'`): `peg`, `epstep`, `drawEP`, `pimg/pcol`, `ZS.pf.skill` (nhánh k==0), `petUI` (kỹ năng + điều kiện), `pev`, `PB` (+% ST chí mạng cấp 2, giảm ST nhận cấp 3), hồi sinh khi chết. `pets/24-than-thu-bay.js`: Bạch Hổ chạy đất nên `hover()` bỏ qua k==0.
+- Dữ liệu PT4[0]/PK[0]/PSK[0]/PTU[0] được module ghi đè lúc nạp. Thứ tự nạp: sau `pets/22-chu-tuoc.js`.
+- Tiến hoá cấp 4 vẫn bị khoá bởi `ui/26-pet-evo4-lock.js` cho tới khi cập nhật đủ 4 thú.
+
+## Tối ưu hệ thống thú nuôi (2026-10-14)
+- Lưới biến dạng Chu Tước / Bạch Hổ: giảm số ô (Chu Tước 18×22→14×17, Bạch Hổ 15×15) và vẽ qua bộ nhớ đệm `cmesh` (dựng lại lưới mỗi 2 khung, khung còn lại chỉ blit 1 ảnh). Đo trong trình duyệt headless: chi phí vẽ Bạch Hổ giảm ~2–2,5 lần, Chu Tước cấp 1 ~2,5 lần.
+- Bỏ qua vẽ khi thú (Chu Tước, Bạch Hổ, 3 thú triệu hồi) ở ngoài màn hình.
+- Chu Tước cấp 4: gradient 16 tia sáng tạo 1 lần rồi dùng lại (trước tạo lại mỗi khung).
+- Sửa lỗi Bạch Hổ: `shake/gwave/fx` gọi như biến toàn cục (không tồn tại) → đổi sang `PFH`; trước đó đòn vồ nhảy có thể báo lỗi và không hiện hiệu ứng cào.
+- Đã thử rồi bỏ: cache vòng ấn / vòng triệu hồi bằng canvas phụ (chậm hơn khi chạy phần mềm vì tốn fill-rate).

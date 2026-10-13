@@ -43,7 +43,7 @@ function tx(tx0,e,k){
 function run(r0){return S.r||r0}
 /* Giữ độ cao bay (không áp dụng khi đang tung đòn: engine tự điều khiển y lúc tấn công) */
 function hover(){
-  var p=pet();if(!p||EP.at>0)return;
+  var p=pet();if(!p||EP.at>0||p.k===0)return;
   var ty=(S.wy||70)+Math.sin(EP.t*.045)*7+Math.sin(EP.t*.017)*4+p.ev*4;
   EP.y+=(ty-EP.y)*.06;
   if(p.k!==1&&Math.abs(EP.vx)>1.2&&EP.t%6===0){      /* vệt gió cho thú không có cánh */
@@ -65,7 +65,7 @@ function idle(){
   var p=pet(),k=p.k,K=PK[k];
   if(EP.t===undefined)Object.assign(EP,{t:0,y:K.al,vx:0,d:1,at:0,atT:1,ox:EP.x,tgx:EP.x,tg:null,kind:0,sk:180,ph:0,hit:0,ps:-1});
   if(EP.ps!==k){EP.ps=k;EP.y=K.al;EP.vx=0;EP.sk=180}
-  if(k===1&&EP.fp===undefined)Object.assign(EP,{fp:0,fa:.6,gl:0,ly:EP.y||0,mt:0,na:0,si:0,bn:[],rb:EP.rb||0,q:[],sw:.4,skn:0,evo:0});
+  if((k===1||k===0)&&EP.fp===undefined)Object.assign(EP,{fp:0,fa:.6,gl:0,ly:EP.y||0,mt:0,na:0,si:0,bn:[],rb:EP.rb||0,q:[],sw:.4,skn:0,evo:0});
   EP.at=0;EP.t++;
   var w=vw();
   if(!isFinite(EP.x)||EP.x<=0||EP.x>w+200)EP.x=lim(P.x-50*P.d,40,w-40);

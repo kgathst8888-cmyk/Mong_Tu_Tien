@@ -231,7 +231,7 @@ if(vlb){var _vl=vlb.onpointerdown;vlb.onpointerdown=function(e){if(on){e.stopPro
 /* ---------- cổng 4 trong Thành Thị Linh Giới ---------- */
 var G=LCT.gates[CF.gate];
 G.sn='Bế Quan';G.n='Bế Quan Đài';G.e='🧘';G.c='#9fe0c0';G.rgb='150,230,190';G.open=1;G.go=enter;
-Object.defineProperty(G,'sub',{configurable:true,enumerable:true,get:function(){try{var d=chosen();return d?SOULS[d.t].n+' · '+REALMS[d.r]+' · chạm để vào':'Chọn hồn phách trong Túi → Tu tiên'}catch(e){return'Hồn phách · chạm để vào'}}});
+Object.defineProperty(G,'sub',{configurable:true,enumerable:true,set:function(){},get:function(){try{var d=chosen();return d?SOULS[d.t].n+' · '+REALMS[d.r]+' · chạm để vào':'Chọn hồn phách trong Túi → Tu tiên'}catch(e){return'Hồn phách · chạm để vào'}}});
 
 window.HONP={shard:shard,craft:craft,anvil:anvil,sm:sm,statPct:statPct,collect:collect,deposit:deposit,cfg:CF,souls:SOULS,get:D,chosen:chosen,choose:choose,pick:pick,addXp:addXp,forge:forge,canBreak:canBreak,breakthrough:breakthrough,enter:enter,leave:leave,on:function(){return on},open:openPanel,realms:REALMS};
 })();

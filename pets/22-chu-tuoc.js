@@ -9,7 +9,7 @@
 const PHX=(()=>{
 const U=window.PHX_URIS||[];
 const IM=U.map(u=>{const i=new Image();i.src=u;return i});
-const GXN=18,GRY=22;
+const GXN=14,GRY=17;
 const META=[{px:.5,sy:.3,wl:1,wr:1,fl:0},{px:.66,sy:.34,wl:1,wr:.32,fl:0},{px:.53,sy:.3,wl:1,wr:1,fl:0},{px:.5,sy:.33,wl:1,wr:1,fl:1}];
 const HH=[76,98,124,150],AL=[56,64,72,80];
 const COL=['#ff9a3a','#ff8030','#ffb030','#ffd060'],COL2=['#ffd070','#ffc050','#ffe080','#fff2c0'];
@@ -41,7 +41,7 @@ function occ(ev){
  return OCC[ev]=o;
 }
 /* vẽ sprite theo lưới: cánh vỗ lên xuống (lan sóng ra đầu cánh), đuôi lượn sóng */
-function mesh(ev,ww,hh,fp,fa,gl,sw){
+function mesh(ev,ww,hh,fp,fa,gl,sw,c){
  const im=IM[ev],o=occ(ev);if(!o)return;
  const M=META[ev],iw=im.naturalWidth,ih=im.naturalHeight,cw=iw/GXN,ch=ih/GRY,m=.7,kx=ww/iw,ky=hh/ih;
  for(let j=0;j<GRY;j++){
@@ -53,10 +53,20 @@ function mesh(ev,ww,hh,fp,fa,gl,sw){
    let dy=-(fl*fa+gl*.35)*.19*hh*wg,dx=-Math.sign(u)*(.5+.5*fl)*.05*ww*wg*(1-gl*.6);
    if(tv>0){const w=fp*.5-v*5.5;dx+=Math.sin(w)*sw*ww*.085*Math.pow(tv,1.5);dy+=Math.cos(w)*sw*hh*.012*tv}
    const sx0=Math.max(0,i*cw-m),sy0=Math.max(0,j*ch-m),sx1=Math.min(iw,(i+1)*cw+m),sy1=Math.min(ih,(j+1)*ch+m);
-   g.drawImage(im,sx0,sy0,sx1-sx0,sy1-sy0,-ww/2+sx0*kx+dx,-hh+sy0*ky+dy,(sx1-sx0)*kx,(sy1-sy0)*ky);
+   c.drawImage(im,sx0,sy0,sx1-sx0,sy1-sy0,-ww/2+sx0*kx+dx,-hh+sy0*ky+dy,(sx1-sx0)*kx,(sy1-sy0)*ky);
   }
  }
 }
+/* bộ nhớ đệm lưới biến dạng: vẽ lại lưới mỗi 2 khung (30Hz), các khung còn lại chỉ blit 1 ảnh (giảm ~50% chi phí vẽ) */
+const MC={cv:null,cx:null,ev:-1,t:-99,w:0,h:0};
+function cmesh(ev,ww,hh,fn){
+ const W=Math.ceil(ww*1.5),H=Math.ceil(hh*1.45),oy=Math.round(hh*1.3);
+ if(!MC.cv){MC.cv=document.createElement('canvas');MC.cx=MC.cv.getContext('2d')}
+ if(MC.w!==W||MC.h!==H||MC.ev!==ev){MC.cv.width=W;MC.cv.height=H;MC.w=W;MC.h=H;MC.ev=ev;MC.t=-99}
+ if(fr-MC.t>=2||fr<MC.t){const c2=MC.cx;c2.setTransform(1,0,0,1,0,0);c2.clearRect(0,0,W,H);c2.translate(W/2,oy);fn(c2);MC.t=fr}
+ g.drawImage(MC.cv,-W/2,-oy);
+}
+const RG={k:0,g:null,a:[]};
 function ring(x,y,hh,ev,t){
  const R0=hh*(.5+ev*.04),a0=ev>=3?.7:.5;
  g.save();g.globalCompositeOperation='lighter';g.translate(x,y);g.lineWidth=Math.max(1,1.4*s);
@@ -68,7 +78,8 @@ function ring(x,y,hh,ev,t){
  g.restore();
  if(ev>=3){
   g.save();g.rotate(-t*.007);
-  for(let i=0;i<16;i++){const a=i*6.2832/16,c=Math.cos(a),n=Math.sin(a),l=R0*(i%2?1.28:1.55),gr=g.createLinearGradient(c*R0,n*R0,c*l,n*l);gr.addColorStop(0,'rgba(255,220,120,.55)');gr.addColorStop(1,'rgba(255,220,120,0)');g.strokeStyle=gr;g.lineWidth=(i%2?1.4:2.6)*s;g.beginPath();g.moveTo(c*R0,n*R0);g.lineTo(c*l,n*l);g.stroke()}
+  const gk=Math.round(R0);if(RG.k!==gk||RG.g!==g){RG.k=gk;RG.g=g;RG.a=[];for(let i=0;i<16;i++){const a=i*6.2832/16,c=Math.cos(a),n=Math.sin(a),l=R0*(i%2?1.28:1.55),gr=g.createLinearGradient(c*R0,n*R0,c*l,n*l);gr.addColorStop(0,'rgba(255,220,120,.55)');gr.addColorStop(1,'rgba(255,220,120,0)');RG.a.push(gr)}}   /* gradient tạo 1 lần, dùng lại mỗi khung */
+  for(let i=0;i<16;i++){const a=i*6.2832/16,c=Math.cos(a),n=Math.sin(a),l=R0*(i%2?1.28:1.55),gr=RG.a[i];g.strokeStyle=gr;g.lineWidth=(i%2?1.4:2.6)*s;g.beginPath();g.moveTo(c*R0,n*R0);g.lineTo(c*l,n*l);g.stroke()}
   g.restore();
  }
  g.restore();
@@ -80,6 +91,7 @@ function ember(x,y,vx,vy,l,c,r,st){EM.push({x,y,vx,vy,l,l0:l,c,r,st})}
 function draw(){
  const p=pet();if(!p)return;const ev=p.ev,t=fr,im=IM[ev];if(!im.complete||!im.naturalWidth)return;
  const hh=HH[ev]*s,ww=hh*im.naturalWidth/im.naturalHeight;
+ if((EP.x-cam)*s<-ww*2||(EP.x-cam)*s>c.width+ww*2)return;   /* ngoài màn hình: bỏ qua */
  const cx=(EP.x-cam)*s,by=GY-EP.y*s,mvf=Math.min(1,Math.abs(EP.vx)/2.4),atk=EP.at>0,at=atk?1-EP.at/EP.atT:0,col=COL[ev],col2=COL2[ev],sn=atk?Math.sin(at*3.1416):0;
  const mcx=cx,mcy=by-hh*.52,fp=EP.fp||0;
  g.save();
@@ -99,7 +111,7 @@ function draw(){
  }
  const eu=EP.evT!==undefined?fr-EP.evT:999,pop=eu>=0&&eu<60?1+.2*Math.sin(eu/60*3.1416):1;
  g.translate(cx,by);const fl=META[ev].fl?-1:1;g.scale(EP.d*fl,1);g.rotate(rot*fl);g.scale(sx*pop,sy*pop);
- mesh(ev,ww,hh,fp,EP.fa||.6,EP.gl||0,EP.sw||.4);
+ cmesh(ev,ww,hh,c2=>mesh(ev,ww,hh,fp,EP.fa||.6,EP.gl||0,EP.sw||.4,c2));
  if(ev>=2){g.save();g.globalCompositeOperation='lighter';g.globalAlpha=.12+.08*Math.sin(t*.1)+(atk?.12*sn:0);g.drawImage(im,-ww/2,-hh,ww,hh);g.restore()}
  g.restore();
  /* tàn lửa + sao */

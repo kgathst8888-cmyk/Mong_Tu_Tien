@@ -45,7 +45,7 @@ function win(){var k=K();k.next=Date.now()+CF.respawn;k.an=0;try{QE('boss')}catc
 /* ---------- cổng trong Thành Thị ---------- */
 var G=LCT.gates[CF.gate];
 if(G){G.sn='Kiếm Thánh';G.n='Kiếm Thánh Đài';G.e='🗡️';G.c='#ff7a8a';G.rgb='255,122,138';G.open=1;G.go=ask;
- Object.defineProperty(G,'sub',{configurable:true,enumerable:true,get:function(){try{if(!(window.HDAO&&HDAO.on()))return'☯ Chỉ Đạo Thể được đánh';return alive()?'Boss Lv'+MT_LV+' · chạm để đánh':'⏳ Hồi sinh '+fmt(left())}catch(e){return'Boss Lv'+MT_LV}}})}
+ Object.defineProperty(G,'sub',{configurable:true,enumerable:true,set:function(){},get:function(){try{if(!(window.HDAO&&HDAO.on()))return'☯ Chỉ Đạo Thể được đánh';return alive()?'Boss Lv'+MT_LV+' · chạm để đánh':'⏳ Hồi sinh '+fmt(left())}catch(e){return'Boss Lv'+MT_LV}}})}
 
 /* ---------- sức mạnh: sát thương boss gây ra ×MT_ATK×CF.atk (Ma Thần chỉ ×MT_ATK) ---------- */
 var _hurt=dgHurt;dgHurt=function(e,mu){return _hurt.call(this,e,e&&e.ks?mu*MT_ATK*CF.atk*2:mu)};

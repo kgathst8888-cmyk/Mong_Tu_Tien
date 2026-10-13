@@ -16,6 +16,7 @@
       "world/02-demon-realm.js",
       "world/03-village.js",
       "world/05-demon-boss.js",
+      "world/60-ban-do-tu-tien.js",
       "world/07-trial-tower.js",
       "world/10-farming-map.js",
       "world/13-mining.js",
@@ -75,6 +76,7 @@
     ],
     "pets": [
       "pets/22-chu-tuoc.js",
+      "pets/27-bach-ho.js",
       "pets/23-summon-beasts.js",
       "pets/24-than-thu-bay.js"
     ],
