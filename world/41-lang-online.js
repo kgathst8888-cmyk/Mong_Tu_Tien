@@ -127,7 +127,7 @@ function drawAll(){
   var tx=!logged()?'Đăng nhập ☁ để gặp người chơi khác':errMsg?errMsg:'🏮 Làng online: '+(total+1)+' người',
       ty=GY+(H-GY)*.55+34*Math.max(.8,s),fs=Math.max(10,12*s);
   g.save();g.font='bold '+fs+'px '+FONT;g.textAlign='center';g.textBaseline='alphabetic';g.lineWidth=3;
-  g.strokeStyle='rgba(0,0,0,.8)';g.strokeText(tx,W/2,ty);g.fillStyle=errMsg?'#ff9a8a':'#cfe9ff';g.fillText(tx,W/2,ty);g.restore();
+  g.strokeStyle='rgba(0,0,0,.8)';g.strokeText(tx,(window.VWD?VWD.cx():W/2),ty);g.fillStyle=errMsg?'#ff9a8a':'#cfe9ff';g.fillText(tx,(window.VWD?VWD.cx():W/2),ty);g.restore();
 }
 var _vd=vdraw;
 vdraw=function(){_vd();try{drawAll()}catch(e){try{console.warn('[Lang online]',e)}catch(x){}}};

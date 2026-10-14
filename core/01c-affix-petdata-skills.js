@@ -37,7 +37,7 @@ const sks=()=>{const p=PS[cur],c=CHR[cur],b=p.br>=0?c.br[p.br]:null;return[...(b
 ok=i=>{const t=PS[cur].tier;return i<2||(i<4&&t>=1)||(i==4&&t>=2)||(i==5&&t>=3)},
 DS={w:80,a:380,m:330},RG={w:210,a:560,m:520},ANI={w:22,a:30,m:30},DL={w:16,a:30,m:30},NF={w:1,m:1,a:1},
 MS={gob:{n:'Goblin',h:62,f:1,hm:1,rg:60},wolf:{n:'Sói',h:56,f:-1,hm:1.2,rg:60},scorp:{n:'Bọ Cạp',h:60,f:1,hm:1.1,rg:60},arch:{n:'Xạ Đá',h:96,f:1,hm:.9,rg:340},mage:{n:'Goblin Pháp',h:62,f:-1,hm:.8,rg:320},ogre:{n:'Ogre',h:118,f:-1,hm:2,rg:90},golem:{n:'Golem',h:168,f:1,hm:1,rg:120},pal:{n:'Morakh',h:196,f:1,hm:1,rg:130}},
-POOL=['gob','wolf','scorp','arch','mage','ogre','gob','wolf'],vw=()=>W/s,sx=i=>vw()*(.4+.115*i);
+POOL=['gob','wolf','scorp','arch','mage','ogre','gob','wolf'],vw=()=>(window.VWD&&VWD.on())?VWD.ww():W/s,sx=i=>vw()*(.4+.115*i);
 function rf(){SK=sks();SL=SLS[CHR[cur].t];NM=SL.map(q=>ADJ.map(a=>q[0]+' '+a));EQ=EQS[cur];BAG=BAGS[cur];cd=SK.map(()=>0);setSK()}
 function an(D){P.atkT=D+12;P.atk=D+12}
 const MR=150,DASHR=340;let MSGF=0;

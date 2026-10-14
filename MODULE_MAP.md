@@ -92,7 +92,7 @@ Tạo tự động bởi `python3 tools/symbols.py`. Cột KB = dung lượng, "
 | 86 | `world/51-toc-huy-hieu.js` | 19 | 0 | 🏅 HUY HIỆU TIÊN TỘC / MA TỘC (world/51-toc-huy-hieu.js) ===== * Khi nhân vật đã chọn Tiên Đạo hoặc Ma Đạo ở Ý Cảnh (PS[cur].yc.p = 't' / 'm'): * - Tiê |
 | 87 | `world/52-skill-layout.js` | 3 | 0 | 🧩 SẮP XẾP CÁC Ô KỸ NĂNG BÊN PHẢI MÀN HÌNH (world/52-skill-layout.js) ===== * Lỗi: 3 module cùng đặt nút kỹ năng ở cùng một chỗ (right≈60-62px, top≈124 |
 | 88 | `world/53-y-canh-ky-nang-toc.js` | 45 | 0 | 🌟 KỸ NĂNG TIÊN TỘC / MA TỘC · HIỆU ỨNG MỚI + MỞ KHOÁ BẰNG NGỘ ĐẠO / MA KHÍ (world/53-y-canh-ky-nang-toc.js) ===== * Mở rộng world/49-y-canh-than-thong |
-| 89 | `equipment/51-dao-the-outfit.js` | 188 | 0 | 👘 TRANG PHỤC ĐẠO THỂ (equipment/51-dao-the-outfit.js) ===== * Khi nhân vật đã Hợp Đạo (Đạo Thể: HDAO.on()), ngoại hình 3 hệ (Chiến binh / Pháp sư / Cu |
+| 89 | `equipment/51-dao-the-outfit.js` | 189 | 0 | 👘 TRANG PHỤC ĐẠO THỂ (equipment/51-dao-the-outfit.js) ===== * Khi nhân vật đã Hợp Đạo (Đạo Thể: HDAO.on()), ngoại hình 3 hệ (Chiến binh / Pháp sư / Cu |
 | 90 | `world/54-than-thong-sat-thuong.js` | 4 | 0 | ⚖️ CÂN BẰNG: SÁT THƯƠNG THẦN THÔNG LUÔN CAO HƠN KỸ NĂNG THƯỜNG ===== * Trước đây nhiều thần thông yếu hơn kỹ năng phàm thể (đo trong game, hệ số nhân  |
 | 91 | `equipment/55-opt-moi.js` | 8 | 0 |  |
 | 92 | `world/56-thon-tan-thu.js` | 51 | 0 | 🏮 THÔN TÂN THỦ — vẽ lại phong cách cổ trang Trung Hoa (world/56-thon-tan-thu.js) ===== * Thay hình vẽ của làng (xbg(gy,-1) = nền; bld(i) = 5 toà nhà)  |
@@ -101,3 +101,4 @@ Tạo tự động bởi `python3 tools/symbols.py`. Cột KB = dung lượng, "
 | 95 | `world/59-hon-phach-than-thong.js` | 13 | 0 |  |
 | 96 | `ui/58-hud-tiem-linh-dien.js` | 3 | 0 | 👘🌱 ICON TIỆM Y PHỤC + LINH ĐIỀN lên HÀNG HUD cùng 🏆 Xếp hạng (ui/58-hud-tiem-linh-dien.js) ===== * Trước: 2 icon nổi lơ lửng trong cảnh Làng (vẽ canva |
 | 97 | `systems/60-dang-nhap-bat-buoc.js` | 10 | 0 | 🔐 BẮT BUỘC ĐĂNG NHẬP + PHIÊN CHƠI DUY NHẤT (systems/60-dang-nhap-bat-buoc.js) ===== * Luồng: * 1) Mở game → cổng đăng nhập phủ kín màn hình. Nhập emai |
+| 98 | `world/61-lang-gian-rong.js` | 3 | 0 | LÀNG TÂN THỦ GIÃN RỘNG + CAMERA THEO NHÂN VẬT (như Linh Giới) - Thế giới làng rộng tối thiểu WIDE (mặc định 1320 đơn vị), màn hình hẹp chỉ thấy một ph |

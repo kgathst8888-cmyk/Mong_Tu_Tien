@@ -9,12 +9,24 @@ function dArm(R,k,au,af){const u=R[k+'u'],l=R[k+'l'],S=R[k+'_S'],E=R[k+'_E'];if(
 function dLeg(p,pv,a,lf){if(!p)return;g.save();g.translate(pv[0],pv[1]-lf);g.rotate(a);g.translate(-pv[0],-pv[1]);dPc(p);g.restore()}
 function star(n,r1,r2,rot){g.beginPath();for(let i=0;i<n*2;i++){const a=rot+i*Math.PI/n,r=i%2?r2:r1;i?g.lineTo(Math.cos(a)*r,Math.sin(a)*r):g.moveTo(Math.cos(a)*r,Math.sin(a)*r)}g.closePath()}
 function glowAt(x,y,r,c,a){glowDraw(x,y,r*1.15,c,Math.min(1,a));if(a>.5)glowDraw(x,y,r*.5,'#ffffff',a*.5)}
+/* DÁNG ĐI v3 (mượt) — pha tích lũy theo từng P; chân: đạp lùi tuyến tính rồi vung Hermite liền vận tốc (không gãy khúc),
+   nhấc chân theo sin², tay đánh sin thuần, khuỷu dùng max mềm, nhún 2 nhịp/chu kỳ. Chỉ tính toán; hero() trộn theo WG.k (đã ease). */
+function walkGait(on){
+ if(P._wf!==fr){P._wf=fr;const k0=P._wk||0,k=on?Math.min(1,k0+.09):Math.max(0,k0-.11);P._wk=k;if(on||k>0)P._wp=(P._wp||0)+(vil?.25:.15)*(on?1:es(k))}
+ const k=P._wk||0;if(k<=.001)return{k:0};
+ const u=((P._wp||0)/6.2832)%1,Af=.3,Ab=.34,SN=.6,vs=(Ab+Af)/SN*(1-SN),
+ pose=v=>{v=((v%1)+1)%1;if(v<SN)return[lp(-Af,Ab,v/SN),0];const s=(v-SN)/(1-SN),s2=s*s,s3=s2*s,
+  y=(2*s3-3*s2+1)*Ab+(s3-2*s2+s)*vs+(-2*s3+3*s2)*-Af+(s3-s2)*vs,w=Math.sin(Math.PI*s);return[y,w*w*15]},
+ L=pose(u),R=pose(u+.5),h=.5-.5*Math.cos(12.5664*u),ca=Math.cos(6.2832*u),
+ sm=x=>(x+Math.sqrt(x*x+.004))/2;
+ return{k:k,lL:L[0],lR:R[0],fL:L[1],fR:R[1],aU:-.27*ca+.02,bU:.27*ca+.02,aF:-.2-sm(.27*ca)*1.2,bF:-.2-sm(-.27*ca)*1.2,
+  brot:.04+.012*Math.sin(6.2832*u),bx:1.5+.8*Math.sin(12.5664*u+1),bob:-Math.pow(h,.8)*5.2}}
 function hero(){const T=CHR[cur].t,R=RIGI[cur],bs=R&&R.base;if(!bs||!bs.im.naturalWidth)return;
-const t=fr,HH=150,k=HH/R.H,w=R.W*k,aa=P.atk>0,at=aa?1-P.atk/P.atkT:0,rl=aa?(P.atkT-12)/P.atkT:1,cc=CHR[cur].c,tr=PS[cur].tier,br=PS[cur].br,AS=T=='a'&&br==1,mv0=P.mv,sk=aa&&!!P.ln,col=skCol(aa?P.ln:'',cc),I=sk?1:.55,
- ph=t*.3,sa=Math.sin(ph),sw=aa?Math.sin(Math.min(1,at)*3.14):0,bob=T=='m'?-(18+Math.sin(t*.07)*3.6+(mv0?Math.sin(t*.28)*.9:0)):mv0&&!aa?-Math.abs(Math.sin(ph))*4.5:Math.sin(t*.08)*1.4;
+const t=fr,HH=150,k=HH/R.H,w=R.W*k,aa=P.atk>0,at=aa?1-P.atk/P.atkT:0,rl=aa?(P.atkT-12)/P.atkT:1,cc=CHR[cur].c,tr=PS[cur].tier,br=PS[cur].br,AS=T=='a'&&br==1,mv0=P.mv,WG=walkGait(mv0&&!aa&&T!='m'),sk=aa&&!!P.ln,col=skCol(aa?P.ln:'',cc),I=sk?1:.55,
+ ph=t*.3,sa=Math.sin(ph),sw=aa?Math.sin(Math.min(1,at)*3.14):0,bob=T=='m'?-(18+Math.sin(t*.07)*3.6+(mv0?Math.sin(t*.28)*.9:0)):lp(Math.sin(t*.08)*1.4,WG.bob||0,es(WG.k));
 let aU=.05+Math.sin(t*.05)*.025,aF=-.14,bU=-.05-Math.sin(t*.05)*.025,bF=-.1,lL=Math.sin(t*.03)*.012,lR=-lL,fL=0,fR=0,wA=.2,th=0,bx=0,by=0,brot=0;
 const K=(a,b,c,d)=>at<rl*.42?lp(a,b,es(sg(at,0,rl*.42))):at<rl?lp(b,c,ei(sg(at,rl*.42,rl))):lp(c,d,es(sg(at,rl,1)));
-if(mv0&&!aa&&T!='m'){lL=-sa*.38;lR=sa*.38;fL=Math.max(0,Math.cos(ph))*16;fR=Math.max(0,-Math.cos(ph))*16;aU=-sa*.34;aF=-.22-Math.max(0,sa)*.34;bU=sa*.34;bF=-.22-Math.max(0,-sa)*.34;brot=.035}
+if(WG.k>.001){const q=es(WG.k);lL=lp(lL,WG.lL,q);lR=lp(lR,WG.lR,q);fL=WG.fL*q;fR=WG.fR*q;aU=lp(aU,WG.aU,q);aF=lp(aF,WG.aF,q);bU=lp(bU,WG.bU,q);bF=lp(bF,WG.bF,q);brot=lp(brot,WG.brot,q);bx=lp(bx,WG.bx,q)}
 if(mv0&&!aa&&T=='m'){aU=.08+Math.sin(ph)*.05;aF=-.2;brot=.075;wA=.06+Math.sin(ph)*.05}
 if(aa&&(T=='w'||AS)){const sp=T=='w'&&br==1;
  if(!sp){aU=K(.05,-2.45,-.45,.05);aF=K(-.14,-.95,.05,-.14);wA=K(.2,-.75,1.85,.2);bU=K(-.05,.8,-.4,-.05);bF=K(-.1,-.25,-.5,-.1);lR=K(0,.14,-.4,0);lL=K(0,-.1,.32,0);bx=K(0,-6,13,0);brot=K(0,-.05,.08,0);by=K(0,-1,2,0)}
