@@ -5,7 +5,7 @@
  * một phần và camera ĐI THEO nhân vật (nhân vật ở giữa màn hình, trơn mượt, dừng ở mép bản đồ). Màn hình ngang đủ rộng thì vừa khít cả bản đồ.
  * 5 CỔNG theo ảnh: ⚔️ Chiến Trường Linh Giới · ☯️ Hợp Đạo Đài · 🗡️ Kiếm Thánh Đài · 🌀 Hư Không Truyền Tống (TẠM KHÓA) · 🧘 Bế Quan Đài (world/57).
  * Móc vào world/10-farming-map.js: GX=LGART.gx (toạ độ thế giới), tap/post/vt trừ cam, draw gọi LGART.cam()/LGART.blit(), gate→LGART.gate;
- * core/01-engine.js vstep: biên di chuyển = LGART.ww() (rộng hơn màn hình khi ở thành thị). Chỉnh: KB (độ phóng), FX (vị trí cổng), LBL, BASEY, ET/EB. */
+ * core/01*.js (engine đã tách, tra SYMBOL_INDEX.md) vstep: biên di chuyển = LGART.ww() (rộng hơn màn hình khi ở thành thị). Chỉnh: KB (độ phóng), FX (vị trí cổng), LBL, BASEY, ET/EB. */
 (function(){
 'use strict';
 if(!window.LCT||!LCT.gates)return;

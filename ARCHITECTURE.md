@@ -303,3 +303,21 @@ MAPPING MODULE CŨ → MỚI
 - Chu Tước cấp 4: gradient 16 tia sáng tạo 1 lần rồi dùng lại (trước tạo lại mỗi khung).
 - Sửa lỗi Bạch Hổ: `shake/gwave/fx` gọi như biến toàn cục (không tồn tại) → đổi sang `PFH`; trước đó đòn vồ nhảy có thể báo lỗi và không hiện hiệu ứng cào.
 - Đã thử rồi bỏ: cache vòng ấn / vòng triệu hồi bằng canvas phụ (chậm hơn khi chạy phần mềm vì tốn fill-rate).
+
+## Bắt buộc đăng nhập + phiên chơi duy nhất — systems/60-dang-nhap-bat-buoc.js, phien_dang_nhap.sql (API `KTHM_GATE`)
+- Mở game → cổng đăng nhập phủ kín (`#kg`, `window.__GATE=1`, `step()` bị bỏ qua nên game đứng yên). Đăng nhập/đăng ký qua Supabase Auth (`KCL.signIn/signUp` của systems/12), quên mật khẩu → `/auth/v1/recover`.
+- Sau đăng nhập gọi RPC `kthm_claim_session(sid)`: máy chủ ghi `kthm_session(uid,sid)` = phiên DUY NHẤT (máy mới thay phiên cũ; trả `replaced`). Mọi request có đăng nhập kèm header `x-session-id` (patch `hdr` trong systems/12).
+- Máy chủ kiểm tra TRƯỚC MỌI request (PostgREST `db_pre_request` = `public.kthm_check_session`): sid thiếu/không khớp → HTTP 409 `SESSION_INVALID` ⇒ phiên cũ không tải/cập nhật được dữ liệu (pull_save, push_save, chợ, chat, xếp hạng…). Khách (anon) không bị chặn. Tắt: `alter role authenticator reset pgrst.db_pre_request; notify pgrst,'reload config';`.
+- Máy cũ: request bị 409 hoặc nhịp kiểm tra 40s/quay lại tab (`kthm_session_status`) → `KTHM_GATE.kick()`: lưu cục bộ, xoá phiên (`KCL.out`), hiện cổng "đã đăng nhập ở máy khác". Đăng xuất gọi `kthm_end_session`.
+- Patch systems/12: header `x-session-id`, bắt lỗi SESSION_INVALID, lưu/xoá `sid` cùng phiên, `vi()` tiếng Việt, mở rộng `KCL` (`sid,setSid,signIn,signUp,out,vi,afterLogin`).
+
+
+THANH LONG & HUYỀN VŨ (cơ chế như Chu Tước): pets/31-than-thu-co-che.js, đăng ký window.PETX[2], PETX[3]; móc trong engine cạnh PHX/PTG. Xem THAN_THU_CO_CHE_2026-10-14.md.
+
+
+## Tách engine thành module (Fix80)
+`core/01-engine.js` (282KB) → 22 file `core/01a…01v-*.js`, ghép lại đúng nguyên văn (đã kiểm tra), nạp liên tiếp ở vị trí cũ.
+Chỉ 1 chỗ phải sửa vì hết "nâng hàm" giữa các file: hai móc bọc `sv()`/`ng()` của hệ nhiệm vụ chuyển sang cuối `01s-save-load.js`.
+Công cụ mới: `tools/build.py` (sinh HTML đơn từ index.html) · `tools/symbols.py` (SYMBOL_INDEX.tsv + MODULE_MAP.md) ·
+`tools/where.py` (tra ký hiệu) · `tools/check.py` (kiểm tra). Lưu ý: file `Mong_Tu_Tien_CLAUDE.html` trong Fix79 là bản cũ
+(thiếu `pets/31-than-thu-co-che.js` và `systems/60-dang-nhap-bat-buoc.js`, sai thứ tự); bản mới sinh từ index.html nên đầy đủ.

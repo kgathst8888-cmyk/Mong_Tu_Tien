@@ -1,5 +1,5 @@
 /* ===== 🛡️ BẢO VỆ TÚI ĐỒ: KHÔNG TỰ MẶC · KHÔNG TỰ BÁN MẢNH Ý CẢNH (ui/45-bao-ve-tui-do.js) =====
- * 1) KHÔNG TỰ MẶC trang bị mạnh hơn: engine (core/01-engine.js, hàm give(), nhánh "🔄 Tự mặc") chỉ chạy khi window.AUTOEQ===1.
+ * 1) KHÔNG TỰ MẶC trang bị mạnh hơn: engine (core/01*.js (engine đã tách, tra SYMBOL_INDEX.md), hàm give(), nhánh "🔄 Tự mặc") chỉ chạy khi window.AUTOEQ===1.
  *    Mặc định AUTOEQ=0 → đồ rơi vào túi (hoặc theo bộ lọc tự bán của bạn), người chơi tự bấm Mặc. Bật lại: BAOVE.autoEquip(true).
  * 2) KHÔNG TỰ BÁN mảnh Ý Cảnh: mọi vật phẩm có cờ it.yc hoặc tên chứa "Ý Cảnh" được gắn it.c=1 (cờ "đồ chế tác" mà engine đã dùng để
  *    bỏ qua) ngay khi rơi (bọc give) và khi quét túi → được giữ khỏi: tự bán khi nhặt (autoKeep), Bán nhanh (sa), Dọn đồ yếu (bclean),

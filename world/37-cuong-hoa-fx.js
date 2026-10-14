@@ -1,5 +1,5 @@
 /* ===== ✨ HIỆU ỨNG CƯỜNG HÓA +7 / +10 =====
- * Chỉ số trang bị theo cấp cường hóa: UM(u) trong core/01-engine.js (bảng hệ số: +10 = ×10; mốc +7 và +10 nhảy mạnh). Module này chỉ lo hiệu ứng:
+ * Chỉ số trang bị theo cấp cường hóa: UM(u) trong core/01*.js (engine đã tách, tra SYMBOL_INDEX.md) (bảng hệ số: +10 = ×10; mốc +7 và +10 nhảy mạnh). Module này chỉ lo hiệu ứng:
  *  - Ô trang bị trong túi/đang mặc: huy hiệu +N; +7 viền ánh sáng xanh quay + nhịp sáng; +10 viền vàng-lửa quay nhanh + nhịp mạnh
  *  - Cường hóa lên đúng +7 / +10: bùng nổ toàn màn hình (vòng sóng, tia lửa, chữ) + chữ nổi trong game
  *  - Nhân vật mặc đồ +7 trở lên: hào quang nhẹ quanh người (xanh) / +10 (vàng-lửa) mạnh hơn theo số món

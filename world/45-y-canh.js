@@ -5,7 +5,7 @@
  * Mỗi đạo 5 cảnh giới × 3 tiểu cảnh (Hạ / Trung / Thượng) → Ý Cảnh cấp 1–15. Dữ liệu: PS[cur].yc = {p:'t'|'m', r:1..5, s:0..2, t:ms}.
  * Hiệu ứng: MỌI sát thương từ kỹ năng + Thần Thông (engine dm() với cờ SKF=1; đánh thường không tính) sinh thêm 1 sát thương phụ =
  *   CF.pct[r-1] % sát thương vừa gây (10/20/30/40/50% theo cảnh giới). Ma Đạo: số màu ĐEN viền tím · Tiên Đạo: số VÀNG sáng viền cam.
- *   Engine vẽ số sát thương đọc thêm d.sc (màu viền) — patch 1 chữ trong core/01-engine.js.
+ *   Engine vẽ số sát thương đọc thêm d.sc (màu viền) — patch 1 chữ trong core/01*.js (engine đã tách, tra SYMBOL_INDEX.md).
  * Cách tu luyện: CHƯA làm (sẽ cập nhật sau). Đã chừa sẵn YCANH.up(n) để nâng n tiểu cảnh, YCANH.info() để đọc trạng thái.
  * Chưa làm: khắc chế PvP giữa 2 đạo (tin nhắn yêu cầu lần này không nhắc). Chỉnh số liệu: khối CF.
  * Phụ thuộc: dm/SKF/SZ/DT/PT/R/sv/ui (engine), HDAO (33, tuỳ chọn). Bảng Hợp Đạo Đài gọi YCANH.mini() / YCANH.open(). */

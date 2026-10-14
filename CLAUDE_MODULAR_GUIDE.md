@@ -45,3 +45,18 @@ They are reference material, not runtime modules.
 
 ## Important
 This workspace was generated from the supplied ZIP without changing existing game files.
+
+
+## Rule 6 — Quy trình tiết kiệm (từ Fix80, engine đã tách 22 file)
+`core/01-engine.js` KHÔNG còn. Lõi game nằm ở `core/01a…01v-*.js` (nạp đúng thứ tự trong index.html). Khi sửa:
+1. **Tìm vị trí**: `python3 tools/where.py TÊN` (vd `petUI pev ZS`) → in `file:dòng`. Không quét/đọc cả dự án, không đọc `assets/`, không đọc `Mong_Tu_Tien_CLAUDE.html`.
+   Bảng đầy đủ: `SYMBOL_INDEX.tsv` (grep theo tên) · việc của từng file: `MODULE_MAP.md`.
+2. **Mở đúng đoạn**: `sed -n 'a,bp' file` quanh dòng tìm được. Patch nhỏ bằng thay chuỗi, kiểm tra số lần khớp = 1.
+3. **Kiểm tra**: `python3 tools/check.py` (đường dẫn, cú pháp, trùng const/let). Sau khi sửa xong chạy
+   `python3 tools/check.py --build` (ghép lại `Mong_Tu_Tien_CLAUDE.html` + làm mới 2 file chỉ mục) rồi `--run` nếu có playwright.
+4. **Không vá tay file HTML đơn** — luôn sinh bằng `tools/build.py`.
+
+### Cạm bẫy khi tách file
+- Hàm `function x(){}` chỉ "nâng" (hoisting) trong CÙNG file. Lệnh chạy ngay lúc nạp (vd `const _a=x; x=function…`) ở file A KHÔNG được gọi hàm khai báo ở file B nạp SAU. Đặt móc/đoạn chạy-ngay ở file sau khai báo.
+- `const/let` cấp cao nhất không được trùng tên giữa các file (check.py báo).
+- `core/01h-skill-fx.js` (76KB) là 1 IIFE `ZS` duy nhất — không cắt nhỏ được mà không viết lại.

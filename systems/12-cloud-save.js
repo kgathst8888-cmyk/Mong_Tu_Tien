@@ -14,8 +14,8 @@ const ls=k=>{try{return _get.call(localStorage,k)}catch(e){return null}};
 const lsSet=(k,v)=>{try{v==null?_rem.call(localStorage,k):_set.call(localStorage,k,v)}catch(e){}};
 Storage.prototype.setItem=function(k,v){if(S.block&&this===localStorage&&KEYS.indexOf(k)>=0)return;return _set.call(this,k,v)};
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function loadStore(){try{const d=JSON.parse(ls(KS));if(d){S.sess=d.sess||null;S.meta=d.meta||null}}catch(e){}}
-function persist(){lsSet(KS,JSON.stringify({sess:S.sess,meta:S.meta}))}
+function loadStore(){try{const d=JSON.parse(ls(KS));if(d){S.sess=d.sess||null;S.meta=d.meta||null;S.sid=d.sid||null}}catch(e){}}
+function persist(){lsSet(KS,JSON.stringify({sess:S.sess,meta:S.meta,sid:S.sid}))}
 const uid=()=>S.sess&&S.sess.user&&S.sess.user.id;
 const mine=()=>S.meta&&S.meta.uid===uid()?S.meta:null;
 /* ---------- dữ liệu cục bộ ---------- */
@@ -26,14 +26,15 @@ function clsName(b){try{const c=CHR[b.i];return b.br>=0&&c.br&&c.br[b.br]?c.br[b
 function stats(k2){const b=best(k2)||{i:0,lv:1,tier:0,br:-1,cr:-1,cs:0};return{name:(k2&&k2.PS&&k2.PS[b.i]&&k2.PS[b.i].nm)||(k2&&k2.pn)||'Đạo Hữu',cls:clsName(b),lv:b.lv,tier:b.tier,cr:b.cr,cs:b.cs}}
 const realm=(cr,cs)=>cr<0?'Sơ Khai':(RN[cr]||'?')+' tầng '+cs;
 /* ---------- mạng ---------- */
-const hdr=(auth,json)=>{const h={apikey:CFG.key};if(json)h['Content-Type']='application/json';if(auth&&S.sess)h.Authorization='Bearer '+S.sess.access_token;return h};
+const hdr=(auth,json)=>{const h={apikey:CFG.key};if(json)h['Content-Type']='application/json';if(auth&&S.sess)h.Authorization='Bearer '+S.sess.access_token;if(auth&&S.sess&&S.sid)h['x-session-id']=S.sid;return h};   /* phiên chơi duy nhất: máy chủ so x-session-id (xem phien_dang_nhap.sql) */
 async function http(path,o){o=o||{};const ctl=typeof AbortController!='undefined'?new AbortController():null,to=setTimeout(()=>{if(ctl)ctl.abort()},o.timeout||25000);let r,tx;
  try{r=await fetch(CFG.url+path,{method:o.method||'GET',headers:Object.assign(hdr(o.auth,o.body!==undefined),o.headers||{}),body:o.body!==undefined?JSON.stringify(o.body):undefined,signal:ctl?ctl.signal:undefined});tx=await r.text()}
  catch(e){const x=new Error(e&&e.name=='AbortError'?'Hết thời gian chờ máy chủ':'Không kết nối được máy chủ');x.net=true;throw x}finally{clearTimeout(to)}
  let j=null;try{j=tx?JSON.parse(tx):null}catch(e){}
- if(!r.ok){const x=new Error((j&&(j.msg||j.message||j.error_description||j.error))||('Lỗi '+r.status));x.status=r.status;x.code=j&&(j.error_code||j.code);throw x}
+ if(!r.ok){const x=new Error((j&&(j.msg||j.message||j.error_description||j.error))||('Lỗi '+r.status));x.status=r.status;x.code=j&&(j.error_code||j.code);if(/SESSION_INVALID/.test(String(x.message||''))){x.kick=true;setTimeout(function(){try{window.KTHM_GATE&&KTHM_GATE.kick()}catch(e){}},0)}throw x}
  return j}
 function vi(e){const c=String(e.code||''),m=String(e.message||'').toLowerCase();
+ if(e.kick||m.indexOf('session_invalid')>=0)return 'Tài khoản đã đăng nhập ở máy khác. Hãy đăng nhập lại.';
  if(e.net)return e.message;
  if(c=='invalid_credentials'||m.indexOf('invalid login')>=0)return 'Sai email hoặc mật khẩu.';
  if(c=='email_not_confirmed'||m.indexOf('not confirmed')>=0)return 'Email chưa xác nhận — hãy mở thư xác nhận rồi đăng nhập lại.';
@@ -50,7 +51,7 @@ async function rpc(fn,args){await tok();const go=()=>http('/rest/v1/rpc/'+fn,{me
 const redir=()=>/^https?:/.test(location.protocol)?'?redirect_to='+encodeURIComponent(location.origin+location.pathname):'';
 async function signUp(em,pw){const j=await http('/auth/v1/signup'+redir(),{method:'POST',body:{email:em,password:pw}});if(j&&j.access_token){setSess(j);return'in'}return'confirm'}
 async function signIn(em,pw){const j=await http('/auth/v1/token?grant_type=password',{method:'POST',body:{email:em,password:pw}});setSess(j)}
-function out(msg){S.sess=null;S.conflict=null;S.cf=null;S.cloud=null;S.st=OK?'out':'off';S.view='';if(msg)S.msg=msg;persist();ui(true)}
+function out(msg){S.sess=null;S.sid=null;S.conflict=null;S.cf=null;S.cloud=null;S.st=OK?'out':'off';S.view='';if(msg)S.msg=msg;persist();ui(true)}
 /* ---------- đồng bộ ---------- */
 let q=Promise.resolve();
 function enq(f){const p=q.then(f);q=p.then(()=>{},()=>{});return p}
@@ -154,7 +155,7 @@ async function doRecover(){const em=(S.em||'').trim();if(!em){S.msg='Nhập emai
  try{await http('/auth/v1/recover'+redir(),{method:'POST',body:{email:em}});S.msg='Nếu email này đã đăng ký, thư đặt lại mật khẩu đã được gửi.'}catch(e){S.msg=vi(e)}render()}
 async function doSetPw(){const pw=S.pw||'';if(pw.length<6){S.msg='Mật khẩu cần từ 6 ký tự.';render();return}
  try{await http('/auth/v1/user',{method:'PUT',auth:true,body:{password:pw}});S.view='';toast('Đã đổi mật khẩu');afterLogin()}catch(e){S.msg=vi(e);render()}}
-async function logout(){if(!confirm('Đăng xuất? Bản lưu trên máy vẫn được giữ.'))return;try{if(!S.conflict)await reconcile()}catch(e){}try{await http('/auth/v1/logout',{method:'POST',auth:true,timeout:6000})}catch(e){}S.msg='';out('')}
+async function logout(){if(!confirm('Đăng xuất? Bản lưu trên máy vẫn được giữ.'))return;try{if(!S.conflict)await reconcile()}catch(e){}try{await rpc('kthm_end_session',{p_sid:S.sid})}catch(e){}try{await http('/auth/v1/logout',{method:'POST',auth:true,timeout:6000})}catch(e){}S.msg='';out('')}
 function manual(){S.msg='';if(S.conflict){S.view='cf';render();return}S.openCf=true;S.next=0;reconcile().then(()=>{if(S.st=='ok')toast('☁ Đã đồng bộ')})}
 function restoreBk(){if(!confirm('Khôi phục bản sao lưu trên mây? Bản hiện tại sẽ trở thành bản sao lưu (có thể đổi lại).'))return;
  enq(()=>guard(async()=>{const r=await rpc('restore_backup',{});if(!r||r.status!=='ok')throw new Error('Chưa có bản sao lưu');applyData({data:r.data,rev:r.rev},'☁ Đã khôi phục bản sao lưu')}))}
@@ -192,6 +193,6 @@ if(OK){
  addEventListener('online',()=>{if(S.sess){S.next=0;S.chk=true}});
  setTimeout(()=>{consumeHash();if(S.sess){S.vis=Date.now();reconcile()}},1200)}
 try{if(sessionStorage.getItem('kthm_resume')){sessionStorage.removeItem('kthm_resume');setTimeout(()=>{try{if(ls('kthm2')&&typeof ld=='function')ld()}catch(e){}},400)}}catch(e){}
-window.KTHM_CLOUD={open:t=>open(t||'acc'),sync:()=>reconcile(),status:()=>S.st};window.KCL={OK,rpc,http,sess:()=>S.sess};
+window.KTHM_CLOUD={open:t=>open(t||'acc'),sync:()=>reconcile(),status:()=>S.st};window.KCL={OK,rpc,http,sess:()=>S.sess,sid:()=>S.sid,setSid:v=>{S.sid=v;persist()},signIn,signUp,out,vi,afterLogin};
 if(window.__CLOUD_TEST)window.__CLOUD_TEST_API={S,reconcile,act,tick,flush,render,open,loadLb,doAuth,hashLocal,mine,applyData,stats,toast};
 })();

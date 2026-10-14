@@ -6,7 +6,28 @@
   "modules": {
     "core": [
       "core/00-error-handler.js",
-      "core/01-engine.js"
+      "core/01a-base-data.js",
+      "core/01b-items-sets-wheel.js",
+      "core/01c-affix-petdata-skills.js",
+      "core/01d-pet-render.js",
+      "core/01e-step-loop.js",
+      "core/01f-backgrounds.js",
+      "core/01g-hero-draw.js",
+      "core/01h-skill-fx.js",
+      "core/01i-combat-core.js",
+      "core/01j-hud-draw.js",
+      "core/01k-icons-equip.js",
+      "core/01l-loot-weapons-data.js",
+      "core/01m-weapon-char-ui.js",
+      "core/01n-tab-menu.js",
+      "core/01o-quests.js",
+      "core/01p-bag-pet-ui.js",
+      "core/01q-village.js",
+      "core/01r-class-quest.js",
+      "core/01s-save-load.js",
+      "core/01t-dungeon.js",
+      "core/01u-wings.js",
+      "core/01v-perf-boot.js"
     ],
     "combat": [
       "combat/11-status-effects.js",
@@ -57,7 +78,8 @@
       "systems/28-chat.js",
       "systems/29-quest-plus.js",
       "systems/32-cho-giao-dich.js",
-      "systems/36-hop-the-tieu-canh.js"
+      "systems/36-hop-the-tieu-canh.js",
+      "systems/60-dang-nhap-bat-buoc.js"
     ],
     "ui": [
       "ui/04-character-stats.js",
@@ -78,7 +100,8 @@
       "pets/22-chu-tuoc.js",
       "pets/27-bach-ho.js",
       "pets/23-summon-beasts.js",
-      "pets/24-than-thu-bay.js"
+      "pets/24-than-thu-bay.js",
+      "pets/31-than-thu-co-che.js"
     ],
     "equipment": [
       "equipment/14-cosmetics-shop.js",
@@ -92,7 +115,9 @@
     "MODULE_MANIFEST.json",
     "assets/hon-phach-assets.js",
     "world/57-hon-phach.js",
-    "world/58-linh-gioi-city-art.js"
+    "world/58-linh-gioi-city-art.js",
+    "phien_dang_nhap.sql",
+    "THAN_THU_CO_CHE_2026-10-14.md"
   ],
   "principle": "All original files are retained unchanged; only workspace metadata is added."
 }
