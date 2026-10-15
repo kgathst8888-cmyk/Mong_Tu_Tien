@@ -17,11 +17,35 @@ mtx('Công '+atk()*5+' · Thủ '+df(),8,79,'left','#f2e3b3');mtx('💰 '+gold,L
 mtx('📜 '+qsHud()[0]+' '+qsHud()[1].split(' ')[0],8,95,'left','#ffe9a0');mtx('⭐ '+(NK%30)+'/30 · 👑 '+(NK%100)+'/100',L,95,'right','#9fe0ff');
 const r=18e5-Date.now()%18e5;mtx('📍 '+(vil?((typeof MN!='undefined'&&MN.isOn())?'Hầm Mỏ Thanh Vân':(typeof FM!='undefined'&&FM.isOn())?'Linh Điền Động Thiên':((typeof LCT!='undefined'&&LCT.on())?'Thành Thị Linh Giới':'Thanh Vân Tiên Thôn')):MP[mi()].n),8,111,'left','#e8d5a0');mtx(E.some(e=>e.b==2)?'🐲 Boss Thế Giới!':'🐲 '+Math.floor(r/6e4)+':'+String(Math.floor(r/1e3)%60).padStart(2,'0'),L,111,'right','#ffa733');
 g.restore()}
+/* ===== SỐ SÁT THƯƠNG: tối ưu + phân biệt rõ chí mạng =====
+ * Tối ưu: giới hạn DTMAX số cùng lúc (bỏ số thường cũ nhất trước, giữ chí mạng + thông báo), bỏ vẽ số ngoài màn hình, chỉ đổi g.font khi đổi cỡ chữ,
+ *         số thường biến mất nhanh hơn (l ngắn) ; hạt PT giới hạn 240.
+ * Chí mạng: chữ to hơn + dấu "!" + nảy phóng to rồi thu về (9 khung) + rung nhẹ + viền dày + quầng sáng + chùm tia lửa 1 lần; không có màu riêng thì đỏ cam (số thường vẫn vàng).
+ * Số thường: nhỏ, không quầng sáng, không "!". */
+const DTMAX=36;
+function dtTrim(){let over=DT.length-DTMAX;if(over<=0)return;DT=DT.filter(d=>{if(over>0&&!d.k&&!d.g&&(typeof d.s==='number'||/^\D{0,4}\d+$/.test(String(d.s)))){over--;return false}return true})}
+function drawDmgText(s,gy){
+  const cw=g.canvas.width;let lf='';g.textAlign='center';
+  for(let i=0;i<DT.length;i++){const d=DT[i],x0=(d.x-cam)*s;if(x0<-120||x0>cw+120)continue;
+    const tx=String(d.s),nm=/^[+\-]?\d/.test(tx)||tx=='Trượt'||tx=='Né',crit=!!d.k&&/\d$/.test(tx),
+      age=(d.l0||(d.l0=d.l))-d.l,pop=crit?1+.55*Math.max(0,1-age/9):1,
+      sz=(nm?(d.k?44:32)*DNS:(d.k?44:32)*DTX*(d.it?.4:1))*s*pop,f='bold '+Math.round(sz)+'px KTH Serif,Songti SC,STKaiti,KaiTi,serif';
+    if(f!==lf){g.font=f;lf=f}
+    const fill=d.c||(d.g?'#8fffa0':d.r?'#ff7070':crit?'#ff5a3c':'#ffd54a');
+    g.lineWidth=crit?4:(nm?2:3);g.strokeStyle=d.sc||(d.g?'#063':d.r?'#400':crit?'#4a0a00':'#7a3a00');g.fillStyle=fill;
+    g.globalAlpha=cl(d.l/20,0,1);
+    const x=x0+(crit&&age<6?(age%2?2:-2)*s:0),y=gy-d.y*s,out=crit?tx+'!':tx;
+    if(crit){g.shadowColor=d.c||'#ffb040';g.shadowBlur=10*s;
+      if(!d.sp){d.sp=1;if(PT.length<160)for(let j=0;j<6;j++)PT.push({x:d.x,y:d.y,vx:(R()-.5)*5,vy:-(1+R()*3),l:18,c:d.c||'#ffb040'})}}
+    g.strokeText(out,x,y);g.fillText(out,x,y);
+    if(crit){g.shadowBlur=0;g.shadowColor='transparent'}
+  }
+  g.globalAlpha=1}
 function draw(){const gy=GY;g.setTransform(DPR,0,0,DPR,0,0);g.globalAlpha=1;g.imageSmoothingEnabled=true;g.imageSmoothingQuality=['high','medium','low'][window.QL|0];ZS.sh();if(vil)vdraw();else{bgd(gy);E.slice().sort((a,b)=>a.x-b.x).forEach(foe);pets();ZC.aura();hero();fxs();nameTag();
 ZS.pjs()}
 
 PT.forEach(p=>{g.globalAlpha=cl(p.l/25,0,1);g.fillStyle=p.c;g.fillRect((p.x-cam)*s,gy-p.y*s,4*s,4*s)});g.globalAlpha=1;
-DT.forEach(d=>{const tx=String(d.s),nm=/^[+\-]?\d/.test(tx)||tx=='Trượt'||tx=='Né',sz=(nm?(d.k?44:32)*DNS:(d.k?44:32)*DTX*(d.it?.4:1))*s;g.font='bold '+sz+'px KTH Serif,Songti SC,STKaiti,KaiTi,serif';g.textAlign='center';g.lineWidth=nm?2:3;g.strokeStyle=d.sc||(d.g?'#063':d.r?'#400':'#7a3a00');g.fillStyle=d.c||(d.g?'#8fffa0':d.r?'#ff7070':'#ffd54a');g.globalAlpha=cl(d.l/20,0,1);const x=(d.x-cam)*s,y=gy-d.y*s;g.strokeText(d.s,x,y);g.fillText(d.s,x,y)});g.globalAlpha=1;
+drawDmgText(s,gy);g.globalAlpha=1;
 const hs=cl(Math.min(H/540,W/420),.6,1.1),ly=12;if(W<640)mhud();else{g.save();g.scale(hs,hs);
 const pg=g.createRadialGradient(60,60,5,60,60,42);pg.addColorStop(0,'#3a3050');pg.addColorStop(1,'#120c18');g.fillStyle=pg;g.beginPath();g.arc(60,60,42,0,6.28);g.fill();g.fillStyle='#f2d6b8';g.beginPath();g.arc(60,64,15,0,6.28);g.fill();g.fillStyle='#16121f';g.beginPath();g.arc(60,58,17,3.1,6.3);g.fill();g.beginPath();g.arc(60,40,7,0,6.28);g.fill();g.fillStyle=pg;g.beginPath();g.arc(60,60,42,0,6.28);g.fill();g.save();g.beginPath();g.arc(60,60,42,0,6.28);g.clip();if(IM[cur].naturalWidth){const m=IM[cur],w=m.naturalWidth,h=m.naturalHeight;const d=HD[cur];g.drawImage(m,d[0],d[1],d[2],d[3],17,15,86,86*d[3]/d[2])}g.restore();g.strokeStyle='#b8964e';g.lineWidth=4;g.beginPath();g.arc(60,60,42,0,6.28);g.stroke();
 g.fillStyle='#2a1a10';g.beginPath();g.arc(92,92,16,0,6.28);g.fill();g.stroke();g.fillStyle='#ffe9a0';g.font='bold 17px KTH Serif,Songti SC,STKaiti,KaiTi,serif';g.textAlign='center';g.fillText(P.lv,92,98);

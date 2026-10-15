@@ -128,7 +128,7 @@ function draw(){
 
 /* ---------- Bỏng ---------- */
 function burn(e,t,m){if(!e||e.hp<=0)return;const b=(EP.bn||(EP.bn=[])).find(q=>q.e===e);if(b){b.t=Math.max(b.t,t);b.m=Math.max(b.m,m)}else EP.bn.push({e,t,m})}
-function burnHit(e,m){let d=Math.max(1,Math.round(atk()*m*(.9+R()*.2)*100/(100+(e.df||0))));d=Math.max(1,Math.round(dotCrit(d)));e.hp-=d;e.fl=4;DT.push({x:e.x,y:(e.hh||100)*SZ,s:d,c:dotCl('#ff9a3a',dotCrit.k),sc:dotSc('#ff9a3a'),l:38,k:dotCrit.k})}
+function burnHit(e,m){let d=Math.max(1,Math.round(atk()*m*(.9+R()*.2)*100/(100+(e.df||0))));d=Math.max(1,Math.round(dotCrit(d)));e.hp-=d;e.fl=4;DT.push({x:e.x,y:(e.hh||100)*SZ,s:d,c:dotCl('#ff9a3a',dotCrit.k),sc:dotSc('#ff9a3a'),l:dotCrit.k?58:32,k:dotCrit.k})}
 
 /* ---------- Bắn hỏa cầu liên hoàn ---------- */
 function volley(e,p,M){

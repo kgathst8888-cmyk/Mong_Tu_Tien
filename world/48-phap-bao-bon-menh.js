@@ -115,7 +115,7 @@ function castFB(auto){
   try{var fb=D();fb.c[t]=(fb.c[t]|0)+1;if(ov&&ov.style.display==='flex'&&!busy)render()}catch(e){}return true}
 
 /* ---------- Cập nhật mỗi khung hình (gọi trong step) ---------- */
-function dot(e,mul){var d=atk()*mul*(1+SX('dotd')/100);d=Math.max(1,Math.round(Math.min(d,(e.max||d)*(bossE(e)?.012:.08))));d=Math.max(1,Math.round(dotCrit(d)));e.hp-=d;DT.push({x:e.x,y:hh(e),s:'👻'+d,c:dotCl('#cda8ff',dotCrit.k),sc:dotSc('#cda8ff'),l:40,k:dotCrit.k})}
+function dot(e,mul){var d=atk()*mul*(1+SX('dotd')/100);d=Math.max(1,Math.round(Math.min(d,(e.max||d)*(bossE(e)?.012:.08))));d=Math.max(1,Math.round(dotCrit(d)));e.hp-=d;DT.push({x:e.x,y:hh(e),s:'👻'+d,c:dotCl('#cda8ff',dotCrit.k),sc:dotSc('#cda8ff'),l:dotCrit.k?60:34,k:dotCrit.k})}
 function extend(){var ex=extB();if(!ex)return;E.forEach(function(e){var T=e.stt;if(!T||e.in>0||e.hp<=0)return;var p=e._fbp||(e._fbp={});['brn','psn','stn','frz'].forEach(function(k){var v=T[k]|0;if(v>0){if(v>(p[k]|0)){T[k]=Math.round(v*(1+ex));v=T[k]}p[k]=v}else p[k]=0})})}
 function tick(){
   var t=eq(),Q=QLV=(window.QL|0);if(pul>0)pul--;arUpd();

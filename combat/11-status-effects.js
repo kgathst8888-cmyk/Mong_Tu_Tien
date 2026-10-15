@@ -18,7 +18,7 @@ const STP={
 const boss=e=>e.b>=2||e.k=='boss';
 const lab=(e,t,c)=>DT.push({x:e.x,y:(e.hh||100)*SZ+16,s:t,c,l:55});
 function base(e){const T=e.stt||(e.stt={});if(T.df0==null)T.df0=e.df||0;return T.df0}
-function dot(e,d,c,ic){d*=(1+SX('dotd')/100)*HL.el();d=Math.max(1,Math.round(Math.min(d,(e.max||d)*(boss(e)?.012:.08))));d=Math.max(1,Math.round(dotCrit(d)));e.hp-=d;DT.push({x:e.x,y:(e.hh||100)*SZ,s:ic+d,c:dotCl(c,dotCrit.k),sc:dotSc(c),l:40,k:dotCrit.k})}
+function dot(e,d,c,ic){d*=(1+SX('dotd')/100)*HL.el();d=Math.max(1,Math.round(Math.min(d,(e.max||d)*(boss(e)?.012:.08))));d=Math.max(1,Math.round(dotCrit(d)));e.hp-=d;DT.push({x:e.x,y:(e.hh||100)*SZ,s:ic+d,c:dotCl(c,dotCrit.k),sc:dotSc(c),l:dotCrit.k?60:34,k:dotCrit.k})}
 function apply(e,k,pw){const T=e.stt||(e.stt={}),bs=boss(e);
  if(k=='brn'){const was=T.brn>0;if(T.frz>0){T.frz=0;T.imm=60;let d=Math.max(1,Math.round(atk()*.5));d=Math.max(1,Math.round(dotCrit(d)));e.hp-=d;DT.push({x:e.x,y:(e.hh||100)*SZ,s:'💧'+d,c:dotCl('#9fe0ff',dotCrit.k),sc:dotSc('#9fe0ff'),l:45,k:dotCrit.k});lab(e,'Tan băng!','#cfeaff');for(let i=0;i<10;i++)PT.push({x:e.x,y:50,vx:(R()-.5)*6,vy:R()*-4,l:28,c:'#cfeaff'})}T.brn=300;T.bs=was?Math.min(3,(T.bs||1)+1):1;if(!was)lab(e,'🔥 Bỏng','#ff9a3a')}
  else if(k=='psn'){const was=T.psn>0;T.psn=480;T.ps=was?Math.min(5,(T.ps||1)+1):1;if(!was)lab(e,'☠ Độc tố','#7fe85a')}

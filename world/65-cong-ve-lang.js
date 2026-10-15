@@ -48,10 +48,18 @@ LGART.gate=function(Gt,i,x,t,tgt){
   g.save();g.beginPath();g.ellipse(x,pcy,prx,pry,0,0,6.2832);
   var pg=g.createRadialGradient(x,pcy,2,x,pcy,pry);pg.addColorStop(0,'rgba(255,255,255,.96)');pg.addColorStop(.35,'rgba(200,255,228,.85)');pg.addColorStop(.75,'rgba('+rgb+',.5)');pg.addColorStop(1,'rgba('+rgb+',.15)');
   g.fillStyle=pg;g.fill();g.clip();
-  g.lineCap='round';g.strokeStyle='rgba(255,255,255,.7)';g.lineWidth=Math.max(1,1.5*sw);
-  for(j=0;j<5;j++){var a0=t*.04*(j%2?-1:1)+j*1.3,k2=.2+j*.17;g.beginPath();g.ellipse(x,pcy,prx*k2,pry*k2,a0,0,3.8);g.stroke()}
+  /* cảnh Thôn Tân Thủ thấy qua cổng: bình minh, đồi xanh, nhà gỗ, cây, khói bếp — gợn sóng nhẹ */
+  (function(){var top=pcy-pry,hh=pry*2,wv=Math.sin(t*.04)*1.2*sw;
+    g.globalAlpha=.94;g.fillStyle=g.createLinearGradient(0,top,0,top+hh);g.fillStyle.addColorStop;var vg=g.createLinearGradient(0,top,0,top+hh);vg.addColorStop(0,'#6fb0f0');vg.addColorStop(.45,'#ffd8a0');vg.addColorStop(.62,'#ffc890');vg.addColorStop(1,'#9ad88a');g.fillStyle=vg;g.fillRect(x-prx-2,top,prx*2+4,hh);
+    var sg=g.createRadialGradient(x+prx*.2,pcy+pry*.05,0,x+prx*.2,pcy+pry*.05,prx*1.1);sg.addColorStop(0,'rgba(255,250,210,1)');sg.addColorStop(.3,'rgba(255,230,160,.7)');sg.addColorStop(1,'rgba(255,230,160,0)');g.fillStyle=sg;g.fillRect(x-prx,top,prx*2,hh);
+    g.fillStyle='#8ccf86';g.beginPath();g.moveTo(x-prx-2,pcy+pry*.28);g.quadraticCurveTo(x-prx*.3,pcy+pry*.05+wv,x+prx*.3,pcy+pry*.3);g.quadraticCurveTo(x+prx*.8,pcy+pry*.4,x+prx+2,pcy+pry*.2);g.lineTo(x+prx+2,pcy+pry+2);g.lineTo(x-prx-2,pcy+pry+2);g.closePath();g.fill();
+    g.fillStyle='#4fa86a';g.beginPath();g.moveTo(x-prx-2,pcy+pry*.52);g.quadraticCurveTo(x,pcy+pry*.34-wv,x+prx+2,pcy+pry*.55);g.lineTo(x+prx+2,pcy+pry+2);g.lineTo(x-prx-2,pcy+pry+2);g.closePath();g.fill();
+    var hx=x-prx*.12,hy=pcy+pry*.34;g.fillStyle='#8a5a3a';g.fillRect(hx-6*sw,hy-8*sw,12*sw,8*sw);g.fillStyle='#c0503a';g.beginPath();g.moveTo(hx-9*sw,hy-8*sw);g.lineTo(hx,hy-15*sw);g.lineTo(hx+9*sw,hy-8*sw);g.closePath();g.fill();g.fillStyle='#ffe08a';g.fillRect(hx-2*sw,hy-6*sw,4*sw,4*sw);
+    g.fillStyle='#2f7a4a';g.beginPath();g.arc(x+prx*.5,hy-6*sw,6*sw,0,6.2832);g.fill();g.fillStyle='#6a4a30';g.fillRect(x+prx*.5-sw,hy-2*sw,2*sw,5*sw);
+    g.strokeStyle='rgba(235,235,240,.6)';g.lineWidth=Math.max(1,1.6*sw);g.beginPath();g.moveTo(hx+4*sw,hy-14*sw);g.quadraticCurveTo(hx+8*sw+Math.sin(t*.05)*3*sw,hy-22*sw,hx+3*sw,hy-30*sw);g.stroke();g.globalAlpha=1})();
+  g.lineCap='round';g.strokeStyle='rgba(255,255,255,.45)';g.lineWidth=Math.max(1,1.4*sw);
+  for(j=0;j<4;j++){var a0=t*.04*(j%2?-1:1)+j*1.3,k2=.2+j*.17;g.beginPath();g.ellipse(x,pcy,prx*k2,pry*k2,a0,0,3.8);g.stroke()}
   if(!lite)for(j=0;j<10;j++){var q2=((t*.012)+j*.1)%1,an=j*2.4+q2*5,r2=(1-q2)*pry;g.fillStyle='rgba(255,255,255,'+(.8*Math.sin(q2*3.1416))+')';g.beginPath();g.arc(x+Math.cos(an)*r2*.52,pcy+Math.sin(an)*r2,Math.max(.8,(1+(j%3)*.5)*sw),0,6.2832);g.fill()}
-  g.font='bold '+Math.round(26*sw)+'px KTH Serif,Songti SC,serif';g.textAlign='center';g.textBaseline='middle';g.fillStyle='rgba(10,110,80,'+(.5+.25*pu)+')';g.fillText('歸',x,pcy+1*sw);
   g.restore();
   /* 3) khung cổng vàng + 4 ngọc + đỉnh */
   g.save();g.lineWidth=Math.max(2,3.4*sw);g.strokeStyle=G.c;if(!lite){g.shadowColor=G.c;g.shadowBlur=8+6*pu}
@@ -60,7 +68,7 @@ LGART.gate=function(Gt,i,x,t,tgt){
   [[0,-pry*1.06],[0,pry*1.06],[-prx*1.12,0],[prx*1.12,0]].forEach(function(o,n){var jr=Math.max(2.2,3.6*sw);var jg=g.createRadialGradient(x+o[0],pcy+o[1],0,x+o[0],pcy+o[1],jr*2);jg.addColorStop(0,'#fff');jg.addColorStop(.4,n?'#8affc8':'#d8fff0');jg.addColorStop(1,'rgba('+rgb+',0)');g.fillStyle=jg;g.beginPath();g.arc(x+o[0],pcy+o[1],jr*2,0,6.2832);g.fill()});
   g.restore();
   /* 4) đốm sáng + cánh hoa bay lên quanh cổng */
-  if(!lite){g.save();g.globalCompositeOperation='lighter';for(j=0;j<10;j++){var u=((t*.006+rnd(j+5))%1);g.fillStyle='rgba(210,255,235,'+(.9*Math.sin(u*3.1416))+')';g.beginPath();g.arc(x+(rnd(j+11)-.5)*rx*1.5+Math.sin(u*6+j)*4*sw,by-u*150*sw,Math.max(.8,1.8*sw*(1-u*.5)),0,6.2832);g.fill()}g.restore()}
+  if(!lite){g.save();g.globalCompositeOperation='lighter';for(j=0;j<10;j++){var u=((t*.006+rnd(j+5))%1);g.fillStyle=j%3?'rgba(210,255,235,'+(.9*Math.sin(u*3.1416))+')':'rgba(150,235,130,'+(.9*Math.sin(u*3.1416))+')';g.beginPath();g.arc(x+(rnd(j+11)-.5)*rx*1.5+Math.sin(u*6+j)*4*sw,by-u*150*sw,Math.max(.8,1.8*sw*(1-u*.5)),0,6.2832);g.fill()}g.restore()}
   var fs=Math.max(11,Math.min(16,10*s)),ly=L.dy+LB*sw,cx=banner(x,ly,fs);
   g.save();g.fillStyle='#7af0b8';g.font='bold '+fs+'px sans-serif';g.textAlign='center';g.fillText('▼',cx,ly+fs*2.2+Math.sin(t*.12+i)*3);g.restore();
   return true};
