@@ -8,12 +8,12 @@ Tạo tự động bởi `python3 tools/symbols.py`. Cột KB = dung lượng, "
 | 2 | `assets/ban-do-assets.js` | 305 | 0 | (dữ liệu ảnh/font base64 — KHÔNG đọc) |
 | 3 | `core/00-error-handler.js` | 2 | 0 | BỘ BẮT LỖI AN TOÀN / CROSS-BROWSER ===== - Không che lỗi thật. - Không hiện "Script error." mơ hồ do script/resource khác origin. - Nếu có lỗi JS thật |
 | 4 | `core/01a-base-data.js` | 5 | 16 | core/01a-base-data.js — Canvas, resize, RNG, bảng dữ liệu nhân vật/ô trang bị (ADJ, SLS, CHR) (tách từ core/01-engine.js; thứ tự nạp giữ nguyên, xem i |
-| 5 | `core/01b-items-sets-wheel.js` | 13 | 41 | core/01b-items-sets-wheel.js — Bộ trang bị, rèn/gộp, tiệm, vòng quay (reward/spin) (tách từ core/01-engine.js; thứ tự nạp giữ nguyên, xem index.html) |
+| 5 | `core/01b-items-sets-wheel.js` | 14 | 41 | core/01b-items-sets-wheel.js — Bộ trang bị, rèn/gộp, tiệm, vòng quay (reward/spin) (tách từ core/01-engine.js; thứ tự nạp giữ nguyên, xem index.html) |
 | 6 | `core/01c-affix-petdata-skills.js` | 13 | 104 | core/01c-affix-petdata-skills.js — Opt ngẫu nhiên, dữ liệu thú nuôi PT4/PB/PK, init, dm, kỹ năng (cast/fire/basic) (tách từ core/01-engine.js; thứ tự  |
 | 7 | `core/01d-pet-render.js` | 11 | 11 | core/01d-pet-render.js — glowSpr/glowDraw, pm, vẽ Huyền Vũ/Rồng, epstep, drawEP (vòng thú nuôi gốc) (tách từ core/01-engine.js; thứ tự nạp giữ nguyên, |
 | 8 | `core/01e-step-loop.js` | 6 | 7 | core/01e-step-loop.js — pstep, cbar, step (vòng cập nhật chính) (tách từ core/01-engine.js; thứ tự nạp giữ nguyên, xem index.html) |
 | 9 | `core/01f-backgrounds.js` | 14 | 13 | core/01f-backgrounds.js — Nền map: bgd0/xbg/bgd/bgdOld, XP, các layer (tách từ core/01-engine.js; thứ tự nạp giữ nguyên, xem index.html) |
-| 10 | `core/01g-hero-draw.js` | 15 | 17 | core/01g-hero-draw.js — RGBA, armXY, dArm/dLeg, hero(), heroSpark, foe() (tách từ core/01-engine.js; thứ tự nạp giữ nguyên, xem index.html) |
+| 10 | `core/01g-hero-draw.js` | 16 | 18 | core/01g-hero-draw.js — RGBA, armXY, dArm/dLeg, hero(), heroSpark, foe() (tách từ core/01-engine.js; thứ tự nạp giữ nguyên, xem index.html) |
 | 11 | `core/01h-skill-fx.js` | 74 | 2 | core/01h-skill-fx.js — Hệ hiệu ứng kỹ năng ZS (FX, SFX, ACT, bst, fx, shake...) (tách từ core/01-engine.js; thứ tự nạp giữ nguyên, xem index.html) |
 | 12 | `core/01i-combat-core.js` | 17 | 1 | core/01i-combat-core.js — Lõi chiến đấu ZC (tick, kill, gain, aura, panel...) (tách từ core/01-engine.js; thứ tự nạp giữ nguyên, xem index.html) |
 | 13 | `core/01j-hud-draw.js` | 9 | 13 | core/01j-hud-draw.js — pets(), mbar/mhud, draw() chính (tách từ core/01-engine.js; thứ tự nạp giữ nguyên, xem index.html) |
@@ -71,34 +71,36 @@ Tạo tự động bởi `python3 tools/symbols.py`. Cột KB = dung lượng, "
 | 65 | `world/33-hop-dao.js` | 12 | 0 | ☯ HỢP ĐẠO · ĐẠO CẢNH ===== * Cửa vào: Thành Thị Linh Giới → cổng 2 "Hợp Đạo Đài" (mảng LCG trong world/10-farming-map.js). * Điều kiện: nhân vật Lv100 |
 | 66 | `world/34-than-thong.js` | 24 | 0 | 📜 THẦN THÔNG · ĐẠO CẢNH (6 hệ × 5 thần thông) ===== * Chỉ nhân vật ĐÃ HỢP ĐẠO (HDAO.on()). Mỗi hệ có 5 thần thông xếp theo ngũ hành tương sinh, bắt đầ |
 | 67 | `world/35-kiem-thanh.js` | 12 | 0 | 🗡️ KIẾM THÁNH · BOSS THÀNH THỊ LINH GIỚI ===== * Dựa trên Ma Thần (world/02-demon-realm.js): cùng kiểu trận đấu (dg), cùng công thức chỉ số nhưng mạnh |
-| 68 | `world/36-linh-gioi-maps.js` | 11 | 0 | 🌀 BẢN ĐỒ LINH GIỚI (6 bản đồ) ===== * Cổng 1 (Chiến Trường) của Thành Thị Linh Giới mở bảng chọn bản đồ. Đạo Thể còn có danh sách bản đồ ngay trong ta |
-| 69 | `world/38-da-cuong-hoa.js` | 3 | 0 | 🪨 ĐÁ CƯỜNG HÓA ===== (nạp TRƯỚC 37-cuong-hoa-fx.js để hiệu ứng +7/+10 bọc được en1 mới) * Cường hóa +0→+7 (lần thứ 1–7): tốn 💰 + 1 🪨 Đá Cường Hóa. Thấ |
-| 70 | `world/37-cuong-hoa-fx.js` | 7 | 0 | ✨ HIỆU ỨNG CƯỜNG HÓA +7 / +10 ===== * Chỉ số trang bị theo cấp cường hóa: UM(u) trong core/01*.js (engine đã tách, tra SYMBOL_INDEX.md) (bảng hệ số: + |
-| 71 | `world/39-dg-boss-art.js` | 17 | 0 | 🎨 VẼ LẠI BOSS PHỤ BẢN (Hầm Ngục) THEO PHONG CÁCH BOSS MA THẦN v2 ===== * Trước: boss là ảnh webp (DGI.boss, p001). Giờ: vẽ canvas 1 lần — giáp đen/tím |
-| 72 | `world/40-phu-ban-2.js` | 15 | 0 |  |
-| 73 | `world/42-phu-ban-vang.js` | 11 | 0 | 💰 PHỤ BẢN 3 "PHỤ BẢN VÀNG" ===== * Mở từ bảng 🕳 Phụ Bản (world/40-phu-ban-2.js, thẻ số 3). Module riêng, không sửa engine. * - 1 Boss Bất Tử KHÔNG THỂ |
-| 74 | `systems/36-hop-the-tieu-canh.js` | 2 | 0 | 💎 ĐỘT PHÁ TIỂU CẢNH GIỚI TỪ HỢP THỂ ===== * Từ Hợp Thể, mỗi lần lên 1 tầng (tiểu cảnh giới) phải đột phá thủ công và tốn Linh Thạch: * tầng 1→2: 10💎 · |
-| 75 | `equipment/43-nhan-than-thong.js` | 3 | 0 | 💍 OPT "CẤP THẦN THÔNG" CHO NHẪN ===== * Thuộc tính mới: it.ttl = 1..3 → tăng cấp TẤT CẢ kỹ năng thần thông thêm ttl cấp (cộng dồn các món đang mặc). * |
-| 76 | `ui/44-ban-nhanh-chon.js` | 7 | 0 | 💰 BÁN NHANH · CHỌN TỪNG MÓN (dưới Thần Thoại) ===== * Nút "💰 Bán nhanh < Thần Thoại" trong túi mở bảng này (engine: onclick="window.BNC?BNC.open():sa( |
-| 77 | `ui/45-bao-ve-tui-do.js` | 2 | 0 | 🛡️ BẢO VỆ TÚI ĐỒ: KHÔNG TỰ MẶC · KHÔNG TỰ BÁN MẢNH Ý CẢNH (ui/45-bao-ve-tui-do.js) ===== * 1) KHÔNG TỰ MẶC trang bị mạnh hơn: engine (core/01*.js (eng |
-| 78 | `world/45-y-canh.js` | 10 | 0 | 🌌 Ý CẢNH · TIÊN ĐẠO / MA ĐẠO ===== * Cửa vào: Thành Thị Linh Giới → cổng "Hợp Đạo Đài" → khối "🌌 Ý Cảnh" trong bảng (world/33-hop-dao.js gọi YCANH.min |
-| 79 | `world/46-dao-the-fx.js` | 55 | 0 | ☯ HIỆU ỨNG ĐẠO THỂ (world/46-dao-the-fx.js) ===== * Khi nhân vật đã Hợp Đạo (Đạo Thể: HDAO.on(), Đạo Cảnh Lv1 trở lên): * - TẤT CẢ hiệu ứng cảnh giới  |
-| 80 | `world/47-phu-ban-ma-than.js` | 14 | 0 |  |
-| 81 | `assets/phap-bao-sprites.js` | 67 | 0 | (dữ liệu ảnh/font base64 — KHÔNG đọc) |
-| 82 | `assets/hon-phach-assets.js` | 498 | 0 | (dữ liệu ảnh/font base64 — KHÔNG đọc) |
-| 83 | `world/48-phap-bao-bon-menh.js` | 37 | 0 |  |
-| 84 | `world/49-y-canh-than-thong.js` | 16 | 0 | 📜 THẦN THÔNG Ý CẢNH · TIÊN ĐẠO / MA ĐẠO (world/49-y-canh-than-thong.js) ===== * Mỗi đạo (world/45-y-canh.js) có 3 thần thông RIÊNG, độc lập với 6 hệ T |
-| 85 | `world/50-y-canh-hieu-ung.js` | 6 | 0 | ✨ HIỆU ỨNG TRẠNG THÁI THẦN THÔNG Ý CẢNH · TIÊN / MA (world/50-y-canh-hieu-ung.js) ===== * Bổ sung hiệu ứng cho 6 thần thông của world/49-y-canh-than-t |
-| 86 | `world/51-toc-huy-hieu.js` | 19 | 0 | 🏅 HUY HIỆU TIÊN TỘC / MA TỘC (world/51-toc-huy-hieu.js) ===== * Khi nhân vật đã chọn Tiên Đạo hoặc Ma Đạo ở Ý Cảnh (PS[cur].yc.p = 't' / 'm'): * - Tiê |
-| 87 | `world/52-skill-layout.js` | 3 | 0 | 🧩 SẮP XẾP CÁC Ô KỸ NĂNG BÊN PHẢI MÀN HÌNH (world/52-skill-layout.js) ===== * Lỗi: 3 module cùng đặt nút kỹ năng ở cùng một chỗ (right≈60-62px, top≈124 |
-| 88 | `world/53-y-canh-ky-nang-toc.js` | 45 | 0 | 🌟 KỸ NĂNG TIÊN TỘC / MA TỘC · HIỆU ỨNG MỚI + MỞ KHOÁ BẰNG NGỘ ĐẠO / MA KHÍ (world/53-y-canh-ky-nang-toc.js) ===== * Mở rộng world/49-y-canh-than-thong |
-| 89 | `equipment/51-dao-the-outfit.js` | 189 | 0 | 👘 TRANG PHỤC ĐẠO THỂ (equipment/51-dao-the-outfit.js) ===== * Khi nhân vật đã Hợp Đạo (Đạo Thể: HDAO.on()), ngoại hình 3 hệ (Chiến binh / Pháp sư / Cu |
-| 90 | `world/54-than-thong-sat-thuong.js` | 4 | 0 | ⚖️ CÂN BẰNG: SÁT THƯƠNG THẦN THÔNG LUÔN CAO HƠN KỸ NĂNG THƯỜNG ===== * Trước đây nhiều thần thông yếu hơn kỹ năng phàm thể (đo trong game, hệ số nhân  |
-| 91 | `equipment/55-opt-moi.js` | 8 | 0 |  |
-| 92 | `world/56-thon-tan-thu.js` | 51 | 0 | 🏮 THÔN TÂN THỦ — vẽ lại phong cách cổ trang Trung Hoa (world/56-thon-tan-thu.js) ===== * Thay hình vẽ của làng (xbg(gy,-1) = nền; bld(i) = 5 toà nhà)  |
-| 93 | `world/57-hon-phach.js` | 25 | 0 |  |
-| 94 | `world/58-linh-gioi-city-art.js` | 268 | 0 | 🏯 THÀNH THỊ LINH GIỚI · BẢN ĐỒ ẢNH + CAMERA THEO NHÂN VẬT (world/58-linh-gioi-city-art.js) ===== * Nền thành thị = ảnh người chơi gửi (đã xoá nhãn/nhâ |
-| 95 | `world/59-hon-phach-than-thong.js` | 13 | 0 |  |
-| 96 | `ui/58-hud-tiem-linh-dien.js` | 3 | 0 | 👘🌱 ICON TIỆM Y PHỤC + LINH ĐIỀN lên HÀNG HUD cùng 🏆 Xếp hạng (ui/58-hud-tiem-linh-dien.js) ===== * Trước: 2 icon nổi lơ lửng trong cảnh Làng (vẽ canva |
-| 97 | `systems/60-dang-nhap-bat-buoc.js` | 10 | 0 | 🔐 BẮT BUỘC ĐĂNG NHẬP + PHIÊN CHƠI DUY NHẤT (systems/60-dang-nhap-bat-buoc.js) ===== * Luồng: * 1) Mở game → cổng đăng nhập phủ kín màn hình. Nhập emai |
-| 98 | `world/61-lang-gian-rong.js` | 3 | 0 | LÀNG TÂN THỦ GIÃN RỘNG + CAMERA THEO NHÂN VẬT (như Linh Giới) - Thế giới làng rộng tối thiểu WIDE (mặc định 1320 đơn vị), màn hình hẹp chỉ thấy một ph |
+| 68 | `world/36-linh-gioi-maps.js` | 12 | 0 | 🌀 BẢN ĐỒ LINH GIỚI (6 bản đồ) ===== * Cổng 1 (Chiến Trường) của Thành Thị Linh Giới mở bảng chọn bản đồ. Đạo Thể còn có danh sách bản đồ ngay trong ta |
+| 69 | `world/62-thanh-dia.js` | 9 | 0 | ✨ THÁNH ĐỊA · BẢN ĐỒ 6 (Lv80-100) · 2 BOSS: MA THẦN + KIẾM THÁNH ×10 ===== * Mở khoá ô "Thánh Địa" trong bảng chọn bản đồ Linh Giới (world/36-linh-gio |
+| 70 | `world/38-da-cuong-hoa.js` | 4 | 0 | 🪨 ĐÁ CƯỜNG HÓA ===== (nạp TRƯỚC 37-cuong-hoa-fx.js để hiệu ứng +7/+10 bọc được en1 mới) * Cường hóa +0→+7 (lần thứ 1–7): tốn 💰 + 1 🪨 Đá Cường Hóa. Thấ |
+| 71 | `world/37-cuong-hoa-fx.js` | 7 | 0 | ✨ HIỆU ỨNG CƯỜNG HÓA +7 / +10 ===== * Chỉ số trang bị theo cấp cường hóa: UM(u) trong core/01*.js (engine đã tách, tra SYMBOL_INDEX.md) (bảng hệ số: + |
+| 72 | `world/39-dg-boss-art.js` | 17 | 0 | 🎨 VẼ LẠI BOSS PHỤ BẢN (Hầm Ngục) THEO PHONG CÁCH BOSS MA THẦN v2 ===== * Trước: boss là ảnh webp (DGI.boss, p001). Giờ: vẽ canvas 1 lần — giáp đen/tím |
+| 73 | `world/40-phu-ban-2.js` | 15 | 0 |  |
+| 74 | `world/42-phu-ban-vang.js` | 11 | 0 | 💰 PHỤ BẢN 3 "PHỤ BẢN VÀNG" ===== * Mở từ bảng 🕳 Phụ Bản (world/40-phu-ban-2.js, thẻ số 3). Module riêng, không sửa engine. * - 1 Boss Bất Tử KHÔNG THỂ |
+| 75 | `systems/36-hop-the-tieu-canh.js` | 2 | 0 | 💎 ĐỘT PHÁ TIỂU CẢNH GIỚI TỪ HỢP THỂ ===== * Từ Hợp Thể, mỗi lần lên 1 tầng (tiểu cảnh giới) phải đột phá thủ công và tốn Linh Thạch: * tầng 1→2: 10💎 · |
+| 76 | `equipment/43-nhan-than-thong.js` | 3 | 0 | 💍 OPT "CẤP THẦN THÔNG" CHO NHẪN ===== * Thuộc tính mới: it.ttl = 1..3 → tăng cấp TẤT CẢ kỹ năng thần thông thêm ttl cấp (cộng dồn các món đang mặc). * |
+| 77 | `ui/44-ban-nhanh-chon.js` | 7 | 0 | 💰 BÁN NHANH · CHỌN TỪNG MÓN (dưới Thần Thoại) ===== * Nút "💰 Bán nhanh < Thần Thoại" trong túi mở bảng này (engine: onclick="window.BNC?BNC.open():sa( |
+| 78 | `ui/45-bao-ve-tui-do.js` | 2 | 0 | 🛡️ BẢO VỆ TÚI ĐỒ: KHÔNG TỰ MẶC · KHÔNG TỰ BÁN MẢNH Ý CẢNH (ui/45-bao-ve-tui-do.js) ===== * 1) KHÔNG TỰ MẶC trang bị mạnh hơn: engine (core/01*.js (eng |
+| 79 | `world/45-y-canh.js` | 10 | 0 | 🌌 Ý CẢNH · TIÊN ĐẠO / MA ĐẠO ===== * Cửa vào: Thành Thị Linh Giới → cổng "Hợp Đạo Đài" → khối "🌌 Ý Cảnh" trong bảng (world/33-hop-dao.js gọi YCANH.min |
+| 80 | `world/46-dao-the-fx.js` | 55 | 0 | ☯ HIỆU ỨNG ĐẠO THỂ (world/46-dao-the-fx.js) ===== * Khi nhân vật đã Hợp Đạo (Đạo Thể: HDAO.on(), Đạo Cảnh Lv1 trở lên): * - TẤT CẢ hiệu ứng cảnh giới  |
+| 81 | `world/47-phu-ban-ma-than.js` | 14 | 0 |  |
+| 82 | `assets/phap-bao-sprites.js` | 67 | 0 | (dữ liệu ảnh/font base64 — KHÔNG đọc) |
+| 83 | `assets/hon-phach-assets.js` | 498 | 0 | (dữ liệu ảnh/font base64 — KHÔNG đọc) |
+| 84 | `world/48-phap-bao-bon-menh.js` | 37 | 0 |  |
+| 85 | `world/49-y-canh-than-thong.js` | 16 | 0 | 📜 THẦN THÔNG Ý CẢNH · TIÊN ĐẠO / MA ĐẠO (world/49-y-canh-than-thong.js) ===== * Mỗi đạo (world/45-y-canh.js) có 3 thần thông RIÊNG, độc lập với 6 hệ T |
+| 86 | `world/50-y-canh-hieu-ung.js` | 6 | 0 | ✨ HIỆU ỨNG TRẠNG THÁI THẦN THÔNG Ý CẢNH · TIÊN / MA (world/50-y-canh-hieu-ung.js) ===== * Bổ sung hiệu ứng cho 6 thần thông của world/49-y-canh-than-t |
+| 87 | `world/51-toc-huy-hieu.js` | 19 | 0 | 🏅 HUY HIỆU TIÊN TỘC / MA TỘC (world/51-toc-huy-hieu.js) ===== * Khi nhân vật đã chọn Tiên Đạo hoặc Ma Đạo ở Ý Cảnh (PS[cur].yc.p = 't' / 'm'): * - Tiê |
+| 88 | `world/52-skill-layout.js` | 3 | 0 | 🧩 SẮP XẾP CÁC Ô KỸ NĂNG BÊN PHẢI MÀN HÌNH (world/52-skill-layout.js) ===== * Lỗi: 3 module cùng đặt nút kỹ năng ở cùng một chỗ (right≈60-62px, top≈124 |
+| 89 | `world/53-y-canh-ky-nang-toc.js` | 45 | 0 | 🌟 KỸ NĂNG TIÊN TỘC / MA TỘC · HIỆU ỨNG MỚI + MỞ KHOÁ BẰNG NGỘ ĐẠO / MA KHÍ (world/53-y-canh-ky-nang-toc.js) ===== * Mở rộng world/49-y-canh-than-thong |
+| 90 | `equipment/51-dao-the-outfit.js` | 189 | 0 | 👘 TRANG PHỤC ĐẠO THỂ (equipment/51-dao-the-outfit.js) ===== * Khi nhân vật đã Hợp Đạo (Đạo Thể: HDAO.on()), ngoại hình 3 hệ (Chiến binh / Pháp sư / Cu |
+| 91 | `world/54-than-thong-sat-thuong.js` | 4 | 0 | ⚖️ CÂN BẰNG: SÁT THƯƠNG THẦN THÔNG LUÔN CAO HƠN KỸ NĂNG THƯỜNG ===== * Trước đây nhiều thần thông yếu hơn kỹ năng phàm thể (đo trong game, hệ số nhân  |
+| 92 | `equipment/55-opt-moi.js` | 8 | 0 |  |
+| 93 | `world/56-thon-tan-thu.js` | 51 | 0 | 🏮 THÔN TÂN THỦ — vẽ lại phong cách cổ trang Trung Hoa (world/56-thon-tan-thu.js) ===== * Thay hình vẽ của làng (xbg(gy,-1) = nền; bld(i) = 5 toà nhà)  |
+| 94 | `world/57-hon-phach.js` | 25 | 0 |  |
+| 95 | `world/58-linh-gioi-city-art.js` | 268 | 0 | 🏯 THÀNH THỊ LINH GIỚI · BẢN ĐỒ ẢNH + CAMERA THEO NHÂN VẬT (world/58-linh-gioi-city-art.js) ===== * Nền thành thị = ảnh người chơi gửi (đã xoá nhãn/nhâ |
+| 96 | `world/59-hon-phach-than-thong.js` | 13 | 0 |  |
+| 97 | `ui/58-hud-tiem-linh-dien.js` | 4 | 0 | 👘🌱 ICON TIỆM Y PHỤC + LINH ĐIỀN lên HÀNG HUD cùng 🏆 Xếp hạng (ui/58-hud-tiem-linh-dien.js) ===== * Trước: 2 icon nổi lơ lửng trong cảnh Làng (vẽ canva |
+| 98 | `ui/63-cash-shop.js` | 17 | 0 | 🛒 CASH SHOP · CỬA HÀNG LINH VÂN (ui/63-cash-shop.js) ===== * Nút 🛒 nằm cùng hàng HUD với ⚔️ Đấu trường / 🌱 Linh Điền / 👘 Y Phục (ui/58-hud-tiem-linh-d |
+| 99 | `systems/60-dang-nhap-bat-buoc.js` | 10 | 0 | 🔐 BẮT BUỘC ĐĂNG NHẬP + PHIÊN CHƠI DUY NHẤT (systems/60-dang-nhap-bat-buoc.js) ===== * Luồng: * 1) Mở game → cổng đăng nhập phủ kín màn hình. Nhập emai |
+| 100 | `world/61-lang-gian-rong.js` | 4 | 0 | LÀNG TÂN THỦ GIÃN RỘNG + CAMERA THEO NHÂN VẬT (như Linh Giới) - Thế giới làng rộng tối thiểu WIDE (mặc định 1320 đơn vị), màn hình hẹp chỉ thấy một ph |

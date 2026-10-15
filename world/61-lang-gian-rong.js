@@ -15,8 +15,9 @@ var WIDE=1320,begun=false,W0=0,cam0=0,camX=0,wasOn=false;
 function g_(n){try{return typeof window[n]!=='undefined'?window[n]:null}catch(e){return null}}
 function plain(){
   if(typeof vil==='undefined'||!vil||typeof started==='undefined'||!started||(typeof over!=='undefined'&&over))return false;
-  try{var a=g_('FM');if(a&&a.isOn&&a.isOn())return false}catch(e){}
-  try{var b=g_('MN');if(b&&b.isOn&&b.isOn())return false}catch(e){}
+  /* FM / MN khai báo bằng const ở phạm vi toàn cục → KHÔNG nằm trên window; phải dùng typeof (g_ trả null → bỏ qua kiểm tra → camera rộng bị bật nhầm ở Linh Điền/Mỏ) */
+  try{var a=(typeof FM!=='undefined')?FM:g_('FM');if(a&&a.isOn&&a.isOn())return false}catch(e){}
+  try{var b=(typeof MN!=='undefined')?MN:g_('MN');if(b&&b.isOn&&b.isOn())return false}catch(e){}
   try{var l=(typeof LCT!=='undefined')?LCT:null;if(l&&l.on&&l.on())return false}catch(e){}
   try{var h=g_('HONP');if(h&&h.on&&h.on())return false}catch(e){}
   try{var f=g_('FSH');if(f&&f.open&&f.open())return false}catch(e){}
@@ -34,7 +35,12 @@ if(typeof vdraw==='function'){var _vd=vdraw;vdraw=function(){try{return _vd.appl
 function tick(){
   if(plain()){
     var rv=W/s,max=Math.max(0,ww()-rv),tg=Math.max(0,Math.min(max,P.x-rv/2));
-    if(!wasOn){wasOn=true;camX=tg}else{camX+=(tg-camX)*.16;if(Math.abs(tg-camX)<.2)camX=tg}
+    if(!(P.x>=0))return; /* chặn NaN */
+    if(!wasOn){wasOn=true;camX=tg}else{
+      camX+=(tg-camX)*.16;if(Math.abs(tg-camX)<.2)camX=tg;
+      /* không bao giờ để nhân vật ra khỏi dải giữa màn hình (30%-70%) dù camera bị trễ khung/bước */
+      camX=Math.max(P.x-rv*.7,Math.min(P.x-rv*.3,camX));camX=Math.max(0,Math.min(max,camX));
+    }
     cam=camX;
   }
 }

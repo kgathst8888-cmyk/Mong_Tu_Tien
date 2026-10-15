@@ -225,8 +225,8 @@ gP	const	core/01c-affix-petdata-skills.js	19
 GY	let	core/01a-base-data.js	5
 H	let	core/01a-base-data.js	4
 HD	const	core/01l-loot-weapons-data.js	51
-hero	function	core/01g-hero-draw.js	12
-heroSpark	function	core/01g-hero-draw.js	73
+hero	function	core/01g-hero-draw.js	24
+heroSpark	function	core/01g-hero-draw.js	85
 HL	const	core/01b-items-sets-wheel.js	7
 hpP	let	core/01b-items-sets-wheel.js	3
 HQI	const	core/01c-affix-petdata-skills.js	30
@@ -272,7 +272,7 @@ lm	let	core/01b-items-sets-wheel.js	3
 ln	function	core/01f-backgrounds.js	39
 lp	const	core/01g-hero-draw.js	4
 LR	const	core/01b-items-sets-wheel.js	3
-LW	const	core/01b-items-sets-wheel.js	74
+LW	const	core/01b-items-sets-wheel.js	83
 mapSel	let	core/01b-items-sets-wheel.js	3
 mbar	function	core/01j-hud-draw.js	6
 mhud	function	core/01j-hud-draw.js	8
@@ -538,6 +538,7 @@ vstep	function	core/01q-village.js	5
 vt	let	core/01b-items-sets-wheel.js	3
 vw	const	core/01c-affix-petdata-skills.js	40
 W	let	core/01a-base-data.js	4
+walkGait	function	core/01g-hero-draw.js	14
 WB	const	core/01t-dungeon.js	9
 wbq	let	core/01c-affix-petdata-skills.js	27
 wbs	let	core/01b-items-sets-wheel.js	3

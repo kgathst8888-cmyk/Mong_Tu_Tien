@@ -10,14 +10,14 @@
 (function(){
 'use strict';
 if(typeof LR==='undefined'||typeof lgEnter!=='function'||!window.LCT||!window.LVX)return;
-var HOLY={open:false,minLv:100},LR0=[80,100];
+var HOLY={open:true,minLv:100},LR0=[80,100];
 var MAPS=[
  {n:'Chiến Trường Linh Giới',e:'⚔️',c:'#5ff0ff',lv:[80,100],d:'Quái hiện tại · Đạo Thể đánh ở đây không nhận Đạo Linh'},
  {n:'Tử Vân Linh Cảnh',e:'☁️',c:'#e0a0ff',lv:[1,20],d:'Vân Linh, linh lang tím · cần Đạo Thể Lv1'},
  {n:'Kim Quang Thiên Môn',e:'🏯',c:'#ffe27a',lv:[21,40],d:'Giáp vàng, kim lang · cần Đạo Thể Lv21'},
  {n:'Thủy Tinh Linh Hải',e:'🌊',c:'#7ff0ff',lv:[41,60],d:'Lưu ly, hải linh · cần Đạo Thể Lv41'},
  {n:'Thiên Hỏa Linh Nguyên',e:'🔥',c:'#ff9a5a',lv:[61,80],d:'Thiên hỏa, xích diễm · cần Đạo Thể Lv61'},
- {n:'Thánh Địa',e:'🌟',c:'#fff0a0',lv:[81,100],d:'Đạo Thể Lv100 mới vào được · tạm thời khóa',holy:1}];
+ {n:'Thánh Địa',e:'🌟',c:'#fff0a0',lv:[81,100],d:'Boss Ma Thần + Kiếm Thánh ×10 · rơi Rương ngẫu nhiên (không trang bị)',holy:1}];
 /* Độ khó quái Đạo Thể (bản đồ 2–5). hpn = MÁU CỐ ĐỊNH của quái thường; Tinh Anh = ×LGE.e, Boss = ×LGE.b.
    m=cấp bản đồ trong công thức gốc · df=nhân thủ · at=nhân sức đánh (quái đánh theo (1+m*.35), trừ thẳng giáp người chơi; Tinh Anh ×1,5 và Boss ×2 thêm) · exp=nhân Đạo Linh */
 var LGS=[null,{m:1.2,hpn:1e5,df:1.8,at:12,exp:.5},{m:2,hpn:2e5,df:2,at:14,exp:.5},{m:3,hpn:4e5,df:2.2,at:16,exp:.5},{m:4.2,hpn:8e5,df:2.4,at:20,exp:.5}],LGE={e:3,b:10};
@@ -42,7 +42,7 @@ Object.defineProperty(window,'LGI',{configurable:true,get:function(){try{return(
 function say(t,c){try{DT.push({x:P.x,y:200,s:t,c:c||'#8fe8ff',g:1,l:130})}catch(e){}}
 function need(i){return MAPS[i].holy?HOLY.minLv:MAPS[i].lv[0]}
 function canMap(i){if(i===0)return true;if(!on()||P.lv<need(i))return false;return MAPS[i].holy?HOLY.open:true}
-function why(i){var m=MAPS[i];if(i===0)return'';if(!on())return'🔒 Chỉ dành cho Đạo Thể';if(P.lv<need(i))return'🔒 Cần Đạo Thể Lv'+need(i)+' (hiện Lv'+P.lv+')';if(m.holy&&!HOLY.open)return'🔒 Tạm khóa · mở khi Đạo Thể Lv'+HOLY.minLv;return''}
+function why(i){var m=MAPS[i];if(i===0)return'';if(!on())return'🔒 Chỉ dành cho Đạo Thể';if(P.lv<need(i))return'🔒 Cần Đạo Thể Lv'+need(i)+' (hiện Lv'+P.lv+')';if(m.holy&&!HOLY.open)return'🔒 Tạm khóa · mở khi Đạo Thể Lv'+HOLY.minLv;if(m.holy&&window.THANHDIA)return THANHDIA.status();return''}
 /* Đạo Thể chỉ nhận Đạo Linh (EXP) ở bản đồ Đạo Thể: Linh Giới bản đồ 2–6 (HDAO.xg đọc hàm này) */
 function expMul(){try{return (LGS[gm()]&&LGS[gm()].exp)||1}catch(e){return 1}}
 function expOk(){try{return !!(lg&&!dg&&gm()>=1&&gm()<=5)}catch(e){return false}}
@@ -51,6 +51,7 @@ function expOk(){try{return !!(lg&&!dg&&gm()>=1&&gm()<=5)}catch(e){return false}
 function go(i){
   if(!started||!lgDone()){return}
   if(!canMap(i)){say(why(i)||'Chưa vào được','#e0b0ff');return}
+  if(MAPS[i].holy){close();if(window.THANHDIA)THANHDIA.ask();else say('Thánh Địa chưa sẵn sàng','#e0b0ff');return}
   PS[cur].lgm=i;
   try{if(LCT.on())LCT.leave();if(DT.length&&/Về Làng/.test(DT[DT.length-1].s||''))DT.pop()}catch(e){}
   vil=0;lgEnter();

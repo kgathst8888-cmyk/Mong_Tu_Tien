@@ -1,7 +1,7 @@
 -- =====================================================================
 -- TIÊU LINH THẠCH (Supabase) — chạy sau cho_giao_dich.sql, an toàn khi chạy lại.
 --   * cho_spend(p_n, p_why): trừ p_n Linh Thạch trong ví tài khoản ☁ (nguyên tử, không âm).
---       trả 'ok' + số dư mới | 'poor' + số dư hiện có | 'bad' (p_n ngoài 1..1000) | 'auth'.
+--       trả 'ok' + số dư mới | 'poor' + số dư hiện có | 'bad' (p_n ngoài 1..20000) | 'auth'.
 --   * cho_bal(): số dư + số viên đã kiếm hôm nay (đọc nhẹ, không đụng hòm nhận/tin đăng).
 --   Dùng cho: đột phá tầng Linh Căn (tầng 2-10: 10💎 · 11-14: 20💎 · 15 viên mãn: 300💎).
 -- =====================================================================
@@ -10,7 +10,7 @@ language plpgsql security definer set search_path = public as $$
 declare v_u uuid := auth.uid(); v_n int := coalesce(p_n, 0); v_lt bigint;
 begin
   if v_u is null then return json_build_object('status','auth'); end if;
-  if v_n < 1 or v_n > 1000 then return json_build_object('status','bad'); end if;
+  if v_n < 1 or v_n > 20000 then return json_build_object('status','bad'); end if;
   insert into public.cho_wallet(uid) values (v_u) on conflict do nothing;
   update public.cho_wallet set lt = lt - v_n, updated = now()
    where uid = v_u and lt >= v_n returning lt into v_lt;
