@@ -8,7 +8,7 @@ Tạo tự động bởi `python3 tools/symbols.py`. Cột KB = dung lượng, "
 | 2 | `assets/ban-do-assets.js` | 305 | 0 | (dữ liệu ảnh/font base64 — KHÔNG đọc) |
 | 3 | `core/00-error-handler.js` | 2 | 0 | BỘ BẮT LỖI AN TOÀN / CROSS-BROWSER ===== - Không che lỗi thật. - Không hiện "Script error." mơ hồ do script/resource khác origin. - Nếu có lỗi JS thật |
 | 4 | `core/01a-base-data.js` | 5 | 16 | core/01a-base-data.js — Canvas, resize, RNG, bảng dữ liệu nhân vật/ô trang bị (ADJ, SLS, CHR) (tách từ core/01-engine.js; thứ tự nạp giữ nguyên, xem i |
-| 5 | `core/01b-items-sets-wheel.js` | 14 | 41 | core/01b-items-sets-wheel.js — Bộ trang bị, rèn/gộp, tiệm, vòng quay (reward/spin) (tách từ core/01-engine.js; thứ tự nạp giữ nguyên, xem index.html) |
+| 5 | `core/01b-items-sets-wheel.js` | 13 | 41 | core/01b-items-sets-wheel.js — Bộ trang bị, rèn/gộp, tiệm, vòng quay (reward/spin) (tách từ core/01-engine.js; thứ tự nạp giữ nguyên, xem index.html) |
 | 6 | `core/01c-affix-petdata-skills.js` | 13 | 104 | core/01c-affix-petdata-skills.js — Opt ngẫu nhiên, dữ liệu thú nuôi PT4/PB/PK, init, dm, kỹ năng (cast/fire/basic) (tách từ core/01-engine.js; thứ tự  |
 | 7 | `core/01d-pet-render.js` | 11 | 11 | core/01d-pet-render.js — glowSpr/glowDraw, pm, vẽ Huyền Vũ/Rồng, epstep, drawEP (vòng thú nuôi gốc) (tách từ core/01-engine.js; thứ tự nạp giữ nguyên, |
 | 8 | `core/01e-step-loop.js` | 6 | 7 | core/01e-step-loop.js — pstep, cbar, step (vòng cập nhật chính) (tách từ core/01-engine.js; thứ tự nạp giữ nguyên, xem index.html) |
@@ -67,7 +67,7 @@ Tạo tự động bởi `python3 tools/symbols.py`. Cột KB = dung lượng, "
 | 61 | `systems/29-quest-plus.js` | 8 | 0 | NHIỆM VỤ+ : thêm chương chính tuyến, thêm nhiệm vụ hằng ngày/tuần/thành tựu, tăng quà - Chỉ sửa DỮ LIỆU (mảng QCH/QDP/QWP/QMS/QAC/QAR sửa tại chỗ), kh |
 | 62 | `ui/30-bag-plus.js` | 3 | 0 | TÚI ĐỒ+ : icon trang bị trong túi nhỏ gọn hơn + ghép trang bị ngay trong túi - Chỉnh cỡ ô/icon: --bg-cell (px), --bg-ico (% icon trong ô). - Ghép: chạ |
 | 63 | `ui/31-bag-scroll.js` | 1 | 0 | Giữ nguyên vị trí cuộn của túi đồ khi giao diện vẽ lại (bấm nút trong tab không bị cuộn lên đầu). Đổi tab / đổi mục nhiệm vụ thì vẫn về đầu trang như  |
-| 64 | `systems/32-cho-giao-dich.js` | 19 | 0 | 🏮 CHỢ GIAO DỊCH ONLINE · LINH THẠCH ===== * Dùng chung tài khoản ☁ (KCL.rpc). Cần chạy cho_giao_dich.sql 1 lần trong Supabase. * - Linh Thạch (💎) nằm  |
+| 64 | `systems/32-cho-giao-dich.js` | 20 | 0 | 🏮 CHỢ GIAO DỊCH ONLINE · LINH THẠCH ===== * Dùng chung tài khoản ☁ (KCL.rpc). Cần chạy cho_giao_dich.sql 1 lần trong Supabase. * - Linh Thạch (💎) nằm  |
 | 65 | `world/33-hop-dao.js` | 12 | 0 | ☯ HỢP ĐẠO · ĐẠO CẢNH ===== * Cửa vào: Thành Thị Linh Giới → cổng 2 "Hợp Đạo Đài" (mảng LCG trong world/10-farming-map.js). * Điều kiện: nhân vật Lv100 |
 | 66 | `world/34-than-thong.js` | 24 | 0 | 📜 THẦN THÔNG · ĐẠO CẢNH (6 hệ × 5 thần thông) ===== * Chỉ nhân vật ĐÃ HỢP ĐẠO (HDAO.on()). Mỗi hệ có 5 thần thông xếp theo ngũ hành tương sinh, bắt đầ |
 | 67 | `world/35-kiem-thanh.js` | 12 | 0 | 🗡️ KIẾM THÁNH · BOSS THÀNH THỊ LINH GIỚI ===== * Dựa trên Ma Thần (world/02-demon-realm.js): cùng kiểu trận đấu (dg), cùng công thức chỉ số nhưng mạnh |
@@ -102,5 +102,6 @@ Tạo tự động bởi `python3 tools/symbols.py`. Cột KB = dung lượng, "
 | 96 | `world/59-hon-phach-than-thong.js` | 13 | 0 |  |
 | 97 | `ui/58-hud-tiem-linh-dien.js` | 4 | 0 | 👘🌱 ICON TIỆM Y PHỤC + LINH ĐIỀN lên HÀNG HUD cùng 🏆 Xếp hạng (ui/58-hud-tiem-linh-dien.js) ===== * Trước: 2 icon nổi lơ lửng trong cảnh Làng (vẽ canva |
 | 98 | `ui/63-cash-shop.js` | 17 | 0 | 🛒 CASH SHOP · CỬA HÀNG LINH VÂN (ui/63-cash-shop.js) ===== * Nút 🛒 nằm cùng hàng HUD với ⚔️ Đấu trường / 🌱 Linh Điền / 👘 Y Phục (ui/58-hud-tiem-linh-d |
-| 99 | `systems/60-dang-nhap-bat-buoc.js` | 10 | 0 | 🔐 BẮT BUỘC ĐĂNG NHẬP + PHIÊN CHƠI DUY NHẤT (systems/60-dang-nhap-bat-buoc.js) ===== * Luồng: * 1) Mở game → cổng đăng nhập phủ kín màn hình. Nhập emai |
-| 100 | `world/61-lang-gian-rong.js` | 4 | 0 | LÀNG TÂN THỦ GIÃN RỘNG + CAMERA THEO NHÂN VẬT (như Linh Giới) - Thế giới làng rộng tối thiểu WIDE (mặc định 1320 đơn vị), màn hình hẹp chỉ thấy một ph |
+| 99 | `equipment/64-duc-lo-kham-da.js` | 25 | 0 |  |
+| 100 | `systems/60-dang-nhap-bat-buoc.js` | 10 | 0 | 🔐 BẮT BUỘC ĐĂNG NHẬP + PHIÊN CHƠI DUY NHẤT (systems/60-dang-nhap-bat-buoc.js) ===== * Luồng: * 1) Mở game → cổng đăng nhập phủ kín màn hình. Nhập emai |
+| 101 | `world/61-lang-gian-rong.js` | 4 | 0 | LÀNG TÂN THỦ GIÃN RỘNG + CAMERA THEO NHÂN VẬT (như Linh Giới) - Thế giới làng rộng tối thiểu WIDE (mặc định 1320 đơn vị), màn hình hẹp chỉ thấy một ph |

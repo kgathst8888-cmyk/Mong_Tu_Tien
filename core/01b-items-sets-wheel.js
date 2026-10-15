@@ -21,14 +21,7 @@ const C={
 };
 const OPT=['Tăng 50% sát thương','Tăng 50% phòng thủ và HP','Tăng 30% sát thương mọi nguyên tố','Chí mạng +20%, ST chí mạng +50%, 5% nhân đôi ST chí mạng','Tăng 20% ST lên người chơi, +40% ST lên Quái Thiên Nhân, kích hoạt hiệu ứng đặc biệt Bộ Thánh (cập nhật sau)'];
 const PIECES=[[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],[7,0],[7,1],[9,0]];
-const S={sh:0,nt:0,tr:0,ok:0,w:0};
-/* ---- XOÁ ĐỒ THÁNH CŨ + BÙ MẢNH THÁNH (chạy 1 lần cho mỗi bản lưu) ----
-   Đồ Thánh chế SAU bản này có cờ g:1 (không bị xoá). Muốn xoá + bù lần nữa: tăng WV. */
-const WV=1,WBONUS=200;
-function wipeOld(){let n=0;const old=it=>!!it&&typeof it=='object'&&it.hl&&!it.g;
- try{(EQS||[]).forEach(a=>{(a||[]).forEach((it,i)=>{if(old(it)){a[i]=null;n++}})});
-  (BAGS||[]).forEach(a=>{if(!a)return;for(let i=a.length-1;i>=0;i--)if(old(a[i])){a.splice(i,1);n++}})}catch(e){}
- return n}
+const S={sh:0,nt:0,tr:0,ok:0};
 const IMGS=[];
 const n=()=>{try{return EQ.reduce((t,i,x)=>t+(i&&i.hl&&x<10?1:0),0)}catch(e){return 0}};
 const on=k=>n()>=C.need[k];
@@ -36,7 +29,7 @@ const nOn=()=>C.need.filter((q,i)=>n()>=q).length;
 function loadImgs(ic){ic.forEach((u,i)=>{const m=new Image();m.onload=()=>{try{Object.keys(CC).forEach(k=>delete CC[k]);Object.keys(IC).forEach(k=>delete IC[k]);if(typeof bo!='undefined'&&bo)ui()}catch(e){}};m.src=u;IMGS[i]=m})}
 function gen(p){const s=p[0],m=C.mult*(1+100*.6)*RM[5]*MT[4],b=BS[s],x={};
  if(window.OPT2)Object.assign(x,OPT2.holyX());else Object.keys(AXU).sort(()=>R()-.5).slice(0,7).forEach(k=>x[k]=Math.round(AXU[k]*RMX[5]*1.3*2*(1+4*.08)*C.mult*10)/10);
- return{u:0,s,r:6,l:C.lv,mp:4,hl:1,g:1,v:p[1],x,...(window.TTLB&&TTLB.holyOk(s)?{ttl:TTLB.holy()}:{}),n:SL[s][0]+' Thánh · Thánh Quang',a:Math.round(b[0]*m),d:Math.round(b[1]*m),h:Math.round(b[2]*m)}}
+ return{u:0,s,r:6,l:C.lv,mp:4,hl:1,v:p[1],x,...(window.TTLB&&TTLB.holyOk(s)?{ttl:TTLB.holy()}:{}),n:SL[s][0]+' Thánh · Thánh Quang',a:Math.round(b[0]*m),d:Math.round(b[1]*m),h:Math.round(b[2]*m)}}
 const mat=()=>{try{return MN.get()}catch(e){return{fe:0,hk:0}}};
 const say=t=>{msg=t;ui()};
 function forge(k){const m=mat();k=Math.min(k|0,Math.floor((m.fe|0)/C.fe),Math.floor((m.hk|0)/C.hk),Math.floor(S.nt/C.nt));
@@ -71,11 +64,9 @@ return{C,S,OPT,img:IMGS,n,on,nOn,
  isEl:(nm,pf)=>!!(pf&&(pf.burn||pf.poison||pf.freeze))||/Hỏa|Băng|Lôi|Sét|Tuyết|Ngũ Hành|Phong/.test(nm||''),
  sum:()=>' · '+nOn()+'/5 opt',
  gen,forge,combine,addNT,addSH,shopNT,tipTxt,ui:ui_,loadImgs,
- save:()=>({sh:S.sh|0,nt:S.nt|0,tr:S.tr|0,ok:S.ok|0,w:S.w|0}),
- load:o=>{o=o||{};S.sh=o.sh|0;S.nt=o.nt|0;S.tr=o.tr|0;S.ok=o.ok|0;S.w=o.w|0;
-  if(S.w<WV){const n=wipeOld();S.sh+=WBONUS;S.w=WV;
-   setTimeout(()=>{try{sv()}catch(e){}try{msg='🧹 Toàn bộ đồ Thánh cũ đã bị thu hồi'+(n?' ('+n+' món)':'')+'. Bù cho bạn +'+WBONUS+' 💠 Mảnh Thánh!';ui()}catch(e){}},1500)}},
- reset:()=>{S.sh=S.nt=S.tr=S.ok=0;S.w=WV}}
+ save:()=>({sh:S.sh|0,nt:S.nt|0,tr:S.tr|0,ok:S.ok|0}),
+ load:o=>{o=o||{};S.sh=o.sh|0;S.nt=o.nt|0;S.tr=o.tr|0;S.ok=o.ok|0},
+ reset:()=>{S.sh=S.nt=S.tr=S.ok=0}}
 })();
 HL.loadImgs([ASSET_URL("a003"), ASSET_URL("a004"), ASSET_URL("a005"), ASSET_URL("a006"), ASSET_URL("a007"), ASSET_URL("a008"), ASSET_URL("a009"), ASSET_URL("a010"), ASSET_URL("a011"), ASSET_URL("a012")]);
 /* ================= VÒNG QUAY MAY MẮN (LW) =================

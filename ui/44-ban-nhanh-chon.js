@@ -10,7 +10,7 @@ if(typeof BAG==='undefined'||typeof sell!=='function')return;
 var CF={maxR:3};
 var RN=['Thường','Tinh Anh','Hiếm','Sử Thi'];
 var ov=null,pick=new Set(),note='';
-function ok(i){return !!i&&typeof i==='object'&&i.r<=CF.maxR&&!i.c&&!(i.u>0)&&!i.ttl&&!i.hl}
+function ok(i){return !!i&&typeof i==='object'&&i.r<=CF.maxR&&!i.c&&!(i.u>0)&&!i.ttl&&!i.hl&&!i.ho}
 function list(){var a=[];for(var j=0;j<BAG.length;j++)if(ok(BAG[j]))a.push(BAG[j]);return a.sort(function(x,y){return (y.r-x.r)||(x.s-y.s)||(y.l-x.l)})}
 function nf(n){try{return Math.floor(n).toLocaleString('vi-VN')}catch(e){return ''+n}}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}

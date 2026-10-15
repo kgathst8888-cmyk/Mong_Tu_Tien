@@ -68,12 +68,14 @@ function say(t){setNote(t);pending=t}
 function setNote(t){note=t||'';nt.style.display=t?'block':'none';nt.textContent=t||''}
 
 function detail(it){
+  if(it&&it.gm&&window.GEMX)return GEMX.txt(it);   /* 💎 Đá Khảm (equipment/64) */
   var h='';
   try{h=(it.a?'Công +'+nf(stat(it,'a'))+' ':'')+(it.d?'Thủ +'+nf(stat(it,'d'))+' ':'')+(it.h?'HP +'+nf(stat(it,'h')):'')}catch(e){}
   try{if(it.x&&typeof xHtml==='function')h+='<br>'+xHtml(it)}catch(e){}
   return h;
 }
 function itemRow(it,right,extra,id){
+  if(it&&it.gm&&window.GEMX)return '<div class="it" data-open="'+id+'"><div class="ic">💎</div><div class="in"><div class="nm" style="color:'+GEMX.col(it)+'">'+esc(it.n)+'</div>'+(extra?'<small>'+extra+'</small>':'')+(openId===id?'<div class="dt">'+detail(it)+'</div>':'')+'</div>'+right+'</div>';   /* đá khảm */
   var s=SL[it.s]||['?','🎁'];
   var o=Object.keys(it.x||{}).length;
   return '<div class="it" data-open="'+id+'"><div class="ic">'+s[1]+'</div><div class="in"><div class="nm" style="color:'+col(it.r)+'">'+esc(it.n||s[0])+'</div>'+
@@ -104,7 +106,8 @@ function draw(){
   }else if(tab==='sell'){
     h+='<div class="hint">Chọn trang bị trong túi để đăng bán. Phí '+CF.fee+'% khi bán được, tối đa '+CF.max+' món, hết hạn sau '+CF.hours+' giờ. Đồ đăng bán rời khỏi túi và về lại qua hòm nhận nếu hủy/hết hạn.</div>';
     var n=0;BAG.forEach(function(it,i){if(!it||typeof it!=='object')return;n++;h+=itemRow(it,'<button class="b" data-a="post" data-i="'+i+'">Bán</button>','','b'+i)});
-    if(!n)h+='<div class="hint">Túi không có trang bị nào.</div>';
+    if(window.GEMX)GEMX.list().forEach(function(g){n++;h+=itemRow(g,'<button class="b" data-a="post" data-i="'+g.gid+'">Bán</button>','','g'+g.gid)});   /* 💎 đá khảm */
+    if(!n)h+='<div class="hint">Túi không có trang bị hay đá khảm nào.</div>';
   }else{
     h+='<div class="hint">Món đang bán · Đồ về túi tự động (hòm nhận).</div>';
     if(!mine.length)h+='<div class="hint">Bạn chưa đăng bán món nào.</div>';
@@ -135,7 +138,8 @@ async function load(){
 async function claim(inbox){
   var ids=[],left=0;
   inbox.forEach(function(q){
-    if(BAG.length<capN()&&q.item&&typeof q.item==='object'){var it=q.item;delete it._mk;BAG.push(it);ids.push(q.id)}else left++;
+    if(q.item&&typeof q.item==='object'&&q.item.gm&&window.GEMX){var gi=q.item;delete gi._mk;GEMX.back(gi);ids.push(q.id)}   /* đá khảm: về kho đá, không cần chỗ trong túi */
+    else if(BAG.length<capN()&&q.item&&typeof q.item==='object'){var it=q.item;delete it._mk;BAG.push(it);ids.push(q.id)}else left++;
   });
   lastInbox=left;
   if(ids.length){
@@ -170,18 +174,18 @@ async function onClick(e){
       say(c.status==='ok'?'Đã hủy bán, đồ về túi.':'Không hủy được (đã bán?).');
       return load();
     }
-    if(act==='post')return post(+a.dataset.i);
+    if(act==='post')return post(/^g/.test(a.dataset.i)?a.dataset.i:+a.dataset.i);
   }catch(er){setNote(nice(er));load()}
 }
 async function post(i){
-  var it=BAG[i];if(!it)return;
+  var G=(typeof i==='string')&&window.GEMX,it=G?GEMX.peek(i):BAG[i];if(!it)return;
   if(mine.length>=CF.max){say('Đã đạt tối đa '+CF.max+' món đang bán.');return}
   var v=prompt('Giá bán '+(it.n||'món này')+' (💎 Linh Thạch, '+nf(CF.minP)+' – '+nf(CF.maxP)+'). Phí '+CF.fee+'% khi bán được:','');
   if(v==null)return;
   var price=Math.floor(Number(String(v).replace(/[.,\s]/g,'')));
   if(!(price>=CF.minP&&price<=CF.maxP)){say('Giá không hợp lệ.');return}
   var mk=Date.now().toString(36)+Math.random().toString(36).slice(2,8);
-  it._mk=mk;BAG.splice(i,1);sv_();uiRefresh();            /* rời túi trước, tránh nhân bản */
+  it._mk=mk;if(G)GEMX.take(i);else BAG.splice(i,1);sv_();uiRefresh();            /* rời túi trước, tránh nhân bản */
   var ok=false;
   try{var r=await call('cho_post',{p_item:it,p_price:price,p_name:myName().slice(0,16)});ok=r&&r.status==='ok';
     if(!ok)say(r&&r.status==='full'?'Đã đạt tối đa món đang bán.':'Không đăng được món này.')}
@@ -190,7 +194,7 @@ async function post(i){
     try{var me=await call('cho_me');ok=!!(me&&me.mine||[]).filter(function(m){return m.item&&m.item._mk===mk}).length}catch(e2){ok=null}
   }
   if(ok===true){say('✅ Đã đăng bán '+(it.n||'món')+' giá '+nf(price)+' 💎')}
-  else if(ok===false){delete it._mk;BAG.push(it);sv_();uiRefresh()}   /* chắc chắn chưa đăng → trả lại túi */
+  else if(ok===false){delete it._mk;if(G)GEMX.back(it);else BAG.push(it);sv_();uiRefresh()}   /* chắc chắn chưa đăng → trả lại túi */
   else say('Mất mạng khi đăng — kiểm tra tab "Của tôi"; nếu không thấy, đồ sẽ ở hòm nhận.');
   load();
 }

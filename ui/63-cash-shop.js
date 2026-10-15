@@ -21,8 +21,8 @@ var CFG={
     {k:'b10',e:'📜',n:'Bùa Cường Hóa +10%',p:100,d:'+10% tỉ lệ thành công khi cường hóa trang bị',bon:10},
     {k:'b15',e:'📜',n:'Bùa Cường Hóa +15%',p:200,d:'+15% tỉ lệ thành công khi cường hóa trang bị',bon:15},
     {k:'b20',e:'📜',n:'Bùa Cường Hóa +20%',p:500,d:'+20% tỉ lệ thành công khi cường hóa trang bị',bon:20},
-    {k:'ham',e:'🔨',n:'Búa Đục Lỗ',p:100,d:'Đục lỗ trang bị để khảm Ngọc (hệ Ngọc sẽ mở sau)'},
-    {k:'g10',e:'📜',n:'Bùa Ghép Ngọc +10%',p:200,d:'+10% tỉ lệ thành công khi ghép Ngọc (hệ Ngọc sẽ mở sau)'},
+    {k:'ham',e:'🔨',n:'Búa Đục Lỗ',p:100,d:'Đục lỗ trang bị để khảm Đá (tối đa 2 lỗ: lỗ 1 cần 1 búa, lỗ 2 cần 3 búa)'},
+    {k:'g10',e:'📜',n:'Bùa Ghép Ngọc +10%',p:200,d:'+10% tỉ lệ thành công khi ghép Đá Khảm (bật trong bảng 💎 Đá Khảm ở túi đồ)'},
     {k:'dh',e:'🔮',n:'Ngọc Định Hồn',p:10000,d:'Định hồn 1 trang bị VĨNH VIỄN: cường hóa +8→+10 thất bại chỉ về +7 (không về +0)'},
     {k:'vx',e:'📈',n:'Vé Tăng 20% EXP',p:100,d:'Dùng: +20% EXP nhận được trong 2 giờ (dùng khi đang có hiệu lực = cộng dồn thêm 2 giờ)'},
     {k:'vt',e:'🧘',n:'Vé Tăng 20% Tu Vi',p:100,d:'Dùng: +20% Tu Vi nhận được trong 2 giờ (dùng khi đang có hiệu lực = cộng dồn thêm 2 giờ)'}],
@@ -150,7 +150,7 @@ function render(){
     var any=0;
     h+='<div class="cn">Kho riêng của Cash Shop — không chiếm ô túi đồ / ô trang bị. Mỗi lần cường hóa chỉ dùng được 1 loại bùa. 🔮 Ngọc Định Hồn dùng ở bảng món đồ trong túi.</div>';
     CFG.lt.forEach(function(o){var n=cnt(o.k);if(n<1)return;any=1;
-      var b=TK[o.k]?'<button onclick="CSH.ticket(\''+o.k+'\')">Dùng</button>':o.k==='dh'?'<span style="opacity:.7;font-size:11px">dùng trong túi</span>':BON[o.k]?'<button onclick="CSH.arm(\''+o.k+'\');CSH.tab(\'kho\')"'+(armed===o.k?' style="border-color:#7affb0"':'')+'>'+(armed===o.k?'✔ Đang chọn':'Chọn dùng')+'</button>':'<span style="opacity:.6;font-size:11px">chờ hệ Ngọc</span>';
+      var b=TK[o.k]?'<button onclick="CSH.ticket(\''+o.k+'\')">Dùng</button>':o.k==='dh'?'<span style="opacity:.7;font-size:11px">dùng trong túi</span>':BON[o.k]?'<button onclick="CSH.arm(\''+o.k+'\');CSH.tab(\'kho\')"'+(armed===o.k?' style="border-color:#7affb0"':'')+'>'+(armed===o.k?'✔ Đang chọn':'Chọn dùng')+'</button>':'<span style="opacity:.7;font-size:11px">dùng ở túi đồ → 💎 Đá Khảm</span>';
       h+=row({e:o.e,n:o.n,d:o.d,own:n},b)});
     if(!any)h+='<div class="cn">Kho trống. Mua vật phẩm ở tab 💎 Linh Thạch.</div>';
   }else if(tab==='lt'){
