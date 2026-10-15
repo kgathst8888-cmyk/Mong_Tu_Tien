@@ -20,7 +20,7 @@ function SD(){var p=PS[cur];if(!p)return{f:0,d:0,cd:0};if(!p.dg2||typeof p.dg2!=
 function left(){var s=SD(),n=Date.now(),c=+s.cd||0;if(c>n+CF.cd){c=n+CF.cd;s.cd=c}return Math.max(0,c-n)}
 function fmt(ms){var t=Math.ceil(ms/1000);return Math.floor(t/60)+':'+String(t%60).padStart(2,'0')}
 function save(){try{sv()}catch(e){}}
-function lvOk(){return P.lv>=CF.lv}
+function lvOk(){try{if(window.HDAO&&HDAO.on())return true}catch(e){}return P.lv>=CF.lv}
 function ready2(){return started&&!dg&&lvOk()&&left()<=0}
 function d1Left(){try{return Math.ceil((SLOT-Date.now()%SLOT)/1e3)}catch(e){return 0}}
 
@@ -31,7 +31,7 @@ function card(id,col,ico,title,lines){return'<div data-go="'+id+'" style="displa
 function html(){
   return'<h2 style="margin:0 0 6px;color:#ffe27a;font-size:19px">🕳 Phụ Bản</h2><div style="font-size:12.5px;opacity:.85;margin-bottom:4px">Chạm vào phụ bản để vào.</div>'
    +card(1,'#ff9a70','🕳','1. Hầm Ngục','20 quái + Trùm Thần Thoại · mở mỗi 5 phút · rơi trang bị, mảnh cánh')
-   +card(2,'#7dffc0','🐉','2. Địa Long Điện','Cần cấp '+CF.lv+' · 20 quái + Boss <b>Ngục Long Vương</b> (mạnh gấp '+CF.hp+' lần Trùm Hầm Ngục) · vào lại sau '+Math.round(CF.cd/60000)+' phút · rơi trang bị + <b>Mảnh Đan Đột Phá Cảnh Giới 4 Thần Thú</b> ('+CF.fmin+'–'+CF.fmax+' mảnh/lần)')
+   +card(2,'#7dffc0','🐉','2. Địa Long Điện','Cần cấp '+CF.lv+' (<b>Đạo Thể</b> vào được mọi cấp) · 20 quái + Boss <b>Ngục Long Vương</b> (mạnh gấp '+CF.hp+' lần Trùm Hầm Ngục) · vào lại sau '+Math.round(CF.cd/60000)+' phút · rơi trang bị + <b>Mảnh Đan Đột Phá Cảnh Giới 4 Thần Thú</b> ('+CF.fmin+'–'+CF.fmax+' mảnh/lần)')
    +card(3,'#ffd54a','💰','3. Phụ Bản Vàng','1 <b>Boss Bất Tử</b> không thể hạ · <b>'+(window.PBV?window.PBV.cfg.secs:180)+' giây</b> khiêu chiến · 💰 vàng thưởng theo <b>sát thương</b> bạn gây ra')
    +(window.PBMT?window.PBMT.html(card):'')+'<div style="border:1px solid #6a5a3a;border-radius:10px;padding:8px;margin:8px 0;background:#1a120d"><div style="font-size:13.5px">💊 <b>Đan Đột Phá Cảnh Giới 4 Thần Thú</b> · đang có: <b id="pb-d">0</b></div><div style="margin-top:5px;height:9px;background:#000a;border-radius:5px;overflow:hidden"><div id="pb-bar" style="height:100%;width:0;background:linear-gradient(90deg,#16c46a,#7dffc0)"></div></div><div style="font-size:12.5px;margin-top:4px">Mảnh: <b id="pb-f">0</b>/'+CF.need+'</div><button data-comb="1" style="width:100%;margin-top:6px;background:#5a3a22;color:#fff;border:1px solid #b8964e;border-radius:8px;padding:8px">⚒ Ghép Đan ('+CF.need+' mảnh)</button><div style="font-size:11.5px;opacity:.7;margin-top:4px">Đan dùng cho Thú nuôi khi tiến hoá cấp 3 → cấp 4.</div></div>'
    +'<div id="pb-msg" style="min-height:18px;font-size:13px;color:#ffd98a;text-align:center"></div>'

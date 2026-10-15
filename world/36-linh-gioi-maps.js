@@ -20,7 +20,7 @@ var MAPS=[
  {n:'Thánh Địa',e:'🌟',c:'#fff0a0',lv:[81,100],d:'Boss Ma Thần + Kiếm Thánh ×10 · rơi Rương ngẫu nhiên (không trang bị)',holy:1}];
 /* Độ khó quái Đạo Thể (bản đồ 2–5). hpn = MÁU CỐ ĐỊNH của quái thường; Tinh Anh = ×LGE.e, Boss = ×LGE.b.
    m=cấp bản đồ trong công thức gốc · df=nhân thủ · at=nhân sức đánh (quái đánh theo (1+m*.35), trừ thẳng giáp người chơi; Tinh Anh ×1,5 và Boss ×2 thêm) · exp=nhân Đạo Linh */
-var LGS=[null,{m:1.2,hpn:1e5,df:1.8,at:12,exp:.5},{m:2,hpn:2e5,df:2,at:14,exp:.5},{m:3,hpn:4e5,df:2.2,at:16,exp:.5},{m:4.2,hpn:8e5,df:2.4,at:20,exp:.5}],LGE={e:3,b:10};
+var LGS=[null,{m:1.2,hpn:3e5,df:2.7,at:24,exp:.5},{m:2,hpn:6e5,df:3,at:28,exp:.5},{m:3,hpn:1.2e6,df:3.3,at:32,exp:.5},{m:4.2,hpn:2.4e6,df:3.6,at:40,exp:.5}],LGE={e:3,b:10};
 var LGR=[LR0,[1,20],[21,40],[41,60],[61,80]];
 /* chủ đề nền + bảng màu quái (chỉ số LT 5..8) */
 var TH=[

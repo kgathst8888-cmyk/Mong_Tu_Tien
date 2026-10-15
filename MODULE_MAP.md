@@ -15,7 +15,7 @@ Tạo tự động bởi `python3 tools/symbols.py`. Cột KB = dung lượng, "
 | 9 | `core/01f-backgrounds.js` | 14 | 13 | core/01f-backgrounds.js — Nền map: bgd0/xbg/bgd/bgdOld, XP, các layer (tách từ core/01-engine.js; thứ tự nạp giữ nguyên, xem index.html) |
 | 10 | `core/01g-hero-draw.js` | 16 | 18 | core/01g-hero-draw.js — RGBA, armXY, dArm/dLeg, hero(), heroSpark, foe() (tách từ core/01-engine.js; thứ tự nạp giữ nguyên, xem index.html) |
 | 11 | `core/01h-skill-fx.js` | 74 | 2 | core/01h-skill-fx.js — Hệ hiệu ứng kỹ năng ZS (FX, SFX, ACT, bst, fx, shake...) (tách từ core/01-engine.js; thứ tự nạp giữ nguyên, xem index.html) |
-| 12 | `core/01i-combat-core.js` | 17 | 1 | core/01i-combat-core.js — Lõi chiến đấu ZC (tick, kill, gain, aura, panel...) (tách từ core/01-engine.js; thứ tự nạp giữ nguyên, xem index.html) |
+| 12 | `core/01i-combat-core.js` | 18 | 1 | core/01i-combat-core.js — Lõi chiến đấu ZC (tick, kill, gain, aura, panel...) (tách từ core/01-engine.js; thứ tự nạp giữ nguyên, xem index.html) |
 | 13 | `core/01j-hud-draw.js` | 9 | 13 | core/01j-hud-draw.js — pets(), mbar/mhud, draw() chính (tách từ core/01-engine.js; thứ tự nạp giữ nguyên, xem index.html) |
 | 14 | `core/01k-icons-equip.js` | 13 | 28 | core/01k-icons-equip.js — Icon trang bị (mkIcon/mkIcon2/drawWpn), gen, eqp (tách từ core/01-engine.js; thứ tự nạp giữ nguyên, xem index.html) |
 | 15 | `core/01l-loot-weapons-data.js` | 16 | 60 | core/01l-loot-weapons-data.js — Tự động bán, tiệm rèn, give/drop, dữ liệu vũ khí (WPU, WSET...) (tách từ core/01-engine.js; thứ tự nạp giữ nguyên, xem |
@@ -49,7 +49,7 @@ Tạo tự động bởi `python3 tools/symbols.py`. Cột KB = dung lượng, "
 | 43 | `ui/17-ranking-name.js` | 14 | 0 | XẾP HẠNG + TÊN NHÂN VẬT (RK) ================= - Nút 🏆 nằm cạnh đồng hồ Boss Thế Giới ở HUD. - 3 bảng: Tu vi · Cấp độ · Lực chiến (từng hệ). Dữ liệu t |
 | 44 | `combat/18-enemies.js` | 6 | 0 |  |
 | 45 | `systems/18-linh-can.js` | 18 | 0 | LINH CĂN (tu tiên) ===== * 5 linh căn: Hỏa / Mộc / Thủy / Kim / Thổ. Chọn 1 linh căn đang dùng. * - Passive: tăng sức mạnh thần thông (tiên thuật) cùn |
-| 46 | `systems/19-arena.js` | 37 | 0 | ĐẤU TRƯỜNG v5 — REAL COMBAT / MAP-STYLE ===== - Dùng chính renderer hero() của game map: sprite, tay/chân, vũ khí, cánh, animation đánh. - Dùng chính  |
+| 46 | `systems/19-arena.js` | 38 | 0 | ĐẤU TRƯỜNG v5 — REAL COMBAT / MAP-STYLE ===== - Dùng chính renderer hero() của game map: sprite, tay/chân, vũ khí, cánh, animation đánh. - Dùng chính  |
 | 47 | `systems/20-quest-hud.js` | 6 | 0 | Bấm vào phần nhiệm vụ 📜 trên màn hình chính → mở bảng chi tiết nhiệm vụ (chính tuyến, hằng ngày, hằng tuần). Mobile: dòng nhiệm vụ dưới thanh EXP/Tu v |
 | 48 | `systems/21-bulk-fuse.js` | 2 | 4 | Hợp hàng loạt trang bị Sử Thi (tím) + gỡ thuộc tính "Giảm hồi chiêu" khỏi đồ cũ |
 | 49 | `assets/phoenix-assets.js` | 128 | 0 | (dữ liệu ảnh/font base64 — KHÔNG đọc) |
@@ -68,7 +68,7 @@ Tạo tự động bởi `python3 tools/symbols.py`. Cột KB = dung lượng, "
 | 62 | `ui/30-bag-plus.js` | 3 | 0 | TÚI ĐỒ+ : icon trang bị trong túi nhỏ gọn hơn + ghép trang bị ngay trong túi - Chỉnh cỡ ô/icon: --bg-cell (px), --bg-ico (% icon trong ô). - Ghép: chạ |
 | 63 | `ui/31-bag-scroll.js` | 1 | 0 | Giữ nguyên vị trí cuộn của túi đồ khi giao diện vẽ lại (bấm nút trong tab không bị cuộn lên đầu). Đổi tab / đổi mục nhiệm vụ thì vẫn về đầu trang như  |
 | 64 | `systems/32-cho-giao-dich.js` | 20 | 0 | 🏮 CHỢ GIAO DỊCH ONLINE · LINH THẠCH ===== * Dùng chung tài khoản ☁ (KCL.rpc). Cần chạy cho_giao_dich.sql 1 lần trong Supabase. * - Linh Thạch (💎) nằm  |
-| 65 | `world/33-hop-dao.js` | 12 | 0 | ☯ HỢP ĐẠO · ĐẠO CẢNH ===== * Cửa vào: Thành Thị Linh Giới → cổng 2 "Hợp Đạo Đài" (mảng LCG trong world/10-farming-map.js). * Điều kiện: nhân vật Lv100 |
+| 65 | `world/33-hop-dao.js` | 11 | 0 | ☯ HỢP ĐẠO · ĐẠO CẢNH ===== * Cửa vào: Thành Thị Linh Giới → cổng 2 "Hợp Đạo Đài" (mảng LCG trong world/10-farming-map.js). * Điều kiện: nhân vật Lv100 |
 | 66 | `world/34-than-thong.js` | 24 | 0 | 📜 THẦN THÔNG · ĐẠO CẢNH (6 hệ × 5 thần thông) ===== * Chỉ nhân vật ĐÃ HỢP ĐẠO (HDAO.on()). Mỗi hệ có 5 thần thông xếp theo ngũ hành tương sinh, bắt đầ |
 | 67 | `world/35-kiem-thanh.js` | 12 | 0 | 🗡️ KIẾM THÁNH · BOSS THÀNH THỊ LINH GIỚI ===== * Dựa trên Ma Thần (world/02-demon-realm.js): cùng kiểu trận đấu (dg), cùng công thức chỉ số nhưng mạnh |
 | 68 | `world/36-linh-gioi-maps.js` | 12 | 0 | 🌀 BẢN ĐỒ LINH GIỚI (6 bản đồ) ===== * Cổng 1 (Chiến Trường) của Thành Thị Linh Giới mở bảng chọn bản đồ. Đạo Thể còn có danh sách bản đồ ngay trong ta |
@@ -106,3 +106,4 @@ Tạo tự động bởi `python3 tools/symbols.py`. Cột KB = dung lượng, "
 | 100 | `systems/60-dang-nhap-bat-buoc.js` | 10 | 0 | 🔐 BẮT BUỘC ĐĂNG NHẬP + PHIÊN CHƠI DUY NHẤT (systems/60-dang-nhap-bat-buoc.js) ===== * Luồng: * 1) Mở game → cổng đăng nhập phủ kín màn hình. Nhập emai |
 | 101 | `world/61-lang-gian-rong.js` | 4 | 0 | LÀNG TÂN THỦ GIÃN RỘNG + CAMERA THEO NHÂN VẬT (như Linh Giới) - Thế giới làng rộng tối thiểu WIDE (mặc định 1320 đơn vị), màn hình hẹp chỉ thấy một ph |
 | 102 | `world/65-cong-ve-lang.js` | 6 | 0 | 🏘 CỔNG VỀ THÔN TÂN THỦ · Thành Thị Linh Giới (world/65-cong-ve-lang.js) ===== * Thêm cổng thứ 6 (chỉ số cuối của LCT.gates) đặt đúng ở cột sáng phía t |
+| 103 | `systems/66-dot-pha-canh-gioi.js` | 9 | 0 |  |

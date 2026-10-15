@@ -99,34 +99,10 @@ function frame(i,gy){
   g.restore();
   /* hạc bay */
   for(var c=0;c<2;c++){var x3=((c*W*.4+t*(.22+c*.07))%(W+120))-60;crane(x3,H*(.1+c*.07)+Math.sin(t*.02+c*2)*6*u,u*(.9-c*.15),t+c*9)}
-  weather(i,t,u);if(i===0)mine(gy)}
+  weather(i,t,u)}
 
 
-/* ---------- cửa hầm mỏ (map 0) vẽ theo phong cách ảnh — thay ngọn núi lớn của world/13 khi nền ảnh đang chạy ---------- */
-function mine(gy){
-  var u=s,t=fr,EW=Math.min(150*u,W*(typeof PORT!=='undefined'&&PORT?.3:.2)),EH=EW*.66,cx=W*(typeof PORT!=='undefined'&&PORT?.42:.34),by=gy+5*u,q,i;
-  g.save();g.fillStyle='rgba(0,0,0,.26)';g.beginPath();g.ellipse(cx,by,EW*.62,EH*.08,0,0,TAU);g.fill();
-  q=g.createLinearGradient(0,by-EH,0,by);q.addColorStop(0,'#8e8678');q.addColorStop(.6,'#665e52');q.addColorStop(1,'#443e36');
-  g.fillStyle=q;g.beginPath();g.moveTo(cx-EW*.5,by);g.bezierCurveTo(cx-EW*.5,by-EH*.55,cx-EW*.32,by-EH*.95,cx-EW*.08,by-EH);g.bezierCurveTo(cx+EW*.1,by-EH*1.02,cx+EW*.36,by-EH*.8,cx+EW*.5,by);g.closePath();g.fill();
-  g.strokeStyle='rgba(0,0,0,.28)';g.lineWidth=1.2*u;for(i=0;i<5;i++){var yy=by-EH*(.15+i*.16);g.beginPath();g.moveTo(cx-EW*(.44-i*.05),yy);g.quadraticCurveTo(cx,yy-EH*.05,cx+EW*(.4-i*.05),yy+EH*.02);g.stroke()}
-  g.fillStyle='rgba(86,140,60,.85)';g.beginPath();g.ellipse(cx-EW*.1,by-EH*.97,EW*.22,EH*.06,0,0,TAU);g.ellipse(cx+EW*.2,by-EH*.8,EW*.14,EH*.045,.3,0,TAU);g.fill();
-  var mw=EW*.34,mh=EH*.62;g.fillStyle='#070504';g.beginPath();g.moveTo(cx-mw/2,by);g.lineTo(cx-mw/2,by-mh*.7);g.quadraticCurveTo(cx,by-mh*1.25,cx+mw/2,by-mh*.7);g.lineTo(cx+mw/2,by);g.closePath();g.fill();
-  g.fillStyle='#6e4c2a';g.fillRect(cx-mw/2-4*u,by-mh*.82,5*u,mh*.82);g.fillRect(cx+mw/2-1*u,by-mh*.82,5*u,mh*.82);g.fillRect(cx-mw/2-7*u,by-mh*.88,mw+14*u,5*u);
-  g.strokeStyle='#2a1a10';g.lineWidth=1*u;g.strokeRect(cx-mw/2-7*u,by-mh*.88,mw+14*u,5*u);
-  var fl=.7+.3*Math.sin(t*.09)+.1*Math.sin(t*.21);g.fillStyle='#3a2a1a';g.fillRect(cx+mw/2+2*u,by-mh*.84,2*u,7*u);
-  g.globalCompositeOperation='lighter';g.globalAlpha=.55*fl;glow(cx+mw/2+3*u,by-mh*.74,16*u,'255,190,90',.9);g.globalCompositeOperation='source-over';g.globalAlpha=1;
-  g.fillStyle='#ffd070';g.beginPath();g.ellipse(cx+mw/2+3*u,by-mh*.74,2.4*u,3.2*u,0,0,TAU);g.fill();
-  g.strokeStyle='#3a3a3e';g.lineWidth=1.6*u;for(i=0;i<2;i++){g.beginPath();g.moveTo(cx-mw*.28+i*mw*.56,by-mh*.04);g.lineTo(cx-mw*.5+i*mw*1.0,by+7*u);g.stroke()}
-  g.fillStyle='#4a3a28';for(i=0;i<4;i++)g.fillRect(cx-mw*.55+i*mw*.36,by+(i%2?1:2)*u,mw*.2,2*u);
-  var kx=cx+EW*.42,ky=by+3*u;g.fillStyle='#4a4a52';g.fillRect(kx-9*u,ky-11*u,18*u,10*u);g.fillStyle='#34343a';g.fillRect(kx-10*u,ky-12*u,20*u,3*u);
-  g.fillStyle='#ffd24a';g.beginPath();g.ellipse(kx-3*u,ky-12.5*u,3.4*u,2.2*u,0,0,TAU);g.ellipse(kx+3*u,ky-13*u,3*u,2*u,0,0,TAU);g.fill();
-  g.fillStyle='#1a1a1e';g.beginPath();g.arc(kx-6*u,ky,2.4*u,0,TAU);g.arc(kx+6*u,ky,2.4*u,0,TAU);g.fill();
-  /* nhãn */
-  var tx='⛏ Mỏ Khoáng',ly=by-EH-18*u;g.font='bold '+(13*u)+'px "KTH Serif","Songti SC",STKaiti,serif';g.textAlign='center';g.textBaseline='middle';
-  var tw=g.measureText(tx).width+18*u;g.fillStyle='rgba(20,12,6,.78)';g.beginPath();g.roundRect?g.roundRect(cx-tw/2,ly-9*u,tw,18*u,9*u):g.rect(cx-tw/2,ly-9*u,tw,18*u);g.fill();
-  g.strokeStyle='#d8b058';g.lineWidth=1.2*u;g.stroke();g.fillStyle='#ffe8a8';g.fillText(tx,cx,ly);
-  g.font=(10*u)+'px sans-serif';g.fillStyle='rgba(255,236,190,'+(.55+.35*Math.sin(t*.07))+')';g.fillText('▼ chạm để vào',cx,ly-17*u);
-  g.restore()}
+/* (đã gỡ cửa hầm/ngọn núi ở map 0 — vào mỏ bằng nút ⛏ trên HUD, cạnh 🏆 Xếp hạng & ⚔️ Đấu trường) */
 
 /* thời tiết riêng từng map */
 function weather(i,t,u){

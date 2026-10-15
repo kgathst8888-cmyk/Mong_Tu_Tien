@@ -305,7 +305,7 @@ document.addEventListener('pointerdown',e=>{
  const px=e.offsetX,py=e.offsetY;
  try{
  if(on){e.stopPropagation();fhit(px,py);return}
- if(!broken&&!vil&&!dg&&!lg&&!over&&mi()===0&&mtHit(px,py,GYH())){e.stopPropagation();enter()}
+ /* (đã bỏ chạm ngọn núi — vào mỏ bằng nút ⛏ trên HUD) */
  }catch(x){fail(x)}
 },true);
 const GYH=()=>{try{return GY}catch(e){return H*.7}};
@@ -324,7 +324,7 @@ const _vstep=vstep;vstep=function(){
  }catch(x){fail(x)}
 };
 const _vdraw=vdraw;vdraw=function(){if(on){try{mdraw()}catch(x){fail(x)}if(!on)_vdraw();return}_vdraw()};
-const _bgd=bgd;bgd=function(gy){_bgd(gy);if(!broken&&!vil&&!dg&&!lg&&mi()===0&&started&&!(window.BDTT&&BDTT.on&&BDTT.ready)){try{mtDraw(gy)}catch(x){g.restore&&0;fail(x)}}};
+/* (đã bỏ vẽ ngọn núi ở bản đồ 1) */
 const _step=step;step=function(){
  if(on&&!vil){on=false;pend=null;mine=null;back=0}
  if(started&&fr%60==0){try{tick()}catch(e){}try{upTick()}catch(e){}}
@@ -337,7 +337,7 @@ vlb.onpointerdown=e=>{if(on){e.stopPropagation();leave();return}_vl(e)};
 /* ---------- Giao diện tab ⛏ Khai khoáng trong túi ---------- */
 function ui_(){
  const ok=canAuto(),k=rk();
- let h='<div class="dt">⛏ <b>Khai Khoáng</b><br><small>Bấm nút <b>Vào hầm mỏ</b> bên dưới, hoặc chạm vào <b>ngọn núi</b> ở bản đồ đầu tiên (<b>'+MP[0].n+'</b>) để vào hầm mỏ và tự tay đào. Từ cảnh giới <b>Nguyên Anh</b>, Nguyên Anh có thể tự động thu thập <b>1 trong 3 loại</b>, kể cả khi bạn thoát game (tối đa 8 giờ).</small></div>';
+ let h='<div class="dt">⛏ <b>Khai Khoáng</b><br><small>Bấm nút <b>Vào hầm mỏ</b> bên dưới, hoặc bấm nút <b>⛏ Mỏ</b> trên thanh HUD (cạnh 🏆 Xếp hạng và ⚔️ Đấu trường) để vào hầm mỏ và tự tay đào. Từ cảnh giới <b>Nguyên Anh</b>, Nguyên Anh có thể tự động thu thập <b>1 trong 3 loại</b>, kể cả khi bạn thoát game (tối đa 8 giờ).</small></div>';
  h+='<div class="dt"><div class="fmb"><button onclick="MN.go()" style="flex:1;padding:12px;font-size:16px;font-weight:bold">⛏ Vào hầm mỏ ngay</button></div></div>';
  h+=`<div class="dt"><div class="fmh">📦 <b>Kho khoáng sản</b></div>
  <div class="st">🪙 Vàng đã khai thác: <b>${fmtN(S.gm)}</b> <span style="opacity:.7">(đã cộng vào 💰)</span></div>
@@ -361,6 +361,6 @@ function ld(o){S=fresh();on=false;pend=null;mine=null;
  ORD.forEach(k=>{dur[k]=VN[k].hits;until[k]=0});
 }
 const save=()=>JSON.parse(JSON.stringify(S));
-return{isOn:()=>on,ui:ui_,go,setAuto,tick,save,load:ld,reset:()=>ld(null),get:()=>S,VN,upgrade:upStart,dbg:{hit,upTick,mulAu,addOf,rtOf}}
+return{isOn:()=>on,isBroken:()=>broken,ui:ui_,go,setAuto,tick,save,load:ld,reset:()=>ld(null),get:()=>S,VN,upgrade:upStart,dbg:{hit,upTick,mulAu,addOf,rtOf}}
 })();
 (()=>{const _n=ng;ng=function(){try{MN.reset()}catch(x){}_n()}})();

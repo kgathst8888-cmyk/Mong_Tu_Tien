@@ -1,8 +1,8 @@
 /* ===== 📜 THẦN THÔNG · ĐẠO CẢNH (6 hệ × 5 thần thông) =====
  * Chỉ nhân vật ĐÃ HỢP ĐẠO (HDAO.on()). Mỗi hệ có 5 thần thông xếp theo ngũ hành tương sinh, bắt đầu từ linh căn sở trường:
  *   ô1 ★ chiến đấu (tự mở khi hợp đạo) · ô2 chiến đấu · ô3 buff · ô4 chiến đấu cực nghĩa · ô5 nội tại.
- * Ô2–ô5 học bằng MẢNH SÁCH THẦN THÔNG (SC[i].sh mảnh cùng linh căn, đúng hệ). Mảnh là vật phẩm trong túi (xếp chồng, c:1, tt:{h,e,q})
- * nên bán được ở Chợ giao dịch. Mảnh chỉ rơi từ boss Kiếm Thánh (cập nhật sau): boss gọi TTHONG.drop() (5–20 mảnh, linh căn ngẫu nhiên).
+ * Ô2–ô5 học bằng MẢNH SÁCH THẦN THÔNG (SC[i].sh mảnh cùng linh căn, đúng hệ). Mảnh nằm trong KHO RIÊNG PS[cur].tsh={"h_e":số mảnh} (KHÔNG vào túi, giống đá khảm PS[cur].gm → không bị tự bán/dọn đồ);
+ * bán được ở Chợ giao dịch (TTHONG.list/peek/take/back). Mảnh cũ còn trong túi tự chuyển sang kho riêng. Mảnh chỉ rơi từ boss Kiếm Thánh (cập nhật sau): boss gọi TTHONG.drop() (5–20 mảnh, linh căn ngẫu nhiên).
  * Sát thương/buff/nội tại nhân lcMul(linh căn) (×1,2–1,5) khi trùng linh căn nhân vật. Dữ liệu: PS[cur].tt={on:[5 cờ]}.
  * Nút thần thông riêng #tt-bar (ẩn #zk khi Đạo Cảnh). Chỉnh: SC (số liệu), K (bảng kỹ năng). Test: thêm ?ttest vào URL.
  * Thẻ riêng "Thần thông Linh căn" (tự động thi triển, do systems/18-linh-can.js lo) hiển thị trong bảng, không dùng mảnh.
@@ -37,17 +37,17 @@ var FC={};function F(n){return function(){var f=FC[n]===undefined?(FC[n]=V(n)):F
 function rgba(h,a){var n=parseInt(h.slice(1),16);return'rgba('+(n>>16)+','+(n>>8&255)+','+(n&255)+','+a+')'}
 function later(n,f){var l=FC.later===undefined?(FC.later=V('later')):FC.later;if(l)l(n,f);else setTimeout(f,n*16)}
 
-/* ---------- Mảnh sách (vật phẩm trong túi, xếp chồng) ---------- */
-function isS(it){return !!(it&&it.tt&&typeof it.tt.q==='number')}
-function stacks(h,e){return BAG.filter(function(it){return isS(it)&&it.tt.h===h&&(e==null||it.tt.e===e)})}
-function cnt(h,e){return stacks(h,e).reduce(function(a,it){return a+it.tt.q},0)}
-function lab(it){var t=it.tt;it.n='📜 Mảnh Sách '+EL[t.e]+' · '+HN[t.h]+' ×'+t.q}
-function give(h,e,q){q=Math.max(0,Math.floor(q));if(!q)return;var s=BAG.filter(function(it){return isS(it)&&it.tt.h===h&&it.tt.e===e&&!it.tt.k})[0];
-  if(s){s.tt.q+=q;lab(s)}else{var it={s:5,r:4,l:1,u:0,c:1,a:0,h:0,d:0,tt:{h:h,e:e,q:q}};lab(it);BAG.push(it)}save()}
-function take(h,e,q){var L=stacks(h,e).sort(function(a,b){return a.tt.q-b.tt.q});for(var i=0;i<L.length&&q>0;i++){var t=Math.min(q,L[i].tt.q);L[i].tt.q-=t;q-=t;if(L[i].tt.q<=0)BAG.splice(BAG.indexOf(L[i]),1);else lab(L[i])}}
+/* ---------- Mảnh sách: KHO RIÊNG PS[cur].tsh = {"h_e":số mảnh} (không nằm trong túi → không bị Bán nhanh/Dọn đồ/tự bán; giống kho đá khảm PS[cur].gm) ---------- */
+function isS(it){return !!(it&&it.tt&&typeof it.tt.q==='number')}          /* mảnh kiểu cũ còn trong túi (dùng để chuyển sang kho riêng) */
+function store(p){p=p||PS[cur];if(!p)return{};if(!p.tsh||typeof p.tsh!=='object'||Array.isArray(p.tsh))p.tsh={};return p.tsh}
+function kk(h,e){return h+'_'+e}
+function cnt(h,e){var S=store();if(e!=null)return S[kk(h,e)]|0;var n=0;for(var x=0;x<5;x++)n+=S[kk(h,x)]|0;return n}
+function add(h,e,q,p){q=Math.floor(q);if(!(q>0)||!(h>=0&&h<=5)||!(e>=0&&e<=4))return false;var S=store(p),k=kk(h,e);S[k]=(S[k]|0)+q;return true}
+function give(h,e,q){if(add(h,e,q))save()}
+function take(h,e,q){var S=store(),k=kk(h,e),n=Math.min(S[k]|0,Math.floor(q));if(n>0){S[k]=(S[k]|0)-n;if(S[k]<=0)delete S[k]}return n}
+function migrate(){                                                    /* mảnh cũ trong túi (và mảnh từ hòm chợ rơi vào túi) → kho riêng */
+  try{var mv=0;for(var i=BAG.length-1;i>=0;i--){var it=BAG[i];if(isS(it)){BAG.splice(i,1);if(add(it.tt.h|0,it.tt.e|0,it.tt.q))mv++}}if(mv){save();render()}}catch(e){}}
 function drop(){var h=hid(),e=Math.floor(Math.random()*5),q=5+Math.floor(Math.random()*16);give(h,e,q);say('📜 +'+q+' Mảnh Sách '+EL[e]);return{e:e,q:q}}
-function split(i){var it=BAG[i];if(!isS(it)||it.tt.q<2)return;var v=prompt('Tách bao nhiêu mảnh thành một chồng riêng để đăng bán ở Chợ? (1–'+(it.tt.q-1)+')','');var n=Math.floor(Number(v));if(!(n>=1&&n<it.tt.q))return;
-  it.tt.q-=n;lab(it);var s={s:5,r:4,l:1,u:0,c:1,a:0,h:0,d:0,tt:{h:it.tt.h,e:it.tt.e,q:n,k:1}};lab(s);BAG.push(s);save();render()}
 function conv(e){var h=hid(),o=[0,1,2,3,4].filter(function(x){return x!==e}),tot=o.reduce(function(a,x){return a+cnt(h,x)},0);if(tot<5){say('Cần 5 mảnh loại khác');return}
   var need=5;o.sort(function(a,b){return cnt(h,b)-cnt(h,a)});for(var i=0;i<o.length&&need>0;i++){var t=Math.min(need,cnt(h,o[i]));if(t>0){take(h,o[i],t);need-=t}}give(h,e,1);render()}
 function learn(i){if(!on()){say('Cần hợp đạo');return}var h=hid(),s=K[h][i],d=D();if(d.on[i])return;var n=SC[i].sh;if(cnt(h,s.e)<n){say('Chưa đủ mảnh '+EL[s.e]+' ('+cnt(h,s.e)+'/'+n+')');return}
@@ -114,7 +114,7 @@ function build(){css();bar=document.createElement('div');bar.id='tt-bar';
   for(var j=0;j<4;j++)(function(j){var b=document.createElement('button');b.onpointerdown=function(e){e.stopPropagation();e.preventDefault();castTT(j,true)};b.addEventListener('click',function(e){e.stopPropagation()});btn.push(b);bar.appendChild(b)})(j);
   var p=document.createElement('button');p.className='p';p.textContent='📜';p.onpointerdown=function(e){e.stopPropagation();e.preventDefault();open()};bar.appendChild(p);document.body.appendChild(bar);
   ov=document.createElement('div');ov.id='tt-ov';['pointerdown','touchstart','keydown','keyup','keypress'].forEach(function(t){ov.addEventListener(t,function(e){e.stopPropagation()})});
-  ov.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-a]');if(!b){if(e.target===ov)close();return}var a=b.dataset.a,i=+b.dataset.i;if(a==='x')close();else if(a==='l')learn(i);else if(a==='c')conv(i);else if(a==='s')split(i);else if(a==='t'){drop();render()}});document.body.appendChild(ov)}
+  ov.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-a]');if(!b){if(e.target===ov)close();return}var a=b.dataset.a,i=+b.dataset.i;if(a==='x')close();else if(a==='l')learn(i);else if(a==='c')conv(i);else if(a==='t'){drop();render()}});document.body.appendChild(ov)}
 function root(){for(var e=0;e<5;e++)if(lc(e)>1)return e;return -1}
 var LCS=[['Thiên Liệt Hỏa','☄️','Mưa cột lửa giáng xuống diệt địch, thiêu đốt kéo dài.'],['Triệu Hoá Ma Thần','👹','Triệu Ma Thần tự dùng 3 kỹ năng, tầng càng cao càng mạnh và tồn tại lâu.'],['Hô Phong Hoán Vũ','🌧️','Gọi mưa gió: đánh lùi, làm chậm địch, hồi máu và năng lượng cho bản thân.'],['Canh Kim Chỉ Lộ','🗡️','Hai đạo kim quang quét sạch lối đi, sau đó tăng sát thương trong thời gian ngắn.'],['Địa Long Phiên Thần','🐉','Địa long trồi lên càn quét, làm choáng địch và phủ giáp đất.']];
 function lcCard(){var p=PS[cur],r=(p.lc&&p.lc.root>=0)?p.lc.root:-1;
@@ -128,8 +128,8 @@ function render(){if(!ov||ov.style.display==='none')return;var h=hid(),d=D(),r=r
     o+='<div class="cd'+(has?' on':'')+'"><div class="ic">'+s.i+'</div><div style="flex:1"><b style="color:'+ELC[s.e]+'">'+s.n+'</b> <span class="sm">· '+EL[s.e]+' · '+TYN[TY[i]]+(i===0?' · ★ Khai Đạo':'')+lcm+'</span><div class="t">'+s.d+'<br>'+(TY[i]==='c'?'×'+sc.m+' sát thương · ':'')+(TY[i]==='p'?'Luôn bật':'Hồi '+sc.cd+'s · '+sc.mp+' MP')+'</div></div><div>'+
       (has?'<span class="sm">Đã học</span>':'<button data-a="l" data-i="'+i+'"'+(n>=sc.sh?'':' disabled')+'>Học '+n+'/'+sc.sh+'</button>')+'</div></div>'}
   o+=lcCard();
-  var st=BAG.map(function(it,i){return isS(it)&&it.tt.h===h?'<div class="sm">'+it.n+' <button data-a="s" data-i="'+i+'" style="font-size:11px;padding:1px 6px">Tách</button></div>':''}).join('');
-  o+=(st?'<div style="margin-top:8px"><b class="sm">Mảnh trong túi (bán ở 🏮 Chợ giao dịch)</b>'+st+'</div>':'<div class="sm" style="margin-top:8px">Mảnh sách chỉ rơi từ boss Kiếm Thánh (sắp ra mắt). Mảnh bán/mua được ở 🏮 Chợ giao dịch.</div>')+
+  var st='';for(var x=0;x<5;x++){var q=cnt(h,x);if(q)st+='<div class="sm" style="color:'+ELC[x]+'">📜 Mảnh Sách '+EL[x]+' · '+HN[h]+' ×'+q+'</div>'}
+  o+=(st?'<div style="margin-top:8px"><b class="sm">Kho mảnh sách (kho riêng, không vào túi · bán ở 🏮 Chợ giao dịch)</b>'+st+'</div>':'<div class="sm" style="margin-top:8px">Mảnh sách chỉ rơi từ boss Kiếm Thánh. Kho mảnh riêng, không chiếm túi và không bị tự bán. Mua/bán được ở 🏮 Chợ giao dịch.</div>')+
     '<div class="row">'+(TEST?'<button data-a="t">🧪 Nhặt thử</button>':'')+'<button class="g" data-a="x" style="flex:1">Đóng</button></div></div>';ov.innerHTML=o}
 function open(){if(!on()){say('Chỉ Đạo Cảnh (đã hợp đạo) mới có Thần Thông');return}if(!ov)build();ov.style.display='flex';render()}
 function close(){if(ov)ov.style.display='none'}
@@ -156,5 +156,16 @@ if(typeof pk==='function'){var _pk=pk;pk=function(k,i){var it=k=='b'?BAG[i]:null
 if(typeof fzt==='function'){var _fzt=fzt;fzt=function(i){if(isS(BAG[i]))return;return _fzt.apply(this,arguments)}}
 var sk=0,obs=null;function skin(){sk=0;try{var bg=document.getElementById('bag');if(!bg)return;BAG.forEach(function(it,i){if(!isS(it))return;var c=bg.querySelector('[onclick="pk(\'b\','+i+')"]');if(!c||c.dataset.tt)return;c.dataset.tt=1;c.style.borderColor=ELC[it.tt.e];c.style.display='flex';c.style.flexDirection='column';c.style.alignItems='center';c.style.justifyContent='center';c.innerHTML='<div style="font-size:22px;line-height:1">📜</div><div style="font-size:10px;font-weight:700;color:'+ELC[it.tt.e]+'">'+EL[it.tt.e]+' ×'+it.tt.q+'</div>'});if(obs)obs.takeRecords()}catch(e){}}
 try{var bgE=document.getElementById('bag');if(bgE&&window.MutationObserver)(obs=new MutationObserver(function(){if(!sk)sk=requestAnimationFrame(skin)})).observe(bgE,{childList:true,subtree:true})}catch(e){}
-window.TTHONG={cdReset:function(){for(var i=0;i<cd.length;i++)cd[i]=0},drop:drop,give:give,open:open,close:close,on:on,hid:hid,cnt:cnt,cfg:SC,data:K};
+/* ---------- Chợ giao dịch: mảnh ↔ "món" tạm s=10,ts=1 (patch nhỏ systems/32-cho-giao-dich.js) ---------- */
+function mkLab(h,e,q){return '📜 Mảnh Sách '+EL[e]+' · '+HN[h]+' ×'+q}
+function mkItem(h,e,q){return{ts:1,h:h,e:e,q:q,s:10,r:4,l:1,n:mkLab(h,e,q)}}
+function mkList(){var o=[],S=store();for(var h=0;h<6;h++)for(var e=0;e<5;e++){var q=S[kk(h,e)]|0;if(q>0){var it=mkItem(h,e,q);it.tid='t'+h+'_'+e;o.push(it)}}return o}
+function mkPeek(id){var m=/^t(\d)_(\d)$/.exec(id||'');if(!m)return null;var h=+m[1],e=+m[2],q=cnt(h,e);if(!(q>0))return null;var it=mkItem(h,e,q);it.tid=id;return it}
+function mkTake(it){if(!it||!it.ts)return 0;return take(it.h|0,it.e|0,it.q|0)}   /* trả số mảnh thực tế đã rút khỏi kho */
+function mkBack(it){if(!it||!it.ts)return false;var h=it.h|0,e=it.e|0,q=Math.floor(Number(it.q));if(!(q>0&&q<=1e6)||!(h>=0&&h<=5)||!(e>=0&&e<=4))return false;add(h,e,q);save();render();return true}
+function mkTxt(it){return 'Mảnh Sách Thần Thông '+EL[it.e|0]+' · '+HN[it.h|0]+' ×'+(it.q|0)+'. Mua về vào kho mảnh riêng (không chiếm túi), dùng để học thần thông ô 2–5 của hệ '+HN[it.h|0]+'.'}
+function mkCol(it){return ELC[it.e|0]||'#ffd76a'}
+setInterval(migrate,700);migrate();
+window.TTHONG={cdReset:function(){for(var i=0;i<cd.length;i++)cd[i]=0},drop:drop,give:give,open:open,close:close,on:on,hid:hid,cnt:cnt,cfg:SC,data:K,
+  list:mkList,peek:mkPeek,take:mkTake,back:mkBack,txt:mkTxt,col:mkCol,lab:mkLab,migrate:migrate};
 })();

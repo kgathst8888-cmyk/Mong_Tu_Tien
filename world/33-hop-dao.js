@@ -3,8 +3,8 @@
  * Điều kiện: nhân vật Lv100, chưa hợp đạo. Mỗi nhân vật hợp đạo 1 lần. Dữ liệu: PS[cur].hd = {d:1,t,lv0}.
  * Sau khi hợp đạo:
  *  - Tẩy luyện: về Lv1, EXP 0. Điểm tiềm năng (đã cộng + chưa cộng) giữ nguyên.
- *  - Cảnh giới thay bằng Đạo Cảnh Lv1-100 (chính là cấp nhân vật). Hiển thị "Đạo Cảnh". Không đột phá cảnh giới nữa;
- *    dữ liệu cảnh giới cũ (PS[cur].cv) giữ nguyên bên dưới để các Thần Thông (tiên thuật) đã mở vẫn dùng được.
+ *  - Đạo Cảnh Lv1-100 (chính là cấp nhân vật) hiển thị thêm trong tab Tu tiên. Hệ tu tiên cơ bản (tu vi, cảnh giới, đột phá) GIỮ NGUYÊN
+ *    và vẫn hiển thị/đột phá ở bảng nhân vật; Đạo Thể chỉ khoá kỹ năng tu tiên (tiên thuật → Thần Thông).
  *  - EXP lên cấp ×CF.xpMul (engine: nx() nhân HDAO.xm()).
  *  - EXP từ quái chỉ nhận ở BẢN ĐỒ ĐẠO THỂ (Linh Giới bản đồ 2–6, LGMAP.expOk() trong world/36-linh-gioi-maps.js); nếu thiếu module 36 thì dùng mi()>=CF.mapMin=8. Mặc mọi trang bị không cần cấp (engine: so cấp dùng HDAO.on()).
  *  - Cấp trang bị tối đa CF.itemLv=80 (gen() chặn). Xoá toàn bộ trang bị cũ 1 lần (wipe, cờ CF.wipeId).
@@ -25,27 +25,15 @@ function say(t){try{msg=t;ui()}catch(e){}}
 /* --- Chặn kỹ năng phàm thể --- */
 var _cast=cast;cast=function(){if(on())return;return _cast.apply(this,arguments)};
 
-/* --- Hiển thị Đạo Cảnh thay cảnh giới --- */
-var o={nm:ZC.nm,rn:ZC.rn,tx:ZC.tx,pg:ZC.pg,col:ZC.col,bt:ZC.bt,ui:ZC.ui};
-ZC.nm=function(){return on()?'Đạo Cảnh Lv '+P.lv:o.nm.apply(this,arguments)};
-ZC.rn=function(){return on()?'Đạo Cảnh':o.rn.apply(this,arguments)};
-var tc={x:-1,n:-1,s:''};
-ZC.tx=function(){
-  if(!on())return o.tx.apply(this,arguments);
-  var x=Math.floor(P.xp),n=nx();
-  if(x!==tc.x||n!==tc.n){tc.x=x;tc.n=n;tc.s=nf(x)+'/'+nf(n)}   /* chỉ định dạng lại khi số đổi */
-  return tc.s};
-ZC.pg=function(){return on()?Math.min(1,P.xp/Math.max(1,nx())):o.pg.apply(this,arguments)};
-ZC.col=function(){return on()?'#ffe27a':o.col.apply(this,arguments)};
-ZC.bt=function(){if(on()){say('☯ Đã hợp đạo: cảnh giới được thay bằng Đạo Cảnh, không còn đột phá cảnh giới.');return}return o.bt.apply(this,arguments)};
+/* --- Hệ tu tiên cơ bản GIỮ NGUYÊN sau Hợp Đạo: vẫn hiển thị cảnh giới/tu vi và đột phá tiếp ở bảng nhân vật.
+       Đạo Thể chỉ khoá KỸ NĂNG tu tiên (tiên thuật → thay bằng Thần Thông, xem world/34-than-thong.js). Ở đây chỉ chèn thêm thẻ Đạo Cảnh. --- */
+var o={ui:ZC.ui};
 ZC.ui=function(){
-  if(!on())return o.ui.apply(this,arguments);
+  var h=o.ui.apply(this,arguments);
+  if(!on())return h;
   var need=Math.max(1,nx()),pc=Math.min(100,Math.floor(P.xp/need*100));
-  return '<div class="dt">☯ <b style="color:#ffe27a">Đạo Cảnh Lv '+P.lv+'/100</b><br>'+
-    'Cảnh giới đã được thay bằng Đạo Cảnh. Đạo Linh (EXP) lên cấp gấp '+CF.xpMul+' lần phàm thể.<br>'+
-    '<div style="height:10px;border:1px solid #b8964e;border-radius:6px;margin:6px 0;overflow:hidden;background:#1d1510"><div style="height:100%;width:'+pc+'%;background:linear-gradient(90deg,#b8862a,#ffe27a)"></div></div>'+
-    'Đạo Linh: '+nf(P.xp)+' / '+nf(need)+' ('+pc+'%)<br>'+
-    '<span style="opacity:.75">Kỹ năng phàm thể đã bị xoá — chỉ dùng Thần Thông (nút tiên thuật bên phải, tự dùng khi bật AUTO).</span></div>';
+  return '<div class="dt">☯ <b style="color:#ffe27a">Đạo Cảnh Lv '+P.lv+'/100</b> · Đạo Linh '+nf(P.xp)+' / '+nf(need)+' ('+pc+'%)<br>'+
+    '<span style="opacity:.75">Kỹ năng phàm thể đã bị xoá, tiên thuật được thay bằng Thần Thông. Tu vi và đột phá cảnh giới vẫn dùng bình thường.</span></div>'+h;
 };
 
 /* --- CSS ẩn nút kỹ năng phàm thể + giao diện Hợp Đạo Đài --- */

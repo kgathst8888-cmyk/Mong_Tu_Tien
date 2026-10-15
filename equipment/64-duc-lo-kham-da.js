@@ -14,6 +14,7 @@
  *   (giữ lại viên chọn đầu tiên ⭐ — viên này cũng quyết định opt của đá mới). Bùa Ghép Ngọc +10% (CSH 'g10') cộng 10 điểm %.
  *   Đá cấp 5: ngoài opt còn +50 TẤT CẢ điểm thuộc tính (Sức mạnh/Thể lực/Trí tuệ/Nhanh nhẹn) mỗi viên đang khảm trên đồ ĐANG MẶC.
  * Cộng chỉ số: bọc twB (SX cộng twB(k) cho mọi opt) · +50 thuộc tính: getter trên PS[i].al (toJSON giữ nguyên save, không bị cộng dồn).
+ * THÁO ĐÁ: nút "Tháo" cạnh từng lỗ → đá về kho (giữ cấp/opt, miễn phí). GHÉP THÀNH CÔNG → đá cấp trên CHƯA MÀI ({id,lv,raw:1}); mài giữ cấp, random opt mới.
  * CHỢ: đá bán được ở Chợ Giao Dịch (patch nhỏ systems/32-cho-giao-dich.js gọi GEMX). Đá đi qua chợ dưới dạng "món" s=10,r=cấp-1,l=1,gm=1
  *   (vừa đủ qua kiểm tra của cho_post; KHÔNG cần sửa SQL) và tự chuyển về kho đá khi về túi (GEMX.back / quét BAG).
  * Bảo vệ: món đã đục lỗ không bị Bán nhanh / Dọn đồ yếu / Hợp hàng loạt / Chọn ghép (bọc sa, bclean, bulkFuse, pk, fzt).
@@ -62,7 +63,7 @@ function pool(){
 function gemTxt(g){
   var c='#ccc';try{c=RC[Math.min(6,g.lv|0)]}catch(e){}
   return '<span style="color:'+c+'">💎 Cấp '+g.lv+' · '+esc(AXN[g.k]||g.k)+' +'+valOf(g.k,g.lv)+'%</span>'+(g.lv>=CF.maxLv?'<br><span style="color:#ffd76a;font-size:11px">★ +'+CF.lv5+' tất cả thuộc tính (Sức mạnh · Nhanh nhẹn · Trí tuệ · Thể lực)</span>':'')}
-function addRaw(n,p){p=p||PS[cur];var S=store(p);for(var i=0;i<n;i++)S.push({id:nid(p),lv:1,raw:1})}
+function addRaw(n,p,lv){p=p||PS[cur];lv=Math.max(1,Math.min(CF.maxLv,lv|0||1));var S=store(p);for(var i=0;i<n;i++)S.push({id:nid(p),lv:lv,raw:1})}
 
 /* ---------- cộng chỉ số từ đá đang khảm trên đồ ĐANG MẶC ---------- */
 function gemBonus(k){
@@ -159,6 +160,17 @@ function socket(id){
   if(old){var ask=typeof gcf==='function'?gcf:function(t,fn){if(confirm(t))fn()};ask('Thay đá ở lỗ '+(slot+1)+'?\nĐá cũ sẽ MẤT vĩnh viễn.',go)}
   else go()}
 
+/* ---------- tháo đá (đá về kho, KHÔNG mất, giữ nguyên cấp & opt) ---------- */
+function unsocket(i){
+  var it=curItem();if(!it||busy)return;
+  var g=it.gz&&it.gz[i];if(!g||i>=(it.ho|0))return;
+  var lv=Math.max(1,Math.min(CF.maxLv,g.lv|0||1));
+  if(!g.k||maxOf(g.k)<=0||CF.excl.indexOf(g.k)>=0){addRaw(1,null,lv)}      /* dữ liệu lạ → trả về đá chưa mài, tránh mất đồ */
+  else store().push({id:nid(PS[cur]),lv:lv,k:g.k,v:valOf(g.k,lv)});
+  it.gz[i]=null;
+  setMsg('💎 Đã tháo đá cấp '+lv+' khỏi lỗ '+(i+1)+' — đá về kho Đá Khảm.');say('💎 Tháo đá thành công!','#9fd8ff');save();
+  try{if(isOpen)render();ui()}catch(e){}}
+
 /* ---------- mài đá ---------- */
 function grind(all){
   var who=PS[cur],S=store(who),raw=S.filter(function(g){return g.raw});
@@ -171,8 +183,8 @@ function grind(all){
     if(r&&r.ok){
       var ks=pool(),got=[],done=0;
       for(var i=0;i<S.length&&done<n;i++){var g=S[i];if(!g.raw)continue;
-        delete g.raw;g.lv=1;g.k=ks[Math.floor(rnd()*ks.length)];g.v=valOf(g.k,1);done++;got.push(g)}
-      var sm={};got.forEach(function(g){var t=(AXN[g.k]||g.k);sm[t]=(sm[t]|0)+1});
+        delete g.raw;g.lv=Math.max(1,Math.min(CF.maxLv,g.lv|0||1));g.k=ks[Math.floor(rnd()*ks.length)];g.v=valOf(g.k,g.lv);done++;got.push(g)}
+      var sm={};got.forEach(function(g){var t='C'+g.lv+' '+(AXN[g.k]||g.k);sm[t]=(sm[t]|0)+1});
       note='✅ Mài '+done+' đá (−'+cost+'💎): '+Object.keys(sm).map(function(t){return t+(sm[t]>1?' ×'+sm[t]:'')}).join(', ');save()}
     else note=spErr(r);
     render()})}
@@ -209,8 +221,8 @@ function merge(){
     var pc=Math.min(100,rate+(tal?CF.merge.talBonus:0)),ok=rnd()*100<pc,first=all[0];
     if(ok){
       S=who.gm=S.filter(function(g){return ids.indexOf(g.id)<0});
-      var ng={id:nid(who),lv:lv+1,k:first.k,v:valOf(first.k,lv+1)};S.push(ng);
-      note='🌟 Ghép THÀNH CÔNG ('+pc+'%)! Nhận đá cấp '+ng.lv+': '+(AXN[ng.k]||ng.k)+' +'+ng.v+'%'+(ng.lv>=CF.maxLv?' · +'+CF.lv5+' tất cả thuộc tính khi khảm!':'');
+      var ng={id:nid(who),lv:lv+1,raw:1};S.push(ng);          /* đá mới CHƯA MÀI: phải mài lại để ra opt ngẫu nhiên */
+      note='🌟 Ghép THÀNH CÔNG ('+pc+'%)! Nhận 🪨 đá cấp '+ng.lv+' CHƯA MÀI — hãy mài để ra opt mới'+(ng.lv>=CF.maxLv?' (cấp '+CF.maxLv+': +'+CF.lv5+' tất cả thuộc tính khi khảm)':'')+'.';
       say('🌟 Ghép đá thành công! Cấp '+ng.lv,'#ffd76a');pick=[]}
     else{
       var lose=[all[1].id,all[2].id];
@@ -242,7 +254,9 @@ function render(){
   if(tgt&&tgt.it)h+='<div class="gn pk">Chọn 1 viên đá bên dưới để khảm vào <b>Lỗ '+(tgt.i+1)+'</b> của <b>'+esc(tgt.it.n||'trang bị')+'</b> · <button onclick="GEMX.cancelPick()">Hủy</button></div>';
   if(note)h+='<div class="gn">'+note+'</div>';
   h+='<div class="gs">🪨 Đá chưa mài ×'+raw.length+'</div>';
-  if(raw.length)h+='<div class="gr"><button '+(busy?'disabled ':'')+'onclick="GEMX.grind(0)">Mài 1 ('+CF.grind+'💎)</button>'+(raw.length>1?'<button '+(busy?'disabled ':'')+'onclick="GEMX.grind(1)">Mài hết ×'+raw.length+' ('+raw.length*CF.grind+'💎)</button>':'')+'</div><div class="gd">Mài ra 1 opt ngẫu nhiên (cấp 1 = '+Math.round(CF.pct[0]*100)+'% chỉ số MAX).</div>';
+  var rl=raw.filter(function(g){return (g.lv|0)>1});
+  if(rl.length)h+='<div class="gd">'+rl.map(function(g){return '🪨 Cấp '+g.lv+' chưa mài'}).join(' · ')+'</div>';
+  if(raw.length)h+='<div class="gr"><button '+(busy?'disabled ':'')+'onclick="GEMX.grind(0)">Mài 1 ('+CF.grind+'💎)</button>'+(raw.length>1?'<button '+(busy?'disabled ':'')+'onclick="GEMX.grind(1)">Mài hết ×'+raw.length+' ('+raw.length*CF.grind+'💎)</button>':'')+'</div><div class="gd">Mài ra 1 opt ngẫu nhiên (cấp 1 = '+Math.round(CF.pct[0]*100)+'% chỉ số MAX; đá ghép lên cấp giữ nguyên cấp, mài xong mới có opt).</div>';
   else h+='<div class="gd">Chỉ rơi ở bản đồ Thánh Địa: mỗi boss hạ được '+Math.round(CF.drop.chance*100)+'% rơi '+CF.drop.min+'–'+CF.drop.max+' viên (không bao giờ bị tự bán).</div>';
   h+='<div class="gs">💎 Đá đã mài ×'+ref.length+'</div>';
   if(!ref.length)h+='<div class="gd">Chưa có đá đã mài.</div>';
@@ -250,9 +264,9 @@ function render(){
     var on=pick.indexOf(g.id)>=0,star=pick[0]===g.id;
     h+='<div class="gm'+(on?' on':'')+'" onclick="GEMX.tog(\''+g.id+'\')"><span class="gx">'+(star?'⭐ ':on?'✔ ':'')+gemTxt(g)+'</span>'+(tgt?'<button onclick="event.stopPropagation();GEMX.socket(\''+g.id+'\')">Khảm</button>':'')+'</div>'});
   var s3=pick.map(function(id){return find(S,id)}).filter(Boolean),lv=s3.length?s3[0].lv:0,ready=s3.length===CF.merge.need&&lv<CF.maxLv;
-  h+='<div class="gb"><b>🔗 Ghép đá</b> · chạm để chọn '+CF.merge.need+' viên CÙNG cấp. Viên chọn đầu tiên ⭐ quyết định opt của đá mới.<br>'
+  h+='<div class="gb"><b>🔗 Ghép đá</b> · chạm để chọn '+CF.merge.need+' viên CÙNG cấp. Ghép thành công → đá cấp trên <b>chưa mài</b> (mài lại ra opt ngẫu nhiên).<br>'
    +'Tỉ lệ cấp 1→5: '+CF.merge.rate.map(function(r,i){return (i+1)+'→'+(i+2)+': '+r+'% ('+CF.merge.cost[i]+'💎)'}).join(' · ')+'<br>'
-   +'Thất bại: mất '+CF.merge.lose+' viên nguyên liệu (giữ viên ⭐).<br>'
+   +'Thất bại: mất '+CF.merge.lose+' viên nguyên liệu (giữ viên ⭐ đầu tiên).<br>'
    +(s3.length?'Đã chọn '+s3.length+'/'+CF.merge.need+(lv>=CF.maxLv?' · đá cấp '+CF.maxLv+' là tối đa':' · cấp '+lv+'→'+(lv+1)+' · tỉ lệ <b>'+chance(lv)+'%</b> · phí <b>'+CF.merge.cost[lv-1]+'💎</b>'):'Chưa chọn viên nào.')
    +'<div class="gr" style="margin-top:6px"><button '+(csh(CF.merge.tal)<1?'disabled ':'')+'onclick="GEMX.tal()"'+(useTal&&csh(CF.merge.tal)>0?' style="border-color:#7affb0;box-shadow:0 0 6px #7affb0"':'')+'>📜 Bùa Ghép +'+CF.merge.talBonus+'% ×'+csh(CF.merge.tal)+(useTal&&csh(CF.merge.tal)>0?' ✔':'')+'</button>'
    +'<button '+(!ready||busy?'disabled ':'')+'onclick="GEMX.merge()">🔗 Ghép'+(ready?' ('+CF.merge.cost[lv-1]+'💎)':'')+'</button>'
@@ -270,7 +284,7 @@ function itemHtml(it){
    +'<div style="font-weight:bold;color:#9fd8ff">💎 Lỗ khảm '+ho+'/'+CF.maxHole+'</div>';
   for(var i=0;i<ho;i++){
     var g=it.gz&&it.gz[i];
-    h+='<div style="display:flex;gap:6px;align-items:center;margin:4px 0"><span style="flex:1;font-size:12.5px">'+(g?gemTxt(g):'<span style="opacity:.7">◯ Lỗ '+(i+1)+': trống</span>')+'</span><button onclick="GEMX.pick('+i+')" style="margin:0;padding:6px 10px;font-size:12px">'+(g?'Thay đá':'Khảm đá')+'</button></div>'}
+    h+='<div style="display:flex;gap:6px;align-items:center;margin:4px 0"><span style="flex:1;font-size:12.5px">'+(g?gemTxt(g):'<span style="opacity:.7">◯ Lỗ '+(i+1)+': trống</span>')+'</span><button onclick="GEMX.pick('+i+')" style="margin:0;padding:6px 10px;font-size:12px">'+(g?'Thay đá':'Khảm đá')+'</button>'+(g?'<button onclick="GEMX.unsocket('+i+')" style="margin:0;padding:6px 10px;font-size:12px">Tháo</button>':'')+'</div>'}
   if(ho<CF.maxHole){
     var c=CF.hole[ho],okh=csh('ham')>=c.ham;
     h+='<button onclick="GEMX.drill()" style="margin:4px 0 0;padding:7px 10px;font-size:12px;width:100%'+(okh?'':';opacity:.7')+'">🔨 Đục lỗ '+(ho+1)+' · '+c.ham+' búa (có '+csh('ham')+') · '+nf(c.gold)+'💰 · '+c.lt+'💎</button>'}
@@ -290,29 +304,29 @@ ui=function(){scanBag();var r=_ui.apply(this,arguments);try{inject()}catch(e){}r
 
 /* ---------- Chợ giao dịch: đá ↔ "món" tạm (xem patch systems/32-cho-giao-dich.js) ---------- */
 function toMk(g){
-  var lv=g.raw?1:g.lv;
+  var lv=Math.max(1,g.lv|0||1);
   return{gm:1,gid:g.id,s:10,r:Math.max(0,Math.min(4,lv-1)),l:1,lv:lv,raw:g.raw?1:0,k:g.k||'',
-    n:g.raw?'🪨 Đá Khảm chưa mài':'💎 Đá Khảm Cấp '+lv+' · '+(AXN[g.k]||g.k)}}
+    n:g.raw?'🪨 Đá Khảm cấp '+lv+' chưa mài':'💎 Đá Khảm Cấp '+lv+' · '+(AXN[g.k]||g.k)}}
 function mkList(){return store().map(toMk).sort(function(a,b){return b.lv-a.lv||(a.raw-b.raw)})}
 function mkPeek(id){var g=find(store(),id);return g?toMk(g):null}
 function mkTake(id){var S=store(),g=find(S,id);if(!g)return null;S.splice(S.indexOf(g),1);save();return g}
 function mkBack(it){                       /* đá từ chợ về: dựng lại từ lv/k, GIÁ TRỊ tính lại theo bảng (không tin số trong JSON) */
   if(!it||!it.gm)return false;
   var p=PS[cur],lv=Math.max(1,Math.min(CF.maxLv,it.lv|0));
-  if(it.raw){addRaw(1,p)}
+  if(it.raw){addRaw(1,p,lv)}
   else if(maxOf(it.k)>0&&CF.excl.indexOf(it.k)<0){store(p).push({id:nid(p),lv:lv,k:it.k,v:valOf(it.k,lv)})}
-  else addRaw(1,p);                        /* dữ liệu lạ → coi như đá chưa mài, tránh mất đồ */
+  else addRaw(1,p,lv);                     /* dữ liệu lạ → coi như đá chưa mài, tránh mất đồ */
   save();try{if(isOpen)render();ui()}catch(e){}return true}
 function mkTxt(it){
   var lv=it.lv|0;
-  if(it.raw)return 'Đá Khảm cấp 1 chưa mài — mài ra opt ngẫu nhiên (10💎).';
+  if(it.raw)return 'Đá Khảm cấp '+Math.max(1,lv)+' chưa mài — mài ra opt ngẫu nhiên (10💎).';
   return gemTxt({k:it.k,lv:lv})}
 function mkCol(it){try{return RC[Math.min(6,(it.lv|0))]}catch(e){return '#9fd8ff'}}
 function scanBag(){                        /* phòng hờ: đá lọt vào túi (hòm nhận chợ...) → chuyển về kho đá */
   try{for(var i=BAG.length-1;i>=0;i--){var it=BAG[i];if(it&&it.gm){BAG.splice(i,1);mkBack(it)}}}catch(e){}}
 setInterval(scanBag,700);
 
-window.GEMX={cfg:CF,open:openMain,close:close,pick:pickSlot,cancelPick:cancelPick,socket:socket,drill:drill,grind:grind,tog:tog,merge:merge,
+window.GEMX={cfg:CF,open:openMain,close:close,pick:pickSlot,cancelPick:cancelPick,socket:socket,drill:drill,grind:grind,unsocket:unsocket,tog:tog,merge:merge,
   tal:function(){useTal=!useTal;render()},clr:function(){pick=[];render()},
   add:function(n){addRaw(n|0||1);save();if(isOpen)render()},         /* tiện test: GEMX.add(3) */
   count:function(){var r=0,f=0;store().forEach(function(g){g.raw?r++:f++});return{raw:r,ground:f}},

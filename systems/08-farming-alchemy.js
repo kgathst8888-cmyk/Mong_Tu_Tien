@@ -44,7 +44,7 @@ const KN={a:'Công',d:'Thủ',h:'HP',m:'MP'};
 const fresh=()=>({seeds:{},herbs:{},pills:{},np:CFG.plots0,plots:Array(CFG.plots0).fill(null),sel:'chi'});
 let S=fresh();
 const ft=s=>{s=Math.max(0,Math.ceil(s));const m=Math.floor(s/60),x=s%60;return m+':'+String(x).padStart(2,'0')};
-const gc=p=>Math.round(CFG.gold[p.id]*Math.pow(ZC.rI()+2,2));
+const gc=p=>Math.round((CFG.gold[p.id]||p.g0||0)*Math.pow(ZC.rI()+2,2));
 const rcTx=p=>Object.keys(p.rc).map(h=>HM[h].e+' '+HM[h].n+' ×'+p.rc[h]+' <span style="opacity:.7">('+(S.herbs[h]|0)+')</span>').join(' + ');
 const save=()=>{try{if(typeof started!='undefined'&&started)sv()}catch(e){}};
 let on=false,NT={s:'',c:'#ffe9a0',t:0};
@@ -160,7 +160,7 @@ function brew(id,n){
 function canUse(p){
  if(!(S.pills[p.id]>0))return 0;
  if(p.k=='tv')return ZC.tvInfo().done?0:1;
- if(p.k=='tt')return 0;
+ if(p.k=='tt'||p.k=='rl')return 0;
  if(p.k=='td')return(ZC.rI()+1>=3&&ZC.tdn()<ZC.TDM)?1:0;
  return ZC.pCnt(p.k)<ZC.PLIM?1:0;
 }
@@ -168,6 +168,7 @@ function use(id,n){
  const p=PM[id];if(!p)return;
  if(!(S.pills[id]>0)){msg='Hết '+p.n;ui();return}
  if(p.k=='tt'){msg='Tôi Thể Đan dùng để chuyển cấp Đạo Thể ở Hợp Đạo Đài (cần 100 viên).';ui();return}
+ if(p.k=='rl'){msg=p.n+' tự động tiêu hao khi đột phá cảnh giới (tab Tu tiên → Đột phá).';ui();return}
  let c=0;const lim=n<=0?9999:n;
  while(c<lim&&S.pills[id]>0){
   let ok=0;
@@ -200,7 +201,8 @@ function alchUI(){
   if(p.k=='tv'){const I=ZC.tvInfo();ex=`<div class="st">Tu vi hiện tại: ${fmtN(I.q)}/${fmtN(I.need)}${ZC.auto()?'':' <span style="color:#ffb070">(không tự tăng)</span>'}</div>`}
   else if(p.k=='td'){ex=`<div class="st">Đang có hiệu lực: <b>${ZC.tdn()}/${ZC.TDM}</b> viên · giảm <b>${Math.round((1-ZC.tdm())*100)}%</b> sát thương lôi kiếp kế tiếp${ZC.rI()+1<3?' <span style="opacity:.7">(dùng khi sắp đột phá Nguyên Anh+)</span>':''}</div>`}
   else if(p.k=='tt'){ex=`<div class="st">Đang có <b>${have}</b>/100 · dùng để chuyển cấp Phàm Nhân → Đạo Thể tại Hợp Đạo Đài (Thành Thị Linh Giới)</div>`}
-  else{const u=ZC.pCnt(p.k),t=ZC.pTot(p.k);ex=`<div class="st">Cảnh giới này: <b>${u}/${ZC.PLIM}</b> · Tổng đã dùng ${t} → ${KN[p.k]} <b>+${(t*ZC.PEF[p.k]*100).toFixed(1)}%</b></div>`}
+  else if(p.k=='rl'){ex=`<div class="st">Đang có <b>${have}</b>/10 · ${p.ex||'tiêu hao khi đột phá cảnh giới'}</div>`}
+   else{const u=ZC.pCnt(p.k),t=ZC.pTot(p.k);ex=`<div class="st">Cảnh giới này: <b>${u}/${ZC.PLIM}</b> · Tổng đã dùng ${t} → ${KN[p.k]} <b>+${(t*ZC.PEF[p.k]*100).toFixed(1)}%</b></div>`}
   h+=`<div class="dt fmpl"><div class="fmh">${p.e} <b>${p.n}</b><span class="fmc">Có ${have}</span></div><div class="st">${p.d}</div><div class="st">Nguyên liệu: ${rcTx(p)} · ${fmtN(gc(p))}💰 · thành ${Math.round(p.sc*100)}%</div>${ex}<div class="fmb"><button ${mb<1?'disabled':''} onclick="FM.brew('${p.id}',1)">Luyện ×1</button><button ${mb<5?'disabled':''} onclick="FM.brew('${p.id}',5)">×5</button><button ${mb<1?'disabled':''} onclick="FM.brew('${p.id}',0)">Tối đa (${mb})</button><button ${canUse(p)?'':'disabled'} onclick="FM.use('${p.id}',1)">💊 Dùng</button>${p.k=='tv'?`<button ${canUse(p)?'':'disabled'} onclick="FM.useAllTv()">Dùng hết</button>`:''}</div></div>`;
  });
  return h;
@@ -243,7 +245,7 @@ setInterval(()=>{
  }catch(e){}
 },1000);
 
-return{isOn:()=>on,setOn:v=>{on=!!v},note,nt:()=>NT,tickNote:()=>{if(NT.t>0)NT.t--},tap:tapPlot,get:()=>S,ft,HM,seedDrop,sel,plant,plantAll,harv,harvAll,buyPlot,farmUI,alchUI,brew,use,useAllTv,tvBar,sumTxt,any,rdy,save:sv_,load:ld,reset:()=>{S=fresh();on=false},HB,PL}
+return{isOn:()=>on,setOn:v=>{on=!!v},note,nt:()=>NT,tickNote:()=>{if(NT.t>0)NT.t--},tap:tapPlot,get:()=>S,ft,HM,seedDrop,sel,plant,plantAll,harv,harvAll,buyPlot,farmUI,alchUI,brew,use,useAllTv,tvBar,sumTxt,any,rdy,save:sv_,load:ld,reset:()=>{S=fresh();on=false},HB,PL,PM}
 })();
 /* Rơi hạt giống ở mọi Boss: bọc hàm drop() sau cùng để bao trùm Boss thường, Trùm Hầm Ngục, Ma Thần */
 (()=>{const _d=drop;drop=function(e){_d(e);try{FM.seedDrop(e)}catch(x){}}})();

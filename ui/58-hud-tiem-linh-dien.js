@@ -5,7 +5,7 @@
  *  - world/10-farming-map.js: gateDraw() và click canvas bị tắt khi HUDX.on; ghi HUDX.gate=fr; thêm window.FGATE={enter,leave}.
  *  - Nút chỉ hiện khi 🏆 hiện VÀ icon cũ lẽ ra được vẽ ở khung hình gần đây (nghĩa là đang ở Làng, không boss/hầm ngục/phụ bản khác).
  *  - Bấm 👘 → FSH.show() (mở tiệm); bấm 🌱 → FGATE.enter() (vào Linh Điền); bấm 🛒 → CSH.show() (Cash Shop, ui/63-cash-shop.js; nằm ngoài cùng bên trái hàng); 🎫 Vé (mọi nơi có HUD, kể cả ngoài Làng) → CSH.show('kho'). Tắt tính năng: HUDX.on=false (icon cũ trở lại).
- * Vị trí: theo #rkb (x,y do ui/17 đặt): hàng [👘][🌱][⚔️ x-96][💀 x-52][🏆 x]. Màn hẹp (không đủ chỗ) → xuống hàng dưới 🏆/💀. */
+ * Vị trí: theo #rkb (x,y do ui/17 đặt): hàng [👘][🌱][⛏ Mỏ][⚔️ x-96][💀 x-52][🏆 x]. Màn hẹp (không đủ chỗ) → xuống hàng dưới 🏆/💀. */
 (function(){
 'use strict';
 window.HUDX=window.HUDX||{on:true,shop:-99,gate:-99};
@@ -15,16 +15,17 @@ function mk(id,ic,lb,tt,fn){var b=document.createElement('button');b.id=id;b.typ
 var bs=mk('hx-shop','👘','Y Phục','Tiệm Y Phục Linh Vân',function(){if(window.FSH)FSH.show()}),
     bf=mk('hx-farm','🌱','Linh Điền','Linh Điền Động Thiên',function(){if(window.FGATE)FGATE.enter()}),
     bc=mk('hx-cash','🛒','Shop','Cửa Hàng Linh Vân (Linh Thạch · Vàng)',function(){if(window.CSH)CSH.show()}),
+    bm=mk('hx-mine','⛏','Mỏ','Hầm mỏ: Vàng · Quặng Sắt · Huyền Kim',function(){if(typeof MN!=='undefined'&&!MN.isBroken())MN.go()}),
     bt=mk('hx-tk','🎫','Vé','Kho vật phẩm Cash Shop: dùng Vé EXP / Tu Vi ở mọi nơi',function(){if(window.CSH)CSH.show('kho')});
 var last='';
 function place(){
   var rk=document.getElementById('rkb'),ok=false;
   try{ok=!!(rk&&rk.style.display==='block'&&started&&HUDX.on)}catch(e){}
   var on=[];
-  if(ok){var f=fr;if(f-HUDX.shop<=3)on.push(bs);if(f-HUDX.gate<=3)on.push(bf);if(on.length&&window.CSH)on.push(bc);if(window.CSH)on.push(bt)}
+  if(ok){var f=fr;if(f-HUDX.shop<=3)on.push(bs);if(f-HUDX.gate<=3)on.push(bf);if(on.length&&window.CSH)on.push(bc);if(window.CSH)on.push(bt);try{if(typeof MN!=='undefined'&&!MN.isBroken())on.unshift(bm)}catch(e){}}
   var k=on.map(function(b){return b.id}).join('|')+'|'+(ok?rk.style.left+','+rk.style.top:'');
   if(k===last)return;last=k;
-  [bs,bf,bc,bt].forEach(function(b){if(on.indexOf(b)<0&&b.style.display!=='none')b.style.display='none'});
+  [bm,bs,bf,bc,bt].forEach(function(b){if(on.indexOf(b)<0&&b.style.display!=='none')b.style.display='none'});
   if(!on.length)return;
   var x0=parseFloat(rk.style.left)||0,y0=parseFloat(rk.style.top)||0,base=x0-96,n=on.length,left=base-16-(n-1)*PITCH-SZ,row2=left<190;
   on.forEach(function(b,i){var x=row2?x0+4-i*PITCH:base-16-SZ-i*PITCH,y=row2?y0+34+12:y0+4;b.style.left=Math.round(x)+'px';b.style.top=Math.round(y)+'px';b.style.display='block'})}
