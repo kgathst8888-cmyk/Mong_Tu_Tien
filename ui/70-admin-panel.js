@@ -7,6 +7,7 @@
  *   📢 Thông báo : đăng thông báo toàn game (hiện ở mục 📢 Thông báo của người chơi) + đặt hạn + xoá
  *   ✉️ Đã gửi    : danh sách thư đã gửi + 🗑 thu hồi thư CHƯA nhận
  *   📜 Nhật ký   : 40 thao tác admin gần nhất
+ *   🧪 Test      : chỉnh tu vi / cảnh giới của nhân vật ĐANG CHƠI (cộng tu vi, +10%/+50%/đầy, đặt cảnh giới + tầng, ±1 tầng, Đại Thừa 9) — chỉ trên máy, bỏ qua điều kiện đột phá
  * Máy chủ: chạy admin.sql 1 lần trong Supabase → SQL Editor, rồi tự cấp quyền admin cho email của bạn (câu lệnh ở cuối đầu file admin.sql).
  * Không sửa module cũ; chỉ dùng KCL.rpc (systems/12-cloud-save.js). Quà trong thư dùng đúng định dạng của ui/69-thong-bao-thu.js. */
 (function(){
@@ -130,9 +131,9 @@ function draw(){
   try{el.className=PORT?'pt':'ls'}catch(e){el.className='pt'}
   var l0=el.querySelector('.al'),keep=(l0&&!S.reset)?l0.scrollTop:0;S.reset=0;
   var h='<div class="ah"><span>🛡 Quản trị</span><button data-a="x">✕</button></div>';
-  h+='<div class="at">'+tabBtn('acc','👤 Tài khoản')+tabBtn('gift','🎁 Gửi quà')+tabBtn('note','📢 Thông báo')+tabBtn('mail','✉️ Đã gửi')+tabBtn('log','📜 Nhật ký')+'</div>';
+  h+='<div class="at">'+tabBtn('acc','👤 Tài khoản')+tabBtn('gift','🎁 Gửi quà')+tabBtn('note','📢 Thông báo')+tabBtn('mail','✉️ Đã gửi')+tabBtn('log','📜 Nhật ký')+tabBtn('test','🧪 Test')+'</div>';
   if(S.note)h+='<div class="an">'+esc(S.note)+'</div>';
-  h+='<div class="al">'+(S.tab==='acc'?vAcc():S.tab==='gift'?vGift():S.tab==='note'?vNote():S.tab==='mail'?vMail():vLog())+'</div>';
+  h+='<div class="al">'+(S.tab==='acc'?vAcc():S.tab==='gift'?vGift():S.tab==='note'?vNote():S.tab==='mail'?vMail():S.tab==='test'?vTest():vLog())+'</div>';
   el.innerHTML=h;
   var l1=el.querySelector('.al');if(l1)l1.scrollTop=keep;
 }
@@ -264,6 +265,7 @@ function onClick(e){
   if(a==='x'){saveForm();close();return}
   if(a==='tab'){saveForm();S.tab=t.getAttribute('data-v');S.note='';S.reset=1;
     if(S.tab==='mail')loadMails();else if(S.tab==='log')loadLogs();else if(S.tab==='note')loadNotes();else draw();return}
+  if(a.indexOf('t_')===0){S.tvf=t.getAttribute('data-v');testAct(a);return}
   if(S.busy)return;
   if(a==='find'){doFind(val('adm-q').trim());return}
   if(a==='online'){doFind(':online');return}
@@ -307,6 +309,51 @@ function onClick(e){
     n=a==='cban'?Math.floor(+val('adm-ch')):0;
     if(a==='cban'&&!confirm('CẤM CHAT '+em+' ('+(n>=876000?'vĩnh viễn':n+' giờ')+')?'))return;
     run('Đang xử lý…',function(){return call('admin_chat_ban',{p_uid:u.id,p_hours:n,p_note:null}).then(function(){S.note=a==='cban'?'✅ Đã cấm chat '+em:'✅ Đã gỡ cấm chat '+em;return query()})});return}
+}
+
+/* ---------- 🧪 Test: chỉnh tu vi / cảnh giới nhân vật ĐANG CHƠI (chỉ admin thấy; không đụng máy chủ) ---------- */
+var CGN=['Sơ Khai','Luyện Khí','Trúc Cơ','Kim Đan','Nguyên Anh','Hoá Thần','Luyện Hư','Hợp Thể','Đại Thừa'];
+function cvNow(){try{return(typeof ZC!=='undefined'&&started_()&&PS[cur].cv)||null}catch(e){return null}}
+function vTest(){
+  var c=cvNow();
+  if(!c)return'<div class="ae">Hãy vào game (đã chọn nhân vật) rồi mở lại tab này.</div>';
+  var i=ZC.tvInfo(),h='<div class="tq">Chỉ tác động nhân vật đang chơi, bỏ qua mọi điều kiện đột phá (vàng, đan, lôi kiếp…).<br>Hiện tại: <b>'+esc(ZC.nm())+'</b> · tu vi '+nf(Math.floor(c.q))+'/'+nf(i.need)+'</div>';
+  h+='<h4 style="margin:10px 0 4px;font-size:13px;color:#ffd76a">🧘 Tu vi</h4><div class="ar"><input id="adm-tv" type="number" inputmode="numeric" min="1" placeholder="Số tu vi"><button class="bt gr" data-a="t_tvadd">➕ Cộng</button></div>';
+  h+='<div class="ar"><button class="bt" data-a="t_tvp" data-v="0.1">+10%</button><button class="bt" data-a="t_tvp" data-v="0.5">+50%</button><button class="bt gr" data-a="t_tvp" data-v="1">⚡ Đầy tu vi</button></div>';
+  h+='<h4 style="margin:10px 0 4px;font-size:13px;color:#ffd76a">🌟 Cảnh giới</h4><div class="ar"><select id="adm-cr">'+CGN.map(function(n,k){return'<option value="'+(k-1)+'"'+(k-1===c.r?' selected':'')+'>'+n+'</option>'}).join('')+'</select>'
+    +'<select id="adm-cs">'+[1,2,3,4,5,6,7,8,9].map(function(t){return'<option value="'+t+'"'+(t===(c.s||1)?' selected':'')+'>Tầng '+t+'</option>'}).join('')+'</select></div>';
+  h+='<div class="ar"><button class="bt gr" data-a="t_cgset">✅ Đặt cảnh giới</button><button class="bt" data-a="t_cgup">⬆ +1 tầng</button><button class="bt dg" data-a="t_cgdn">⬇ −1 tầng</button><button class="bt" data-a="t_cgmax">👑 Đại Thừa 9</button></div>';
+  return h;
+}
+function testDone(msg){
+  try{ZC.refresh()}catch(e){}
+  try{if(typeof ui==='function')ui()}catch(e){}
+  try{if(typeof sv==='function')sv()}catch(e){}
+  S.note=msg;draw();
+}
+function setCv(r,s){
+  var c=cvNow();if(!c)return false;
+  r=Math.max(-1,Math.min(7,r|0));s=r<0?0:Math.max(1,Math.min(9,s|0));
+  c.r=r;c.s=s;c.q=0;c.f=0;c.td=0;return true;
+}
+function testAct(a){
+  var c=cvNow();
+  if(!c){S.note='⚠ Chưa vào game / chưa có nhân vật.';draw();return}
+  var n;
+  if(a==='t_tvadd'){
+    n=Math.floor(+val('adm-tv'));
+    if(!(n>0)){S.note='⚠ Nhập số tu vi lớn hơn 0.';draw();return}
+    ZC.gain(n);testDone('✅ Đã cộng '+nf(n)+' tu vi → '+ZC.nm());return}
+  if(a==='t_tvp'){
+    n=Math.max(1,Math.ceil(ZC.tvInfo().need*(+S.tvf||0)));
+    ZC.gain(n);testDone('✅ Đã cộng '+nf(n)+' tu vi → '+ZC.nm());return}
+  var q=c.r<0?0:c.r*9+c.s;
+  if(a==='t_cgset'){setCv(+val('adm-cr'),+val('adm-cs'));testDone('✅ Đã đặt: '+ZC.nm());return}
+  if(a==='t_cgup'||a==='t_cgdn'){
+    q=Math.max(0,Math.min(72,q+(a==='t_cgup'?1:-1)));
+    if(q===0)setCv(-1,0);else{var r=Math.floor((q-1)/9);setCv(r,q-r*9)}
+    testDone('✅ Đã chuyển: '+ZC.nm());return}
+  if(a==='t_cgmax'){setCv(7,9);testDone('✅ Đã đặt: '+ZC.nm());return}
 }
 
 function sendNotice(){
