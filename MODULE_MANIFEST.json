@@ -66,7 +66,8 @@
       "world/56-thon-tan-thu.js",
       "world/57-hon-phach.js",
       "world/58-linh-gioi-city-art.js",
-      "world/59-hon-phach-than-thong.js"
+      "world/59-hon-phach-than-thong.js",
+      "world/61-tien-gioi-thanh.js"
     ],
     "systems": [
       "systems/08-farming-alchemy.js",
@@ -80,7 +81,8 @@
       "systems/29-quest-plus.js",
       "systems/32-cho-giao-dich.js",
       "systems/36-hop-the-tieu-canh.js",
-      "systems/60-dang-nhap-bat-buoc.js"
+      "systems/60-dang-nhap-bat-buoc.js",
+      "systems/61-chong-dube-bao-mat.js"
     ],
     "ui": [
       "ui/04-character-stats.js",
@@ -118,6 +120,7 @@
     "world/57-hon-phach.js",
     "world/58-linh-gioi-city-art.js",
     "phien_dang_nhap.sql",
+    "chong_dube.sql",
     "THAN_THU_CO_CHE_2026-10-14.md"
   ],
   "principle": "All original files are retained unchanged; only workspace metadata is added."

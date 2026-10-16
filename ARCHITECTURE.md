@@ -321,3 +321,12 @@ Chỉ 1 chỗ phải sửa vì hết "nâng hàm" giữa các file: hai móc b�
 Công cụ mới: `tools/build.py` (sinh HTML đơn từ index.html) · `tools/symbols.py` (SYMBOL_INDEX.tsv + MODULE_MAP.md) ·
 `tools/where.py` (tra ký hiệu) · `tools/check.py` (kiểm tra). Lưu ý: file `Mong_Tu_Tien_CLAUDE.html` trong Fix79 là bản cũ
 (thiếu `pets/31-than-thu-co-che.js` và `systems/60-dang-nhap-bat-buoc.js`, sai thứ tự); bản mới sinh từ index.html nên đầy đủ.
+
+## Chống nhân bản đồ + 1 tab + toàn vẹn dữ liệu — systems/61-chong-dube-bao-mat.js, chong_dube.sql (API `ANTIDUPE`)
+- 1 tab/trình duyệt: khoá `kthm_tab_lock` (localStorage, nhịp 1,5s, hết hạn 6s). Tab thứ hai bị chặn ("đang mở ở tab khác", `window.__TABLOCK=1`): game đứng yên, `sv()` và `Storage.setItem` cho kthm2/kthm_qs/kthm_dg bị chặn. Nút "Dùng tab này" chiếm khoá rồi tải lại (tab cũ tự bị khoá); tab chủ đóng → tab bị khoá tự tải lại và nhận quyền.
+- Mã đồ `it.uid` (20 hex): `gen()` gán khi tạo, đồ cũ gán khi quét. Quét 3s/lần túi + đang mặc của 3 nhân vật: trùng uid ⇒ thu hồi bản sao (giữ bản đang mặc/bản đầu), cộng `PS[cur].sec.dup`, báo trên màn hình.
+- Chữ ký dữ liệu: mọi lần ghi `kthm2` ký `kthm_sig_kthm2` (hàm băm 2×53-bit + muối). Kiểm tra lúc mở game và mỗi 10s; lệch ⇒ `window.__TAMPER=1`, chặn ghi, bắt xoá dữ liệu cục bộ và tải lại từ đám mây (có nút tải bản sao lưu JSON). systems/12 `lsSet` gọi `ANTIDUPE.resign(k)` vì ghi bằng hàm gốc.
+- Chốt chặn nhẹ: vàng/mảnh âm, NaN, vô hạn hoặc > 1e13 → đưa về mốc hợp lệ gần nhất.
+- Chợ (systems/32): đăng bán gán uid; nhận từ hòm bỏ bản trùng uid (vẫn ack); lỗi máy chủ DUPE_ITEM/BAD_ITEM ⇒ KHÔNG trả đồ về túi; thông báo tiếng Việt cho DUPE_ITEM, BAD_ITEM, RATE_LIMIT.
+- Máy chủ (chong_dube.sql, chạy sau cho_giao_dich.sql; chỉ gắn TRIGGER, không viết lại hàm cho_*): sổ cái `kthm_item_ledger(uid→owner,state listed/inbox/owned)`; đăng bán từ chối DUPE_ITEM nếu uid đã có mà chủ khác hoặc chưa ở trạng thái owned; `kthm_item_ok` kiểm tra cấp/chỉ số/opt trong khoảng cho phép (BAD_ITEM); tối đa 20 lượt đăng/60s/tài khoản (RATE_LIMIT). Bán xong → chủ = người mua (inbox); hủy/hết hạn → chủ = người bán (inbox); ack (xoá khỏi hòm) → owned.
+- Giới hạn: lớp trình duyệt chỉ cản sửa dữ liệu thông thường; lớp quyết định là máy chủ (sổ cái + kiểm tra đồ + phiên duy nhất).

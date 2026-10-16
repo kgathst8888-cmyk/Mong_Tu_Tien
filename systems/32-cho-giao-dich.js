@@ -19,7 +19,8 @@ function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){retur
 function nf(n){return (Number(n)||0).toLocaleString('vi-VN')}
 function logged(){return !!(window.KCL&&KCL.OK&&KCL.sess&&KCL.sess())}
 function myName(){try{return (PS[cur]&&PS[cur].nm)||(typeof pn!='undefined'&&pn)||'Đạo Hữu'}catch(e){return 'Đạo Hữu'}}
-function nice(e){var m=String(e&&e.message||e);return /cho_|function|schema|404/i.test(m)?'Máy chủ chưa cài chợ (chạy file cho_giao_dich.sql trong Supabase).':(e&&e.net?'Mất kết nối mạng.':m)}
+function nice(e){var m=String(e&&e.message||e);
+  if(/DUPE_ITEM/.test(m))return 'Máy chủ phát hiện món đồ này là bản nhân bản hoặc đã giao dịch trước đó.';if(/BAD_ITEM/.test(m))return 'Món đồ có chỉ số không hợp lệ.';if(/RATE_LIMIT/.test(m))return 'Thao tác quá nhanh, hãy thử lại sau ít phút.';return /cho_|function|schema|404/i.test(m)?'Máy chủ chưa cài chợ (chạy file cho_giao_dich.sql trong Supabase).':(e&&e.net?'Mất kết nối mạng.':m)}
 function col(r){try{return RC[r]||'#ccc'}catch(e){return '#ccc'}}
 function stat(it,k){try{return typeof ev==='function'?ev(it,k):it[k]}catch(e){return it[k]}}
 function sv_(){try{sv()}catch(e){}}
@@ -141,10 +142,11 @@ async function load(){
 async function claim(inbox){
   var ids=[],left=0;
   inbox.forEach(function(q){
+    if(q.item&&typeof q.item==='object'&&window.ANTIDUPE&&ANTIDUPE.has(q.item)){ids.push(q.id);try{DT.push({x:P.x,y:200,s:'⚠ Bỏ bản sao trùng mã trong hòm nhận',c:'#ff8a7a',l:140})}catch(e){}return}   /* đã có món này trong túi/đang mặc → không nhận thêm bản nữa */
     if(q.item&&typeof q.item==='object'&&q.item.gm&&window.GEMX){var gi=q.item;delete gi._mk;GEMX.back(gi);ids.push(q.id)}   /* đá khảm: về kho đá, không cần chỗ trong túi */
     else if(q.item&&typeof q.item==='object'&&q.item.ts&&window.TTHONG){var ti=q.item;delete ti._mk;if(TTHONG.back(ti))ids.push(q.id);else left++}   /* mảnh sách: về kho mảnh riêng */
     else if(q.item&&typeof q.item==='object'&&q.item.tt&&typeof q.item.tt.q==='number'&&window.TTHONG){var oi=q.item;delete oi._mk;if(TTHONG.back({ts:1,h:oi.tt.h,e:oi.tt.e,q:oi.tt.q}))ids.push(q.id);else left++}   /* mảnh kiểu cũ đăng trước bản vá */
-    else if(BAG.length<capN()&&q.item&&typeof q.item==='object'){var it=q.item;delete it._mk;BAG.push(it);ids.push(q.id)}else left++;
+    else if(BAG.length<capN()&&q.item&&typeof q.item==='object'){var it=q.item;delete it._mk;if(window.ANTIDUPE)ANTIDUPE.uid(it);BAG.push(it);ids.push(q.id)}else left++;
   });
   lastInbox=left;
   if(ids.length){
@@ -191,15 +193,17 @@ async function post(i){
   var price=Math.floor(Number(String(v).replace(/[.,\s]/g,'')));
   if(!(price>=CF.minP&&price<=CF.maxP)){say('Giá không hợp lệ.');return}
   var mk=Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+  if(window.ANTIDUPE)ANTIDUPE.uid(it);
   it._mk=mk;if(T){var tk=TTHONG.take(it);if(tk!==it.q){if(tk>0)TTHONG.back({ts:1,h:it.h,e:it.e,q:tk});delete it._mk;say('Kho mảnh không đủ.');sv_();uiRefresh();return}}else if(G)GEMX.take(i);else BAG.splice(i,1);sv_();uiRefresh();            /* rời túi/kho trước, tránh nhân bản */
-  var ok=false;
+  var ok=false,dupeBad=false;
   try{var r=await call('cho_post',{p_item:it,p_price:price,p_name:myName().slice(0,16)});ok=r&&r.status==='ok';
     if(!ok)say(r&&r.status==='full'?'Đã đạt tối đa món đang bán.':'Không đăng được món này.')}
   catch(e){
-    setNote(nice(e));
+    setNote(nice(e));if(/DUPE_ITEM|BAD_ITEM/.test(String(e&&e.message||'')))dupeBad=true;
     try{var me=await call('cho_me');ok=!!(me&&me.mine||[]).filter(function(m){return m.item&&m.item._mk===mk}).length}catch(e2){ok=null}
   }
   if(ok===true){say('✅ Đã đăng bán '+(it.n||'món')+' giá '+nf(price)+' 💎')}
+  else if(ok===false&&dupeBad){}   /* bản nhân bản / đồ không hợp lệ bị máy chủ từ chối: KHÔNG trả lại túi */
   else if(ok===false){delete it._mk;if(T)TTHONG.back(it);else if(G)GEMX.back(it);else BAG.push(it);sv_();uiRefresh()}   /* chắc chắn chưa đăng → trả lại túi */
   else say('Mất mạng khi đăng — kiểm tra tab "Của tôi"; nếu không thấy, đồ sẽ ở hòm nhận.');
   load();

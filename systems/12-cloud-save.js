@@ -11,7 +11,7 @@ const RN=['Luyện Khí','Trúc Cơ','Kim Đan','Nguyên Anh','Hoá Thần','Luy
 const _get=Storage.prototype.getItem,_set=Storage.prototype.setItem,_rem=Storage.prototype.removeItem;
 const S={sess:null,meta:null,busy:false,block:false,conflict:null,cf:null,cloud:null,st:OK?'out':'off',err:'',fail:0,next:0,chk:false,vis:0,okAt:0,tab:'acc',view:'',msg:'',em:'',pw:'',lb:null,lbBusy:false,lbErr:'',lbAt:0,bk:false,openCf:false};
 const ls=k=>{try{return _get.call(localStorage,k)}catch(e){return null}};
-const lsSet=(k,v)=>{try{v==null?_rem.call(localStorage,k):_set.call(localStorage,k,v)}catch(e){}};
+const lsSet=(k,v)=>{try{v==null?_rem.call(localStorage,k):_set.call(localStorage,k,v);if(window.ANTIDUPE&&ANTIDUPE.resign)ANTIDUPE.resign(k)}catch(e){}};
 Storage.prototype.setItem=function(k,v){if(S.block&&this===localStorage&&KEYS.indexOf(k)>=0)return;return _set.call(this,k,v)};
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function loadStore(){try{const d=JSON.parse(ls(KS));if(d){S.sess=d.sess||null;S.meta=d.meta||null;S.sid=d.sid||null}}catch(e){}}

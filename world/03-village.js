@@ -335,6 +335,7 @@ bld=function(i){
 
 /* ---------- tiền cảnh: trụ đèn, chuông gió, cánh hoa ---------- */
 function fgDraw(){
+ if(window.TTT&&TTT.on&&TTT.drawn===fr)return; /* bản vẽ lại mới (world/56) đã tự lo tiền cảnh: bỏ cột đèn lồng + cánh hoa cũ */
  const gy=GY,u=s,t=fr;g.save();
  const ry=gy+(H-gy)*.24;g.fillStyle='#2a3350';g.beginPath();g.moveTo(-4,ry-18*u);g.quadraticCurveTo(34*u,ry-8*u,60*u,ry+18*u);g.quadraticCurveTo(66*u,ry+22*u,70*u,ry+13*u);g.quadraticCurveTo(58*u,ry+36*u,44*u,ry+40*u);g.lineTo(-4,ry+42*u);g.closePath();g.fill();
  g.strokeStyle='#b9923c';g.lineWidth=Math.max(1.5,2*u);g.beginPath();g.moveTo(-4,ry-18*u);g.quadraticCurveTo(34*u,ry-8*u,60*u,ry+18*u);g.quadraticCurveTo(66*u,ry+22*u,70*u,ry+13*u);g.stroke();

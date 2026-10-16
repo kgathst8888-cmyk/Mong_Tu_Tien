@@ -30,7 +30,7 @@ Tạo tự động bởi `python3 tools/symbols.py`. Cột KB = dung lượng, "
 | 24 | `core/01u-wings.js` | 5 | 17 | core/01u-wings.js — Cánh (wg*, drawWings) (tách từ core/01-engine.js; thứ tự nạp giữ nguyên, xem index.html) |
 | 25 | `core/01v-perf-boot.js` | 4 | 0 | core/01v-perf-boot.js — Tối ưu hiệu năng + khởi động (rf(); init(); loop) (tách từ core/01-engine.js; thứ tự nạp giữ nguyên, xem index.html) |
 | 26 | `world/02-demon-realm.js` | 9 | 28 | MA THẦN + LINH GIỚI |
-| 27 | `world/03-village.js` | 35 | 0 | THÔN TÂN THỦ v2: THANH VÂN TIÊN THÔN (dựng lại theo ảnh mẫu) |
+| 27 | `world/03-village.js` | 36 | 0 | THÔN TÂN THỦ v2: THANH VÂN TIÊN THÔN (dựng lại theo ảnh mẫu) |
 | 28 | `world/41-lang-online.js` | 10 | 0 | 🏮 LÀNG ONLINE ===== * Gặp người chơi khác ở thôn tân thủ. Cần chạy village_presence.sql 1 lần trong Supabase. * - Chỉ hoạt động khi đang ở làng (vil)  |
 | 29 | `ui/04-character-stats.js` | 5 | 0 | BẢNG CHỈ SỐ NHÂN VẬT |
 | 30 | `world/05-demon-boss.js` | 65 | 0 | MA THẦN v2: thiết kế lại Boss + bản đồ "Huyết Nguyệt Ma Điện" (theo ảnh mẫu Gemini) ==== - Boss vẽ bằng canvas: cánh dơi + giáp đen chạm rune cam + ki |
@@ -67,7 +67,7 @@ Tạo tự động bởi `python3 tools/symbols.py`. Cột KB = dung lượng, "
 | 61 | `systems/29-quest-plus.js` | 8 | 0 | NHIỆM VỤ+ : thêm chương chính tuyến, thêm nhiệm vụ hằng ngày/tuần/thành tựu, tăng quà - Chỉ sửa DỮ LIỆU (mảng QCH/QDP/QWP/QMS/QAC/QAR sửa tại chỗ), kh |
 | 62 | `ui/30-bag-plus.js` | 3 | 0 | TÚI ĐỒ+ : icon trang bị trong túi nhỏ gọn hơn + ghép trang bị ngay trong túi - Chỉnh cỡ ô/icon: --bg-cell (px), --bg-ico (% icon trong ô). - Ghép: chạ |
 | 63 | `ui/31-bag-scroll.js` | 1 | 0 | Giữ nguyên vị trí cuộn của túi đồ khi giao diện vẽ lại (bấm nút trong tab không bị cuộn lên đầu). Đổi tab / đổi mục nhiệm vụ thì vẫn về đầu trang như  |
-| 64 | `systems/32-cho-giao-dich.js` | 21 | 0 | 🏮 CHỢ GIAO DỊCH ONLINE · LINH THẠCH ===== * Dùng chung tài khoản ☁ (KCL.rpc). Cần chạy cho_giao_dich.sql 1 lần trong Supabase. * - Linh Thạch (💎) nằm  |
+| 64 | `systems/32-cho-giao-dich.js` | 22 | 0 | 🏮 CHỢ GIAO DỊCH ONLINE · LINH THẠCH ===== * Dùng chung tài khoản ☁ (KCL.rpc). Cần chạy cho_giao_dich.sql 1 lần trong Supabase. * - Linh Thạch (💎) nằm  |
 | 65 | `world/33-hop-dao.js` | 11 | 0 | ☯ HỢP ĐẠO · ĐẠO CẢNH ===== * Cửa vào: Thành Thị Linh Giới → cổng 2 "Hợp Đạo Đài" (mảng LCG trong world/10-farming-map.js). * Điều kiện: nhân vật Lv100 |
 | 66 | `world/34-than-thong.js` | 25 | 0 | 📜 THẦN THÔNG · ĐẠO CẢNH (6 hệ × 5 thần thông) ===== * Chỉ nhân vật ĐÃ HỢP ĐẠO (HDAO.on()). Mỗi hệ có 5 thần thông xếp theo ngũ hành tương sinh, bắt đầ |
 | 67 | `world/35-kiem-thanh.js` | 12 | 0 | 🗡️ KIẾM THÁNH · BOSS THÀNH THỊ LINH GIỚI ===== * Dựa trên Ma Thần (world/02-demon-realm.js): cùng kiểu trận đấu (dg), cùng công thức chỉ số nhưng mạnh |
@@ -96,9 +96,9 @@ Tạo tự động bởi `python3 tools/symbols.py`. Cột KB = dung lượng, "
 | 90 | `equipment/51-dao-the-outfit.js` | 189 | 0 | 👘 TRANG PHỤC ĐẠO THỂ (equipment/51-dao-the-outfit.js) ===== * Khi nhân vật đã Hợp Đạo (Đạo Thể: HDAO.on()), ngoại hình 3 hệ (Chiến binh / Pháp sư / Cu |
 | 91 | `world/54-than-thong-sat-thuong.js` | 4 | 0 | ⚖️ CÂN BẰNG: SÁT THƯƠNG THẦN THÔNG LUÔN CAO HƠN KỸ NĂNG THƯỜNG ===== * Trước đây nhiều thần thông yếu hơn kỹ năng phàm thể (đo trong game, hệ số nhân  |
 | 92 | `equipment/55-opt-moi.js` | 8 | 0 |  |
-| 93 | `world/56-thon-tan-thu.js` | 51 | 0 | 🏮 THÔN TÂN THỦ — vẽ lại phong cách cổ trang Trung Hoa (world/56-thon-tan-thu.js) ===== * Thay hình vẽ của làng (xbg(gy,-1) = nền; bld(i) = 5 toà nhà)  |
+| 93 | `world/56-thon-tan-thu.js` | 54 | 0 | 🏡 THÔN TÂN THỦ — vẽ lại theo hướng mộc mạc, chân thực (world/56-thon-tan-thu.js) ===== * Chỉ thay HÌNH VẼ của làng; không đổi logic, toạ độ, tương tác |
 | 94 | `world/57-hon-phach.js` | 25 | 0 |  |
-| 95 | `world/58-linh-gioi-city-art.js` | 64 | 0 | 🏯 THÀNH THỊ LINH GIỚI · BẢN ĐỒ VẼ BẰNG CODE (world/58-linh-gioi-city-art.js) ===== * v2 — VẼ LẠI HOÀN TOÀN. Không còn ảnh nền nhúng (-263KB): cả cảnh  |
+| 95 | `world/58-linh-gioi-city-art.js` | 80 | 0 | 🏯 THÀNH THỊ LINH GIỚI · BẢN ĐỒ VẼ BẰNG CODE (world/58-linh-gioi-city-art.js) ===== * v2 — VẼ LẠI HOÀN TOÀN. Không còn ảnh nền nhúng (-263KB): cả cảnh  |
 | 96 | `world/59-hon-phach-than-thong.js` | 13 | 0 |  |
 | 97 | `ui/58-hud-tiem-linh-dien.js` | 4 | 0 | 👘🌱 ICON TIỆM Y PHỤC + LINH ĐIỀN lên HÀNG HUD cùng 🏆 Xếp hạng (ui/58-hud-tiem-linh-dien.js) ===== * Trước: 2 icon nổi lơ lửng trong cảnh Làng (vẽ canva |
 | 98 | `ui/63-cash-shop.js` | 17 | 0 | 🛒 CASH SHOP · CỬA HÀNG LINH VÂN (ui/63-cash-shop.js) ===== * Nút 🛒 nằm cùng hàng HUD với ⚔️ Đấu trường / 🌱 Linh Điền / 👘 Y Phục (ui/58-hud-tiem-linh-d |
@@ -106,8 +106,10 @@ Tạo tự động bởi `python3 tools/symbols.py`. Cột KB = dung lượng, "
 | 100 | `systems/60-dang-nhap-bat-buoc.js` | 10 | 0 | 🔐 BẮT BUỘC ĐĂNG NHẬP + PHIÊN CHƠI DUY NHẤT (systems/60-dang-nhap-bat-buoc.js) ===== * Luồng: * 1) Mở game → cổng đăng nhập phủ kín màn hình. Nhập emai |
 | 101 | `world/61-lang-gian-rong.js` | 4 | 0 | LÀNG TÂN THỦ GIÃN RỘNG + CAMERA THEO NHÂN VẬT (như Linh Giới) - Thế giới làng rộng tối thiểu WIDE (mặc định 1320 đơn vị), màn hình hẹp chỉ thấy một ph |
 | 102 | `world/65-cong-ve-lang.js` | 8 | 0 | 🏘 CỔNG VỀ THÔN TÂN THỦ · Thành Thị Linh Giới (world/65-cong-ve-lang.js) ===== * Thêm cổng thứ 6 (chỉ số cuối của LCT.gates) đặt đúng ở cột sáng phía t |
-| 103 | `systems/66-dot-pha-canh-gioi.js` | 9 | 0 |  |
-| 104 | `systems/67-tang-quai-boss.js` | 3 | 0 | ⚔ TĂNG CHỈ SỐ BOSS (module riêng, nạp CUỐI) ===== * BOSSUP.hp = nhân MÁU boss (mọi loại boss: ngoài map b>=2, Hầm Ngục, Ma Thần, Kiếm Thánh, Tháp, Phụ |
-| 105 | `systems/68-ng-reset-du-lieu-module.js` | 1 | 0 | FIX: NHÂN VẬT MỚI TẠO (ng) BỊ GIỮ KỸ NĂNG CẤP CAO (systems/68-ng-reset-du-lieu-module.js) ===== * Lỗi: ng() (core/01s) chỉ reset các trường gốc của PS |
-| 106 | `ui/69-thong-bao-thu.js` | 18 | 0 |  |
-| 107 | `ui/70-admin-panel.js` | 27 | 0 | 🛡 TRANG ADMIN (ui/70-admin-panel.js, nạp sau ui/69) ===== * Nút tròn 🛡 Admin nằm cạnh ✉️ Thư (left:192px, top:132px). CHỈ HIỆN với tài khoản có trong  |
+| 103 | `world/61-tien-gioi-thanh.js` | 57 | 0 |  |
+| 104 | `systems/66-dot-pha-canh-gioi.js` | 9 | 0 |  |
+| 105 | `systems/67-tang-quai-boss.js` | 3 | 0 | ⚔ TĂNG CHỈ SỐ BOSS (module riêng, nạp CUỐI) ===== * BOSSUP.hp = nhân MÁU boss (mọi loại boss: ngoài map b>=2, Hầm Ngục, Ma Thần, Kiếm Thánh, Tháp, Phụ |
+| 106 | `systems/68-ng-reset-du-lieu-module.js` | 1 | 0 | FIX: NHÂN VẬT MỚI TẠO (ng) BỊ GIỮ KỸ NĂNG CẤP CAO (systems/68-ng-reset-du-lieu-module.js) ===== * Lỗi: ng() (core/01s) chỉ reset các trường gốc của PS |
+| 107 | `ui/69-thong-bao-thu.js` | 18 | 0 |  |
+| 108 | `ui/70-admin-panel.js` | 27 | 0 | 🛡 TRANG ADMIN (ui/70-admin-panel.js, nạp sau ui/69) ===== * Nút tròn 🛡 Admin nằm cạnh ✉️ Thư (left:192px, top:132px). CHỈ HIỆN với tài khoản có trong  |
+| 109 | `systems/61-chong-dube-bao-mat.js` | 11 | 0 |  |
