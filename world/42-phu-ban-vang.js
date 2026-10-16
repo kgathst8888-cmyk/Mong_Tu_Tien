@@ -35,13 +35,13 @@ function fmt(ms){var t=Math.ceil(ms/1000);return Math.floor(t/60)+':'+String(t%6
 function triesLeft(){return CF.tries>0?Math.max(0,CF.tries-(D().n|0)):9999}
 function reward(dmg){dmg=Math.max(0,Math.round(dmg||0));if(dmg<=0)return 0;var cap=Math.max(CF.min,CF.perLv*Math.max(1,P.lv|0));return Math.max(CF.min,Math.min(cap,Math.round(dmg*CF.rate)))}
 function status(){
- if(P.lv<CF.lv)return{txt:'🔒 Cần cấp '+CF.lv+' (hiện Lv'+P.lv+')',col:'#ff9a9a'};
+ if(P.lv<CF.lv&&!(window.CTHE&&CTHE.on()))return{txt:'🔒 Cần cấp '+CF.lv+' (hiện Lv'+P.lv+')',col:'#ff9a9a'};
  if(CF.tries>0&&triesLeft()<=0)return{txt:'⏳ Hết lượt hôm nay (0/'+CF.tries+') · đổi ngày lúc 00:00',col:'#ffd98a'};
  if(left()>0)return{txt:'⏳ Vào lại sau '+fmt(left()),col:'#ffd98a'};
  return{txt:'✅ Sẵn sàng · '+(CF.tries>0?'còn '+triesLeft()+'/'+CF.tries+' lượt hôm nay · ':'')+'chạm để vào',col:'#9dffa0'}}
 function canEnter(){
  if(typeof started==='undefined'||!started||dg||(typeof over!=='undefined'&&over))return'Không thể vào lúc này';
- if(P.lv<CF.lv)return'🔒 Cần cấp '+CF.lv+' để vào Phụ Bản Vàng (hiện Lv'+P.lv+')';
+ if(P.lv<CF.lv&&!(window.CTHE&&CTHE.on()))return'🔒 Cần cấp '+CF.lv+' để vào Phụ Bản Vàng (hiện Lv'+P.lv+')';
  if(CF.tries>0&&triesLeft()<=0)return'⏳ Hôm nay bạn đã hết lượt Phụ Bản Vàng';
  if(left()>0)return'⏳ Phụ Bản Vàng hồi chiêu '+fmt(left());
  return true}

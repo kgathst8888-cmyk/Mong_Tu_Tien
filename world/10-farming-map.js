@@ -305,6 +305,8 @@ return{on:()=>on,enter,leave,draw,tap,gates:LCG,
 const _ga=gateAct;gateAct=function(){if(lgDone()&&!LCT.on()){LCT.enter();return}_ga()};
 const _vd=vdraw;vdraw=function(){if(LCT.on()){LCT.draw();return}_vd()};
 const _vs=vstep;vstep=function(){LCT.step();_vs();LCT.post()};
+/* Hệ số tốc độ chạy khi đi bộ (Thôn Tân Thủ + Thành Thị): 1 = gốc, nhỏ hơn = chậm hơn. core/01q-village.js vstep đọc qua window.VSPD */
+window.VSPD=()=>.6;
 const _st=step;step=function(){if(LCT.on()&&!vil)LCT.off();_st()};
 const _ng=ng;ng=function(){LCT.off();_ng()};
 const vlb=document.getElementById('vl'),_vl=vlb.onpointerdown;

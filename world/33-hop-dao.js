@@ -13,7 +13,7 @@
 (function(){
 'use strict';
 if(typeof cast!=='function'||typeof ZC==='undefined'||typeof PS==='undefined')return;
-var CF={lv:100,xpMul:5,mapMin:8,itemLv:80,wipeId:'w80',gold:10000000,lt:300,tt:100};
+var CF={lv:100,xpMul:5,killMul:3,mapMin:8,itemLv:80,wipeId:'w80',gold:10000000,lt:300,tt:100};
 function ttHave(){try{return FM.get().pills.tt|0}catch(e){return 0}}
 var ov=null,busy=false;
 function st(){try{return PS[cur]&&PS[cur].hd}catch(e){return null}}
@@ -131,7 +131,7 @@ var lastHint=0;
 function xg(){
   if(!on())return 1;
   var ok=false;try{ok=(window.LGMAP&&LGMAP.expOk)?LGMAP.expOk():(typeof mi==='function'&&mi()>=CF.mapMin)}catch(e){}
-  if(ok)return (window.LGMAP&&LGMAP.expMul)?LGMAP.expMul():1;
+  if(ok)return CF.killMul*((window.LGMAP&&LGMAP.expMul)?LGMAP.expMul():1);   /* killMul: EXP quái nhận cho Đạo Thể ×3 */
   if(Date.now()-lastHint>8000){lastHint=Date.now();try{DT.push({x:P.x,y:150,s:'☯ Đạo Linh chỉ tăng ở bản đồ Đạo Thể (Linh Giới 2–6)',g:1,l:90})}catch(e){}}
   return 0;
 }

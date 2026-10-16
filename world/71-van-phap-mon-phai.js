@@ -89,7 +89,7 @@ window.VP={CF:null,SECTS:SECTS,get:get,set:set,open:open,close:close};
 /* Vạn Pháp Tháp chỉ mở khi đạt cảnh giới Tiên Nhân (CF.realm). Hiện game chưa có cảnh giới này nên tháp TẠM KHOÁ; khi thêm cảnh giới mới tự mở (kiểm tra 2 giây/lần).
  * Muốn mở thủ công để thử: VP.CF.force=true trong console. */
 var CF={realm:'Tiên Nhân',force:false};
-function realmOk(){if(CF.force)return true;try{var n=String(ZC.nm?ZC.nm():'');return n.indexOf(CF.realm)===0}catch(e){return false}}
+function realmOk(){if(CF.force)return true;try{if(window.CTHE&&CTHE.on())return true}catch(e){}try{var n=String(ZC.nm?ZC.nm():'');return n.indexOf(CF.realm)===0}catch(e){return false}}
 var LOCK_SUB='Cần cảnh giới '+CF.realm,LOCK_DESC='Vạn Pháp Tháp chỉ mở khi đạt cảnh giới '+CF.realm+'. Hiện tạm khoá.';
 function sync(){TG.spots.forEach(function(p){if(p.id!=='pagoda')return;var ok=realmOk();if(ok&&!p.open){p.open=1;p.go=open;p.sub='Chọn môn phái · Thí luyện vạn pháp';p.desc='Chọn môn phái của bạn.'}else if(!ok&&(p.open||p.sub!==LOCK_SUB)){p.open=0;p.go=null;p.sub=LOCK_SUB;p.desc=LOCK_DESC}})}
 window.VP.CF=CF;sync();setInterval(sync,2000);

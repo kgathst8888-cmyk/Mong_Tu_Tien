@@ -30,7 +30,7 @@ function tabBar(p){
  const cur=NAV[tab]||NAV[0];
  return `<div class="bx"><div class="bhw"><div class="bhd"><div class="bti">${cur[2]}<b>${cur[0]}</b></div><div class="bac">`
  +`<button class="ib" title="Cẩm nang" onclick="GD.open()">${NAVI('<path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5z"/><path d="M5 19.5A1.5 1.5 0 0 0 6.5 21H19v-3"/><path d="M9 7.5h6"/>')}</button>`
-+`<button class="ib" title="Lưu game" onclick="sv();msg='💾 Đã lưu';ui()">${NAVI('<path d="M5 3.5h11l3.5 3.5v13.5H5z"/><path d="M8 3.5v5h7v-5"/><path d="M8 20.5v-6.5h8v6.5"/>')}</button>`
++`<button class="ib" title="Lưu game" onclick="sv();try{KTHM_CLOUD.saveNow()}catch(e){};msg='💾 Đã lưu lên mây';ui()">${NAVI('<path d="M5 3.5h11l3.5 3.5v13.5H5z"/><path d="M8 3.5v5h7v-5"/><path d="M8 20.5v-6.5h8v6.5"/>')}</button>`
  +`<button class="ib" title="Menu" onclick="mn(0)">${NAVI('<path d="M5 7h14M5 12h14M5 17h14"/>')}</button>`
  +`<button class="ib x" title="Đóng" onclick="tg()">${NAVI('<path d="M6 6l12 12M18 6L6 18"/>')}</button></div></div>`
  +`<div class="tbar">${tabs}</div></div>`

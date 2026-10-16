@@ -66,9 +66,10 @@ async function claim(){
   if(!r||r.status!=='ok'){K.setSid(null);throw new Error('Không nhận được phiên chơi từ máy chủ')}
   return r}
 async function enter(r){
-  hide();startHb();
-  try{if(r&&r.replaced)toast('🔐 Đã đăng nhập — phiên chơi ở máy khác đã bị đăng xuất')}catch(e){}
-  try{K.afterLogin()}catch(e){}}
+  /* Cloud-only: dữ liệu game chỉ nằm trên mây và được nạp vào bộ nhớ LÚC MỞ TRANG (systems/11). Đăng nhập xong → tải lại trang để nạp đúng tiến trình. */
+  try{sessionStorage.removeItem('kthm_rl')}catch(e){}
+  busy(true,'Đang tải tiến trình từ mây…');
+  location.reload()}
 async function submit(){
   keep();var em=(state.em||'').trim(),pw=state.pw||'';
   if(!em){show2('Nhập tài khoản (email).');return}
@@ -96,7 +97,15 @@ async function verify(){
   try{
     if(!K.sid()){var r=await claim();await enter(r);return}          /* đã có đăng nhập từ trước nhưng chưa có phiên → nhận phiên mới */
     var s=await K.rpc('kthm_session_status',{p_sid:K.sid()});
-    if(s&&s.valid){hide();startHb();return}
+    if(s&&s.valid){
+      /* phiên hợp lệ nhưng tiến trình chưa được nạp từ mây (mất mạng lúc mở trang…) → tải lại để nạp; tối đa 2 lần để không lặp vô tận */
+      if(!window.__BOOT_CLOUD&&!(window.CLOUDONLY&&CLOUDONLY.legacy)){
+        var n=0;try{n=+sessionStorage.getItem('kthm_rl')||0}catch(x){}
+        if(n<2){try{sessionStorage.setItem('kthm_rl',String(n+1))}catch(x){}busy(true,'Đang tải tiến trình từ mây…');location.reload();return}
+        try{sessionStorage.removeItem('kthm_rl')}catch(x){}
+        show('Không tải được tiến trình từ máy chủ. Kiểm tra mạng rồi bấm Thử lại.','err',true);return}
+      try{sessionStorage.removeItem('kthm_rl')}catch(x){}
+      hide();startHb();return}
     kick()
   }catch(e){
     if(e&&e.net){show('Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại.','err',true);return}

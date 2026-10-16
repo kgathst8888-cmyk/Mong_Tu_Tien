@@ -26,7 +26,7 @@ var K=[
 var fps={ms:16.7,q:0,t:0,h:0};
 (function loop(t){var d=t-fps.t;fps.t=t;if(d>0&&d<250){fps.ms+=(d-fps.ms)*.04;var n=fps.ms>27?2:fps.ms>21?1:0;if(n>fps.q){fps.q=n;fps.h=0}else if(n<fps.q&&++fps.h>150){fps.q--;fps.h=0}}flush();requestAnimationFrame(loop)})(typeof performance!=='undefined'?performance.now():0);
 var B={t:0,dmg:0,red:0,dodge:0,hps:0,cdr:0,pet:0},cd=[0,0,0,0],TEST=/[?&]ttest/.test(location.search||'');
-function on(){try{return !!(window.HDAO&&HDAO.on())}catch(e){return false}}
+function on(){try{return !!(window.HDAO&&HDAO.on())&&!(window.CTHE&&CTHE.on())}catch(e){return false}}
 function hid(){try{return ({w:0,m:2,a:4})[CHR[cur].t]+(PS[cur].br?1:0)}catch(e){return 0}}
 function D(){var p=PS[cur];if(!p.tt||!p.tt.on)p.tt={on:[0,0,0,0,0]};return p.tt}
 function lc(e){try{return typeof lcMul==='function'?lcMul(e):1}catch(x){return 1}}

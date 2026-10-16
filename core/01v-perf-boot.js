@@ -30,7 +30,7 @@ try{
 window.PFRESET=()=>{ema=16.7;cnt=0;wk=6;wn=0;t0=performance.now()};
 document.addEventListener('visibilitychange',()=>{last=performance.now();acc=0});
 function loop(now){requestAnimationFrame(loop);
-if(document.hidden){last=now;acc=0;return}
+if(document.hidden){last=now;acc=0;return}   /* tab ẩn/thu nhỏ: rAF bị trình duyệt dừng → bgTick (Worker) lo phần step */
 let dt=now-last;last=now;if(dt>250)dt=250;acc+=dt;let n=0;const ta=performance.now();
 while(acc>=STEP&&n<3){step();acc-=STEP;n++}if(n==3)acc=0;
 if(n>0){
@@ -41,5 +41,14 @@ if(n>0){
   if(foc&&dt<100&&now-t0>4000){ema=ema*.93+dt*.07;wk+=(w-wk)*.04;
    if(++cnt>=90){cnt=0;
     if(q<2&&(ema>27||(window.PFAUTO()&&wk>9&&++wn>=3))){window.QL=q+1;ema=16.7;wk=6;wn=0;t0=now-2500}else if(wk<=9)wn=0}}}}}
-requestAnimationFrame(loop)})();
+requestAnimationFrame(loop);
+/* CHẠY NỀN: khi thu nhỏ trình duyệt/chuyển tab, requestAnimationFrame ngừng hẳn nên game từng đứng. Nay đồng hồ Worker (systems/11, không bị hạ tốc)
+   gọi bgTick(): chạy step() bù đủ số nhịp đã trôi qua (tối đa 3 giây/lần), KHÔNG vẽ. Về lại tab → rAF tiếp quản, không đổi gì. */
+let bgLast=performance.now(),bgAcc=0;
+function bgTick(){const now=performance.now();if(!document.hidden){bgLast=now;bgAcc=0;return}
+ let dt=now-bgLast;bgLast=now;if(dt>3000)dt=3000;bgAcc+=dt;let n=0;
+ while(bgAcc>=STEP&&n<180){try{step()}catch(e){try{console.error(e)}catch(x){}}bgAcc-=STEP;n++}
+ if(n>=180)bgAcc=0}
+if(window.KTHM_TICK&&KTHM_TICK.ok)KTHM_TICK.fast(bgTick);else setInterval(bgTick,50);   /* không có Worker: setInterval thường (bị hạ ~1 lần/giây khi ẩn, bgTick tự bù) */
+})();
 

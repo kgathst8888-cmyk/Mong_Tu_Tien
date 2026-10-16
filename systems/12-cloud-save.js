@@ -6,15 +6,16 @@
 const CFG={url:'https://fdaoswcyhbkzzuwlbrdp.supabase.co',key:'sb_publishable_QJOcJQ3Wy2qU_HlsBQVCIQ_RVLiCedw'}; // khoá publishable (công khai, an toàn khi để trong game)
 const OK=!!(CFG.url&&CFG.key);
 CFG.url=(CFG.url||'').replace(/\/+$/,'');
-const KS='kthm_cloud',KEYS=['kthm2','kthm_qs','kthm_dg'],MAP=[['kthm2','k2'],['kthm_qs','qs'],['kthm_dg','dg']];
+const KS='kthm_cloud',KEYS=['kthm2','kthm_qs','kthm_dg','kthm2_arena_v3'],MAP=[['kthm2','k2'],['kthm_qs','qs'],['kthm_dg','dg'],['kthm2_arena_v3','ar']];
 const RN=['Luyện Khí','Trúc Cơ','Kim Đan','Nguyên Anh','Hoá Thần','Luyện Hư','Hợp Thể','Đại Thừa'];
 const _get=Storage.prototype.getItem,_set=Storage.prototype.setItem,_rem=Storage.prototype.removeItem;
-const S={sess:null,meta:null,busy:false,block:false,conflict:null,cf:null,cloud:null,st:OK?'out':'off',err:'',fail:0,next:0,chk:false,vis:0,okAt:0,tab:'acc',view:'',msg:'',em:'',pw:'',lb:null,lbBusy:false,lbErr:'',lbAt:0,bk:false,openCf:false};
+const S={dirty:false,dueAt:0,sess:null,meta:null,busy:false,block:false,conflict:null,cf:null,cloud:null,st:OK?'out':'off',err:'',fail:0,next:0,chk:false,vis:0,okAt:0,tab:'acc',view:'',msg:'',em:'',pw:'',lb:null,lbBusy:false,lbErr:'',lbAt:0,bk:false,openCf:false};
 const ls=k=>{try{return _get.call(localStorage,k)}catch(e){return null}};
 const lsSet=(k,v)=>{try{v==null?_rem.call(localStorage,k):_set.call(localStorage,k,v);if(window.ANTIDUPE&&ANTIDUPE.resign)ANTIDUPE.resign(k)}catch(e){}};
 Storage.prototype.setItem=function(k,v){if(S.block&&this===localStorage&&KEYS.indexOf(k)>=0)return;return _set.call(this,k,v)};
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function loadStore(){try{const d=JSON.parse(ls(KS));if(d){S.sess=d.sess||null;S.meta=d.meta||null;S.sid=d.sid||null}}catch(e){}}
+function loadStore(){try{const d=JSON.parse(ls(KS));if(d){S.sess=d.sess||null;S.meta=d.meta||null;S.sid=d.sid||null}}catch(e){}
+ try{const B=window.__BOOT_CLOUD;if(B&&S.sess&&S.sess.user&&B.uid===S.sess.user.id){S.meta={uid:B.uid,rev:B.rev|0,hash:hashLocal(),at:Date.now()};persist()}}catch(e){}}   /* dữ liệu vừa nạp từ mây (systems/11) = bản đã đồng bộ */
 function persist(){lsSet(KS,JSON.stringify({sess:S.sess,meta:S.meta,sid:S.sid}))}
 const uid=()=>S.sess&&S.sess.user&&S.sess.user.id;
 const mine=()=>S.meta&&S.meta.uid===uid()?S.meta:null;
@@ -51,11 +52,13 @@ async function rpc(fn,args){await tok();const go=()=>http('/rest/v1/rpc/'+fn,{me
 const redir=()=>/^https?:/.test(location.protocol)?'?redirect_to='+encodeURIComponent(location.origin+location.pathname):'';
 async function signUp(em,pw){const j=await http('/auth/v1/signup'+redir(),{method:'POST',body:{email:em,password:pw}});if(j&&j.access_token){setSess(j);return'in'}return'confirm'}
 async function signIn(em,pw){const j=await http('/auth/v1/token?grant_type=password',{method:'POST',body:{email:em,password:pw}});setSess(j)}
-function out(msg){S.sess=null;S.sid=null;S.conflict=null;S.cf=null;S.cloud=null;S.st=OK?'out':'off';S.view='';if(msg)S.msg=msg;persist();ui(true)}
+function out(msg){S.sess=null;S.sid=null;S.conflict=null;S.cf=null;S.cloud=null;S.st=OK?'out':'off';S.view='';if(msg)S.msg=msg;persist();ui(true);try{if(window.KTHM_GATE)KTHM_GATE.show(msg||'Hãy đăng nhập lại để tiếp tục.','err')}catch(e){}}
 /* ---------- đồng bộ ---------- */
 let q=Promise.resolve();
 function enq(f){const p=q.then(f);q=p.then(()=>{},()=>{});return p}
-async function guard(f){S.busy=true;S.st='busy';ui();try{await f();S.fail=0;S.err='';S.next=Date.now()+30000;if(S.conflict)S.st='conf';else{S.st=S.sess?'ok':'out';S.okAt=Date.now()}}catch(e){S.fail++;S.err=e.net?e.message:vi(e);S.st=S.sess?'err':'out';S.next=Date.now()+Math.min(300000,15000*Math.pow(2,S.fail))}finally{S.busy=false;ui()}}
+async function guard(f){S.busy=true;S.st='busy';ui();try{await f();S.fail=0;S.err='';S.next=Date.now()+8000;if(S.conflict)S.st='conf';else{S.st=S.sess?'ok':'out';S.okAt=Date.now()}
+  try{if(window.CLOUDONLY&&CLOUDONLY.legacy&&S.meta&&S.meta.rev>0&&S.meta.uid===uid()&&hashLocal()===S.meta.hash)CLOUDONLY.purgeLegacy()}catch(e){}
+  try{if(S.meta&&S.meta.uid===uid()&&!S.conflict&&hashLocal()!==S.meta.hash)markDirty()}catch(e){}}catch(e){S.fail++;S.err=e.net?e.message:vi(e);S.st=S.sess?'err':'out';S.next=Date.now()+Math.min(300000,15000*Math.pow(2,S.fail))}finally{S.busy=false;ui()}}
 function reconcile(){if(!OK||!S.sess||S.block)return Promise.resolve();if(S.conflict){S.view='cf';return Promise.resolve()}
  return enq(()=>guard(async()=>{
   if(!S.sess||S.block)return;
@@ -72,7 +75,7 @@ function reconcile(){if(!OK||!S.sess||S.block)return Promise.resolve();if(S.conf
  }))}
 async function doPush(base,force){
  const k=pack();if(!k.k2)return;const h=hashLocal(),st=stats(k.k2),bk=S.bk;
- const r=await rpc('push_save',{p_data:{v:1,t:Date.now(),h,k2:k.k2,qs:k.qs,dg:k.dg},p_base_rev:base,p_force:!!force,p_backup:!!bk,p_name:st.name,p_cls:st.cls,p_lv:st.lv,p_tier:st.tier,p_cr:st.cr,p_cs:st.cs});
+ const r=await rpc('push_save',{p_data:{v:1,t:Date.now(),h,k2:k.k2,qs:k.qs,dg:k.dg,ar:k.ar},p_base_rev:base,p_force:!!force,p_backup:!!bk,p_name:st.name,p_cls:st.cls,p_lv:st.lv,p_tier:st.tier,p_cr:st.cr,p_cs:st.cs});
  if(r&&r.status==='ok'){S.bk=false;S.meta={uid:uid(),rev:r.rev,hash:h,at:Date.now()};persist();S.cloud=Object.assign(S.cloud||{},{rev:r.rev,at:new Date().toISOString()});return}
  return conflict()}
 async function conflict(){const full=await rpc('pull_save',{p_meta_only:false});if(!full.exists)return;
@@ -80,19 +83,42 @@ async function conflict(){const full=await rpc('pull_save',{p_meta_only:false});
  const mnEl=document.getElementById('mn'),inMenu=typeof started=='undefined'||!started||(mnEl&&mnEl.style.display!=='none');
  if(inMenu||S.openCf)open('acc');else toast('⚠ Bản lưu trên máy ≠ trên mây — mở ☁ trong menu để chọn');S.openCf=false}
 function applyData(full,msg){
- const d=full.data||{};
- try{const bak={t:Date.now()};KEYS.forEach(k=>{bak[k]=ls(k)});_set.call(localStorage,'kthm_localbak',JSON.stringify(bak))}catch(e){}
- S.block=true;
- MAP.forEach(([k,n])=>lsSet(k,d[n]==null?null:JSON.stringify(d[n])));
- S.meta={uid:uid(),rev:full.rev,hash:hashLocal(),at:Date.now()};S.conflict=null;S.cf=null;persist();
+ /* Cloud-only: không ghi gì xuống máy. Bản trên mây đã là bản được chọn (kể cả sau 'Dùng bản mây' / khôi phục sao lưu) → xoá bản cũ trên máy rồi tải lại,
+    systems/11 sẽ nạp đúng bản mây vào bộ nhớ trước khi game chạy. */
+ S.block=true;S.conflict=null;S.cf=null;S.dirty=false;
+ try{if(window.CLOUDONLY)CLOUDONLY.purgeLegacy()}catch(e){}
  try{sessionStorage.setItem('kthm_resume','1')}catch(e){}
  toast(msg||'☁ Đã tải tiến trình từ mây');
  setTimeout(()=>location.reload(),900)}
+/* ---------- LƯU NHANH LÊN MÂY: gộp thay đổi, đẩy thẳng 1 yêu cầu (không hỏi meta trước), ~2-5s sau lần thay đổi cuối ---------- */
+const DEB=2000,MINGAP=5000,FP={busy:false,last:0,fail:0};
+function markDirty(){if(!OK||S.block)return;if(!S.dirty){S.dirty=true;S.dueAt=Math.max(Date.now()+DEB,FP.last+MINGAP)}}
+function fastTick(){
+ if(!S.dirty||!OK||!S.sess||S.block||S.conflict||FP.busy||S.busy||Date.now()<S.dueAt)return;
+ const m=mine();
+ if(!m||m.rev<1){S.dirty=false;S.chk=true;S.next=0;tick();return}   /* chưa có bản trên mây: đi đường đối chiếu đầy đủ */
+ fastPush()}
+function fastPush(){
+ return enq(async()=>{
+  if(!S.sess||S.block||S.conflict||!S.dirty)return;
+  const m=mine();if(!m||m.rev<1)return;
+  FP.busy=true;S.dirty=false;
+  try{
+   const k=pack();if(!k.k2)return;
+   const h=hashLocal();if(h===m.hash)return;   /* không có gì mới so với bản đã đồng bộ */
+   const st=stats(k.k2);
+   const r=await rpc('push_save',{p_data:{v:1,t:Date.now(),h,k2:k.k2,qs:k.qs,dg:k.dg,ar:k.ar},p_base_rev:m.rev,p_force:false,p_backup:false,p_name:st.name,p_cls:st.cls,p_lv:st.lv,p_tier:st.tier,p_cr:st.cr,p_cs:st.cs});
+   if(r&&r.status==='ok'){S.meta={uid:uid(),rev:r.rev,hash:h,at:Date.now()};persist();S.cloud=Object.assign(S.cloud||{},{rev:r.rev,at:new Date().toISOString()});FP.fail=0;FP.last=Date.now();S.err='';if(!S.conflict){S.st='ok';S.okAt=Date.now()}
+    if(hashLocal()!==h)markDirty()}
+   else await conflict()}
+  catch(e){FP.fail++;S.dirty=true;S.dueAt=Date.now()+Math.min(30000,2000*Math.pow(2,FP.fail));S.err=e.net?e.message:vi(e);if(S.sess)S.st='err'}
+  finally{FP.busy=false;ui()}})}
+function saveNow(){try{if(typeof started!='undefined'&&started&&typeof sv=='function')sv()}catch(e){}S.dirty=true;S.dueAt=0;FP.last=0;const m=mine();if(m&&m.rev>=1)return fastPush();S.next=0;S.chk=true;return reconcile()}
 function tick(){if(!OK||!S.sess||S.busy||S.block||S.conflict||!S.chk||Date.now()<S.next)return;S.chk=false;const m=mine();if(m&&hashLocal()===m.hash)return;reconcile()}
 function flush(){try{if(typeof started!='undefined'&&started&&typeof sv=='function')sv()}catch(e){}
- if(!OK||!S.sess||S.block||S.conflict||S.busy)return;const m=mine();if(!m||m.rev<1||hashLocal()===m.hash)return;if(S.sess.expires_at*1000-Date.now()<5000)return;
- const k=pack();if(!k.k2)return;const h=hashLocal(),st=stats(k.k2),body=JSON.stringify({p_data:{v:1,t:Date.now(),h,k2:k.k2,qs:k.qs,dg:k.dg},p_base_rev:m.rev,p_force:false,p_backup:false,p_name:st.name,p_cls:st.cls,p_lv:st.lv,p_tier:st.tier,p_cr:st.cr,p_cs:st.cs});
- try{fetch(CFG.url+'/rest/v1/rpc/push_save',{method:'POST',headers:hdr(true,true),body,keepalive:body.length<60000}).then(r=>r.ok?r.json():null).then(r=>{if(r&&r.status==='ok'){S.meta={uid:m.uid,rev:r.rev,hash:h,at:Date.now()};persist()}}).catch(()=>{})}catch(e){}}
+ if(!OK||!S.sess||S.block||S.conflict||S.busy||FP.busy)return;const m=mine();if(!m||m.rev<1||hashLocal()===m.hash)return;if(S.sess.expires_at*1000-Date.now()<5000)return;
+ const k=pack();if(!k.k2)return;const h=hashLocal(),st=stats(k.k2),body=JSON.stringify({p_data:{v:1,t:Date.now(),h,k2:k.k2,qs:k.qs,dg:k.dg,ar:k.ar},p_base_rev:m.rev,p_force:false,p_backup:false,p_name:st.name,p_cls:st.cls,p_lv:st.lv,p_tier:st.tier,p_cr:st.cr,p_cs:st.cs});
+ try{fetch(CFG.url+'/rest/v1/rpc/push_save',{method:'POST',headers:hdr(true,true),body,keepalive:body.length<60000}).then(r=>r.ok?r.json():null).then(r=>{if(r&&r.status==='ok'){S.meta={uid:m.uid,rev:r.rev,hash:h,at:Date.now()};persist();S.dirty=false}}).catch(()=>{})}catch(e){}}
 /* ---------- giao diện ---------- */
 let ov=null;
 function css(){const st=document.createElement('style');st.textContent=`
@@ -128,12 +154,12 @@ function ui(force){mb();if(!ov||!ov.classList.contains('on'))return;const a=docu
 const msgBox=()=>S.msg?'<div class="cl-msg">'+esc(S.msg)+'</div>':'';
 function sumHtml(k2,t){const s=stats(k2);return'<b>'+esc(s.name)+'</b><br>'+esc(s.cls)+' · Lv '+s.lv+'<br>'+esc(realm(s.cr,s.cs))+'<br>💰 '+(Number(k2&&k2.gold)||0).toLocaleString('vi-VN')+(t?'<br><small>'+esc(t)+'</small>':'')}
 function viewAcc(){
- if(!OK)return'<div class="cl-msg">Chưa cấu hình máy chủ. Mở file game, tìm <b>const CFG</b> trong khối “LƯU GAME TRÊN MẠNG” và điền <b>url</b> + <b>key</b> của Supabase (xem HUONG_DAN_CLOUD.md). Khi chưa cấu hình, game vẫn lưu trên máy như bình thường.</div>';
+ if(!OK)return'<div class="cl-msg">Chưa cấu hình máy chủ. Mở file game, tìm <b>const CFG</b> trong khối “LƯU GAME TRÊN MẠNG” và điền <b>url</b> + <b>key</b> của Supabase (xem HUONG_DAN_CLOUD.md). Game cần cấu hình máy chủ để lưu tiến trình.</div>';
  if(S.view=='rec')return'<div class="cl-note">Đặt mật khẩu mới cho tài khoản của bạn.</div><input id="cl-pw" type="password" placeholder="Mật khẩu mới (từ 6 ký tự)" autocomplete="new-password" value="'+esc(S.pw)+'">'+msgBox()+'<button data-a="setpw">Đổi mật khẩu</button>';
- if(!S.sess)return'<div class="cl-note">Đăng nhập để lưu tiến trình lên mạng và chơi trên nhiều thiết bị. Không đăng nhập vẫn chơi bình thường (lưu trên máy).</div><input id="cl-em" type="email" inputmode="email" autocomplete="username" placeholder="Email" value="'+esc(S.em)+'"><input id="cl-pw" type="password" autocomplete="current-password" placeholder="Mật khẩu (từ 6 ký tự)" value="'+esc(S.pw)+'">'+msgBox()+'<button data-a="in">Đăng nhập</button><button data-a="up">Đăng ký</button><button data-a="fg">Quên mật khẩu?</button>';
+ if(!S.sess)return'<div class="cl-note">Đăng nhập để chơi: tiến trình được lưu trên mây, chơi được trên nhiều thiết bị.</div><input id="cl-em" type="email" inputmode="email" autocomplete="username" placeholder="Email" value="'+esc(S.em)+'"><input id="cl-pw" type="password" autocomplete="current-password" placeholder="Mật khẩu (từ 6 ký tự)" value="'+esc(S.pw)+'">'+msgBox()+'<button data-a="in">Đăng nhập</button><button data-a="up">Đăng ký</button><button data-a="fg">Quên mật khẩu?</button>';
  let h='<div class="cl-msg"><span class="cl-dot" style="background:'+COL[S.st]+'"></span>'+esc(stText())+'</div><div class="cl-note">Tài khoản: <b>'+esc(S.sess.user.email)+'</b>'+(S.cloud&&S.cloud.at?'<br>Bản trên mây: cập nhật '+esc(fmt(S.cloud.at)):'')+'</div>'+msgBox();
  if(S.conflict)h+='<button data-a="cf">⚠ Chọn bản lưu</button>';
- h+='<button data-a="sync">🔄 Đồng bộ ngay</button><button data-a="bk"'+(S.cloud&&S.cloud.bk?'':' disabled')+'>🕘 Khôi phục bản sao lưu</button><button data-a="out">Đăng xuất</button><div class="cl-note">Tự đồng bộ khoảng 30 giây một lần khi có thay đổi, và khi bạn rời trang. Mất mạng vẫn chơi bình thường, có mạng lại sẽ tự đồng bộ.</div>';return h}
+ h+='<button data-a="sync">🔄 Đồng bộ ngay</button><button data-a="bk"'+(S.cloud&&S.cloud.bk?'':' disabled')+'>🕘 Khôi phục bản sao lưu</button><button data-a="out">Đăng xuất</button><div class="cl-note">Tiến trình chỉ lưu trên mây: tự đồng bộ vài giây sau mỗi thay đổi và khi bạn rời trang. Mất mạng game vẫn chạy, có mạng lại sẽ tự lưu.</div>';return h}
 function viewCf(){const f=S.cf;if(!f)return viewAcc();const c=f.full;
  return'<div class="cl-msg">⚠ Tiến trình trên máy này và trên mây khác nhau. Chọn bản muốn giữ — bản còn lại sẽ bị thay thế (có bản sao lưu để khôi phục).</div><div class="cl-cmp"><div>📱 <b>Trên máy này</b><br>'+sumHtml(f.loc)+'</div><div>☁ <b>Trên mây</b><br>'+sumHtml(c.data&&c.data.k2,fmt(c.updated_at))+'</div></div><button data-a="useCloud">☁ Dùng bản trên mây</button><button data-a="useLocal">📱 Dùng bản trên máy này</button><button data-a="later">Để sau</button>'}
 function row(r){const m=['🥇','🥈','🥉'][r.rank-1]||r.rank;return'<tr class="'+(r.me?'me':'')+'"><td class="r">'+m+'</td><td>'+esc(r.name)+'<br><small style="opacity:.75">'+esc(r.cls||'')+' · Lv '+(r.lv|0)+' · '+esc(realm(r.cult_r|0,r.cult_s|0))+'</small></td></tr>'}
@@ -155,7 +181,7 @@ async function doRecover(){const em=(S.em||'').trim();if(!em){S.msg='Nhập emai
  try{await http('/auth/v1/recover'+redir(),{method:'POST',body:{email:em}});S.msg='Nếu email này đã đăng ký, thư đặt lại mật khẩu đã được gửi.'}catch(e){S.msg=vi(e)}render()}
 async function doSetPw(){const pw=S.pw||'';if(pw.length<6){S.msg='Mật khẩu cần từ 6 ký tự.';render();return}
  try{await http('/auth/v1/user',{method:'PUT',auth:true,body:{password:pw}});S.view='';toast('Đã đổi mật khẩu');afterLogin()}catch(e){S.msg=vi(e);render()}}
-async function logout(){if(!confirm('Đăng xuất? Bản lưu trên máy vẫn được giữ.'))return;try{if(!S.conflict)await reconcile()}catch(e){}try{await rpc('kthm_end_session',{p_sid:S.sid})}catch(e){}try{await http('/auth/v1/logout',{method:'POST',auth:true,timeout:6000})}catch(e){}S.msg='';out('')}
+async function logout(){if(!confirm('Đăng xuất? Tiến trình được lưu trên mây (sẽ đồng bộ trước khi thoát).'))return;try{if(!S.conflict)await reconcile()}catch(e){}try{await rpc('kthm_end_session',{p_sid:S.sid})}catch(e){}try{await http('/auth/v1/logout',{method:'POST',auth:true,timeout:6000})}catch(e){}S.msg='';out('');try{location.reload()}catch(e){}}
 function manual(){S.msg='';if(S.conflict){S.view='cf';render();return}S.openCf=true;S.next=0;reconcile().then(()=>{if(S.st=='ok')toast('☁ Đã đồng bộ')})}
 function restoreBk(){if(!confirm('Khôi phục bản sao lưu trên mây? Bản hiện tại sẽ trở thành bản sao lưu (có thể đổi lại).'))return;
  enq(()=>guard(async()=>{const r=await rpc('restore_backup',{});if(!r||r.status!=='ok')throw new Error('Chưa có bản sao lưu');applyData({data:r.data,rev:r.rev},'☁ Đã khôi phục bản sao lưu')}))}
@@ -181,18 +207,19 @@ loadStore();css();dom();
 /* Bọc sv/ng/mn SAU CÙNG (khi mọi script khác đã chạy xong) để nằm lớp ngoài cùng: bấm Huỷ ở hộp xác nhận "Game mới" thì các lớp bọc khác (reset hầm mỏ, linh điền, cẩm nang…) không kịp chạy. */
 function wrapAll(){
 const _mn=window.mn;if(typeof _mn=='function')window.mn=function(){const r=_mn.apply(this,arguments);try{inject()}catch(e){}return r};
-const _sv=window.sv;if(typeof _sv=='function')window.sv=function(){if(S.block)return;const r=_sv.apply(this,arguments);S.chk=true;return r};
+const _sv=window.sv;if(typeof _sv=='function')window.sv=function(){if(S.block)return;const r=_sv.apply(this,arguments);S.chk=true;markDirty();return r};
 const _ng=window.ng;if(typeof _ng=='function')window.ng=function(){const m=mine();if(S.sess&&m&&m.rev>0){if(!confirm('Bạn đang đăng nhập ☁. Bắt đầu game mới sẽ ghi đè tiến trình trên mây ở lần đồng bộ tới (có bản sao lưu để khôi phục). Tiếp tục?'))return;S.bk=true}return _ng.apply(this,arguments)};
 inject();
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',wrapAll);else wrapAll();
 if(OK){
- setInterval(tick,5000);
+ const loopTick=()=>{fastTick();tick()};setInterval(loopTick,1000);try{if(window.KTHM_TICK)KTHM_TICK.slow(loopTick)}catch(e){}
+ if(window.CLOUDONLY)CLOUDONLY.onWrite=()=>markDirty();
  document.addEventListener('visibilitychange',()=>{if(document.hidden)flush();else if(S.sess&&Date.now()-S.vis>60000){S.vis=Date.now();S.next=0;reconcile()}});
- addEventListener('pagehide',flush);
+ addEventListener('pagehide',flush);addEventListener('beforeunload',flush);
  addEventListener('online',()=>{if(S.sess){S.next=0;S.chk=true}});
  setTimeout(()=>{consumeHash();if(S.sess){S.vis=Date.now();reconcile()}},1200)}
 try{if(sessionStorage.getItem('kthm_resume')){sessionStorage.removeItem('kthm_resume');setTimeout(()=>{try{if(ls('kthm2')&&typeof ld=='function')ld()}catch(e){}},400)}}catch(e){}
-window.KTHM_CLOUD={open:t=>open(t||'acc'),sync:()=>reconcile(),status:()=>S.st};window.KCL={OK,rpc,http,sess:()=>S.sess,sid:()=>S.sid,setSid:v=>{S.sid=v;persist()},signIn,signUp,out,vi,afterLogin};
-if(window.__CLOUD_TEST)window.__CLOUD_TEST_API={S,reconcile,act,tick,flush,render,open,loadLb,doAuth,hashLocal,mine,applyData,stats,toast};
+window.KTHM_CLOUD={open:t=>open(t||'acc'),sync:()=>reconcile(),saveNow,status:()=>S.st,dirty:()=>S.dirty};window.KCL={OK,rpc,http,sess:()=>S.sess,sid:()=>S.sid,setSid:v=>{S.sid=v;persist()},signIn,signUp,out,vi,afterLogin};
+if(window.__CLOUD_TEST)window.__CLOUD_TEST_API={fastPush,fastTick,markDirty,S,reconcile,act,tick,flush,render,open,loadLb,doAuth,hashLocal,mine,applyData,stats,toast};
 })();

@@ -9,7 +9,7 @@
 (function(){
 'use strict';
 if(typeof PS==='undefined'||!window.YCTT||!window.YCANH||typeof FX==='undefined')return;
-var CF={need:[0,1000,5000],mk:[1,10],mkOnlyMa:true,
+var CF={need:[0,1000,5000],upBase:[100,150,200],mk:[1,10],mkOnlyMa:true,
  desc:{t:['Thiên thần cầm kiếm giáng xuống chém một nhát, sóng kiếm lan rộng quanh địch gần nhất, hồi 2% máu.','Hai con rồng vàng lao nhanh về phía kẻ địch, xuyên qua mọi địch trên đường.','Khe nứt hư không mở ra trên trời, rải thật nhiều thiên thạch xuống địch.'],
        m:['Nhiều bàn tay quỷ từ lòng đất mọc lên liên tục trong 3s, hút 2% máu.','Nhiều oán linh bay qua bay lại gây sát thương trong 3s, làm chậm.','Hố đen mở ra bắn nhiều tia ma khí đen vào địch; tia giết địch triệu hồi quỷ xương (sống 5s, tối đa 5).']},
  icon:{t:['👼','🐉','☄️'],m:['🖐️','👻','🕳️']}};
@@ -32,12 +32,12 @@ function skn(path,j){try{return YCTT.cfg.sk[path][j].n}catch(e){return'Thần th
 
 /* ---------- tài nguyên mở khoá ---------- */
 function res(y){return y.p==='t'?(y.ng|0):(y.mk|0)}
-function ok(j,inf){if(j<=0)return true;var y=Y();return !!y&&res(y)>=CF.need[j]}
+function ok(j,inf){return true}  /* chọn đạo Tiên/Ma = mở cả bộ 3 thần thông; chỉ còn nâng cấp (world/49). Ngộ đạo / Ma khí không còn là điều kiện mở khoá */
 function lockShort(j,inf){return inf&&inf.path==='t'?'Ngộ '+CF.need[j]:'Khí '+CF.need[j]}
 function lockMsg(j,inf){var y=Y(),n=CF.need[j];return inf&&inf.path==='t'?'cần '+n+' điểm ngộ đạo (hiện '+(y?y.ng|0:0)+') — trồng cây, luyện đan':'cần '+n+' ma khí (hiện '+(y?y.mk|0:0)+') — hạ Boss Ma Thần'}
 function gain(y,key,n){
  var o=y[key]|0,v=o+n;y[key]=v;
- [1,2].forEach(function(j){if(o<CF.need[j]&&v>=CF.need[j]){say('🔓 Mở khoá thần thông: '+skn(y.p,j),PAL[y.p].b);flash(y.p==='t'?'#ffe27a':'#7a40c0',8);try{sv()}catch(e){}}})}
+ [].forEach(function(j){if(o<CF.need[j]&&v>=CF.need[j]){say('🔓 Mở khoá thần thông: '+skn(y.p,j),PAL[y.p].b);flash(y.p==='t'?'#ffe27a':'#7a40c0',8);try{sv()}catch(e){}}})}
 function ngo(n){var y=Y();if(!y||y.p!=='t')return;gain(y,'ng',n||1)}
 function mkhi(n){var y=Y();if(!y||y.p!=='m')return;gain(y,'mk',n||1);try{DT.push({x:P.x,y:150,s:'🌑 +'+n+' ma khí',c:'#d8b0ff',g:1,l:90})}catch(e){}}
 /* Boss Ma (Ma Thần: e.mt) bị hạ → hấp thụ ma khí. Bọc drop() như world/08 đã làm cho hạt giống. */
@@ -369,9 +369,35 @@ function ring2(x){fx(x,14,function(f,p,X,gy){g.save();g.globalCompositeOperation
 function applyText(){try{['t','m'].forEach(function(p){YCTT.cfg.sk[p].forEach(function(S_,j){var rest=S_._d0||S_.d,i=rest.indexOf('. ');S_._d0=rest;S_.d=CF.desc[p][j]+(i>=0?' '+rest.slice(i+2):'');S_.i=CF.icon[p][j]})})}catch(e){}}
 applyText();
 function bar(v,mx_,col){var p=Math.max(0,Math.min(1,v/mx_))*100;return'<div style="height:6px;border-radius:3px;background:#2a2036;overflow:hidden;margin:3px 0"><div style="width:'+p+'%;height:100%;background:'+col+'"></div></div>'}
+/* Nâng cấp thần thông Ý Cảnh bằng Ngộ đạo (Tiên) / Ma khí (Ma): cấp L → L+1 tốn CF.upBase[j] × L điểm. Cấp lưu ở world/49 (YCTT.lvUp). */
+function upCost(j,L){return Math.round((CF.upBase[j]||200)*L)}
+/* Cách 2 (world/47 PBMT): Tố Tâm (Tiên) / Tinh Huyết (Ma). Trả {c: giá, h: đang có} hoặc null nếu thiếu module */
+function alt(y,j,L){try{if(!window.PBMT||!PBMT.cost||!PBMT.data)return null;return{c:PBMT.cost(j,L),h:(y.p==='t'?PBMT.data().t:PBMT.data().m)|0}}catch(e){return null}}
+function up(j){
+ var y=Y();if(!y||!window.YCTT||!YCTT.lv||!YCTT.lvUp||j<0||j>2){say('Chưa chọn Ý Cảnh');return}
+ var L=YCTT.lv(j),mxL=(YCTT.cfg&&YCTT.cfg.lvMax)||15,t=y.p==='t',key=t?'ng':'mk',nm=t?'điểm ngộ đạo':'ma khí';
+ if(L>=mxL){say(skn(y.p,j)+' đã đạt cấp tối đa');return}
+ var c=upCost(j,L);
+ if((y[key]|0)<c){
+  var a=alt(y,j,L);
+  if(a&&a.h>=a.c){PBMT.up(j);try{if(window.YCANH)YCANH.open()}catch(e){}return}   /* đủ Tố Tâm/Tinh Huyết thì dùng cách 2 */
+  say('Thiếu '+nm+': '+(y[key]|0)+'/'+c+(a?' · hoặc '+(y.p==='t'?'Tố Tâm':'Tinh Huyết')+' '+a.h+'/'+a.c:''));return}
+ y[key]=(y[key]|0)-c;
+ var n=YCTT.lvUp(j);
+ if(!n){y[key]=(y[key]|0)+c;say('Không nâng được lúc này');return}
+ say((t?'☯':'🌑')+' '+skn(y.p,j)+' lên cấp '+n+'/'+mxL+'!',PAL[y.p].b);flash(t?'#ffe27a':'#7a40c0',8);
+ try{sv()}catch(e){}try{if(window.YCANH)YCANH.open()}catch(e){}
+}
 function card(inf){var y=Y();if(!y)return'';var t=y.p==='t',v=res(y),c=PAL[y.p].b,nm=t?'☯ Điểm ngộ đạo':'🌑 Ma khí hấp thụ';
- return'<div style="margin-top:8px;border:1px solid '+c+';border-radius:9px;padding:7px;font-size:12.5px"><b style="color:'+c+'">'+nm+': '+v.toLocaleString('vi-VN')+'</b> <span style="opacity:.75">(mở thần thông 2 ở '+CF.need[1]+', thần thông 3 ở '+CF.need[2]+')</span>'+bar(v,CF.need[2],c)
-  +'<div style="opacity:.8;line-height:1.45">'+(t?'Thu hoạch 1 cây = +1 điểm · luyện thành 1 viên đan = +1 điểm.':'Hạ Boss Ma Thần: ngẫu nhiên hấp thụ '+CF.mk[0]+'-'+CF.mk[1]+' ma khí.')+'</div></div>'}
+ return'<div style="margin-top:8px;border:1px solid '+c+';border-radius:9px;padding:7px;font-size:12.5px"><b style="color:'+c+'">'+nm+': '+v.toLocaleString('vi-VN')+'</b> <span style="opacity:.75">(dùng để nâng cấp thần thông Ý Cảnh)</span>'
+  +'<div style="opacity:.8;line-height:1.45">'+(t?'Thu hoạch 1 cây = +1 điểm · luyện thành 1 viên đan = +1 điểm.':'Hạ Boss Ma Thần: ngẫu nhiên hấp thụ '+CF.mk[0]+'-'+CF.mk[1]+' ma khí.')+'</div>'+upRows(y,c)+'</div>'}
 
-window.YCTOC={cfg:CF,fire:fire,ok:ok,lockMsg:lockMsg,lockShort:lockShort,card:card,ngo:ngo,mk:mkhi,res:function(){var y=Y();return y?res(y):0}};
+function upRows(y,c){
+ if(!window.YCTT||!YCTT.lv)return'';var mxL=(YCTT.cfg&&YCTT.cfg.lvMax)||15,v=res(y),h='';
+ for(var j=0;j<3;j++){var L=YCTT.lv(j),full=L>=mxL,cost=upCost(j,L),a=full?null:alt(y,j,L),can=!full&&(v>=cost||(a&&a.h>=a.c));
+  h+='<div style="display:flex;align-items:center;gap:6px;margin-top:5px"><div style="flex:1;min-width:0"><b style="color:'+c+'">'+skn(y.p,j)+'</b> Lv '+L+'/'+mxL+'<div style="font-size:11.5px;opacity:.8">'+(full?'Tối đa':'Cần '+cost.toLocaleString('vi-VN')+(y.p==='t'?' ngộ đạo':' ma khí')+(a?' hoặc '+a.c.toLocaleString('vi-VN')+(y.p==='t'?' Tố Tâm':' Tinh Huyết')+' (có '+a.h.toLocaleString('vi-VN')+')':'')+' · dùng loại nào đủ')+'</div></div>'+
+   '<button '+(can?'':'disabled ')+'onclick="YCTOC.up('+j+')" style="padding:7px 10px;border:0;border-radius:8px;font-weight:700;color:#fff;background:'+(can?'#8a6420':'#444')+';opacity:'+(can?1:.5)+'">⬆ Nâng</button></div>'}
+ return h}
+
+window.YCTOC={up:up,upCost:upCost,cfg:CF,fire:fire,ok:ok,lockMsg:lockMsg,lockShort:lockShort,card:card,ngo:ngo,mk:mkhi,res:function(){var y=Y();return y?res(y):0}};
 })();

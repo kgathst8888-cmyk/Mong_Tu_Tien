@@ -40,7 +40,7 @@ function on(){try{return !!(window.HDAO&&HDAO.on())}catch(e){return false}}
 function gm(){return (PS[cur].lgm|0)}
 Object.defineProperty(window,'LGI',{configurable:true,get:function(){try{return(lg&&!dg&&gm()>0&&gm()<5)?4+gm():null}catch(e){return null}}});
 function say(t,c){try{DT.push({x:P.x,y:200,s:t,c:c||'#8fe8ff',g:1,l:130})}catch(e){}}
-function need(i){return MAPS[i].holy?HOLY.minLv:MAPS[i].lv[0]}
+function need(i){if(window.CTHE&&CTHE.on())return 0;return MAPS[i].holy?HOLY.minLv:MAPS[i].lv[0]}
 function canMap(i){if(i===0)return true;if(!on()||P.lv<need(i))return false;return MAPS[i].holy?HOLY.open:true}
 function why(i){var m=MAPS[i];if(i===0)return'';if(!on())return'🔒 Chỉ dành cho Đạo Thể';if(P.lv<need(i))return'🔒 Cần Đạo Thể Lv'+need(i)+' (hiện Lv'+P.lv+')';if(m.holy&&!HOLY.open)return'🔒 Tạm khóa · mở khi Đạo Thể Lv'+HOLY.minLv;if(m.holy&&window.THANHDIA)return THANHDIA.status();return''}
 /* Đạo Thể chỉ nhận Đạo Linh (EXP) ở bản đồ Đạo Thể: Linh Giới bản đồ 2–6 (HDAO.xg đọc hàm này) */

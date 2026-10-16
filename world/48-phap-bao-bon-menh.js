@@ -302,5 +302,5 @@ setInterval(function(){
   }catch(e){}
 },250);
 
-window.FABAO={open:open,close:close,on:on,cast:function(){return castFB(false)},data:D,cfg:CF,defs:FB,type:eq,level:LV};
+window.FABAO={ghost:function(a,tm){var o=AR,pl=pul;AR=a;pul=0;g.save();try{arUpd();drawArt(tm)}catch(e){}finally{g.restore();AR=o;pul=pl}},open:open,close:close,on:on,cast:function(){return castFB(false)},data:D,cfg:CF,defs:FB,type:eq,level:LV};
 })();

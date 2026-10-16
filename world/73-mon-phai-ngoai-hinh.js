@@ -45,6 +45,7 @@ function drawSect(o,sid){
    sy=1+Math.sin(bp)*.006+Math.cos(wp*2)*.014*k,sx=1/sy;
   g.translate(lunge*8,bob);g.rotate(rot);g.scale(sx,sy);
   var N=CF.strips,ih=o.im.naturalHeight,iw=o.im.naturalWidth,sh=ih/N,dh=HH/N,im=o.im;
+  try{if(window.VPW)VPW.draw(sid,'back',{kind:'front',w:w,HH:HH,k:k,bp:bp,wp:wp,at:-1})}catch(e){}
   /* tàn ảnh khi chạy */
   if(k>.45){var ga=(k-.45)*.55;for(var q=2;q>=1;q--){g.globalAlpha=ga*(.55/q);g.drawImage(im,-w/2-q*9*k,-HH,w,HH)}g.globalAlpha=1}
   /* vẽ theo dải ngang: đầu đứng yên, gấu áo/tóc bay ngược chiều chạy */
@@ -52,6 +53,7 @@ function drawSect(o,sid){
    var u=(j+.5)/N,uu=Math.pow(Math.max(0,u-.12)/.88,1.55),
     dx=uu*(Math.sin(bp*1.3-u*2.6)*1.5+k*(-5.2+Math.sin(wp*2-u*3.4)*2.6))+Math.sin(wp+1.2)*k*u*u*1.8;
    g.drawImage(im,0,j*sh,iw,sh+.6,-w/2+dx,-HH+j*dh,w,dh+.6)}
+  try{if(window.VPW)VPW.draw(sid,'front',{kind:'front',w:w,HH:HH,k:k,bp:bp,wp:wp,at:aa?Math.max(0,Math.min(1,at)):-1})}catch(e){}
  }finally{g.restore()}
 }
 var _hero=hero;

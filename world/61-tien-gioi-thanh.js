@@ -12,7 +12,7 @@
 (function(){
 'use strict';
 if(typeof LCT==='undefined'||typeof vdraw!=='function'||typeof vstep!=='function'||typeof hero!=='function'||typeof drawEP!=='function'||typeof nameTag!=='function'||typeof g==='undefined'||typeof PS==='undefined')return;
-var TAU=Math.PI*2,FONT='Ma Shan Zheng,KTH Serif,Songti SC,STKaiti,KaiTi,serif',CF={needDao:false,speed:.07,heroK:.6,gateName:'Thiên Môn Tiên Giới'};
+var TAU=Math.PI*2,FONT='Ma Shan Zheng,KTH Serif,Songti SC,STKaiti,KaiTi,serif',CF={needDao:false,speed:.042,heroK:.6,gateName:'Thiên Môn Tiên Giới'};
 function rng(a){a>>>=0;return function(){a=(a+0x6D2B79F5)>>>0;var t=a;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}}
 function lg(q,x0,y0,x1,y1,st){var o=q.createLinearGradient(x0,y0,x1,y1);for(var i=0;i<st.length;i+=2)o.addColorStop(st[i],st[i+1]);return o}
 function rg(q,x,y,r0,r1,st){var o=q.createRadialGradient(x,y,r0,x,y,r1);for(var i=0;i<st.length;i+=2)o.addColorStop(st[i],st[i+1]);return o}
@@ -31,7 +31,7 @@ var SPOTS=[
  {id:'palace',n:'Thiên Cung Điện',e:'🏯',c:'#ffe27a',x:14,y:4.4,w:6.6,d:4.4,k:'palace',z:9,door:[14,9.4],sub:'Trung tâm Tiên Giới',desc:'Điện thờ tối cao của Tiên Giới, nơi các Tiên Quân nghị sự. Nội dung đang được xây dựng.'},
  {id:'arena',n:'Tiên Giới Đấu Trường',e:'⚔️',c:'#ff9a8a',x:7.4,y:10.6,w:2.6,d:2.6,k:'pavilion',z:4,door:[7.4,13.2],sub:'Quyết đấu Tiên Nhân',desc:'Đấu trường trên mây — nơi Tiên Nhân luận võ. Sắp mở.'},
  {id:'cave',n:'Linh Mạch Động Phủ',e:'💎',c:'#7ff0ff',x:20.6,y:10.6,w:2.6,d:2.6,k:'pavilion',z:4,door:[20.6,13.2],sub:'Tu luyện linh mạch',desc:'Động phủ hấp thụ linh khí từ mạch trời. Sắp mở.'},
- {id:'alch',n:'Đan Dược Các',e:'⚗️',c:'#9aff9a',x:3.4,y:21.6,w:2.8,d:2.8,k:'hall2',z:6,door:[3.4,24.4],sub:'Luyện tiên đan',desc:'Các luyện đan của Tiên Giới. Sắp mở.'},
+ {id:'rebirth',n:'Chuyển Thế Đài',e:'🌌',c:'#c8b8ff',x:3.4,y:21.6,w:2.8,d:2.8,k:'hall2',z:6,door:[3.4,24.4],sub:'Chuyển thế · Đạo Thể → Tiên Nhân',desc:'Đài chuyển thế: Đạo Thể Lv100 chuyển thành Tiên Nhân.'},
  {id:'forge',n:'Thiên Binh Các',e:'🗡️',c:'#ffd0a0',x:4.8,y:26.3,w:2.4,d:2.2,k:'hall',z:5,door:[4.8,28.2],sub:'Rèn tiên khí',desc:'Nơi rèn tiên khí thượng phẩm. Sắp mở.'},
  {id:'beast',n:'Tiên Thú Viên',e:'🐉',c:'#ffb0ff',x:24.8,y:19.4,w:3,d:2.6,k:'hall2',z:6,door:[24.8,22.4],sub:'Tiên thú · linh thú',desc:'Vườn nuôi tiên thú. Sắp mở.'},
  {id:'pagoda',n:'Vạn Pháp Tháp',e:'🗼',c:'#ffe27a',x:25,y:23.2,w:2.2,d:2.2,k:'pagoda',z:10,door:[25,25.7],sub:'Thí luyện vạn pháp',desc:'Tháp thí luyện của Tiên Giới, 9 tầng pháp. Sắp mở.'},
@@ -188,7 +188,7 @@ function brgSpr(b,bi){var aY=b.main||(b.y1-b.y0)>(b.x1-b.x0),T=1.25,p=[ip(b.x0,b
     q.fillStyle='rgba(150,120,70,.22)';var cw=aY?.5:0;if(aY)q.fillRect((b.x1-b.x0)/2-.25,0,.5,b.y1-b.y0);else q.fillRect(0,(b.y1-b.y0)/2-.25,b.x1-b.x0,.5);q.restore();q.restore()},dG())}
 /* ---------- vật thể tĩnh sắp theo chiều sâu ---------- */
 var DR=[],GD=[],CL=[],TOAST=null,SPN={};
-var COL={palace:['#4fc0b0','#1c6a68'],arena:['#f0704a','#8a2a20'],cave:['#5ad0f0','#1c5a78'],alch:['#6ad898','#1f6a4a'],forge:['#e89a48','#7a3a1c'],beast:['#b880e8','#4a2a7a'],pagoda:['#f0d070','#a8741c'],market:['#fff','#ccc'],portal:['#6a8af0','#2a3a9a']};
+var COL={palace:['#4fc0b0','#1c6a68'],arena:['#f0704a','#8a2a20'],cave:['#5ad0f0','#1c5a78'],alch:['#6ad898','#1f6a4a'],rebirth:['#a48aff','#3a2a8a'],forge:['#e89a48','#7a3a1c'],beast:['#b880e8','#4a2a7a'],pagoda:['#f0d070','#a8741c'],market:['#fff','#ccc'],portal:['#6a8af0','#2a3a9a']};
 var DECB=[];
 function bSpr(k,sp){var key='s'+k;if(SC[key])return SC[key];var w=sp.w,d=sp.d,hw=(w+d)*HW/2+HW*2.8,up=(sp.z||6)*ZU+ZU*2.6,dn=(w+d)*HH/2+HH*2.4;
   return spr(key,hw*2,up+dn,hw,up,function(q){GR(q,0,0,0,function(q){q.fillStyle='rgba(0,0,30,.2)';q.beginPath();q.ellipse(0,0,w*.62+.3,d*.62+.3,0,0,TAU);q.fill()});var c=COL[sp.id]||['#4fc0b0','#1c6a68'];
@@ -220,7 +220,7 @@ function cloudSpr(v){var U=HW/46;return spr('cl'+v,380*U,150*U,190*U,75*U,functi
 /* ---------- camera, đi lại ---------- */
 function camUpd(){ccx+=(hx-ccx)*.1;ccy+=(hy-ccy)*.1;OX=W/2-(ccx-ccy)*HW;OY=H*.6-(ccx+ccy)*HH}
 function toast(t){TOAST={t:t,e:fr+150}}
-var face=1;
+var face=1,TGV=window.TGV={sx:0,sy:1};
 function arrive(){if(pend>=0){var i=pend;pend=-1;act(i)}}
 function act(i){var p=SPOTS[i];if(p.open&&typeof p.go==='function'){p.go();return}if(p.open&&p.id==='portal'){leave();return}showCard(i)}
 /* ---------- vuốt để điều khiển (kéo ngón tay = đi theo hướng kéo; chạm nhanh = chạm-để-đi như cũ) ---------- */
@@ -239,7 +239,7 @@ function stepTG(){var kx=(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1
   if(swv){path=[];pend=-1;dx=swv[0];dy=swv[1]}
   else if(kx||ky){path=[];pend=-1;dx=kx+ky;dy=-kx+ky;var L=Math.hypot(dx,dy);dx/=L;dy/=L}
   else if(path.length){var T=path[0],ax=T[0]-hx,ay=T[1]-hy,d=Math.hypot(ax,ay);if(d<sp*1.3){hx=T[0];hy=T[1];path.shift();if(!path.length){moving=0;arrive()}}else{dx=ax/d;dy=ay/d}}
-  if(dx||dy){var nx=hx+dx*sp,ny=hy+dy*sp;if(walk(nx,ny)){hx=nx;hy=ny}else if(walk(nx,hy))hx=nx;else if(walk(hx,ny))hy=ny;else{path=[];dx=dy=0}moving=(dx||dy)?1:0;var sd=dx-dy;if(Math.abs(sd)>.05)face=sd>0?1:-1}else if(!path.length)moving=0;
+  if(dx||dy){var nx=hx+dx*sp,ny=hy+dy*sp;if(walk(nx,ny)){hx=nx;hy=ny}else if(walk(nx,hy))hx=nx;else if(walk(hx,ny))hy=ny;else{path=[];dx=dy=0}moving=(dx||dy)?1:0;if(moving){TGV.sx=(dx-dy)*2;TGV.sy=dx+dy}var sd=dx-dy;if(Math.abs(sd)>.05)face=sd>0?1:-1}else if(!path.length)moving=0;
   try{P.mv=moving;P.d=face}catch(e){}}
 function onTap(e){var px=e.offsetX,py=e.offsetY;hideCard();var ord=SPOTS.map(function(p,i){return i}).sort(function(a,b){return SPOTS[b].x+SPOTS[b].y-SPOTS[a].x-SPOTS[a].y});
   for(var j=0;j<ord.length;j++){var k=ord[j],p=SPOTS[k],a=S2(p.x,p.y),v=bSpr(k,p),bx=a[0]-v.ax+v.w*.16,by=a[1]-v.ay+v.h*.1,bw=v.w*.68,bh=v.h*.84;if(px>=bx&&px<=bx+bw&&py>=by&&py<=by+bh){goSpot(k);return}}
@@ -267,12 +267,13 @@ function drawTG(){ensure();var t=fr,i,j,sk=skyCache(),ql=(typeof QL!=='undefined
   var cl0=cloudSpr(0),cls=[cloudSpr(0),cloudSpr(1),cloudSpr(2)];
   for(i=0;i<CL.length&&nb<cb;i++){var c=CL[i];if(c.f)continue;var a=S2(c.x+Math.sin(t*.004+c.p)*1.2,c.y),sp=cls[c.v];var cy0=a[1]-c.z*ZU;if(a[0]+sp.w*c.s*.5<0||a[0]-sp.w*c.s*.5>W||cy0+sp.h*c.s*.5<0||cy0-sp.h*c.s*.5>H)continue;nb++;g.globalAlpha=.8;g.save();g.translate(a[0],a[1]-c.z*ZU);g.scale(c.s,c.s);g.drawImage(sp.c,-sp.ax,-sp.ay,sp.w,sp.h);g.restore()}g.globalAlpha=1;
   for(j=0;j<GD.length;j++){var it=GD[j],q0;if(it.k==='isl'){var I=ISL[it.i],v=islSpr(I),ap=S2(I.cx,I.cy);if(ap[0]+v.w<0||ap[0]-v.ax>W||ap[1]-v.ay>H+400||ap[1]+v.h<-300)continue;blit(v,ap[0],ap[1])}else{var b=BRG[it.i],v2=brgSpr(b,it.i),ap2=S2(b.x0,b.y0);blit(v2,ap2[0],ap2[1])}}
-  var hd=hx+hy,drawn=false;
+  var hd=hx+hy,drawn=false,OT=(window.CITYOL&&CITYOL.tgList)?CITYOL.tgList():null,oi=0;
+  function fl(lim){while(OT&&oi<OT.length&&OT[oi].d<lim)CITYOL.tgDraw(OT[oi++],S2,s,CF.heroK)}
   g.save();g.lineCap='round';g.lineWidth=Math.max(2.4,HW*.07);
-  for(j=0;j<DR.length;j++){var o=DR[j];if(!drawn&&o.d>hd){heroDraw();drawn=true}var a3=S2(o.x,o.y);if(a3[0]<-260||a3[0]>W+260||a3[1]<-260||a3[1]>H+300)continue;
+  for(j=0;j<DR.length;j++){var o=DR[j];fl(drawn?o.d:Math.min(o.d,hd));if(!drawn&&o.d>hd){heroDraw();drawn=true}var a3=S2(o.x,o.y);if(a3[0]<-260||a3[0]>W+260||a3[1]<-260||a3[1]>H+300)continue;
     if(o.k==='post'){var vp=decSpr('post',0);g.strokeStyle='rgba(222,228,244,.95)';if(o.aY){var nb=S2(o.x,o.y-1.6);if(walkish(o.x,o.y-1.6)){g.beginPath();g.moveTo(a3[0],a3[1]-.8*ZU);g.lineTo(nb[0],nb[1]-.8*ZU);g.moveTo(a3[0],a3[1]-.45*ZU);g.lineTo(nb[0],nb[1]-.45*ZU);g.stroke()}}else{var nb2=S2(o.x-1.6,o.y);if(walkish(o.x-1.6,o.y)){g.beginPath();g.moveTo(a3[0],a3[1]-.8*ZU);g.lineTo(nb2[0],nb2[1]-.8*ZU);g.moveTo(a3[0],a3[1]-.45*ZU);g.lineTo(nb2[0],nb2[1]-.45*ZU);g.stroke()}}blit(vp,a3[0],a3[1])}
     else if(o.k==='spot'){var p=SPOTS[o.i];blit(bSpr(o.i,p),a3[0],a3[1])}else if(o.k==='deco'){var dp=DECB[o.i];blit(bSpr(dp.sid,dp),a3[0],a3[1])}else blit(decSpr(o.k,o.v||0),a3[0],a3[1])}
-  g.restore();if(!drawn)heroDraw();
+  g.restore();if(!drawn){fl(hd);heroDraw()}fl(1e9);
   fxPass(t);
   g.globalAlpha=.55;for(i=0;i<CL.length&&nf<cf;i++){var c2=CL[i];if(!c2.f)continue;var a4=S2(c2.x+Math.sin(t*.005+c2.p)*1.6,c2.y),sp2=cls[c2.v];if(a4[0]+sp2.w*c2.s*.7<0||a4[0]-sp2.w*c2.s*.7>W||a4[1]+ZU*1.6+sp2.h*c2.s*.5<0||a4[1]+ZU*1.6-sp2.h*c2.s*.5>H)continue;nf++;g.save();g.translate(a4[0],a4[1]+ZU*1.6);g.scale(c2.s*1.2,c2.s*.8);g.drawImage(sp2.c,-sp2.ax,-sp2.ay,sp2.w,sp2.h);g.restore()}g.globalAlpha=1;
   if(mark&&fr-mark.t<40){var m=S2(mark.x,mark.y),u=(fr-mark.t)/40;g.save();g.strokeStyle='rgba(180,255,255,'+(1-u)+')';g.lineWidth=2;g.beginPath();g.ellipse(m[0],m[1],(10+26*u)*s,(5+13*u)*s,0,0,TAU);g.stroke();g.restore()}
@@ -307,7 +308,7 @@ function drawCityGate(){var G=cityGate(),t=fr,x=G.x,y=G.y,r=G.r;g.save();g.trans
   g.textAlign='center';g.font='bold '+(15*s)+'px '+FONT;g.lineWidth=4;g.strokeStyle='#000c';g.fillStyle='#d8e8ff';g.strokeText('☁️ '+CF.gateName,0,-r*1.74-14*s);g.fillText('☁️ '+CF.gateName,0,-r*1.74-14*s);g.font='bold '+(11*s)+'px '+FONT;g.fillStyle='#ffe9a0';g.strokeText('chạm để vào',0,-r*1.74);g.fillText('chạm để vào',0,-r*1.74);g.restore()}
 /* ---------- vào / ra ---------- */
 function enter(){if(!started||!vil||on)return;if(CF.needDao&&!(window.HDAO&&HDAO.on())){try{DT.push({x:P.x,y:200,s:'🔒 Cần Đạo Thể',g:1,l:120})}catch(e){}return}
-  try{if(LCT.on())LCT.leave()}catch(e){}try{if(bo)tg()}catch(e){}sw=null;on=true;hx=14;hy=37.8;ccx=14;ccy=35;path=[];pend=-1;face=-1;moving=0;try{vt=null;vgo=-1;mvDir=0;P.atk=0;P.pe=null;P.hp=mx();P.mp=mm()}catch(e){}toast('☁️ Đến Thành Thị Tiên Giới · vuốt để di chuyển')}
+  try{if(LCT.on())LCT.leave()}catch(e){}try{if(bo)tg()}catch(e){}sw=null;on=true;hx=14;hy=37.8;ccx=14;ccy=35;path=[];pend=-1;face=-1;moving=0;TGV.sx=0;TGV.sy=1;try{vt=null;vgo=-1;mvDir=0;P.atk=0;P.pe=null;P.hp=mx();P.mp=mm()}catch(e){}toast('☁️ Đến Thành Thị Tiên Giới · vuốt để di chuyển')}
 function leave(){if(!on)return;on=false;sw=null;path=[];pend=-1;hideCard();try{LCT.enter()}catch(e){}}
 /* ---------- ô cổng trong Thành Thị Linh Giới: dùng ô "Hư Không Truyền Tống" (đang tạm khoá) làm lối vào Tiên Giới ---------- */
 var GT=null;try{(LCT.gates||[]).forEach(function(gt){if(!GT&&!gt.open&&/Hư Không/.test((gt.n||'')+(gt.sn||'')))GT=gt});if(GT){GT.sn='Tiên Giới';GT.n='Tiên Giới Thiên Môn';GT.e='☁️';GT.c='#bfe4ff';GT.rgb='150,200,255';GT.sub='Thành Thị Tiên Giới · chạm để vào';GT.open=1;GT.go=function(){enter()}}}catch(e){GT=null}
@@ -317,7 +318,7 @@ vdraw=function(){if(on){drawTG();return}var r=_vd.apply(this,arguments);try{if(!
 vstep=function(){if(on){stepTG();return}var r=_vs.apply(this,arguments);try{if(pendGate){if(!LCT.on())pendGate=0;else if(typeof mvDir!=='undefined'&&mvDir)pendGate=0;else if(vt==null){pendGate=0;var G=cityGate();if(Math.abs(P.x*s-G.x)<30*s)enter()}}}catch(e){}return r};
 step=function(){if(on&&(!vil||!started||(typeof bo!=='undefined'&&bo)))on=false;return _st.apply(this,arguments)};
 if(typeof ng==='function'){var _ng=ng;ng=function(){on=false;sw=null;pendGate=0;hideCard();return _ng.apply(this,arguments)}}
-window.addEventListener('pointerdown',function(e){try{if(e.target!==c)return;if(on){e.stopImmediatePropagation();e.stopPropagation();swDown(e);return}
+window.addEventListener('pointerdown',function(e){try{if(e.target!==c)return;if(on){e.stopImmediatePropagation();e.stopPropagation();if(window.CITYOL&&CITYOL.tap&&CITYOL.tap(e.offsetX,e.offsetY))return;swDown(e);return}
   if(!GT&&started&&vil&&!bo&&LCT.on()){var G=cityGate();if(Math.abs(e.offsetX-G.x)<G.r*1.25&&e.offsetY>G.y-G.r*1.7&&e.offsetY<G.y+G.r*2){e.stopImmediatePropagation();e.stopPropagation();pendGate=1;vt=cl(G.x/s,40,vw()-40);vgo=-1;gateGo=0;return}pendGate=0}}catch(x){}},true);
 window.addEventListener('pointermove',swMove,true);window.addEventListener('pointerup',swUp,true);window.addEventListener('pointercancel',swUp,true);
 window.addEventListener('keydown',function(e){if(!on)return;var tg0=e.target&&e.target.tagName;if(tg0==='INPUT'||tg0==='TEXTAREA')return;var k=(e.key||'').toLowerCase();if('wasd'.indexOf(k)>=0&&k.length==1||k.indexOf('arrow')==0){keys[k]=1;if(k.indexOf('arrow')==0)e.preventDefault()}},true);

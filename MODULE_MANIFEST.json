@@ -6,6 +6,7 @@
   "modules": {
     "core": [
       "core/00-error-handler.js",
+      "systems/11-cloud-only.js",
       "core/01a-base-data.js",
       "core/01b-items-sets-wheel.js",
       "core/01c-affix-petdata-skills.js",
@@ -70,7 +71,14 @@
       "world/61-tien-gioi-thanh.js",
       "world/71-van-phap-mon-phai.js",
       "world/72-mon-phai-ky-nang.js",
-      "world/73-mon-phai-ngoai-hinh.js"
+      "world/73-mon-phai-ngoai-hinh.js",
+      "world/74-mon-phai-8-huong.js",
+      "world/75-mon-phai-vu-khi.js",
+      "world/76-chuyen-the.js",
+      "world/77-thanh-online.js",
+      "world/78-canh-8-huong.js",
+      "world/79-tien-gioi-ky-nang-8-huong.js",
+      "world/80-map-treo.js"
     ],
     "systems": [
       "systems/08-farming-alchemy.js",
@@ -121,6 +129,8 @@
     "MODULE_MANIFEST.json",
     "assets/hon-phach-assets.js",
     "assets/mon-phai-sprites.js",
+    "assets/mon-phai-sprites2.js",
+    "assets/mon-phai-vukhi.js",
     "world/57-hon-phach.js",
     "world/58-linh-gioi-city-art.js",
     "phien_dang_nhap.sql",

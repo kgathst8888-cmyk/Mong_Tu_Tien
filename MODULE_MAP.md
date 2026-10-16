@@ -41,6 +41,7 @@ Tạo tự động bởi `python3 tools/symbols.py`. Cột KB = dung lượng, "
 | 35 | `systems/09-input-guard.js` | 0 | 0 | Chặn chạm của Làng khi đang ở Thành Thị Linh Giới (phải chạy trước script Linh Điền) |
 | 36 | `world/10-farming-map.js` | 34 | 1 | BẢN ĐỒ LINH ĐIỀN ĐỘNG THIÊN - Cổng 🌱 trên trời Làng Thanh Vân (chạm → đi tới → vào bản đồ) - Trong bản đồ: chạm ô đất để đi tới và gieo / thu hoạch, c |
 | 37 | `combat/11-status-effects.js` | 10 | 0 | CƠ CHẾ TRẠNG THÁI: BỎNG · ĐỘC TỐ · CHOÁNG · XUYÊN GIÁP · ĐÓNG BĂNG |
+| 37b | `systems/11-cloud-only.js` | ~90 | 0 | ☁ CHỈ LƯU ĐÁM MÂY: khoá dữ liệu game chuyển vào RAM, nạp từ mây lúc mở game, đồng hồ nền Worker (nạp ĐẦU TIÊN, sau core/00) |
 | 38 | `systems/12-cloud-save.js` | 25 | 0 | ☁ LƯU GAME TRÊN MẠNG (Supabase) · đăng nhập + đồng bộ + bảng xếp hạng ==== Điền 2 giá trị dưới đây (xem HUONG_DAN_CLOUD.md). Để trống = game chạy như  |
 | 39 | `world/13-mining.js` | 29 | 1 | KHAI KHOÁNG: Mỏ Vàng · Quặng Sắt · Huyền Kim - Ngọn núi ở bản đồ tân thủ (Thanh Vân Sơn Môn): chạm vào để vào hầm mỏ - Trong hầm: chạm mạch khoáng để  |
 | 40 | `equipment/14-cosmetics-shop.js` | 22 | 1 | TIỆM Y PHỤC LINH VÂN · Ngoại trang (chỉ làm đẹp, không cộng chỉ số) ==== Tiền tệ: 💠 Đồng Huyền Tinh — rơi từ Boss Thế Giới 🐲 và Boss Hoàng Kim 👑 (chỉn |
@@ -92,7 +93,7 @@ Tạo tự động bởi `python3 tools/symbols.py`. Cột KB = dung lượng, "
 | 86 | `world/50-y-canh-hieu-ung.js` | 6 | 0 | ✨ HIỆU ỨNG TRẠNG THÁI THẦN THÔNG Ý CẢNH · TIÊN / MA (world/50-y-canh-hieu-ung.js) ===== * Bổ sung hiệu ứng cho 6 thần thông của world/49-y-canh-than-t |
 | 87 | `world/51-toc-huy-hieu.js` | 19 | 0 | 🏅 HUY HIỆU TIÊN TỘC / MA TỘC (world/51-toc-huy-hieu.js) ===== * Khi nhân vật đã chọn Tiên Đạo hoặc Ma Đạo ở Ý Cảnh (PS[cur].yc.p = 't' / 'm'): * - Tiê |
 | 88 | `world/52-skill-layout.js` | 3 | 0 | 🧩 SẮP XẾP CÁC Ô KỸ NĂNG BÊN PHẢI MÀN HÌNH (world/52-skill-layout.js) ===== * Lỗi: 3 module cùng đặt nút kỹ năng ở cùng một chỗ (right≈60-62px, top≈124 |
-| 89 | `world/53-y-canh-ky-nang-toc.js` | 45 | 0 | 🌟 KỸ NĂNG TIÊN TỘC / MA TỘC · HIỆU ỨNG MỚI + MỞ KHOÁ BẰNG NGỘ ĐẠO / MA KHÍ (world/53-y-canh-ky-nang-toc.js) ===== * Mở rộng world/49-y-canh-than-thong |
+| 89 | `world/53-y-canh-ky-nang-toc.js` | 48 | 0 | 🌟 KỸ NĂNG TIÊN TỘC / MA TỘC · HIỆU ỨNG MỚI + MỞ KHOÁ BẰNG NGỘ ĐẠO / MA KHÍ (world/53-y-canh-ky-nang-toc.js) ===== * Mở rộng world/49-y-canh-than-thong |
 | 90 | `equipment/51-dao-the-outfit.js` | 189 | 0 | 👘 TRANG PHỤC ĐẠO THỂ (equipment/51-dao-the-outfit.js) ===== * Khi nhân vật đã Hợp Đạo (Đạo Thể: HDAO.on()), ngoại hình 3 hệ (Chiến binh / Pháp sư / Cu |
 | 91 | `world/54-than-thong-sat-thuong.js` | 4 | 0 | ⚖️ CÂN BẰNG: SÁT THƯƠNG THẦN THÔNG LUÔN CAO HƠN KỸ NĂNG THƯỜNG ===== * Trước đây nhiều thần thông yếu hơn kỹ năng phàm thể (đo trong game, hệ số nhân  |
 | 92 | `equipment/55-opt-moi.js` | 8 | 0 |  |
@@ -112,8 +113,17 @@ Tạo tự động bởi `python3 tools/symbols.py`. Cột KB = dung lượng, "
 | 106 | `world/72-mon-phai-ky-nang.js` | 17 | 0 | ⚔️ KỸ NĂNG MÔN PHÁI (world/72-mon-phai-ky-nang.js) — chạy sau world/71-van-phap-mon-phai.js ===== * Sau khi chọn môn ở Vạn Pháp Tháp: kỹ năng 1 mở nga |
 | 107 | `assets/mon-phai-sprites.js` | 460 | 0 | (dữ liệu ảnh/font base64 — KHÔNG đọc) |
 | 108 | `world/73-mon-phai-ngoai-hinh.js` | 5 | 0 | 🎭 NGOẠI HÌNH MÔN PHÁI + GIỚI TÍNH (world/73-mon-phai-ngoai-hinh.js) — nạp sau world/72, sau assets/mon-phai-sprites.js ===== * Chọn môn phái ở Vạn Phá |
-| 109 | `systems/67-tang-quai-boss.js` | 3 | 0 | ⚔ TĂNG CHỈ SỐ BOSS (module riêng, nạp CUỐI) ===== * BOSSUP.hp = nhân MÁU boss (mọi loại boss: ngoài map b>=2, Hầm Ngục, Ma Thần, Kiếm Thánh, Tháp, Phụ |
-| 110 | `systems/68-ng-reset-du-lieu-module.js` | 1 | 0 | FIX: NHÂN VẬT MỚI TẠO (ng) BỊ GIỮ KỸ NĂNG CẤP CAO (systems/68-ng-reset-du-lieu-module.js) ===== * Lỗi: ng() (core/01s) chỉ reset các trường gốc của PS |
-| 111 | `ui/69-thong-bao-thu.js` | 18 | 0 |  |
-| 112 | `ui/70-admin-panel.js` | 27 | 0 | 🛡 TRANG ADMIN (ui/70-admin-panel.js, nạp sau ui/69) ===== * Nút tròn 🛡 Admin nằm cạnh ✉️ Thư (left:192px, top:132px). CHỈ HIỆN với tài khoản có trong  |
-| 113 | `systems/61-chong-dube-bao-mat.js` | 11 | 0 |  |
+| 109 | `assets/mon-phai-sprites2.js` | 334 | 0 | (dữ liệu ảnh/font base64 — KHÔNG đọc) |
+| 110 | `world/74-mon-phai-8-huong.js` | 6 | 0 | 🧭 MÔN PHÁI 8 HƯỚNG — 2.5D Tiên Giới (world/74-mon-phai-8-huong.js) — nạp sau world/73 + assets/mon-phai-sprites2.js ===== * CHỈ khi đang ở Thành Tiên  |
+| 111 | `assets/mon-phai-vukhi.js` | 100 | 0 | (dữ liệu ảnh/font base64 — KHÔNG đọc) |
+| 112 | `world/75-mon-phai-vu-khi.js` | 5 | 0 | ⚔ VŨ KHÍ MÔN PHÁI (world/75-mon-phai-vu-khi.js) — nạp sau world/74 + assets/mon-phai-vukhi.js ===== * Vẽ vũ khí (ảnh MPW, cắt từ ô "Vũ khí" của ảnh mẫ |
+| 113 | `world/76-chuyen-the.js` | 12 | 0 | 🌌 CHUYỂN THẾ ĐÀI · ĐẠO THỂ → TIÊN NHÂN ===== * Cửa vào: Thành Thị Tiên Giới → "Chuyển Thế Đài" (thay Đan Dược Các, TG.spots id 'rebirth'). * Điều kiện |
+| 114 | `world/77-thanh-online.js` | 16 | 0 | 🏙 THÀNH THỊ ONLINE (world/77-thanh-online.js) ===== * Gặp người chơi khác ở Thành Thị Linh Giới (LCT, đi ngang 1 chiều) và Thành Thị Tiên Giới (TG, 2. |
+| 115 | `world/78-canh-8-huong.js` | 4 | 0 | 🪽 CÁNH 8 HƯỚNG — Tiên Giới (world/78-canh-8-huong.js) — nạp sau world/74 + world/77 ===== * CHỈ khi đang ở Thành Tiên Giới (TG.on()) và nhân vật đã ch |
+| 116 | `world/79-tien-gioi-ky-nang-8-huong.js` | 21 | 0 | ✨ KỸ NĂNG 8 HƯỚNG — Tiên Giới (world/79-tien-gioi-ky-nang-8-huong.js) — nạp sau world/78 ===== * Thành Tiên Giới là bản đồ thành thị (vil, không có qu |
+| 117 | `systems/67-tang-quai-boss.js` | 3 | 0 | ⚔ TĂNG CHỈ SỐ BOSS (module riêng, nạp CUỐI) ===== * BOSSUP.hp = nhân MÁU boss (mọi loại boss: ngoài map b>=2, Hầm Ngục, Ma Thần, Kiếm Thánh, Tháp, Phụ |
+| 118 | `systems/68-ng-reset-du-lieu-module.js` | 1 | 0 | FIX: NHÂN VẬT MỚI TẠO (ng) BỊ GIỮ KỸ NĂNG CẤP CAO (systems/68-ng-reset-du-lieu-module.js) ===== * Lỗi: ng() (core/01s) chỉ reset các trường gốc của PS |
+| 119 | `ui/69-thong-bao-thu.js` | 18 | 0 |  |
+| 120 | `ui/70-admin-panel.js` | 27 | 0 | 🛡 TRANG ADMIN (ui/70-admin-panel.js, nạp sau ui/69) ===== * Nút tròn 🛡 Admin nằm cạnh ✉️ Thư (left:192px, top:132px). CHỈ HIỆN với tài khoản có trong  |
+| 121 | `systems/61-chong-dube-bao-mat.js` | 11 | 0 |  |
+| 122 | `world/80-map-treo.js` | 22 | 0 |  |
