@@ -10,3 +10,7 @@
 - Khi ở Tiên Giới: chạm giữ rồi kéo = nhân vật đi theo hướng ngón tay (hiện cần vuốt nổi, kéo nhẹ đi chậm, kéo xa đi nhanh). Nhả tay = dừng.
 - Chạm nhanh không kéo = chạm-để-đi / chạm công trình như cũ (xử lý lúc nhả tay).
 - Chỉnh: SWT (ngưỡng bắt đầu vuốt, px), SWR (bán kính cần vuốt, px) trong world/61-tien-gioi-thanh.js. Phím WASD/mũi tên vẫn dùng được.
+
+## Fix131 — không đi tiếp được tới các mục (2026-10-16)
+- Nguyên nhân: vùng đi được của cầu bị thu vào 0.25 ô ở mọi cạnh nên hở 0.3–0.6 ô với đảo/cầu chính → cầu Bắc (tới Thiên Cung/Đấu Trường/Động Phủ), cầu Tây (Đan Dược Các), cầu Đông (Tiên Thú Viên/Vạn Pháp Tháp) bị đứt. Thiên Binh Các có cửa nằm ngoài đảo nên không tới được.
+- Sửa (world/61-tien-gioi-thanh.js): ground() kéo dài cầu chồng vào đảo/cầu chính (cầu chính +0.9 ô phía Bắc, cầu phụ +0.9 ô hai đầu); Thiên Binh Các dời lên y=26.3, cửa [4.8,28.2].

@@ -32,14 +32,14 @@ var SPOTS=[
  {id:'arena',n:'Tiên Giới Đấu Trường',e:'⚔️',c:'#ff9a8a',x:7.4,y:10.6,w:2.6,d:2.6,k:'pavilion',z:4,door:[7.4,13.2],sub:'Quyết đấu Tiên Nhân',desc:'Đấu trường trên mây — nơi Tiên Nhân luận võ. Sắp mở.'},
  {id:'cave',n:'Linh Mạch Động Phủ',e:'💎',c:'#7ff0ff',x:20.6,y:10.6,w:2.6,d:2.6,k:'pavilion',z:4,door:[20.6,13.2],sub:'Tu luyện linh mạch',desc:'Động phủ hấp thụ linh khí từ mạch trời. Sắp mở.'},
  {id:'alch',n:'Đan Dược Các',e:'⚗️',c:'#9aff9a',x:3.4,y:21.6,w:2.8,d:2.8,k:'hall2',z:6,door:[3.4,24.4],sub:'Luyện tiên đan',desc:'Các luyện đan của Tiên Giới. Sắp mở.'},
- {id:'forge',n:'Thiên Binh Các',e:'🗡️',c:'#ffd0a0',x:4.8,y:27.6,w:2.4,d:2.2,k:'hall',z:5,door:[4.8,29.9],sub:'Rèn tiên khí',desc:'Nơi rèn tiên khí thượng phẩm. Sắp mở.'},
+ {id:'forge',n:'Thiên Binh Các',e:'🗡️',c:'#ffd0a0',x:4.8,y:26.3,w:2.4,d:2.2,k:'hall',z:5,door:[4.8,28.2],sub:'Rèn tiên khí',desc:'Nơi rèn tiên khí thượng phẩm. Sắp mở.'},
  {id:'beast',n:'Tiên Thú Viên',e:'🐉',c:'#ffb0ff',x:24.8,y:19.4,w:3,d:2.6,k:'hall2',z:6,door:[24.8,22.4],sub:'Tiên thú · linh thú',desc:'Vườn nuôi tiên thú. Sắp mở.'},
  {id:'pagoda',n:'Vạn Pháp Tháp',e:'🗼',c:'#ffe27a',x:25,y:23.2,w:2.2,d:2.2,k:'pagoda',z:10,door:[25,25.7],sub:'Thí luyện vạn pháp',desc:'Tháp thí luyện của Tiên Giới, 9 tầng pháp. Sắp mở.'},
  {id:'market',n:'Tiên Thị',e:'🏮',c:'#ffc87a',x:19.6,y:36.2,w:3,d:2.2,k:'market',z:4,door:[19.6,38.6],sub:'Chợ Tiên Giới',desc:'Phiên chợ trên mây. Sắp mở.'},
  {id:'portal',n:'Tinh Hà Truyền Tống',e:'🌌',c:'#c8a0ff',x:8.4,y:36.6,w:2.6,d:1.4,k:'portal',z:5,door:[8.4,38.6],open:1,sub:'Về Thành Thị Linh Giới',desc:'Cổng sao trở về Thành Thị Linh Giới.'}];
 SPOTS.forEach(function(p){p.rect=[p.x-p.w/2,p.y-p.d/2,p.x+p.w/2,p.y+p.d/2]});
 function blocked(x,y){for(var i=0;i<SPOTS.length;i++){var r=SPOTS[i].rect;if(x>r[0]-.25&&x<r[2]+.25&&y>r[1]-.25&&y<r[3]+.25)return true}return false}
-function ground(x,y){var i;for(i=0;i<BRG.length;i++){var b=BRG[i];if(x>=b.x0+.25&&x<=b.x1-.25&&y>=b.y0&&y<=b.y1)return true}for(i=0;i<ISL.length;i++)if(!ISL[i].k||ISL[i].k!=='deco')if(inPoly(ISL[i].wp,x,y))return true;return false}
+function ground(x,y){var i;for(i=0;i<BRG.length;i++){var b=BRG[i],ex=b.main?0:.9,ey=b.main?.9:0;/* Fix131: cầu kéo dài chồng vào đảo/cầu chính (trước đây hở 0.3-0.6 ô nên không đi tiếp được) */if(x>=b.x0+.25-ex&&x<=b.x1-.25+ex&&y>=b.y0-ey&&y<=b.y1)return true}for(i=0;i<ISL.length;i++)if(!ISL[i].k||ISL[i].k!=='deco')if(inPoly(ISL[i].wp,x,y))return true;return false}
 function walk(x,y){return ground(x,y)&&!blocked(x,y)}
 function seg(ax,ay,bx,by){var n=Math.ceil(Math.hypot(bx-ax,by-ay)/.3);for(var i=1;i<=n;i++){var t=i/n;if(!walk(ax+(bx-ax)*t,ay+(by-ay)*t))return false}return true}
 var NODES=[[14,36],[14,30],[14,24],[14,22],[14,18.8],[14,13.6],[5.4,24],[23.4,22],[9.4,12.6],[18.6,12.6],[9,36.4],[19.4,34.2],[14,10.6],[5,29.6],[23,28.2],[9,21],[19.8,24],[3.8,23]].filter(function(n){return walk(n[0],n[1])});

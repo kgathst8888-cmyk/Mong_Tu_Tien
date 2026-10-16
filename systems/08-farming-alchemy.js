@@ -222,7 +222,7 @@ const any=()=>ZC.pa()>1||ZC.pd()>1||ZC.ph()>1||ZC.pm()>1;
 function ld(o){
  S=fresh();on=false;
  if(o&&typeof o=='object'){
-  S.seeds=o.seeds||{};S.herbs=o.herbs||{};S.pills=o.pills||{};S.sel=HM[o.sel]?o.sel:'chi';
+  S.seeds=o.seeds||{};S.herbs=o.herbs||{};S.pills=o.pills||{};if(typeof o.sect=='string')S.sect=o.sect;/*Fix132: môn phái Vạn Pháp Tháp*/S.sel=HM[o.sel]?o.sel:'chi';
   S.np=Math.max(CFG.plots0,Math.min(CFG.plotsMax,o.np|0||CFG.plots0));
   S.plots=Array(S.np).fill(null);(o.plots||[]).forEach((p,i)=>{if(i<S.np&&p&&HM[p.id])S.plots[i]={id:p.id,t0:+p.t0||Date.now()}});
  }

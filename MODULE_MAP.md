@@ -108,8 +108,12 @@ Tạo tự động bởi `python3 tools/symbols.py`. Cột KB = dung lượng, "
 | 102 | `world/65-cong-ve-lang.js` | 8 | 0 | 🏘 CỔNG VỀ THÔN TÂN THỦ · Thành Thị Linh Giới (world/65-cong-ve-lang.js) ===== * Thêm cổng thứ 6 (chỉ số cuối của LCT.gates) đặt đúng ở cột sáng phía t |
 | 103 | `world/61-tien-gioi-thanh.js` | 57 | 0 |  |
 | 104 | `systems/66-dot-pha-canh-gioi.js` | 9 | 0 |  |
-| 105 | `systems/67-tang-quai-boss.js` | 3 | 0 | ⚔ TĂNG CHỈ SỐ BOSS (module riêng, nạp CUỐI) ===== * BOSSUP.hp = nhân MÁU boss (mọi loại boss: ngoài map b>=2, Hầm Ngục, Ma Thần, Kiếm Thánh, Tháp, Phụ |
-| 106 | `systems/68-ng-reset-du-lieu-module.js` | 1 | 0 | FIX: NHÂN VẬT MỚI TẠO (ng) BỊ GIỮ KỸ NĂNG CẤP CAO (systems/68-ng-reset-du-lieu-module.js) ===== * Lỗi: ng() (core/01s) chỉ reset các trường gốc của PS |
-| 107 | `ui/69-thong-bao-thu.js` | 18 | 0 |  |
-| 108 | `ui/70-admin-panel.js` | 27 | 0 | 🛡 TRANG ADMIN (ui/70-admin-panel.js, nạp sau ui/69) ===== * Nút tròn 🛡 Admin nằm cạnh ✉️ Thư (left:192px, top:132px). CHỈ HIỆN với tài khoản có trong  |
-| 109 | `systems/61-chong-dube-bao-mat.js` | 11 | 0 |  |
+| 105 | `world/71-van-phap-mon-phai.js` | 13 | 0 | 🗼 VẠN PHÁP THÁP — CHỌN MÔN PHÁI (world/71-van-phap-mon-phai.js) ===== * Mục "Vạn Pháp Tháp" ở Thành Thị Tiên Giới (TG.spots id 'pagoda'): TẠM KHOÁ cho |
+| 106 | `world/72-mon-phai-ky-nang.js` | 17 | 0 | ⚔️ KỸ NĂNG MÔN PHÁI (world/72-mon-phai-ky-nang.js) — chạy sau world/71-van-phap-mon-phai.js ===== * Sau khi chọn môn ở Vạn Pháp Tháp: kỹ năng 1 mở nga |
+| 107 | `assets/mon-phai-sprites.js` | 460 | 0 | (dữ liệu ảnh/font base64 — KHÔNG đọc) |
+| 108 | `world/73-mon-phai-ngoai-hinh.js` | 5 | 0 | 🎭 NGOẠI HÌNH MÔN PHÁI + GIỚI TÍNH (world/73-mon-phai-ngoai-hinh.js) — nạp sau world/72, sau assets/mon-phai-sprites.js ===== * Chọn môn phái ở Vạn Phá |
+| 109 | `systems/67-tang-quai-boss.js` | 3 | 0 | ⚔ TĂNG CHỈ SỐ BOSS (module riêng, nạp CUỐI) ===== * BOSSUP.hp = nhân MÁU boss (mọi loại boss: ngoài map b>=2, Hầm Ngục, Ma Thần, Kiếm Thánh, Tháp, Phụ |
+| 110 | `systems/68-ng-reset-du-lieu-module.js` | 1 | 0 | FIX: NHÂN VẬT MỚI TẠO (ng) BỊ GIỮ KỸ NĂNG CẤP CAO (systems/68-ng-reset-du-lieu-module.js) ===== * Lỗi: ng() (core/01s) chỉ reset các trường gốc của PS |
+| 111 | `ui/69-thong-bao-thu.js` | 18 | 0 |  |
+| 112 | `ui/70-admin-panel.js` | 27 | 0 | 🛡 TRANG ADMIN (ui/70-admin-panel.js, nạp sau ui/69) ===== * Nút tròn 🛡 Admin nằm cạnh ✉️ Thư (left:192px, top:132px). CHỈ HIỆN với tài khoản có trong  |
+| 113 | `systems/61-chong-dube-bao-mat.js` | 11 | 0 |  |
