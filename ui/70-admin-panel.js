@@ -135,7 +135,7 @@ function draw(){
   if(!el||!open)return;
   try{el.className=PORT?'pt':'ls'}catch(e){el.className='pt'}
   var l0=el.querySelector('.al'),keep=(l0&&!S.reset)?l0.scrollTop:0;S.reset=0;
-  var h='<div class="ah"><span>🛡 Quản trị</span><button data-a="x">✕</button></div>';
+  var h='<div class="ah"><span>🛡 Quản trị <small style="opacity:.6;font-weight:normal">· bản Fix174</small></span><button data-a="x">✕</button></div>';
   h+='<div class="at">'+tabBtn('acc','👤 Tài khoản')+tabBtn('gift','🎁 Gửi quà')+tabBtn('note','📢 Thông báo')+tabBtn('mail','✉️ Đã gửi')+tabBtn('log','📜 Nhật ký')+tabBtn('test','🧪 Test')+'</div>';
   if(S.note)h+='<div class="an">'+esc(S.note)+'</div>';
   h+='<div class="al">'+(S.tab==='acc'?vAcc():S.tab==='gift'?vGift():S.tab==='note'?vNote():S.tab==='mail'?vMail():S.tab==='test'?vTest():vLog())+'</div>';

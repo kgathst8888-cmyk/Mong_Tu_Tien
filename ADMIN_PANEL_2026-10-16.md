@@ -48,3 +48,7 @@
 - ⚔ Chiến đấu: ❤ Hồi đầy HP/MP · 🛡 Bất tử (bật/tắt, tự hồi máu mỗi 0,12s; mất khi tải lại trang) · ☠ Diệt hết quái trên màn hình.
 - 🎒 Tạo trang bị: chọn phẩm (Thường → Thiên Thần), ô (hoặc ngẫu nhiên), cấp 1-80, số lượng 1-30, vào túi (dừng khi hết chỗ) · 🗑 Dọn sạch túi (có hỏi xác nhận).
 - Tất cả chỉ tác động nhân vật đang chơi, chạy phía máy, không cần SQL. Lưu qua sv() như thường.
+
+## Fix175 — Chống cache + nhãn phiên bản
+- index.html nạp `ui/70-admin-panel.js?v=174` (trình duyệt tải lại file mới). Tiêu đề bảng 🛡 Quản trị có nhãn "bản Fix174": không thấy nhãn = đang chạy bản cũ (cache / bản ghép cũ / chưa triển khai lên máy chủ web).
+- Nếu chơi bằng bản ghép Mong_Tu_Tien_CLAUDE.html: phải build lại (tools/build.py), vì zip không kèm file đó.
