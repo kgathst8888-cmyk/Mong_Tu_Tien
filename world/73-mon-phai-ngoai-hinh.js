@@ -17,7 +17,7 @@ function gender(){var v=V();return v&&v.g==='f'?'f':'m'}
 function setGender(g){var v=V();if(!v||(g!=='m'&&g!=='f'))return false;v.g=g;try{if(typeof sv==='function')sv()}catch(e){}return true}
 function sect(){try{return window.VP.get()||''}catch(e){return ''}}
 function preview(id,g){var d=MPS[id]&&MPS[id][g==='f'?'f':'m'];return d?d[0]:''}
-window.VPG={gender:gender,setGender:setGender,preview:preview,CF:CF};
+window.VPG={get state(){return ST},gender:gender,setGender:setGender,preview:preview,CF:CF};
 /* chỉ nhân vật của mình (người khác ở Làng Online / đối thủ Đấu Trường mượn bản sao P) */
 function own(){return typeof P==='object'&&P&&!('maxMp' in P)&&!(P.hp===1&&P.mp===1&&P.atkT===1)}
 var ST={f:-1,k:0,bp:0,wp:0,hv:0};

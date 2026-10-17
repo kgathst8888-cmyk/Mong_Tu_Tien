@@ -90,6 +90,7 @@
       "world/85-skill-fold.js",
       "world/86-tien-nhan-bay-fx.js",
       "world/87-tien-gioi-auto-mon-phai.js",
+      "world/91-bang-ten-nang.js",
       "world/90-tien-gioi-chi-tiet.js"
     ],
     "systems": [
