@@ -22,7 +22,9 @@ if(CF.fx===undefined)CF.fx=1;
 if(CF.slices===undefined)CF.slices=5;
 if(CF.arm===undefined)CF.arm=true;
 if(CF.debug===undefined)CF.debug=false;
-var PI=Math.PI,R=PI/180,TAU=PI*2,OLD=VPW.draw,DEPTHK=.22;
+/* world/73 + world/74 để lớp vũ khí TẮT mặc định (CF.weapon=false) → bật lên để vũ khí mới được gọi vẽ */
+try{if(window.VPG_CF)VPG_CF.weapon=true;if(window.VPG8_CF)VPG8_CF.weapon=true}catch(e){}
+var PI=Math.PI,R=PI/180,TAU=PI*2,OLD0=VPW.draw,DEPTHK=.22,OLD=function(){}; /* vũ khí cũ lệch với tranh mới → không dùng làm dự phòng */
 var SPEC={
  umt:{cls:'scythe',len:1.08,grip:.60,c1:'#ff3a4a',c2:'#ffb0b8',fx:'wisp'},
  hbd:{cls:'spear',len:1.16,grip:.60,c1:'#7fe4ff',c2:'#eafcff',fx:'snow'},
