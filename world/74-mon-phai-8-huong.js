@@ -96,12 +96,13 @@ function draw8(sid){
   g.save();g.translate(0,1);g.scale(1,.24);g.globalCompositeOperation='lighter';g.strokeStyle=col;g.globalAlpha=(.28+.1*Math.sin(bp*1.6)+.18*k)*(1-.65*ST.hv);g.lineWidth=2.2;g.beginPath();g.arc(0,0,23+2*Math.sin(bp*1.6),0,6.2832);g.stroke();g.restore();
   if(ST.hv>.02)hovFx(col,up,k,bp);
   g.save();if(up)g.translate(0,-up);
+  var wk=null;if(CF.weapon){try{if(window.VPW){var HHw=(window.VPG_CF&&VPG_CF.h)||76;wk={kind:'front',ang:ST.ang,w:HHw*A.w/A.h,HH:HHw,k:k,bp:bp,wp:ST.wp,at:-1};VPW.draw(sid,'back',wk)}}catch(e){wk=null}} /* Fix225: nửa sau của vòng vũ khí vẽ TRƯỚC thân, theo độ cao bay */
   /* XOAY 3D GIẢ: bề mặt thân trượt như hình trụ quanh trục dọc (khung cũ trôi theo chiều xoay, khung mới trượt vào), đầu quay trước – gấu áo trễ sau (tw), thu ngang khi nghiêng */
   if(wB<=.002)drawPose(A,1,ws,sf*t*dl,tw);
   else if(wB>=.998)drawPose(B,1,ws,-sf*(1-t)*dl,tw);
   else{drawPose(A,1,ws,sf*t*dl,tw);drawPose(B,wB,ws,-sf*(1-t)*dl,tw)}
+  if(wk){try{VPW.draw(sid,'front',wk)}catch(e){}}
   g.restore();
-  if(CF.weapon){try{if(window.VPW){var HH=(window.VPG_CF&&VPG_CF.h)||76,wk={kind:'front',ang:ST.ang,w:HH*A.w/A.h,HH:HH,k:k,bp:bp,wp:ST.wp,at:-1};VPW.draw(sid,'back',wk);VPW.draw(sid,'front',wk)}}catch(e){}}
  }finally{g.restore()}
  return true;
 }

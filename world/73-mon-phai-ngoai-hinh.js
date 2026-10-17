@@ -65,6 +65,7 @@ function drawSect(o,sid){
   g.translate(lunge*8*(1-hv),bob+HH*.012);g.rotate(rot);g.scale(sx,sy);
   g.scale(d,1); /* huỷ lật: khung ảnh đã đúng hướng; dx/tàn ảnh nhân d để vẫn trôi ngược chiều đi */
   g.imageSmoothingEnabled=true;try{g.imageSmoothingQuality='high'}catch(e){}
+  var wk=null;if(CF.weapon){try{if(window.VPW){wk={kind:'front',dir:d,w:HH*A.w/A.h,HH:HH,k:k,bp:bp,wp:wp,at:aa?Math.max(0,Math.min(1,at)):-1};VPW.draw(sid,'back',wk)}}catch(e){wk=null}} /* Fix225: vũ khí bay quanh người — nửa sau vẽ TRƯỚC thân */
   var pass=[[A,1]];if(wB>.998)pass=[[B,1]];else if(wB>.002)pass.push([B,wB]);
   for(var pi=0;pi<pass.length;pi++){
    var o2=pass[pi][0],al=pass[pi][1],im=o2.im,w=HH*o2.w/o2.h,N=CF.strips,ih=im.naturalHeight,iw=im.naturalWidth,sh=ih/N,dh=HH/N;
@@ -77,7 +78,7 @@ function drawSect(o,sid){
     g.drawImage(im,0,j*sh,iw,sh+.6,-w/2+dx*d+dxs,-HH+j*dh,w,dh+.6)}
   }
   g.globalAlpha=1;
-  if(CF.weapon){try{if(window.VPW){var wk={kind:'front',dir:d,w:HH*A.w/A.h,HH:HH,k:k,bp:bp,wp:wp,at:aa?Math.max(0,Math.min(1,at)):-1};VPW.draw(sid,'back',wk);VPW.draw(sid,'front',wk)}}catch(e){}}
+  if(CF.weapon&&wk){try{VPW.draw(sid,'front',wk)}catch(e){}}
  }finally{g.restore()}
  return true;
 }
