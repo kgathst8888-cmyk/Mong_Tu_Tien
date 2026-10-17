@@ -59,7 +59,7 @@ function pick(sid,gen,sec,mv){
  return{o:o,fl:fl,sq:sq,fw:fw,HH:HH,c:c,run:kind==='run',kind:kind,key:kind+fl}
 }
 /* ----- vẽ 1 tư thế (dải ngang: đầu đứng yên, gấu áo/tóc bay) ----- */
-function drawPose(p,alpha,col,sid,ws){
+function drawPose(p,alpha,col,sid,ws,nw){
  var k=ST.k,wp=ST.wp,bp=ST.bp,HH=p.HH,o=p.o,im=o.im,w=HH*o.w/o.h*p.sq,
   hv=ST.hv,bob=-(k*Math.abs(Math.sin(wp))*2.6*(1-hv))+Math.sin(bp)*.7,
   rot0=p.c*k*(p.run?.015:.06)*(1+hv*1.3)+Math.sin(wp)*(p.run?.012:.028)*k*(1-hv)+hv*Math.sin(bp*.9)*.022,
@@ -70,13 +70,13 @@ function drawPose(p,alpha,col,sid,ws){
  try{
   g.globalAlpha=alpha;g.scale(p.fl*(ws===undefined?1:ws),1);g.translate(0,bob);g.rotate(rot);g.scale(sx,sy);
   var wk={kind:p.kind==='side'||p.kind==='run'||p.kind.indexOf('back')===0||p.kind.indexOf('front')===0?p.kind:'front',w:w,HH:HH,k:k,bp:bp,wp:wp,at:(function(){var e=(fr-ST.s0)/24;return e>=0&&e<1?e:-1})()};
-  if(alpha>.5)try{if(window.VPW)VPW.draw(sid,'back',wk)}catch(e){}
+  if(alpha>.5&&!nw)try{if(window.VPW)VPW.draw(sid,'back',wk)}catch(e){}
   if(k>.45&&p.fw>.3&&hv<.5){var ga=(k-.45)*.5*alpha*(1-.5*ST.hv);for(var q=2;q>=1;q--){g.globalAlpha=ga*(.5/q);g.drawImage(im,-w/2-q*9*k*p.fw,-HH,w,HH)}g.globalAlpha=alpha}
   for(var j=0;j<N;j++){
    var u=(j+.5)/N,uu=Math.pow(Math.max(0,u-.12)/.88,1.55),
     dx=(1-hv)*uu*(Math.sin(bp*1.3-u*2.6)*1.5+hv*Math.sin(bp*1.6-u*3)*uu*2.2+k*(1+hv*.6)*(-5.2*p.fw+Math.sin(wp*2-u*3.4)*(2.6+1.4*(1-p.fw))*(1-.85*hv)))+Math.sin(wp+1.2)*k*u*u*1.6*(1-hv);
    g.drawImage(im,0,j*sh,iw,sh+.5,-w/2+dx,-HH+j*dh,w,dh+.9)}
-  if(alpha>.5)try{if(window.VPW)VPW.draw(sid,'front',wk)}catch(e){}
+  if(alpha>.5&&!nw)try{if(window.VPW)VPW.draw(sid,'front',wk)}catch(e){}
  }finally{g.restore()}
 }
 function hovFx(col,up,k,bp){
@@ -105,9 +105,10 @@ function draw8(sid){
   g.save();g.translate(0,1);g.scale(1,.24);g.globalCompositeOperation='lighter';g.strokeStyle=col;g.globalAlpha=(.28+.1*Math.sin(bp*1.6)+.18*k)*(1-.65*ST.hv);g.lineWidth=2.2;g.beginPath();g.arc(0,0,23+2*Math.sin(bp*1.6),0,6.2832);g.stroke();g.restore();
   if(ST.hv>.02)hovFx(col,up,k,bp);
   g.save();if(up)g.translate(0,-up);
-  if(ST.fade>0&&ST.prev&&ST.hv>.3){ /* Fix199: XOAY NGƯỜI — thân thu hẹp bề ngang như đang quay rồi mở ra ở tư thế mới (không lật đột ngột) */
-   var tf=1-Math.max(0,ST.fade),e1=tf<.5?ease2(tf*2):ease2((tf-.5)*2);
-   if(tf<.5)drawPose(ST.prev,1,col,sid,Math.max(.1,Math.cos(e1*PI/2)));else drawPose(p,1,col,sid,Math.max(.1,Math.sin(e1*PI/2)))}
+  if(ST.hv>.3){ /* Fix202: XOAY 8 HƯỚNG LIÊN TỤC — góc nhìn ST.ang chạy liên tục; hiển thị = pha trộn 2 góc nhìn chính kề nhau (S↔E/W↔N) theo góc thật, KHÔNG lật hình/đổi tư thế đột ngột */
+   var gen2=window.VPG.gender(),sg=(ST.ang+PI)/(PI/2),i0=Math.floor(sg),tt=sg-i0;if(i0>3){i0=3;tt=1}if(i0<0){i0=0;tt=0}
+   var SECS=[4,6,0,2,4],pa=pick(sid,gen2,SECS[i0],false),pb=pick(sid,gen2,SECS[i0+1],false),te=ease2(tt),ws=1-.14*Math.sin(PI*te);
+   if(pa&&pb){drawPose(pa,1,col,sid,ws,te>=.5);if(te>.02)drawPose(pb,te,col,sid,ws,te<.5)}else drawPose(p,1,col,sid)}
   else if(ST.fade>0&&ST.prev){drawPose(ST.prev,Math.max(0,ST.fade),col,sid);drawPose(p,1-Math.max(0,ST.fade)*.6,col,sid)}
   else drawPose(p,1,col,sid);
   g.restore();

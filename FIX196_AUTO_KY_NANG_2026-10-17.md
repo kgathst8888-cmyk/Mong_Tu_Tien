@@ -17,3 +17,6 @@ File đổi: `world/87`, `world/74`, `world/73` (+getter `VPG.state`), `world/91
 
 ## Fix201 — Mỗi lần chỉ 1-2 hiệu ứng chiêu
 `TG8SK_CF.max`=2 (tối đa 2 hiệu ứng cùng lúc, chiêu tay mới nhất thay chiêu cũ nhất); auto chỉ tung 1 chiêu/lượt và chờ khi đã đủ 2 hiệu ứng (`TGAUTO_CF.perTick`=1).
+
+## Fix202 — Xoay 8 hướng liên tục (bỏ kiểu lật hình)
+`world/74`: khi bay, hình nhân vật = pha trộn 2 góc nhìn chính kề nhau (mặt trước · bên · lưng) theo góc nhìn thật `VPG8.state.ang` (đã làm mượt) + co nhẹ bề ngang giữa chừng; không còn đổi tư thế/lật đột ngột. Vũ khí chỉ vẽ theo góc nhìn gần hơn (không bị nhân đôi).
