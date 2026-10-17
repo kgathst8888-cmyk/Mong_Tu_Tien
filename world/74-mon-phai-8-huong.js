@@ -59,7 +59,7 @@ function drawPose(p,alpha,col,sid){
  var k=ST.k,wp=ST.wp,bp=ST.bp,HH=p.HH,o=p.o,im=o.im,w=HH*o.w/o.h*p.sq,
   hv=ST.hv,bob=-(k*Math.abs(Math.sin(wp))*2.6*(1-hv))+Math.sin(bp)*.7,
   rot0=p.c*k*(p.run?.015:.06)*(1+hv*1.3)+Math.sin(wp)*(p.run?.012:.028)*k*(1-hv)+hv*Math.sin(bp*.9)*.022,
-  rot=rot0*(1-hv)+(ST.ln+Math.sin(bp*.9)*.012)*hv,   /* bay: nghiêng nhẹ, đã làm mượt (ST.ln), không đảo chiều theo nhịp */
+  rot=rot0*(1-hv),   /* Fix197: bay như pháp sư — thân đứng thẳng, không nghiêng/lắc; chỉ lơ lửng lên xuống nhẹ */
   sy=1+Math.sin(bp)*.006+Math.cos(wp*2)*.014*k*(1-hv),sx=1/sy,
   N=p.run?20:26,ih=im.naturalHeight,iw=im.naturalWidth,sh=ih/N,dh=HH/N;
  g.save();
@@ -67,10 +67,10 @@ function drawPose(p,alpha,col,sid){
   g.globalAlpha=alpha;g.scale(p.fl,1);g.translate(0,bob);g.rotate(rot);g.scale(sx,sy);
   var wk={kind:p.kind==='side'||p.kind==='run'||p.kind.indexOf('back')===0||p.kind.indexOf('front')===0?p.kind:'front',w:w,HH:HH,k:k,bp:bp,wp:wp,at:-1};
   if(alpha>.5)try{if(window.VPW)VPW.draw(sid,'back',wk)}catch(e){}
-  if(k>.45&&p.fw>.3){var ga=(k-.45)*.5*alpha*(1-.5*ST.hv);for(var q=2;q>=1;q--){g.globalAlpha=ga*(.5/q);g.drawImage(im,-w/2-q*9*k*p.fw,-HH,w,HH)}g.globalAlpha=alpha}
+  if(k>.45&&p.fw>.3&&hv<.5){var ga=(k-.45)*.5*alpha*(1-.5*ST.hv);for(var q=2;q>=1;q--){g.globalAlpha=ga*(.5/q);g.drawImage(im,-w/2-q*9*k*p.fw,-HH,w,HH)}g.globalAlpha=alpha}
   for(var j=0;j<N;j++){
    var u=(j+.5)/N,uu=Math.pow(Math.max(0,u-.12)/.88,1.55),
-    dx=uu*(Math.sin(bp*1.3-u*2.6)*1.5+hv*Math.sin(bp*1.6-u*3)*uu*2.2+k*(1+hv*.6)*(-5.2*p.fw+Math.sin(wp*2-u*3.4)*(2.6+1.4*(1-p.fw))*(1-.85*hv)))+Math.sin(wp+1.2)*k*u*u*1.6*(1-hv);
+    dx=(1-hv)*uu*(Math.sin(bp*1.3-u*2.6)*1.5+hv*Math.sin(bp*1.6-u*3)*uu*2.2+k*(1+hv*.6)*(-5.2*p.fw+Math.sin(wp*2-u*3.4)*(2.6+1.4*(1-p.fw))*(1-.85*hv)))+Math.sin(wp+1.2)*k*u*u*1.6*(1-hv);
    g.drawImage(im,0,j*sh,iw,sh+.5,-w/2+dx,-HH+j*dh,w,dh+.9)}
   if(alpha>.5)try{if(window.VPW)VPW.draw(sid,'front',wk)}catch(e){}
  }finally{g.restore()}
