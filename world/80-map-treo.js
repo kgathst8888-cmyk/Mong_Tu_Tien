@@ -11,6 +11,8 @@
  *      Lv1-20 / 21-40 / 41-60 / 61-80 / 81+ dùng bản đồ 61-80), nên Đạo Linh (EXP) vẫn được tính (LGMAP.expOk()).
  *  - Không có Boss/Tinh Anh: bộ đếm pq/NK (hàng đợi boss của map thường) được giữ nguyên, boss thế giới bị bỏ qua trong map này.
  *
+ * Fix240 — QUÁI THEO LV + DẠNG THỂ: ngoài cấp (Lv), quái nhân hệ số theo dạng thể [Phàm, Đạo, Tiên] (CF.realmHp/Df/Atk máu·thủ·sát thương; CF.realmXp [1,1,1] = EXP lên cấp giữ 100% như map ngoài; CF.realmGold vàng). Sát thương quái: core/01e đọc e.rm. TU VI tu tiên ở map treo = CF.tvK (80%) so với map thường, cả online (bọc ZC.kill) lẫn offline.
+ *
  * GIỜ TREO
  *  - Mỗi ngày (đổi lúc 00:00 giờ VN) có CF.freeSec = 4 giờ miễn phí. Muốn thêm: mua bằng Linh Thạch (CF.ltPerHour = 20💎/giờ, trừ ví ☁ qua LT.spend).
  *  - Giờ đã mua nằm trong "kho giờ" (không mất khi sang ngày); dùng sau khi hết giờ miễn phí của ngày.
@@ -39,6 +41,13 @@ var CF={
  feP:.04,          /* xác suất rơi Quặng Sắt (1-2) / quái */
  hkP:.015,         /* xác suất rơi Huyền Kim (1) / quái */
  stoneP:.04,       /* xác suất rơi 1 Đá Cường Hóa thường / quái */
+ /* Fix240: hệ số quái theo DẠNG THỂ nhân vật [Phàm Thể, Đạo Thể, Tiên Nhân] (đặt [1,1,1] = tắt) */
+ realmHp:[1,1.5,2.5],    /* máu quái */
+ realmDf:[1,1.2,1.5],    /* thủ quái */
+ realmAtk:[1,1.3,1.6],   /* sát thương quái */
+ realmXp:[1,1,1],        /* EXP lên cấp: GIỮ 100% như map ngoài (không tăng theo dạng thể) */
+ realmGold:[1,1.5,2],    /* vàng quái */
+ tvK:.8,                 /* Fix240: tu vi tu tiên ở map treo (online + offline) = 80% so với đánh quái ở bản đồ thường */
  minOffSec:60,     /* offline ngắn hơn mức này không tính */
  gapSec:20,        /* khung hình cách nhau > mức này (app bị đóng băng) → coi là offline */
  gateK:.72, gateX:.945        /* vị trí cổng trong làng (tỉ lệ bề rộng làng) */
@@ -53,6 +62,10 @@ function hms(sec){sec=Math.max(0,Math.floor(sec));var h=Math.floor(sec/3600),m=M
 function vnDay(){return new Date(Date.now()+25200000).toISOString().slice(0,10)}
 function say(t,col){try{DT.push({x:P.x,y:200,s:t,c:col||'#9dffd8',g:1,l:130})}catch(e){}}
 function rnd(x){var f=Math.floor(x);return f+(Math.random()<x-f?1:0)}
+/* Fix240: dạng thể 0 = Phàm Thể · 1 = Đạo Thể · 2 = Tiên Nhân → hệ số quái & EXP */
+function form(){return isTien()?2:isDao()?1:0}
+function rmul(k){var v=CF[k];return Array.isArray(v)?(+v[form()]||1):(+v||1)}
+function rname(){return who()}
 function A(p){
  p=p||PS[cur];if(!p)return null;
  var a=p.afk;if(!a||typeof a!=='object')a=p.afk={d:'',u:0,b:0,on:0,ts:0};
@@ -73,16 +86,29 @@ function mapName(){
 function who(){return isTien()?'✨ Tiên Nhân':isDao()?'☯ Đạo Thể':'Phàm Thể'}
 
 /* EXP / quái đúng công thức engine (core/01e dòng xử lý quái chết): round(15×(1+Lv/5)) × HDAO.xg() */
-function xpPer(L){
+function xpPer(L){return Math.max(1,Math.round(xpBase(L)*rmul('realmXp')))}
+function xpBase(L){
  var b=Math.round(15*(1+L/5));if(isTien()&&window.TGQ&&TGQ.xpOf)return TGQ.xpOf(L);if(!isDao())return b;
  var k=3,ex=.5;try{k=HDAO.cfg.killMul}catch(e){}try{var m=LGMAP.cfg[daoMap()];if(m&&m.exp)ex=m.exp}catch(e){}
  return Math.round(b*k*ex)}
+
+/* ---------- Fix240: HỆ THỐNG TU VI CẢNH GIỚI TU TIÊN ở map treo = CF.tvK (80%) so với map ngoài ----------
+   Map ngoài có 2 nguồn tu vi: (1) mỗi quái hạ: ceil((3+Lv×.8)×TV.farm) [×LGX ở Linh Giới] (2) tự tu luyện mỗi giây: (1+tầng×.6)×TV.auto [×LGX ở Linh Giới].
+   Online: bọc ZC.kill + ZC.tick (nhân tvK). Offline: tvOff() tính đủ cả 2 nguồn × tvK rồi ZC.gain 1 lần (ZC.gain tự lên tầng / dừng ở ngưỡng đột phá). */
+function tvOn(){try{return ZC.rI()<5}catch(e){return false}}
+function tvTier(){try{var c=PS[cur].cv||{r:-1,s:0};return c.r<0?0:(c.r|0)*9+(c.s|0)}catch(e){return 0}}
+function tvOff(L,n,sec){
+ if(!tvOn())return 0;
+ var T=(ZC.TV)||{},farm=T.farm||1,auto=T.auto||0,lx=isDao()?LGX:1;
+ var kill=Math.ceil((3+L*.8)*farm*CF.tvK)*lx*n;
+ var pas=Math.floor(sec)*(1+tvTier()*.6)*auto*CF.tvK*lx;
+ return Math.round(kill+pas)}
 
 /* ---------- phần thưởng (dùng chung online + offline): vàng + nguyên liệu, KHÔNG trang bị ---------- */
 function matAdd(fe,hk){if(!(fe||hk))return;try{var m=MN.get();if(m){m.fe=(m.fe|0)+fe;m.hk=(m.hk|0)+hk}}catch(e){}}
 function stoneAdd(n){if(!n)return;var p=PS[cur];if(!p.dch)p.dch={a:0,b:0};p.dch.a=(p.dch.a|0)+n}
 function award(n,L){
- var gd=gP(CF.goldK*L*n),fr_=rnd(n*CF.fragP),fe=rnd(n*CF.feP*1.5),hk=rnd(n*CF.hkP),st=rnd(n*CF.stoneP);
+ var gd=gP(Math.round(CF.goldK*L*n*rmul('realmGold'))),fr_=rnd(n*CF.fragP),fe=rnd(n*CF.feP*1.5),hk=rnd(n*CF.hkP),st=rnd(n*CF.stoneP);
  gold+=gd;frag+=fr_;matAdd(fe,hk);stoneAdd(st);
  return{gold:gd,frag:fr_,fe:fe,hk:hk,st:st}}
 
@@ -130,11 +156,11 @@ function offline(sec,kind){
  use(a,t);
  var L=Math.max(1,P.lv|0),n=Math.floor(t/CF.spk*CF.offEff);
  if(n<=0)return;
- var xp=xpPer(L)*n;if(window.TGQ&&TGQ.addXp)TGQ.addXp(xp);else P.xp+=xp;
- try{if(ZC.rI()<5){var tf=(ZC.TV&&ZC.TV.farm)||1,tv=Math.ceil((3+L*.8)*tf)*(isDao()?LGX:1)*n;ZC.gain(tv)}}catch(e){}
+ var tvG=0,xp=xpPer(L)*n;if(window.TGQ&&TGQ.addXp)TGQ.addXp(xp);else P.xp+=xp;
+ try{tvG=tvOff(L,n,t);if(tvG>0)ZC.gain(tvG)}catch(e){tvG=0}
  try{var pt=pet();if(pt&&pt.lv<pcap(pt)){pt.xp+=n*(1+L/10);pcheck(pt)}}catch(e){}
  var rw=award(n,L);
- rep={sec:t,n:n,xp:xp,rw:rw,capped:sec>cap,left:total(a),kind:kind,L:L};
+ rep={sec:t,n:n,xp:xp,tv:tvG,rw:rw,capped:sec>cap,left:total(a),kind:kind,L:L};
  mode='report';openOv();
  try{sv()}catch(e){}}
 
@@ -167,17 +193,28 @@ var _step=step;step=function(){var r=_step.apply(this,arguments);try{tick()}catc
 /* quái đúng cấp nhân vật */
 function fit(e){
  if(!e||e.k==='pal')return;var L1=Math.max(1,P.lv|0),L0=e.lv||L1;
- if(isTien()&&window.TGQ&&TGQ.stat){var st=TGQ.stat(L1);e.hp=e.max=st.hp;e.df=st.df;e.m=st.m;e.lv=L1;e.lgi=5;return}   /* Tiên Nhân: quái Tiên Giới (máu cố định theo TGQ_CF.hp) */
- if(L0===L1)return;
- e.df*=(8+L1*2.2)/(8+L0*2.2);
- if(!lg){var q=(60+L1*25)/(60+L0*25);e.hp*=q;e.max*=q}   /* quái Đạo Thể có máu cố định (LGS.hpn) nên chỉ đổi thủ */
- e.lv=L1}
+ var hk=rmul('realmHp'),dk=rmul('realmDf');
+ e.rm=rmul('realmAtk');   /* Fix240: hệ số sát thương theo cảnh giới (core/01e đọc e.rm) */
+ if(isTien()&&window.TGQ&&TGQ.stat){var st=TGQ.stat(L1);e.hp=e.max=st.hp*hk;e.df=st.df*dk;e.m=st.m;e.lv=L1;e.lgi=5;return}   /* Tiên Nhân: quái Tiên Giới (máu cố định theo TGQ_CF.hp) × cảnh giới */
+ if(L0!==L1){
+  e.df*=(8+L1*2.2)/(8+L0*2.2);
+  if(!lg){var q=(60+L1*25)/(60+L0*25);e.hp*=q;e.max*=q}   /* quái Đạo Thể có máu cố định (LGS.hpn) nên chỉ đổi thủ */
+  e.lv=L1}
+ e.hp*=hk;e.max*=hk;e.df*=dk}
 var _spawn=spawn;spawn=function(i){
  if(!S.on)return _spawn.apply(this,arguments);
  var a0=pq[0],a1=pq[1],w0=wbq,n0=E.length;
  pq[0]=0;pq[1]=0;wbq=0;                       /* không Boss Tinh Anh / Sử Thi / Thế Giới trong map treo */
  try{_spawn.apply(this,arguments)}finally{pq[0]=a0;pq[1]=a1;wbq=w0}
  try{if(E.length>n0)fit(E[E.length-1])}catch(x){}};
+
+/* Fix240: tu vi khi hạ quái ở map treo = CF.tvK (80%) so với map thường (ZC.kill đọc ZC.TV.farm lúc gọi) */
+try{var _zk=ZC.kill;if(typeof _zk==='function'&&ZC.TV)ZC.kill=function(){
+ if(!S.on)return _zk.apply(this,arguments);
+ var o=ZC.TV.farm;ZC.TV.farm=o*CF.tvK;try{return _zk.apply(this,arguments)}finally{ZC.TV.farm=o}}}catch(e){}
+try{var _zt=ZC.tick;if(typeof _zt==='function'&&ZC.TV)ZC.tick=function(){
+ if(!S.on)return _zt.apply(this,arguments);
+ var o=ZC.TV.auto;ZC.TV.auto=o*CF.tvK;try{return _zt.apply(this,arguments)}finally{ZC.TV.auto=o}}}catch(e){}
 
 /* chỉ rơi vàng + nguyên liệu; chặn mọi trang bị */
 var _give=give;give=function(){if(S.on)return;return _give.apply(this,arguments)};
@@ -186,6 +223,7 @@ var _drop=drop;drop=function(e){
  if(!S.on)return _drop.apply(this,arguments);
  try{
   if(isTien()&&window.TGQ&&TGQ.addXp)TGQ.addXp(xpPer(e.lv||P.lv));   /* engine không cho EXP Tiên Nhân → cộng EXP quái Tiên Giới ở đây */
+  if(!isTien()){var rx=rmul('realmXp');if(rx>1){var bx=(window.HDAO?HDAO.xg():1)*Math.round(15*(1+(e.lv||P.lv)/5));if(typeof XR==='function')bx=XR(bx);var ex=Math.round(bx*(rx-1));if(ex>0)P.xp+=ex}}   /* Fix240: EXP thêm theo cảnh giới */
   var L=e.lv||P.lv,m=e.b==3?10:e.b?4:1,rw=award(m,L),q=S.ses;
   q.n++;q.gold+=rw.gold;q.frag+=rw.frag;q.fe+=rw.fe;q.hk+=rw.hk;q.st+=rw.st;
   DT.push({x:e.x,y:110,s:'+'+f_(rw.gold)+'💰',c:'#ffd54a',l:50});
@@ -205,13 +243,14 @@ function mkHud(){
   +'#afk-ov .afkb.g{border-color:#5fe0a8;background:linear-gradient(#1f6a52,#0e3a2c);color:#d8fff0}'
   +'#afk-ov .afkb[disabled]{opacity:.45;cursor:default}'
   +'#afk-ov .afkr{display:flex;gap:8px}#afk-ov .afkr .afkb{margin:6px 0}'
+  +'#afk-ov .afkw{border:1.5px solid #e0603a;border-radius:10px;background:linear-gradient(#3a1410,#240c0a);padding:9px 11px;margin:8px 0;font-size:13px;line-height:1.5;color:#ffd9c8}#afk-ov .afkw b{color:#ffb98a}#afk-ov .afkw ul{margin:5px 0 0;padding-left:18px}#afk-ov .afkw li{margin:3px 0}'
   +'#afk-ov .afkc{border:1px solid #6a5230;border-radius:10px;background:#140d0a;padding:9px 11px;margin:8px 0;font-size:14px;line-height:1.6}';
  document.head.appendChild(st);
  hudEl=document.createElement('div');hudEl.id='afkh';document.body.appendChild(hudEl)}
 function hud(a,now){
  if(now-S.hu<500)return;S.hu=now;mkHud();
  hudEl.style.display='block';
- hudEl.innerHTML='<div class="afkt">⏳ MAP TREO · '+who()+' · Quái Lv'+P.lv+'</div>'
+ hudEl.innerHTML='<div class="afkt">⏳ MAP TREO · '+who()+' · Quái Lv'+P.lv+' · '+rname()+'</div>'
   +'<div class="afks">Còn '+hms(total(a))+' (miễn phí '+hms(freeLeft(a))+' · đã mua '+hms(a.b)+')</div>'
   +'<div class="afks" style="opacity:.8;font-size:11px">Tắt game vẫn treo · chạm 🏘 để rời map</div>'}
 function hudHide(){if(hudEl)hudEl.style.display='none'}
@@ -265,7 +304,7 @@ var _vstep=vstep;vstep=function(){
 function note(t,col){noteTx=t||'';noteC=col||'#ffe9a0'}
 function est(){
  var L=Math.max(1,P.lv|0),n=Math.floor(3600/CF.spk*CF.offEff);
- return{n:n,xp:xpPer(L)*n,gold:gP(CF.goldK*L*n),frag:Math.round(n*CF.fragP),fe:Math.round(n*CF.feP*1.5),hk:Math.round(n*CF.hkP)}}
+ return{n:n,tv:tvOff(L,n,3600),xp:xpPer(L)*n,gold:gP(Math.round(CF.goldK*L*n*rmul('realmGold'))),frag:Math.round(n*CF.fragP),fe:Math.round(n*CF.feP*1.5),hk:Math.round(n*CF.hkP)}}
 function panelHtml(){
  var a=A();if(!a)return'';
  var e=est(),tt=total(a),lt=0,logged=false;
@@ -273,11 +312,21 @@ function panelHtml(){
  var pc=Math.round(freeLeft(a)/CF.freeSec*100);
  var h='<h2 style="margin:0 0 6px;color:#9dffd8;font-size:19px">⏳ Cổng Treo Máy</h2>'
  +'<div style="font-size:13px;opacity:.9">Quái <b>Lv'+P.lv+'</b> theo cấp bạn · '+who()+' → <b style="color:#ffe27a">'+mapName()+'</b>'+(isTien()&&window.TGQ?'<br>Quái Tiên Giới · EXP gấp 3 quái Đạo Thể · Tiên Nhân chỉ tăng EXP bằng quái Tiên Giới':isDao()?'<br>Quái Đạo Thể (Linh Giới) · vẫn nhận Đạo Linh':'')+'</div>'
+ +'<div class="afkc" style="font-size:13px">👹 <b>Quái theo Lv &amp; dạng thể</b> (<b style="color:#ffe27a">'+rname()+'</b>)<br>Máu <b>×'+rmul('realmHp').toFixed(2)+'</b> · Thủ <b>×'+rmul('realmDf').toFixed(2)+'</b> · Sát thương <b>×'+rmul('realmAtk').toFixed(2)+'</b><br>✨ EXP lên cấp <b style="color:#9dffd8">100%</b> như map ngoài · 💰 Vàng <b>×'+rmul('realmGold').toFixed(2)+'</b><br>🧘 Tu vi cảnh giới tu tiên: <b style="color:#9dffd8">'+Math.round(CF.tvK*100)+'%</b> so với map ngoài'+(tvOn()?'':' <span style="color:#ffd98a">(cảnh giới này không tu vi qua đánh quái)</span>')+'</div>'
  +'<div class="afkc"><div>🕒 Miễn phí hôm nay: <b>'+hms(freeLeft(a))+'</b> / '+hms(CF.freeSec)+'</div>'
  +'<div style="height:8px;border-radius:5px;background:#2a1c10;overflow:hidden;margin:3px 0 5px"><i style="display:block;height:100%;width:'+pc+'%;background:linear-gradient(90deg,#3ad0a0,#8affd0)"></i></div>'
  +'<div>🎫 Giờ đã mua (kho): <b>'+hms(a.b)+'</b></div>'
  +'<div>⏳ Tổng có thể treo: <b style="color:#9dffd8">'+hms(tt)+'</b></div></div>'
- +'<div class="afkc" style="font-size:13px"><b>Thưởng ước tính / giờ</b> (không rơi trang bị)<br>✨ '+nf(e.xp)+' EXP · 💰 '+nf(e.gold)+'<br>🔹 ~'+e.frag+' mảnh · 🔩 ~'+e.fe+' Quặng Sắt · 🌑 ~'+e.hk+' Huyền Kim · 🪨 Đá Cường Hóa</div>'
+ +'<div class="afkc" style="font-size:13px"><b>Thưởng ước tính / giờ</b> (không rơi trang bị)<br>✨ '+nf(e.xp)+' EXP · 🧘 '+(tvOn()?nf(e.tv)+' tu vi':'— tu vi')+' · 💰 '+nf(e.gold)+'<br>🔹 ~'+e.frag+' mảnh · 🔩 ~'+e.fe+' Quặng Sắt · 🌑 ~'+e.hk+' Huyền Kim · 🪨 Đá Cường Hóa</div>'
+ +'<div class="afkw">⚠️ <b>CẢNH BÁO · MAP TREO OFFLINE</b>'
+  +'<ul>'
+  +'<li>Quái luôn <b>Lv'+P.lv+'</b> bằng cấp bạn và <b>mạnh theo dạng thể</b> ('+rname()+'): Đạo Thể / Tiên Nhân gặp quái trâu &amp; đau hơn, bù lại vàng nhiều hơn (EXP lên cấp vẫn 100%). Hãy chắc nhân vật đủ sức trước khi treo.</li>'
+  +'<li>🧘 <b>Tu vi cảnh giới tu tiên</b> khi treo (online lẫn offline) = <b>'+Math.round(CF.tvK*100)+'%</b> map ngoài (gồm tu vi hạ quái + tự tu luyện). EXP lên cấp vẫn <b>100%</b> như map ngoài. Tu vi dừng ở ngưỡng đột phá — bạn tự đột phá khi mở game.</li>'
+  +'<li><b>Giờ treo bị trừ cả khi tắt game</b> (tối đa bằng số giờ còn lại). Hết giờ là dừng, phần dư không được cộng bù.</li>'
+  +'<li>Offline <b>chỉ tính khi bạn còn đứng trong map</b>. Bấm 🏘 Làng, đổi map/phụ bản hoặc đổi nhân vật = <b>mất treo offline</b>.</li>'
+  +'<li>Treo chỉ nhận <b>EXP · Vàng · Nguyên liệu</b>, <b>không rơi trang bị</b>. Thưởng offline tính theo công thức ('+CF.spk+' giây/quái), không có boss.</li>'
+  +'<li>Hãy chờ game <b>lưu xong</b> rồi mới tắt; mở lại đúng nhân vật đang treo để nhận thưởng.</li>'
+  +'</ul></div>'
  +(noteTx?'<div style="color:'+noteC+';font-size:13.5px;margin:4px 0">'+noteTx+'</div>':'')
  +'<button class="afkb g" data-act="enter"'+(tt<60?' disabled':'')+'>▶ Vào Map Treo</button>'
  +'<div style="font-size:13px;margin-top:8px">💎 Linh Thạch: <b>'+(logged?nf(lt):'—')+'</b>'+(logged?'':' <span style="color:#ffb0b0">(cần đăng nhập ☁ để mua)</span>')+'</div>'
@@ -288,7 +337,7 @@ function panelHtml(){
 function reportHtml(){
  var r=rep;if(!r)return'';var w=r.rw;
  return'<h2 style="margin:0 0 6px;color:#9dffd8;font-size:19px">🌙 Treo '+(r.kind==='off'?'offline':'nền')+' hoàn tất</h2>'
- +'<div class="afkc">⏱ Thời gian: <b>'+hms(r.sec)+'</b>'+(r.capped?' <span style="color:#ffd98a">(đã hết giờ treo)</span>':'')+'<br>⚔ Quái hạ: <b>'+nf(r.n)+'</b> (Lv'+r.L+')<br>✨ EXP: <b>+'+nf(r.xp)+'</b><br>💰 Vàng: <b>+'+nf(w.gold)+'</b>'
+ +'<div class="afkc">⏱ Thời gian: <b>'+hms(r.sec)+'</b>'+(r.capped?' <span style="color:#ffd98a">(đã hết giờ treo)</span>':'')+'<br>⚔ Quái hạ: <b>'+nf(r.n)+'</b> (Lv'+r.L+')<br>✨ EXP: <b>+'+nf(r.xp)+'</b>'+(r.tv?'<br>🧘 Tu vi: <b>+'+nf(r.tv)+'</b> <span style="opacity:.7">(80% map ngoài)</span>':'')+'<br>💰 Vàng: <b>+'+nf(w.gold)+'</b>'
  +'<br>🔹 Mảnh chế tạo: +'+nf(w.frag)+' · 🔩 Quặng Sắt: +'+nf(w.fe)+'<br>🌑 Huyền Kim: +'+nf(w.hk)+' · 🪨 Đá Cường Hóa: +'+nf(w.st)+'</div>'
  +'<div style="font-size:13px;opacity:.85">Giờ treo còn lại: <b>'+hms(r.left)+'</b></div>'
  +'<button class="afkb g" data-act="ok">Nhận · OK</button>'}

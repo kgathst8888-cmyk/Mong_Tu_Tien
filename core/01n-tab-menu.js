@@ -23,6 +23,12 @@ NAV=[
 ],
 NAVLK=[2,3,7,15],
 fmtN=n=>{try{return Math.floor(n).toLocaleString('vi-VN')}catch(e){return ''+n}};
+/* Fix243: vàng từ 1.000.000 trở lên hiện rút gọn: 1,23 Triệu · 4,5 Tỷ (cắt bớt, không làm tròn lên) */
+const fmtG=n=>{try{n=Math.floor(+n||0);const u=v=>(Math.floor(v*100)/100).toLocaleString('vi-VN',{maximumFractionDigits:2});return n>=1e9?u(n/1e9)+' Tỷ':n>=1e6?u(n/1e6)+' Triệu':fmtN(n)}catch(e){return ''+n}};
+/* Fix243: [🔒 khoá, 💎 không khoá] Linh Thạch của nhân vật đang chơi; null nếu chưa đăng nhập ☁ */
+/* Fix244: icon Linh Thạch vẽ SVG (lk=1: khoá — ngọc xám xanh + ổ khoá vàng; lk=0: không khoá — ngọc xanh) */
+const ltSvg=lk=>`<svg width="16" height="16" viewBox="-10 -10 20 20" style="vertical-align:-3px"><path d="M-5.5 -10H5.5L10 -2.5L0 10L-10 -2.5Z" fill="${lk?'#8fa4c8':'#4cc3ff'}" stroke="#000" stroke-width="1.2" stroke-linejoin="round"/><path d="M-10 -2.5H10M-3 -2.5L0 10M3 -2.5L0 10" stroke="#fff" stroke-opacity=".55" fill="none"/>${lk?'<rect x="2" y="2" width="8" height="7" fill="#ffd54a" stroke="#000" stroke-width="1"/><path d="M3.5 2V.5a2.5 2.5 0 0 1 5 0V2" fill="none" stroke="#000" stroke-width="1.4"/>':''}</svg>`;
+const ltHud=()=>{try{return window.LT&&LT.logged&&LT.logged()?[LT.locked()|0,LT.unlocked()|0]:null}catch(e){return null}};
 function tabBar(p){
  let rd=0;try{rd=ZC.tx()=='SẴN SÀNG ĐỘT PHÁ'}catch(e){}
  const dot=[BAG.length>=capN()*.9,p.pts>0,0,0,0,qsDot(),0,0,rd,p.tier>=1&&!p.pet,0,0,FM.rdy(),0,0];
@@ -34,7 +40,7 @@ function tabBar(p){
  +`<button class="ib" title="Menu" onclick="mn(0)">${NAVI('<path d="M5 7h14M5 12h14M5 17h14"/>')}</button>`
  +`<button class="ib x" title="Đóng" onclick="tg()">${NAVI('<path d="M6 6l12 12M18 6L6 18"/>')}</button></div></div>`
  +`<div class="tbar">${tabs}</div></div>`
- +`<div class="rsr"><span class="chip" title="Vàng">💰 ${fmtN(gold)}</span><span class="chip" title="Mảnh chế tạo">🔹 ${fmtN(frag)}</span>`
+ +`<div class="rsr"><span class="chip" title="Vàng: ${fmtN(gold)}">💰 ${fmtG(gold)}</span>${(()=>{const q=ltHud();return q?`<span class="chip" title="Linh Thạch khoá (nhân vật này)">${ltSvg(1)} ${fmtN(q[0])}</span><span class="chip" title="Linh Thạch không khoá">${ltSvg(0)} ${fmtN(q[1])}</span>`:''})()}<span class="chip" title="Mảnh chế tạo">🔹 ${fmtN(frag)}</span>`
  +`<button class="chip" ${hpP<1?'disabled':''} onclick="up(0)" title="Dùng bình HP (Q)">🧪 ${hpP}<small>Dùng</small></button>`
  +`<button class="chip" ${mpP<1?'disabled':''} onclick="up(1)" title="Dùng bình MP (E)">💧 ${mpP}<small>Dùng</small></button></div>`
  +(msg?`<div class="st msgl">${msg}</div>`:'');

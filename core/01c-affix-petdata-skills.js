@@ -36,7 +36,7 @@ let PETS=[],FX=[],SLT=[],wbq=0,pp={x:0};
 const NYI=new Image();NYI.src=ASSET_URL("a013");const NYC={};
 const KDI=new Image();KDI.src=ASSET_URL("a014");
 const HQI=new Image();HQI.src=ASSET_URL("a015");
-const nyi=c=>{if(!NYI.complete||!NYI.naturalWidth)return null;if(NYC[c])return NYC[c];const w=NYI.naturalWidth,h=NYI.naturalHeight,v=document.createElement('canvas');v.width=w;v.height=h;const q=v.getContext('2d');q.drawImage(NYI,0,0);q.globalCompositeOperation='source-atop';q.globalAlpha=.32;q.fillStyle=c;q.fillRect(0,0,w,h);return NYC[c]=v};
+const nyi=c=>{if(!NYI.complete||!NYI.naturalWidth)return null;if(NYC[c])return NYC[c];const w=NYI.naturalWidth,h=NYI.naturalHeight,v=document.createElement('canvas');v.width=w;v.height=h;const q=v.getContext('2d');q.drawImage(NYI,0,0);q.globalCompositeOperation='source-atop';q.globalAlpha=.2;q.fillStyle=c;q.fillRect(0,0,w,h);return NYC[c]=v};
 const NYD=(x,y,h,al,c)=>{const v=nyi(c);if(!v)return;const w=h*v.width/v.height;g.save();g.translate(x,y);g.globalCompositeOperation='source-over';g.globalAlpha=al*.85;g.drawImage(v,-w/2,-h/2,w,h);g.globalCompositeOperation='lighter';g.globalAlpha=al*.22;g.drawImage(v,-w/2,-h/2,w,h);g.restore()};
 const SPR={golem:ASSET_URL("a016"),ogre:ASSET_URL("a017"),mage:ASSET_URL("a018"),gob:ASSET_URL("a019"),wolf:ASSET_URL("a020"),scorp:ASSET_URL("a021"),arch:ASSET_URL("a022"),pal:ASSET_URL("a023")},MI={};for(const k in SPR){MI[k]=new Image();MI[k].src=SPR[k]}
 function TK(){const t=CHR[cur].t;return t=='a'&&PS[cur].br==1?'w':t}

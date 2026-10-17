@@ -98,7 +98,8 @@
       "world/90-tien-gioi-chi-tiet.js",
       "world/96-thu-cuoi.js",
       "world/97-drop-than-thoai-thien-than.js",
-      "world/98-tiem-nang-chay.js"
+      "world/98-tiem-nang-chay.js",
+      "ui/95-trang-suc-mon-phai.js"
     ],
     "systems": [
       "systems/08-farming-alchemy.js",
@@ -112,6 +113,7 @@
       "systems/29-quest-plus.js",
       "systems/30-quest-remake.js",
       "systems/32-cho-giao-dich.js",
+      "systems/33-nguyen-anh-trong-cay.js",
       "systems/36-hop-the-tieu-canh.js",
       "systems/60-dang-nhap-bat-buoc.js",
       "systems/61-chong-dube-bao-mat.js"

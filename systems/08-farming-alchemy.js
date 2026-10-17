@@ -52,7 +52,7 @@ PM.pa.rc.thao=2;PM.pd.rc.lien=2;PM.ph.rc.hoa=2;PM.pm.rc.dang=2;PM.pt.rc.sam=1;
 Object.entries({tv1:.75,tv2:.65,pa:.60,pd:.60,ph:.60,pm:.60,pt:.60,tt:.55}).forEach(([k,v])=>{PM[k].sc=v});
 const sce=p=>Math.max(CFG.scMin,p.sc-CFG.scRealm*Math.max(0,ZC.rI()));
 const KN={a:'Công',d:'Thủ',h:'HP',m:'MP'};
-const fresh=()=>({seeds:{},herbs:{},pills:{},np:CFG.plots0,plots:Array(CFG.plots0).fill(null),sel:'chi'});
+const fresh=()=>({seeds:{},herbs:{},pills:{},np:CFG.plots0,plots:Array(CFG.plots0).fill(null),sel:'chi',na:{until:0,on:0,last:0,pm:{}}});
 let S=fresh();
 const ft=s=>{s=Math.max(0,Math.ceil(s));const m=Math.floor(s/60),x=s%60;return m+':'+String(x).padStart(2,'0')};
 const gc=p=>Math.round((CFG.gold[p.id]||p.g0||0)*Math.pow(ZC.rI()+2,2));
@@ -92,9 +92,9 @@ function plantAll(){
  for(let i=0;i<S.plots.length;i++){if(!S.plots[i]&&S.seeds[id]>0){S.seeds[id]--;S.plots[i]={id,t0:Date.now()};c++}}
  fin(c?'🌱 Đã gieo '+c+' ô '+HM[id].n:'Không có ô trống hoặc hết hạt '+HM[id].n);
 }
-function harvOne(i,o){
- const p=S.plots[i];if(!p||Date.now()<grow(p))return 0;
- const b=HM[p.id],late=Date.now()-grow(p);let n=b.y[0]+Math.floor(R()*(b.y[1]-b.y[0]+1));
+function harvOne(i,o,T){/*T: mốc thời gian giả lập (Nguyên Anh thu hoạch bù lúc offline), bỏ trống = bây giờ*/
+ const p=S.plots[i],Tn=T||Date.now();if(!p||Tn<grow(p))return 0;
+ const b=HM[p.id],late=Tn-grow(p);let n=b.y[0]+Math.floor(R()*(b.y[1]-b.y[0]+1));
  if(late>CFG.dead){S.plots[i]=null;o.d=(o.d|0)+1;return 1}
  o.e=o.e||{};
  if(late>CFG.wilt){n=Math.max(1,Math.floor(n/2));o.e['🥀héo']=(o.e['🥀héo']|0)+1}
@@ -236,11 +236,41 @@ function tvBar(){
 const sumTxt=()=>'Công ×'+ZC.pa().toFixed(3)+' · Thủ ×'+ZC.pd().toFixed(3)+' · HP ×'+ZC.ph().toFixed(3)+' · MP ×'+ZC.pm().toFixed(3);
 const any=()=>ZC.pa()>1||ZC.pd()>1||ZC.ph()>1||ZC.pm()>1;
 
+/* ---------- Nguyên Anh tự trồng / thu hoạch (Fix242) ----------
+   Dữ liệu: S.na={until:hết hạn(ms), on:0/1, last:mốc đã xử lý tới(ms), pm:{ô:loại hạt gần nhất}}.
+   Mua thời gian (10💎/ngày) ở systems/33-nguyen-anh-trong-cay.js. Hàm này chạy bù cả lúc offline:
+   với mỗi ô, thu hoạch đúng lúc chín (không héo) rồi gieo lại (đúng loại cũ; ô trống thì loại đang chọn) cho tới khi hết hạt hoặc hết hạn. */
+const NA={day:86400000,maxIter:400};
+function naRun(){
+ const n=S.na;if(!n||!n.on)return null;
+ const now=Date.now(),up=Math.min(now,n.until),t0=Math.min(n.last||up,up);
+ const o={h:{},s:{}};let c=0,pl=0,out=0;
+ for(let i=0;i<S.plots.length;i++){
+  let cur=t0,g=0;
+  while(g++<NA.maxIter){
+   const p=S.plots[i];
+   if(p){
+    const rt=Math.max(grow(p),t0);if(rt>up)break;
+    n.pm[i]=p.id;c+=harvOne(i,o,rt);cur=rt;
+   }
+   if(!S.plots[i]){
+    let id=n.pm[i];if(!(id&&HM[id]&&S.seeds[id]>0))id=S.sel;
+    if(!(HM[id]&&S.seeds[id]>0)){out++;break}
+    S.seeds[id]--;S.plots[i]={id,t0:cur};pl++;
+   }
+  }
+ }
+ n.last=up;const exp=now>=n.until;if(exp)n.on=0;
+ if(c||pl||exp)save();
+ return{c,pl,out,exp,tx:c?harvTx(o):''};
+}
+
 /* ---------- Lưu / tải ---------- */
 function ld(o){
  S=fresh();on=false;
  if(o&&typeof o=='object'){
   S.seeds=o.seeds||{};S.herbs=o.herbs||{};S.pills=o.pills||{};if(typeof o.sect=='string')S.sect=o.sect;/*Fix132: môn phái Vạn Pháp Tháp*/S.sel=HM[o.sel]?o.sel:'chi';
+   if(o.na&&typeof o.na=='object')S.na={until:+o.na.until||0,on:o.na.on?1:0,last:+o.na.last||0,pm:(o.na.pm&&typeof o.na.pm=='object')?o.na.pm:{}};/*Fix242: Nguyên Anh trồng cây*/
   S.np=Math.max(CFG.plots0,Math.min(CFG.plotsMax,o.np|0||CFG.plots0));
   S.plots=Array(S.np).fill(null);(o.plots||[]).forEach((p,i)=>{if(i<S.np&&p&&HM[p.id])S.plots[i]={id:p.id,t0:+p.t0||Date.now()}});
  }
@@ -263,7 +293,7 @@ setInterval(()=>{
  }catch(e){}
 },1000);
 
-return{isOn:()=>on,setOn:v=>{on=!!v},note,nt:()=>NT,tickNote:()=>{if(NT.t>0)NT.t--},tap:tapPlot,get:()=>S,ft,HM,seedDrop,sel,plant,plantAll,harv,harvAll,buyPlot,farmUI,alchUI,brew,use,useAllTv,tvBar,sumTxt,any,rdy,save:sv_,load:ld,reset:()=>{S=fresh();on=false},HB,PL,PM}
+return{isOn:()=>on,setOn:v=>{on=!!v},note,nt:()=>NT,tickNote:()=>{if(NT.t>0)NT.t--},tap:tapPlot,get:()=>S,ft,HM,seedDrop,sel,plant,plantAll,harv,harvAll,buyPlot,farmUI,alchUI,brew,use,useAllTv,tvBar,sumTxt,any,rdy,save:sv_,load:ld,reset:()=>{S=fresh();on=false},HB,PL,PM,na:()=>S.na,naRun,NA}
 })();
 /* Rơi hạt giống ở mọi Boss: bọc hàm drop() sau cùng để bao trùm Boss thường, Trùm Hầm Ngục, Ma Thần */
 (()=>{const _d=drop;drop=function(e){_d(e);try{FM.seedDrop(e)}catch(x){}}})();
