@@ -77,7 +77,7 @@ function drawSect(o,sid){
     g.drawImage(im,0,j*sh,iw,sh+.6,-w/2+dx*d+dxs,-HH+j*dh,w,dh+.6)}
   }
   g.globalAlpha=1;
-  if(CF.weapon){try{if(window.VPW){var wk={kind:'front',w:HH*A.w/A.h,HH:HH,k:k,bp:bp,wp:wp,at:aa?Math.max(0,Math.min(1,at)):-1};VPW.draw(sid,'back',wk);VPW.draw(sid,'front',wk)}}catch(e){}}
+  if(CF.weapon){try{if(window.VPW){var wk={kind:'front',dir:d,w:HH*A.w/A.h,HH:HH,k:k,bp:bp,wp:wp,at:aa?Math.max(0,Math.min(1,at)):-1};VPW.draw(sid,'back',wk);VPW.draw(sid,'front',wk)}}catch(e){}}
  }finally{g.restore()}
  return true;
 }

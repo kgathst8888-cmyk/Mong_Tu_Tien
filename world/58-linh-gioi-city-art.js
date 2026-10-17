@@ -11,7 +11,7 @@
 (function(){
 'use strict';
 if(!window.LCT||!LCT.gates)return;
-var IW=1320,IH=743,BASEY=520,ET=420,EB=420,KB=.95;
+var IW=1320,IH=743,BASEY=556,ET=420,EB=420,KB=.95; /* Fix219: BASEY 520→556: dòng chân nhân vật (gy) tụt xuống 36 đơn vị ảnh so với chân cổng → cổng lùi ra sau, sàn phía trước rộng hơn */
 var FX=[.156,.354,.555,.753,.923];
 var PCY=442,PRX=36,PRY=58;
 var LBL=[351,306,302,323,321];
@@ -524,7 +524,7 @@ function crane(x,y,u,ph,dir,a){
   [-1,1].forEach(function(s2){q.beginPath();q.moveTo(-2*u,0);q.quadraticCurveTo(-4*u,-10*u*s2*1+w*s2,-16*u,-6*u*s2+w*1.6*s2);q.quadraticCurveTo(-8*u,-2*u*s2+w*.4*s2,4*u,0);q.closePath();q.fill();q.stroke()});
   q.restore()}
 
-/* ---------- TIÊN NHÂN bay lượn (3 tầng: XA mờ/nhỏ · GIỮA · GẦN lớn, bay trước cả sân) ---------- */
+/* ---------- TIÊN NHÂN bay lượn (Fix219: chỉ còn 2 tầng XA mờ/nhỏ · GIỮA; đã bỏ tầng GẦN) ---------- */
 /* [loại 0 ngự kiếm·1 đạp mây phất trần·2 phi thiên cầm sen, tốc độ, lệch pha, độ cao, thị sai, cỡ, hướng, áo ngoài, áo trong, dải lụa rgb, tầng 0 xa·1 giữa·2 gần, hiện khi QL<=] */
 var IMM=[
  /* XA (mờ, nhỏ) */
@@ -539,11 +539,9 @@ var IMM=[
  [2,.45,900,205,.55,1.4,-1,'#ffc0da','#fff2f8','255,190,220',1,1],
  [0,.9,500,140,.35,1.1,-1,'#b99cf0','#ece0ff','220,190,255',1,0],
  [2,1.9,300,290,.58,1.25,1,'#a8e8ff','#ffffff','190,240,255',1,1],
- [1,.34,650,400,.7,1.35,-1,'#e8d0ff','#9a6ae0','230,200,255',1,0],
- /* GẦN (lớn nhất, nhanh/chậm) */
- [0,3.0,0,205,.95,1.7,1,'#f2f6ff','#6f9ae8','190,225,255',2,2],
- [2,.22,1100,330,.95,1.6,-1,'#ffb4d4','#fff0f6','255,175,215',2,1],
- [0,.7,500,150,.95,1.5,-1,'#ffe8b0','#e8884a','255,215,150',2,0]];
+ [1,.34,650,400,.7,1.35,-1,'#e8d0ff','#9a6ae0','230,200,255',1,0]
+ /* Fix219: đã bỏ tầng GẦN (tiên nhân lớn bay trước sân) — chỉ còn XA và GIỮA */
+];
 function sparkle(q,x,y,r,rgb,a){q.fillStyle='rgba('+rgb+','+a+')';q.fillRect(x-r*2,y-r*.18,r*4,r*.36);q.fillRect(x-r*.18,y-r*2,r*.36,r*4);q.fillStyle='rgba(255,255,255,'+a+')';q.beginPath();q.arc(x,y,r*.45,0,6.2832);q.fill()}
 /* ---------- thân tiên nhân: vẽ 1 lần ở độ phân giải cao (mặt nghiêng, tay, áo nhiều lớp, tóc), phần bay động vẽ riêng ---------- */
 function mkFig(m){

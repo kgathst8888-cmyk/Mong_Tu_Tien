@@ -182,14 +182,18 @@ function exit(){mtExit();try{LCT.enter()}catch(e){}}
 function win(){try{QE('boss');QE('acma')}catch(e){}save();say('🏆 Hạ Ác Ma Vương!','#ffd070',230)}
 /* ---------- cổng trong Thành Thị Linh Giới (bản Fix168): THÊM Ô CỔNG MỚI ----------
  * Ở Fix83 boss chiếm ô "Hư Không Truyền Tống" đang khoá; sang Fix168 ô đó đã thành "Tiên Giới Thiên Môn" (world/61), ô 5 là Bế Quan Đài (world/57),
- * cổng cuối là "Về Thôn Tân Thủ" (world/65) → không còn ô trống. Nên thêm 1 cổng riêng (cuối mảng LCT.gates), đặt giữa Hợp Đạo Đài và Kiếm Thánh Đài,
+ * cổng cuối là "Về Thôn Tân Thủ" (world/65) → không còn ô trống. Nên thêm 1 cổng riêng (cuối mảng LCT.gates), đặt giữa Hợp Đạo Đài và Kiếm Thánh Đài (Fix219: dời lên trời cạnh mặt trăng),
  * cùng kiểu với world/65: chỉ bọc LGART.gx (toạ độ) và LGART.gate (vẽ) cho riêng cổng này. Chỉnh vị trí/cỡ: GPX, GPY, GLB, GK. */
 var G={sn:'Ác Ma',n:'Ác Ma Thượng Giới',e:'😈',c:'#ff4a5a',rgb:'255,74,90',open:1,go:ask};
 Object.defineProperty(G,'sub',{configurable:true,enumerable:true,get:function(){try{return window.HDAO&&HDAO.on()?'Boss Lv'+MT_LV+' · ×'+CF.mul+' Kiếm Thánh':'☯ Chỉ Đạo Thể được vào'}catch(e){return'Boss ×'+CF.mul+' Kiếm Thánh'}}});
 var GIDX=-1,gk;for(gk=0;gk<LCT.gates.length;gk++)if(LCT.gates[gk]&&LCT.gates[gk].n===G.n){GIDX=gk;break}
 if(GIDX<0)GIDX=LCT.gates.push(G)-1;else{LCT.gates[GIDX].go=ask}
 if(window.LGART&&typeof LGART.gx==='function'&&typeof LGART.gate==='function'&&typeof LGART.ok==='function'){(function(){
-var GPX=600,GPY=548,GIW=1320,GLB=400,GK=.72;   /* GPX/GPY: vị trí chân cổng (px ảnh gốc 1320 của world/58); GLB: độ cao nhãn; GK: hệ số thu nhỏ */
+var GPX=880,GPY=-122,GIW=1320,GLB=-270,GK=.72;   /* GPX/GPY: vị trí chân cổng (px ảnh gốc 1320 của world/58); GLB: độ cao nhãn; GK: hệ số thu nhỏ.
+   Fix219: cổng bay lên bên trái mặt trăng (trăng ở ảnh (1010,-170); tâm xoáy cổng = GPY-66*GK ≈ -170) */
+function geo(){var L=LGART.L;if(!L)return null;var sw=L.sw,by=L.dy+GPY*sw;return{sw:sw,pcy:by-66*GK*sw,prx:30*GK*sw,pry:58*GK*sw,ly:Math.max(L.dy+GLB*sw,60)}}
+/* vùng chạm riêng (cổng ở trên trời nên không dùng vùng chạm sát đất mặc định của world/10): nhãn + xoáy cổng */
+G.hit=function(px,py,x){var o=geo();if(!o)return false;return Math.abs(px-x)<Math.max(o.prx*2.2,38)&&py>o.ly-30&&py<o.pcy+Math.max(o.pry*1.35,44)};
 var _gx=LGART.gx;LGART.gx=function(i){return i===GIDX?GPX/GIW*LGART.ww():_gx.apply(this,arguments)};
 function gtRnd(i){var x=Math.sin(i*127.1+311.7)*43758.5453;return x-Math.floor(x)}
 function gtGlow(x,y,rx,ry,rgb,a){g.save();g.translate(x,y);g.scale(1,ry/rx);var q=g.createRadialGradient(0,0,0,0,0,rx);q.addColorStop(0,'rgba('+rgb+','+a+')');q.addColorStop(1,'rgba('+rgb+',0)');g.fillStyle=q;g.beginPath();g.arc(0,0,rx,0,6.2832);g.fill();g.restore()}
@@ -237,7 +241,7 @@ LGART.gate=function(Gt,i,x,t,tgt){
  g.restore();
  /* 4) đốm lửa bay lên quanh cổng */
  if(!lite){g.save();g.globalCompositeOperation='lighter';for(j=0;j<10;j++){var u=((t*.007+gtRnd(j+5))%1);g.fillStyle=j%3?'rgba(255,150,100,'+(.9*Math.sin(u*3.1416))+')':'rgba(255,220,120,'+(.9*Math.sin(u*3.1416))+')';g.beginPath();g.arc(x+(gtRnd(j+11)-.5)*rx*1.5+Math.sin(u*6+j)*4*sw,by-u*150*K*sw,Math.max(.8,1.8*sw*(1-u*.5)),0,6.2832);g.fill()}g.restore()}
- var fs=PORT?Math.max(6.5,Math.min(8.5,9*s)):Math.max(8,Math.min(10,6.5*s)),ly=L.dy+GLB*sw,cx=gtBanner(x,ly,fs);
+ var fs=PORT?Math.max(6.5,Math.min(8.5,9*s)):Math.max(8,Math.min(10,6.5*s)),ly=Math.max(L.dy+GLB*sw,60),cx=gtBanner(x,ly,fs);
  g.save();g.fillStyle='#ff8a7a';g.font='bold '+fs+'px sans-serif';g.textAlign='center';g.fillText('▼',cx,ly+fs*2.2+Math.sin(t*.12+i)*3);g.restore();
  return true};
 })()}

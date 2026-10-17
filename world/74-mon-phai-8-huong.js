@@ -101,7 +101,7 @@ function draw8(sid){
   else if(wB>=.998)drawPose(B,1,ws,-sf*(1-t)*dl,tw);
   else{drawPose(A,1,ws,sf*t*dl,tw);drawPose(B,wB,ws,-sf*(1-t)*dl,tw)}
   g.restore();
-  if(CF.weapon){try{if(window.VPW){var HH=(window.VPG_CF&&VPG_CF.h)||76,wk={kind:'front',w:HH*A.w/A.h,HH:HH,k:k,bp:bp,wp:ST.wp,at:-1};VPW.draw(sid,'back',wk);VPW.draw(sid,'front',wk)}}catch(e){}}
+  if(CF.weapon){try{if(window.VPW){var HH=(window.VPG_CF&&VPG_CF.h)||76,wk={kind:'front',ang:ST.ang,w:HH*A.w/A.h,HH:HH,k:k,bp:bp,wp:ST.wp,at:-1};VPW.draw(sid,'back',wk);VPW.draw(sid,'front',wk)}}catch(e){}}
  }finally{g.restore()}
  return true;
 }

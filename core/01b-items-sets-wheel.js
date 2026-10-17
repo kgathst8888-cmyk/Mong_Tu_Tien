@@ -50,6 +50,10 @@ function combine(){if(cbBusy)return;if(S.sh<C.shNeed){say('Cần '+C.shNeed+' M�
  }).catch(()=>{cbBusy=false;say('Không trừ được Linh Thạch (lỗi mạng) — chưa mất mảnh nào')})}
 function addNT(k){S.nt+=k|0}
 function addSH(k){S.sh+=k|0}
+function chD(){const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()}
+function chN(){if(S.cd!==chD()){S.cd=chD();S.cn=0}return S.cn|0}
+function chPrice(lv){return Math.round(1000*lv*(1+0.5*chN()))}
+function chBump(){chN();S.cn++}
 function shopNT(){if(R()<C.ntShop){S.nt++;return' · 🌙 +1 Mảnh Nguyệt Thạch!'}return''}
 function tipTxt(){const k=n();return'<br><span style="color:#ffe27a">✦ Bộ Thánh '+k+'/10</span>'+OPT.map((o,i)=>{const a=k>=C.need[i];return'<br><span style="color:'+(a?'#ffe27a':'#8a8a8a')+'">'+(a?'✔':'🔒')+' '+C.need[i]+' món: '+(a?o:'???')+'</span>'}).join('')}
 function ui_(){if(!vil)return NV;const m=mat(),fe=m.fe|0,hk=m.hk|0,mxk=Math.min(Math.floor(fe/C.fe),Math.floor(hk/C.hk),Math.floor(S.nt/C.nt));
@@ -70,37 +74,41 @@ return{C,S,OPT,img:IMGS,n,on,nOn,
  special:()=>on(4),
  isEl:(nm,pf)=>!!(pf&&(pf.burn||pf.poison||pf.freeze))||/Hỏa|Băng|Lôi|Sét|Tuyết|Ngũ Hành|Phong/.test(nm||''),
  sum:()=>' · '+nOn()+'/5 opt',
- gen,forge,combine,addNT,addSH,shopNT,tipTxt,ui:ui_,loadImgs,
- save:()=>({sh:S.sh|0,nt:S.nt|0,tr:S.tr|0,ok:S.ok|0}),
- load:o=>{o=o||{};S.sh=o.sh|0;S.nt=o.nt|0;S.tr=o.tr|0;S.ok=o.ok|0},
- reset:()=>{S.sh=S.nt=S.tr=S.ok=0}}
+ gen,forge,combine,addNT,addSH,shopNT,chN,chPrice,chBump,tipTxt,ui:ui_,loadImgs,
+ save:()=>({sh:S.sh|0,nt:S.nt|0,tr:S.tr|0,ok:S.ok|0,cd:S.cd||'',cn:S.cn|0}),
+ load:o=>{o=o||{};S.sh=o.sh|0;S.nt=o.nt|0;S.tr=o.tr|0;S.ok=o.ok|0;S.cd=o.cd||'';S.cn=o.cn|0},
+ reset:()=>{S.sh=S.nt=S.tr=S.ok=0;S.cd='';S.cn=0}}
 })();
 HL.loadImgs([ASSET_URL("a003"), ASSET_URL("a004"), ASSET_URL("a005"), ASSET_URL("a006"), ASSET_URL("a007"), ASSET_URL("a008"), ASSET_URL("a009"), ASSET_URL("a010"), ASSET_URL("a011"), ASSET_URL("a012")]);
 /* ================= VÒNG QUAY MAY MẮN (LW) =================
    10 ô bí ẩn · quay miễn phí mỗi 15 phút hoặc dùng Chìa Khóa (Boss Thế Giới rơi 10%) */
 const LW=(()=>{
-const C={freeMs:15*60e3,keyRate:.1,
- pNT:.05,pTT:.10,pG2:.10,pG1:.20,   /* còn lại 55% là phần thưởng ngẫu nhiên */
- g2:2e6,g1:1e6,
+const C={freeMs:8*3600e3,keyRate:.1,keyDay:5,ntN:3,
+ pNT:.01,pTT:.02,pG2:.02,pG1:.05,pGood:.2,pLv:.01,   /* còn lại 90% là phần thưởng ngẫu nhiên; pGood = tỉ lệ giữ Thần Thoại/Mảnh Thánh khi trúng ô ngẫu nhiên */
+ g2:8e6,g1:4e6,gs:15e5,
  SEC:['nt','rd','g1','rd','tt','rd','g1','rd','g2','rd']};   /* 10 ô: 1 Nguyệt Thạch, 1 Thiên Thần, 1 túi 2M, 2 túi 1M, 5 ngẫu nhiên */
-const S={t:0,key:0,sp:0};
+const S={t:0,key:0,sp:0,kd:'',kn:0};
+const dayK=()=>{const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()};
+const bossN=()=>{if(S.kd!==dayK()){S.kd=dayK();S.kn=0}return S.kn|0};
 let rot=0,busy=false,rev={},last='';
 const left=()=>Math.max(0,S.t+C.freeMs-Date.now());
-const fmt=ms=>{const s=Math.ceil(ms/1000);return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')};
+const fmt=ms=>{const s=Math.ceil(ms/1000),p=n=>String(n).padStart(2,'0');return p(Math.floor(s/3600))+':'+p(Math.floor(s%3600/60))+':'+p(s%60)};
 function reward(cat){
- if(cat=='nt'){HL.addNT(1);return['🌙','1 Mảnh Nguyệt Thạch']}
+ if(cat=='nt'){HL.addNT(C.ntN);return['🌙',C.ntN+' Mảnh Nguyệt Thạch']}
  if(cat=='tt'){const it=gen(P.lv,5);BAG.push(it);return['🌟','trang bị Thiên Thần: '+it.n]}
  if(cat=='g2'){gold+=C.g2;return['💰','Túi vàng '+fmtN(C.g2)]}
  if(cat=='g1'){gold+=C.g1;return['💰','Túi vàng '+fmtN(C.g1)]}
- const k=Math.floor(R()*6);
- if(k==0){const n=20+Math.floor(R()*21);frag+=n;return['🔹',n+' mảnh chế tạo']}
- if(k==1){hpP+=5;mpP+=5;return['🧪','5 bình HP + 5 bình MP']}
- if(k==2){gold+=300000;return['💰','Túi vàng '+fmtN(300000)]}
- if(k==3){const it=gen(P.lv,3);BAG.push(it);return['📦','trang bị Sử Thi: '+it.n]}
- if(k==4){const v=Math.round(nx()*.5);P.xp+=v;return['✨',fmtN(v)+' kinh nghiệm']}
+ let k=Math.floor(R()*7);if((k==3||k==6)&&R()>C.pGood)k=0;
+ if(k==0){const n=150+Math.floor(R()*151);frag+=n;return['🔹',n+' mảnh chế tạo']}
+ if(k==1){hpP+=20;mpP+=20;return['🧪','20 bình HP + 20 bình MP']}
+ if(k==2){gold+=C.gs;return['💰','Túi vàng '+fmtN(C.gs)]}
+ if(k==3){const it=gen(P.lv,4);BAG.push(it);return['📦','trang bị Thần Thoại: '+it.n]}
+ if(k==4&&R()<C.pLv&&P.lv<LC(PS[cur].tier)){const l0=P.lv,need=Math.max(1,Math.ceil(nx()-P.xp));try{if(window.TGQ&&TGQ.addXp)TGQ.addXp(need);else P.xp+=need}catch(e){P.xp+=need}try{if(window.TGQ&&TGQ.lvUp)TGQ.lvUp()}catch(e){}return['⬆️','Thăng ngay 1 cấp (Lv '+(l0+1)+')!']}
+ if(k==4){const v=Math.round(nx()*1.5);P.xp+=v;return['✨',fmtN(v)+' kinh nghiệm']}
+ if(k==6){HL.addSH(1);return['✨','1 Mảnh Thánh']}
  let m;try{m=MN.get()}catch(e){m=null}
- if(m){const f=100+Math.floor(R()*201),h=50+Math.floor(R()*101);m.fe+=f;m.hk+=h;return['⛏',f+' Quặng Sắt + '+h+' Huyền Kim']}
- gold+=300000;return['💰','Túi vàng '+fmtN(300000)]}
+ if(m){const f=1000+Math.floor(R()*2001),h=500+Math.floor(R()*1501);m.fe+=f;m.hk+=h;return['⛏',f+' Quặng Sắt + '+h+' Huyền Kim']}
+ gold+=C.gs;return['💰','Túi vàng '+fmtN(C.gs)]}
 function spin(useKey){
  if(busy)return;
  if(BAG.length>=capN()-1){msg='Túi gần đầy, hãy dọn chỗ trước khi quay';ui();return}
@@ -120,19 +128,20 @@ function spin(useKey){
  setTimeout(()=>{busy=false;rev[sec]=res[0];last=res[0]+' Nhận được '+res[1]+'!';msg=last;if(typeof bo!='undefined'&&bo)ui()},el?4100:0)}
 function ui_(){
  const rd=left()<=0,cols=['#5a3a7a','#3a2a5a'];
- let h='<div class="dt" style="color:#ffe27a"><b>🎡 Vòng Quay May Mắn</b><br><small>10 ô bí ẩn. Quay miễn phí mỗi 15 phút, hoặc dùng 🗝 Chìa Khóa (Boss Thế Giới rơi 10%).</small></div>';
+ let h='<div class="dt" style="color:#ffe27a"><b>🎡 Vòng Quay May Mắn</b><br><small>10 ô bí ẩn. Quay miễn phí mỗi 8 giờ, hoặc dùng 🗝 Chìa Khóa (Boss Thế Giới rơi 10%, tối đa 5 chìa/ngày, hôm nay đã nhận '+bossN()+'/'+C.keyDay+').</small></div>';
  let lab='';for(let i=0;i<10;i++){const a=i*36+18;lab+='<div style="position:absolute;left:50%;top:50%;width:34px;height:34px;margin:-17px 0 0 -17px;transform:rotate('+a+'deg) translateY(-92px);text-align:center;font-size:24px;line-height:34px"><span style="display:inline-block;transform:rotate('+(-a)+'deg) rotate('+(-(rot%360))+'deg)">'+(rev[i]||'❓')+'</span></div>'}
  let grad='conic-gradient(';for(let i=0;i<10;i++)grad+=cols[i%2]+' '+i*36+'deg '+(i+1)*36+'deg'+(i<9?',':'');grad+=')';
  h+='<div style="position:relative;width:250px;height:262px;margin:6px auto"><div style="position:absolute;left:50%;top:0;margin-left:-12px;border:12px solid transparent;border-top:22px solid #ffe27a;width:0;height:0;z-index:3"></div>'
   +'<div id="lwW" style="position:absolute;left:5px;top:20px;width:240px;height:240px;border-radius:50%;background:'+grad+';border:4px solid #ffe27a;box-shadow:0 0 14px #ffe27a88;transform:rotate('+rot+'deg)">'+lab+'<div style="position:absolute;left:50%;top:50%;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;background:#2a1a10;border:3px solid #ffe27a;text-align:center;line-height:40px;font-size:22px">🎡</div></div></div>';
  h+='<div class="dt"><div class="st">⏱ Quay miễn phí: <b id="lwT" style="color:'+(rd?'#7fe08a':'#ffb070')+'">'+(rd?'SẴN SÀNG':fmt(left()))+'</b></div><div class="st">🗝 Chìa Khóa: <b>'+S.key+'</b> · Đã quay: '+S.sp+' lần</div>'
   +'<button '+(rd&&!busy?'':'disabled')+' onclick="LW.spin(0)">🎡 Quay miễn phí</button><button '+(S.key>0&&!busy?'':'disabled')+' onclick="LW.spin(1)">🗝 Quay bằng Chìa Khóa</button></div>';
- h+='<div class="dt"><small>Tỉ lệ: 🌙 Mảnh Nguyệt Thạch 5% · 🌟 trang bị Thiên Thần 10% · 💰 Túi vàng 2.000.000 10% · 💰 Túi vàng 1.000.000 20% · 55% còn lại: ngẫu nhiên (mảnh chế tạo, bình HP/MP, túi vàng nhỏ, trang bị Sử Thi, kinh nghiệm, quặng).</small></div>';
+ h+='<div class="dt"><small>Tỉ lệ: 🌙 3 Mảnh Nguyệt Thạch '+C.pNT*100+'% · 🌟 trang bị Thiên Thần '+C.pTT*100+'% · 💰 Túi vàng '+fmtN(C.g2)+' '+C.pG2*100+'% · 💰 Túi vàng '+fmtN(C.g1)+' '+C.pG1*100+'% · '+Math.round((1-C.pNT-C.pTT-C.pG2-C.pG1)*100)+'% còn lại: ngẫu nhiên (mảnh chế tạo, 20 bình HP/MP, túi vàng '+fmtN(C.gs)+', trang bị Thần Thoại, kinh nghiệm (ô kinh nghiệm có '+C.pLv*100+'% thăng ngay 1 cấp, mọi cảnh giới), quặng Sắt/Huyền Kim, Mảnh Thánh).</small></div>';
  return h}
 setInterval(()=>{try{if(typeof tab=='undefined'||tab!=16||!bo||busy)return;const el=document.getElementById('lwT');if(!el)return;const r=left()<=0;if(r&&el.textContent!='SẴN SÀNG'){ui();return}if(!r)el.textContent=fmt(left())}catch(e){}},1000);
 return{C,S,spin,ui:ui_,
  addKey:n=>{S.key+=n|0},
- save:()=>({t:S.t|0?S.t:0,key:S.key|0,sp:S.sp|0}),
- load:o=>{o=o||{};S.t=+o.t||0;S.key=o.key|0;S.sp=o.sp|0},
- reset:()=>{S.t=0;S.key=0;S.sp=0}}
+ bossKey:()=>{if(bossN()>=C.keyDay)return false;S.kn++;S.key++;return true},
+ save:()=>({t:S.t|0?S.t:0,key:S.key|0,sp:S.sp|0,kd:S.kd||'',kn:S.kn|0}),
+ load:o=>{o=o||{};S.t=+o.t||0;S.key=o.key|0;S.sp=o.sp|0;S.kd=o.kd||'';S.kn=o.kn|0},
+ reset:()=>{S.t=0;S.key=0;S.sp=0;S.kd='';S.kn=0}}
 })();

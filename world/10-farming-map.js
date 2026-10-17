@@ -294,7 +294,8 @@ function enter(){if(!started||!vil)return;on=true;tgt=-1;vt=null;vgo=-1;gateGo=0
 function leave(){on=false;cam=0;tgt=-1;vt=null;vgo=-1;gateGo=0;P.x=cl(gateX(),40,vw()-40);P.atk=0;P.pe=null;DT.push({x:P.x,y:200,s:'🏘 Về Làng Thanh Vân',c:'#ffe9a0',g:1,l:110})}
 function act(i){const G=LCG[i];if(G.go)G.go();else DT.push({x:P.x,y:200,s:'🔒 '+G.n+' — sắp mở, nội dung sẽ thêm sau',c:'#e0b0ff',g:1,l:150})}
 function tap(e){if(!on||!vil||bo||!started)return;e.stopImmediatePropagation();e.stopPropagation();const px=e.offsetX,py=e.offsetY,a=GA()*s,gy=GY;tgt=-1;vgo=-1;
- for(let i=0;i<LCG.length;i++)if(Math.abs(px-(GX(i)-cam)*s)<a*1.5&&py>gy-a*5.2&&py<gy+44*s){tgt=i;vt=cl(GX(i),40,WWc()-40);return}
+ for(let i=0;i<LCG.length;i++){const G=LCG[i];if(G&&G.hit&&G.hit(px,py,(GX(i)-cam)*s)){tgt=i;vt=cl(GX(i),40,WWc()-40);return}} /* Fix219: cổng có vùng chạm riêng (Ác Ma cạnh mặt trăng) xét trước */
+ for(let i=0;i<LCG.length;i++){if(LCG[i]&&LCG[i].hit)continue;if(Math.abs(px-(GX(i)-cam)*s)<a*1.5&&py>gy-a*5.2&&py<gy+44*s){tgt=i;vt=cl(GX(i),40,WWc()-40);return}}
  vt=cl(px/s+cam,40,WWc()-40)}
 return{on:()=>on,enter,leave,draw,tap,gates:LCG,
  step:()=>{if(!on)return;vgo=-1;gateGo=0;try{twGoF=0}catch(e){}},
