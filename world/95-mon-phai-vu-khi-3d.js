@@ -8,7 +8,7 @@
  *   (cùng phép chiếu với xoay 3D của thân) nên đâm/chém về phía người xem thì vũ khí co ngắn + lún xuống như thật.
  * Tiến độ đánh: P.at (world/73) hoặc tự lấy từ P.atk/P.atkT của game (Tiên Giới world/74 cũng chạy). Gọi thử: VPW3.play(900).
  * Hướng nhìn: P.dir (world/73, ±1) · P.ang (world/74, S = π/2). Luôn cầm bằng tay GẦN người xem; tay xa → đổi tay mượt qua giữa thân.
- * Chỉnh: VPW3_CF.enable (false = vũ khí cũ) · .depth (độ dày) · .delta (độ xoay mặt) · .minw · .fx (hạt, 0 = tắt) · .slices · .arm (vẽ cánh tay khi đánh) · .debug (hiện khung xương) · .scale (kích thước vũ khí, mặc định .66) ·
+ * Chỉnh: VPW3_CF.enable (false = vũ khí cũ) · .depth (độ dày) · .delta (độ xoay mặt) · .minw · .fx (hạt, 0 = tắt) · .slices · .arm (vẽ cánh tay khi đánh) · .debug (hiện khung xương) ·
  *   KEY[loại] (khung hình then chốt: hx,hy,hz = vị trí tay ×HH; p = ngả tới trước; r = nghiêng sang phải; s = xoay mặt vũ khí) · SPEC[môn].len/.grip. */
 (function(){
 'use strict';
@@ -22,7 +22,6 @@ if(CF.fx===undefined)CF.fx=1;
 if(CF.slices===undefined)CF.slices=5;
 if(CF.arm===undefined)CF.arm=true;
 if(CF.debug===undefined)CF.debug=false;
-if(CF.scale===undefined)CF.scale=.66; /* tỉ lệ kích thước vũ khí so với người (1 = cỡ cũ) */
 /* world/73 + world/74 để lớp vũ khí TẮT mặc định (CF.weapon=false) → bật lên để vũ khí mới được gọi vẽ */
 try{if(window.VPG_CF)VPG_CF.weapon=true;if(window.VPG8_CF)VPG8_CF.weapon=true}catch(e){}
 var PI=Math.PI,R=PI/180,TAU=PI*2,OLD0=VPW.draw,DEPTHK=.22,OLD=function(){}; /* vũ khí cũ lệch với tranh mới → không dùng làm dự phòng */
@@ -35,7 +34,7 @@ var SPEC={
  ngc:{cls:'staff',len:1.14,grip:.60,c1:'#5ee8ff',c2:'#ffe9a8',fx:'star'}
 };
 /* khung hình then chốt (t = tiến độ chiêu 0..1). Toạ độ thân tay phải: hx sang phải, hy lên cao, hz tới trước (đơn vị ×HH); p = trục vũ khí ngả tới trước (rad), r = ngả sang phải, s = xoay mặt quanh trục */
-var IDLE={hx:.27,hy:.42,hz:.1,p:-.08,r:.14,s:0};
+var IDLE={hx:.15,hy:.46,hz:.08,p:-.08,r:.14,s:0};
 function K(t,o){var k={t:t};for(var q in IDLE)k[q]=o&&o[q]!==undefined?o[q]:IDLE[q];return k}
 var KEY=CF.KEY||(CF.KEY={
  sword:[K(0),K(.26,{hx:.2,hy:.95,hz:-.14,p:-.6,r:.5}),K(.34,{hx:.2,hy:.97,hz:-.16,p:-.66,r:.55}),K(.54,{hx:-.14,hy:.44,hz:.5,p:1.3,r:-.6,s:1.9}),K(.7,{hx:-.1,hy:.4,hz:.42,p:1.05,r:-.4,s:1.9}),K(1)],
@@ -98,12 +97,12 @@ function draw3(sid,phase,pp,o,sp){
   S.sd=(S.sid!==sid||now-S.t>600)?S.tg:S.sd+(S.tg-S.sd)*(1-Math.exp(-dt*9));
   S.t=now;S.sid=sid}
  fx=Math.cos(S.a);fy=Math.sin(S.a);rx0=-fy;ry0=fx;sd=S.sd;
- var dh=sp.len*HH*CF.scale,dw=dh*o.w/o.h,pu=atk>=0?Math.sin(atk*PI):0;
+ var dh=sp.len*HH,dw=dh*o.w/o.h,pu=atk>=0?Math.sin(atk*PI):0;
  /* chiếu thân→màn hình: x phải, y lên, z tới; x đã nhân sd (đổi tay) */
  function pj(x,y,z){x*=sd;return[(x*rx0+z*fx)*HH,-y*HH+(x*ry0+z*fy)*DEPTHK*HH]}
  function posOf(a){ /* tư thế tại tiến độ a: khung xương + trục vũ khí */
-  var wk=pp.wp||0,q=a>=0?sample(cls,a):{hx:IDLE.hx,hy:IDLE.hy+.01*Math.sin(bp*1.3)+Math.abs(Math.sin(wk))*.03*k,hz:IDLE.hz+Math.sin(wk)*.14*k,p:IDLE.p+Math.sin(bp*1.1)*.03-k*.5,r:IDLE.r+Math.sin(bp*.9)*.02,s:Math.sin(bp*.7)*.35};
-  var sh=[Math.max(.18,.4*pp.w/HH),.76,0],ikr=ik(sh[0],sh[1],sh[2],q.hx,q.hy,q.hz,[.7,-.7,-.2]),h=ikr.hand;
+  var q=a>=0?sample(cls,a):{hx:IDLE.hx,hy:IDLE.hy+.01*Math.sin(bp*1.3),hz:IDLE.hz,p:IDLE.p+Math.sin(bp*1.1)*.03-k*.5,r:IDLE.r+Math.sin(bp*.9)*.02,s:Math.sin(bp*.7)*.35};
+  var sh=[.2,.74,0],ikr=ik(sh[0],sh[1],sh[2],q.hx,q.hy,q.hz,[.7,-.7,-.2]),h=ikr.hand;
   var ax=Math.sin(q.r)*Math.cos(q.p),ay=Math.cos(q.r)*Math.cos(q.p),az=Math.sin(q.p),
    H=pj(h[0],h[1],h[2]),dx=(ax*sd)*rx0+az*fx,dy=-ay+(ax*sd*ry0+az*fy)*DEPTHK,dl=Math.sqrt(dx*dx+dy*dy)||1;
   return{ik:ikr,sh:sh,H:H,ang:Math.atan2(dx,-dy),Lf:Math.max(.42,Math.min(1,dl)),s:q.s,ux:dx/dl,uy:dy/dl}}
@@ -130,15 +129,14 @@ function draw3(sid,phase,pp,o,sp){
     prev=[pt,pm]}
    g.restore()}
   /* cánh tay khung xương (chỉ khi đánh) / chế độ debug */
-  var armA=CF.arm?1:0;
+  var armA=atk>=0?Math.min(1,atk/.07,(1-atk)/.1):0;
   if((CF.arm&&armA>.02)||CF.debug){
    var sj=pj(ps.sh[0],ps.sh[1],ps.sh[2]),ej=pj(ps.ik.elbow[0],ps.ik.elbow[1],ps.ik.elbow[2]),hj=H;
    g.save();g.lineCap='round';g.lineJoin='round';
    if(CF.debug){g.globalAlpha=.9;g.strokeStyle='#7dff7d';g.lineWidth=1.5;g.beginPath();g.moveTo(sj[0],sj[1]);g.lineTo(ej[0],ej[1]);g.lineTo(hj[0],hj[1]);g.stroke();g.fillStyle='#fff';[sj,ej,hj].forEach(function(q){g.beginPath();g.arc(q[0],q[1],2,0,TAU);g.fill()})}
-   else{g.globalAlpha=.97;g.strokeStyle='#1b2038';g.lineWidth=HH*.105;g.beginPath();g.moveTo(sj[0],sj[1]);g.lineTo(ej[0],ej[1]);g.stroke();
-    g.lineWidth=HH*.085;g.beginPath();g.moveTo(ej[0],ej[1]);g.lineTo(hj[0],hj[1]);g.stroke();
-    g.strokeStyle=sp.c1;g.globalAlpha=.5;g.lineWidth=1.1;g.beginPath();g.moveTo(sj[0],sj[1]);g.lineTo(ej[0],ej[1]);g.lineTo(hj[0],hj[1]);g.stroke();
-    var cx=hj[0]+(ej[0]-hj[0])*.16,cy=hj[1]+(ej[1]-hj[1])*.16;g.globalAlpha=.9;g.strokeStyle=sp.c2;g.lineWidth=HH*.095;g.beginPath();g.moveTo(hj[0]+(ej[0]-hj[0])*.1,hj[1]+(ej[1]-hj[1])*.1);g.lineTo(cx,cy);g.stroke()}
+   else{g.globalAlpha=armA*.92;g.strokeStyle='#161a2c';g.lineWidth=HH*.085;g.beginPath();g.moveTo(sj[0],sj[1]);g.lineTo(ej[0],ej[1]);g.stroke();
+    g.lineWidth=HH*.07;g.beginPath();g.moveTo(ej[0],ej[1]);g.lineTo(hj[0],hj[1]);g.stroke();
+    g.strokeStyle=sp.c1;g.globalAlpha=armA*.55;g.lineWidth=1;g.beginPath();g.moveTo(sj[0],sj[1]);g.lineTo(ej[0],ej[1]);g.lineTo(hj[0],hj[1]);g.stroke()}
    g.restore()}
   /* ---- vũ khí (hệ toạ độ tay) ---- */
   g.translate(H[0],H[1]);g.rotate(ang);g.scale(1,Lf);
@@ -155,7 +153,7 @@ function draw3(sid,phase,pp,o,sp){
   g.save();g.globalCompositeOperation='lighter';g.globalAlpha=(.10+.12*Math.abs(nx))*(1+pu);g.translate(D*nx*.5,0);g.scale(ny>=0?1:-1,1);g.drawImage(bright,-dw*wf/2,-sp.grip*dh,dw*wf,dh);g.restore();
   if(CF.fx>0)orbit(sp,'f',dh,dw,t,atk,HH);
   /* bàn tay nắm cán */
-  if(CF.arm){g.globalAlpha=1;g.fillStyle='#e8c5a4';g.beginPath();g.ellipse(0,0,HH*.05,HH*.062,0,0,TAU);g.fill();g.strokeStyle='rgba(60,30,20,.6)';g.lineWidth=.8;g.stroke()}
+  if(atk>=0&&CF.arm){g.globalAlpha=armA;g.fillStyle='#161a2c';g.beginPath();g.arc(0,0,HH*.045,0,TAU);g.fill()}
  }finally{g.restore()}
  /* ---- hiệu ứng riêng từng loại (hệ toạ độ thân) ---- */
  if(atk>=0&&CF.fx>0){
