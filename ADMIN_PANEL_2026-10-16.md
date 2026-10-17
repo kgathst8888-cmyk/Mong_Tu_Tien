@@ -55,3 +55,7 @@
 
 ## Fix195 — Admin gửi được Tôi Thể Đan
 - ui/69-thong-bao-thu.js: thêm vào bảng ITM `tt` (⚪ Tôi Thể Đan, t:'pill', trùng id đan trong Luyện Đan — cần 100 viên để chuyển Phàm Nhân→Đạo Thể) và `cot` (🦴 Cốt Linh Thảo). Form 🎁 Gửi quà của ui/70 tự hiện từ MAIL.IT, không sửa admin.sql.
+
+## Fix249 — Admin nhận nhiệm vụ chuyển chức là tự hoàn thành (ui/70)
+- Tài khoản ADMIN bấm nhận nhiệm vụ chuyển chức / thử luyện (core/01r cq1) → tiến độ tự đầy và chuyển chức luôn trong cùng một lần bấm (lần đầu chọn nhánh như thường). Người chơi thường không đổi.
+- Tắt: `ADMIN.autoCq=false`. Dùng chung với tab 🧪 Test → Cấp độ Phàm Thể (cấp tối đa tăng theo bậc chuyển chức).

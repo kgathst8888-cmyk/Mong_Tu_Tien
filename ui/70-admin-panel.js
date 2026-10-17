@@ -542,6 +542,12 @@ function tick(){
   }catch(e){}
 }
 
-window.ADMIN={open:show,close:close,isAdmin:function(){return isAdmin}};
+/* Fix249: ADMIN nhận nhiệm vụ chuyển chức/thử luyện (core/01r cq1) → tự hoàn thành + chuyển chức ngay (bỏ qua việc đánh quái). Tắt: ADMIN.autoCq=false */
+try{if(typeof cq1==='function'&&!cq1.__adm){var _cq1=cq1;cq1=function(b){
+  var had=false;try{had=!!cq}catch(e){}
+  var r=_cq1.apply(this,arguments);
+  try{if(!had&&isAdmin&&window.ADMIN&&ADMIN.autoCq&&cq){cqFix();cq.k=cq.n;cq.e=cq.en;cq.b=cq.bn;return _cq1.apply(this,arguments)}}catch(e){}
+  return r};cq1.__adm=1}}catch(e){}
+window.ADMIN={autoCq:true,open:show,close:close,isAdmin:function(){return isAdmin}};
 if(document.body)build();else document.addEventListener('DOMContentLoaded',build);
 })();

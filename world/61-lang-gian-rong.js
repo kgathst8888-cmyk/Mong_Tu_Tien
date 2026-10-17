@@ -33,8 +33,8 @@ window.VWD={on:plain0,plain:inVil,ww:ww,cam:function(){return camX},cx:function(
 if(typeof xbg==='function'){var _xbg=xbg;xbg=function(gy,m){if(m===-1&&!begun&&plain0()){begun=true;W0=W;cam0=cam;g.save();g.translate(-camX*s,0);cam=0;W=ww()*s}return _xbg.apply(this,arguments)}}
 if(typeof vdraw==='function'){var _vd=vdraw;vdraw=function(){try{return _vd.apply(this,arguments)}catch(e){try{VWD.err=String(e&&e.stack||e).slice(0,300)}catch(x){}throw e}finally{if(begun){begun=false;W=W0;cam=cam0;g.restore()}}}}
 
-/* Fix189: làng rộng gấp ~2,5 lần màn hình nên chạy cuối bản đồ thấy rất nhanh → giảm tốc độ đi bộ RIÊNG ở làng thường (WALK = hệ số, 1 = như cũ). Linh Điền/Mỏ/Thành Thị không đổi. */
-var WALK=.75;
+/* Fix189: làng rộng gấp ~2,5 lần màn hình nên chạy cuối bản đồ thấy rất nhanh → giảm tốc độ đi bộ RIÊNG ở làng thường (WALK = hệ số, 1 = như cũ; Fix246: .75 → .9 chạy nhanh hơn ~20%). Linh Điền/Mỏ/Thành Thị không đổi. */
+var WALK=.9;
 try{var _vspd=window.VSPD;window.VSPD=function(){var b=_vspd?_vspd():1;try{return inVil()?b*WALK:b}catch(e){return b}};window.VWD.walk=function(v){if(v>0)WALK=v;return WALK}}catch(e){}
 /* camera bám nhân vật khi đi trong làng */
 function tick(){

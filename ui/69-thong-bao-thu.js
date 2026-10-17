@@ -76,7 +76,11 @@ var ITM={
   mlh:{t:'herb',e:'🌀',n:'NL Luyện Hư Đan',max:1000},
   mdna:{t:'herb',e:'🧿',n:'NL Đúc Nguyên Anh',max:1000},
   tt:{t:'pill',e:'⚪',n:'Tôi Thể Đan',max:1000},        /* Fix195: chuyển cấp Phàm Nhân → Đạo Thể (cần 100) — khoá 'tt' trùng id đan trong Luyện Đan */
-  cot:{t:'herb',e:'🦴',n:'Cốt Linh Thảo',max:1000}
+  cot:{t:'herb',e:'🦴',n:'Cốt Linh Thảo',max:1000},
+  bkbl:{t:'bk',e:'📖',n:'Bí Kíp: Bách Luyện Kỳ Kinh',max:10},   /* Fix248: bí kíp luyện thể (ui/96) — khoá bk+id sách */
+  bktn:{t:'bk',e:'📖',n:'Bí Kíp: Thiết Ngưu Hộ Thể Công',max:10},
+  bkkc:{t:'bk',e:'📖',n:'Bí Kíp: Kim Cang Bất Hoại Thân',max:10},
+  bkhm:{t:'bk',e:'📖',n:'Bí Kíp: Hỗn Mang Bách Diệt Kinh',max:10}
 };
 function normQ(q){
   if(!q||typeof q!=='object')return null;
@@ -127,6 +131,7 @@ function itErr(it){
   for(i=0;i<ks.length;i++){d=ITM[ks[i]];if(!d)continue;
     if((d.t==='nt'||d.t==='sh')&&!(typeof HL!=='undefined'&&HL.addNT&&HL.addSH))return'Chưa có kho '+d.n+'.';
     if((d.t==='pill'||d.t==='herb')&&!(typeof FM!=='undefined'&&FM.get))return'Chưa có Linh Điền / Luyện Đan để nhận '+d.n+'.';
+    if(d.t==='bk'){if(!(window.BK&&BK.give))return'Chưa có Bí Kíp Luyện Thể để nhận '+d.n+'.';if(BK.space&&BK.space()<it[ks[i]])return'📖 Túi bí kíp không đủ chỗ — dọn bớt rồi nhận lại.'}
     if(d.t==='hp'&&!(window.HONP&&HONP.chosen&&HONP.chosen()))return'🔮 Hãy chọn Hồn Phách (tab 🧘 Tu tiên trong túi) rồi nhận lại thư.';
   }
   return'';
@@ -143,6 +148,7 @@ function giveIt(k,n){
   else if(d.t==='mb')mpP+=n;
   else if(d.t==='pill'){s=FM.get();if(!s.pills)s.pills={};s.pills[k]=(s.pills[k]|0)+n}
   else if(d.t==='herb'){s=FM.get();if(!s.herbs)s.herbs={};s.herbs[k]=(s.herbs[k]|0)+n}
+  else if(d.t==='bk'){for(var i=0;i<n;i++)BK.give(k.slice(2),'Nhận thư')}
 }
 /* trả về chuỗi lỗi nếu chưa nhận được, '' nếu thành công */
 function claimOne(m){
