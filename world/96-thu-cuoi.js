@@ -10,7 +10,7 @@
 'use strict';
 if(typeof hero!=='function'||typeof nameTag!=='function'||typeof g==='undefined'||typeof PS==='undefined'||!window.TG||!TG.spots||!window.VPG8||!window.VP||!window.THD_ASSETS)return;
 var CF=window.THUCUOI_CF=window.THUCUOI_CF||{};
-if(CF.enable===undefined)CF.enable=true;if(!CF.lv)CF.lv=50;if(!CF.hb)CF.hb=112;if(!CF.sh)CF.sh=54;if(CF.up===undefined)CF.up=16;
+if(CF.enable===undefined)CF.enable=true;if(!CF.lv)CF.lv=50;if(!CF.hb)CF.hb=170;if(!CF.sh)CF.sh=82;if(CF.up===undefined)CF.up=16;
 var PI=Math.PI,TAU=PI*2;
 /* ---------- ảnh chim: 5 tư thế gốc, 3 hướng còn lại lật gương ----------
  * chỉ số khung theo world/74: 0 S · 1 SE · 2 E · 3 NE · 4 N · 5 NW · 6 W · 7 SW. [sprite, lật, seat x, seat y] (seat = điểm ngồi trên thân chim, tỉ lệ ảnh) */
@@ -58,26 +58,34 @@ function toggle(){var m=rec();if(!m)return;if(!canRide()){say('🔒 Cần Tiên 
 function sync(){TG.spots.forEach(function(p){if(p.id!=='beast')return;if(!p.open||p.go!==open){p.open=1;p.go=open;p.sub='Thú cưỡi · Thực Hỏa Điểu';p.desc='Vườn nuôi tiên thú. Tiên Nhân Lv '+CF.lv+' có thể nhận và cưỡi Thực Hỏa Điểu.'}})}
 sync();setInterval(sync,2000);
 /* ---------- vẽ chim cưỡi ---------- */
-var FL={f:-1,ph:0,k:0};
-function fstep(ST){var f=typeof fr==='number'?fr:0;if(FL.f===f)return;FL.f=f;var mv=ST.k>.05?1:0;FL.k+=(mv-FL.k)*.1;FL.ph+=.15+.22*FL.k}
+var FL={ph:0,k:0},S={f:-1,ang:PI/2,tg:PI/2,k:0,bp:0,mh:0};
+function wrap(a){while(a>PI)a-=TAU;while(a<-PI)a+=TAU;return a}
+/* Tự tính hướng đi / nhịp cánh (không phụ thuộc world/74, vì ở chế độ ngồi ảnh hero() gốc không được gọi nên VPG8.state đứng yên) */
+function tick(){var f=typeof fr==='number'?fr:0;if(S.f===f)return;S.f=f;
+ var mv=P.mv?1:0;if(mv)S.mh=12;else if(S.mh>0){S.mh--;mv=1}
+ S.k+=(mv-S.k)*(mv?.1:.05);if(S.k<.002)S.k=0;
+ var v=window.TGV;if(P.mv&&v&&(v.sx||v.sy))S.tg=Math.atan2(v.sy*2,v.sx);
+ var d=wrap(S.tg-S.ang),st=d*.13;if(st>.1)st=.1;else if(st<-.1)st=-.1;if(Math.abs(d)<.01)S.ang=S.tg;else S.ang=wrap(S.ang+st);
+ S.bp+=.05;FL.k=S.k;FL.ph+=.13+.17*S.k}
 function ease2(x){x=Math.max(0,Math.min(1,x));return x*x*(3-2*x)}
-function seatYof(up){return -(up+36)}
+function seatYof(up){return -(up+CF.hb*.3)}
 /* vẽ 1 tư thế chim, điểm ngồi nằm ở (0,sy). Lưới cột: đầu cánh nhấp nhô theo nhịp vỗ */
 function pose(idx,alpha,sy,hb,amp){var P0=POSE[idx],o=img(P0[0]);if(!ready(o))return;
- var h=hb*(P0[0]==='p2'?.96:1),w=h*o.w/o.h,bx=-w*P0[2],by=sy-h*P0[3],N=20,iw=o.im.naturalWidth,ih=o.im.naturalHeight,cw=iw/N,dw=w/N;
- g.save();g.globalAlpha=alpha;if(P0[1])g.scale(-1,1);
+ var h=hb*(P0[0]==='p2'?.96:1),w=h*o.w/o.h,bx=-w*P0[2],by=sy-h*P0[3],N=32,iw=o.im.naturalWidth,ih=o.im.naturalHeight,cw=iw/N,dw=w/N,
+  sq=1+Math.sin(FL.ph)*.035*(.5+FL.k);
+ g.save();g.globalAlpha=alpha;g.translate(0,sy);g.scale(1,sq);g.translate(0,-sy);if(P0[1])g.scale(-1,1);
  try{g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high'}catch(e){}
- for(var j=0;j<N;j++){var xn=((j+.5)/N-P0[2]);var wing=Math.pow(Math.min(1,Math.abs(xn)*2.1),1.35);
-  var dy=Math.sin(FL.ph-Math.abs(xn)*1.4)*amp*wing;
-  g.drawImage(o.im,j*cw,0,cw+.6,ih,bx+j*dw,by+dy,dw+.7,h)}
+ for(var j=0;j<N;j++){var xn=((j+.5)/N-P0[2]),ax=Math.abs(xn);var wing=Math.pow(Math.min(1,ax*2.2),1.25);
+  var dy=(Math.sin(FL.ph-ax*2.2)*.8+Math.sin(FL.ph*2-ax*3.4)*.2)*amp*wing;
+  g.drawImage(o.im,j*cw,0,cw+.6,ih,bx+j*dw,by+dy,dw+.8,h)}
  g.restore()}
-function drawBird(){var ST=VPG8.state;fstep(ST);var bp=ST.bp||0,k=FL.k,
-  up=(CF.up||0)+Math.sin(bp*1.25)*3.2+Math.sin(bp*2.3+1.1)*1.1,sy=seatYof(up),hb=CF.hb,amp=hb*.075*(.55+.6*k),
+function drawBird(){tick();var ST=S,bp=ST.bp||0,k=FL.k,
+  up=(CF.up||0)+Math.sin(bp*1.25)*3.2+Math.sin(bp*2.3+1.1)*1.1,sy=seatYof(up),hb=CF.hb,amp=hb*.11*(.6+.55*k),
   u=(PI/2-ST.ang)/(PI/4);u=((u%8)+8)%8;var i0=Math.floor(u),t=u-i0,i1=(i0+1)%8,wB=t<.35?0:(t>.65?1:ease2((t-.35)/.3)),
   hx=Math.cos(ST.ang)*k,col='255,140,60';
  g.save();g.translate((P.x-cam)*s,GY);g.scale(s,s);
  /* bóng đất + quầng lửa */
- g.fillStyle='rgba(0,0,30,'+(.34-.1*Math.min(1,up/30)).toFixed(3)+')';g.beginPath();g.ellipse(0,2,30,7,0,0,TAU);g.fill();
+ g.fillStyle='rgba(0,0,30,'+(.34-.1*Math.min(1,up/30)).toFixed(3)+')';g.beginPath();g.ellipse(0,2,hb*.27,hb*.062,0,0,TAU);g.fill();
  g.save();g.globalCompositeOperation='lighter';
  var q=g.createRadialGradient(0,sy,4,0,sy,hb*.8);q.addColorStop(0,'rgba('+col+',.30)');q.addColorStop(1,'rgba('+col+',0)');g.fillStyle=q;g.beginPath();g.arc(0,sy,hb*.8,0,TAU);g.fill();
  /* đốm lửa bay theo sau */
@@ -91,7 +99,7 @@ function drawBird(){var ST=VPG8.state;fstep(ST);var bp=ST.bp||0,k=FL.k,
 /* hai chân khoanh + váy, vẽ đè lên chỗ cắt hông */
 var ROBE={umt:'#8a5ad8',hbd:'#4ab8d8',ptc:'#e8803a',tkt:'#5a8ae0',vdm:'#4cc86a',ngc:'#e8c060'};
 function mix(h,t){var n=parseInt(h.slice(1),16),r=n>>16,gg=n>>8&255,b=n&255;return 'rgb('+Math.round(r+(255-r)*t)+','+Math.round(gg+(255-gg)*t)+','+Math.round(b+(255-b)*t)+')'}
-function legs(sy){var ST=VPG8.state,sid='';try{sid=VP.get()||''}catch(e){}var c=ROBE[sid]||'#d8a060',
+function legs(sy){var ST=S,sid='';try{sid=VP.get()||''}catch(e){}var c=ROBE[sid]||'#d8a060',
   fx=Math.cos(ST.ang),fy=Math.sin(ST.ang)*.5;
  g.save();g.translate((P.x-cam)*s,GY+sy*s);g.scale(s,s);
  var lg=g.createLinearGradient(0,-4,0,12);lg.addColorStop(0,mix(c,.35));lg.addColorStop(1,mix(c,-0));
@@ -116,7 +124,7 @@ function sitPose(o,alpha,sy,SHh,bp,k){var h=SHh,w=h*o.w/o.h,N=22,ih=o.im.natural
  for(var j=0;j<N;j++){var u=(j+.5)/N,uu=Math.pow(Math.max(0,u-.1)/.9,1.5),dx=uu*(Math.sin(bp*1.2-u*2.6)*1.3+k*Math.sin(FL.ph*.8-u*3)*1.8);
   g.drawImage(o.im,0,j*sh,iw,sh+.5,-w/2+dx,y0+j*dh,w,dh+.8)}
  g.restore()}
-function drawSit(sid,sy){var ST=VPG8.state,bp=ST.bp||0,k=FL.k,SHh=CF.sh||54,u=(PI/2-ST.ang)/(PI/4);u=((u%8)+8)%8;
+function drawSit(sid,sy){tick();var ST=S,bp=ST.bp||0,k=FL.k,SHh=CF.sh||54,u=(PI/2-ST.ang)/(PI/4);u=((u%8)+8)%8;
  var i0=Math.floor(u),t=u-i0,i1=(i0+1)%8,wB=t<.35?0:(t>.65?1:ease2((t-.35)/.3)),A=sitImg(sid,i0),B=sitImg(sid,i1);
  g.save();g.translate((P.x-cam)*s,GY);g.scale(s,s);
  if(wB<=.002)sitPose(A,1,sy,SHh,bp,k);else if(wB>=.998)sitPose(B,1,sy,SHh,bp,k);else{sitPose(A,1,sy,SHh,bp,k);sitPose(B,wB,sy,SHh,bp,k)}
