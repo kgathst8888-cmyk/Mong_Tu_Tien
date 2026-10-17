@@ -74,7 +74,9 @@ var ITM={
   mna:{t:'herb',e:'🔮',n:'NL Nguyên Anh Đan',max:1000},
   mht:{t:'herb',e:'🌠',n:'NL Hoá Thần Đan',max:1000},
   mlh:{t:'herb',e:'🌀',n:'NL Luyện Hư Đan',max:1000},
-  mdna:{t:'herb',e:'🧿',n:'NL Đúc Nguyên Anh',max:1000}
+  mdna:{t:'herb',e:'🧿',n:'NL Đúc Nguyên Anh',max:1000},
+  tt:{t:'pill',e:'⚪',n:'Tôi Thể Đan',max:1000},        /* Fix195: chuyển cấp Phàm Nhân → Đạo Thể (cần 100) — khoá 'tt' trùng id đan trong Luyện Đan */
+  cot:{t:'herb',e:'🦴',n:'Cốt Linh Thảo',max:1000}
 };
 function normQ(q){
   if(!q||typeof q!=='object')return null;

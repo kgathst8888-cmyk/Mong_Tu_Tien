@@ -52,3 +52,6 @@
 ## Fix175 — Chống cache + nhãn phiên bản
 - index.html nạp `ui/70-admin-panel.js?v=174` (trình duyệt tải lại file mới). Tiêu đề bảng 🛡 Quản trị có nhãn "bản Fix174": không thấy nhãn = đang chạy bản cũ (cache / bản ghép cũ / chưa triển khai lên máy chủ web).
 - Nếu chơi bằng bản ghép Mong_Tu_Tien_CLAUDE.html: phải build lại (tools/build.py), vì zip không kèm file đó.
+
+## Fix195 — Admin gửi được Tôi Thể Đan
+- ui/69-thong-bao-thu.js: thêm vào bảng ITM `tt` (⚪ Tôi Thể Đan, t:'pill', trùng id đan trong Luyện Đan — cần 100 viên để chuyển Phàm Nhân→Đạo Thể) và `cot` (🦴 Cốt Linh Thảo). Form 🎁 Gửi quà của ui/70 tự hiện từ MAIL.IT, không sửa admin.sql.
