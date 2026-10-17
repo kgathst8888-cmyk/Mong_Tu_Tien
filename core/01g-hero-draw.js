@@ -6,21 +6,29 @@ skCol=(n,d)=>!n?d:/Hỏa/.test(n)?'#ff8a3a':/Băng|Bão Tuyết/.test(n)?'#9fe0f
 function armXY(S,E,H,au,af){const e=rot2(E[0]-S[0],E[1]-S[1],au),f=rot2(H[0]-E[0],H[1]-E[1],au+af);return[S[0]+e[0]+f[0],S[1]+e[1]+f[1]]}
 function dPc(p){if(!p)return;let c=p.im;try{const m=g.getTransform();c=CR(p.im,p.h*Math.hypot(m.a,m.b),.42)}catch(e){}g.drawImage(c,p.x,p.y,p.w,p.h)}
 function dArm(R,k,au,af){const u=R[k+'u'],l=R[k+'l'],S=R[k+'_S'],E=R[k+'_E'];if(!S)return;g.save();g.translate(S[0],S[1]);g.rotate(au);g.translate(-S[0],-S[1]);dPc(u);g.translate(E[0],E[1]);g.rotate(af);g.translate(-E[0],-E[1]);dPc(l);g.restore()}
-function dLeg(p,pv,a,lf){if(!p)return;g.save();g.translate(pv[0],pv[1]-lf);g.rotate(a);g.translate(-pv[0],-pv[1]);dPc(p);g.restore()}
+function dLeg(p,pv,a,lf){if(!p)return;g.save();const Lh=Math.max(40,p.y+p.h-pv[1]),sy=lf>0?Math.max(.6,1-lf/Lh):1;g.translate(pv[0],pv[1]);g.rotate(a);if(sy<1)g.scale(1+(1-sy)*.12,sy);g.translate(-pv[0],-pv[1]);dPc(p);g.restore()}
 function star(n,r1,r2,rot){g.beginPath();for(let i=0;i<n*2;i++){const a=rot+i*Math.PI/n,r=i%2?r2:r1;i?g.lineTo(Math.cos(a)*r,Math.sin(a)*r):g.moveTo(Math.cos(a)*r,Math.sin(a)*r)}g.closePath()}
 function glowAt(x,y,r,c,a){glowDraw(x,y,r*1.15,c,Math.min(1,a));if(a>.5)glowDraw(x,y,r*.5,'#ffffff',a*.5)}
-/* DÁNG ĐI v3 (mượt) — pha tích lũy theo từng P; chân: đạp lùi tuyến tính rồi vung Hermite liền vận tốc (không gãy khúc),
-   nhấc chân theo sin², tay đánh sin thuần, khuỷu dùng max mềm, nhún 2 nhịp/chu kỳ. Chỉ tính toán; hero() trộn theo WG.k (đã ease). */
+/* DÁNG ĐI v4 (Fix227: hết "què") — kiếm khách + cung thủ. Sửa 3 lỗi của v3:
+   (1) nhịp bước KHÔNG khớp tốc độ (chân quét ~14px/bước mà thân lướt ~40px) → giờ pha bước tính theo quãng đường P.x thực đi được (không trượt, tự khớp buff tốc độ),
+   (2) chân nhấc cứng cả đùi (hông tách thân) → giờ co chân quanh hông (dLeg scaleY), nhấc sin²,
+   (3) thân nâng lơ lửng trên đất → giờ hông hạ ở lúc 2 chân chạm đất, cao nhất khi chân trụ thẳng (chân bám đất).
+   Góc chân dạng cos theo pha (liền vận tốc, không gãy), trộn nhẹ với đường thẳng cho bước trụ đều. Chỉ tính toán; hero() trộn theo WG.k. Giao diện trả về giữ nguyên như v3. */
 function walkGait(on){
- if(P._wf!==fr){P._wf=fr;const k0=P._wk||0,k=on?Math.min(1,k0+.09):Math.max(0,k0-.11);P._wk=k;if(on||k>0)P._wp=(P._wp||0)+(vil?.25:.15)*(on?1:es(k))}
+ const Af=.40,Ab=.44,SN=.6;
+ if(P._wf!==fr){P._wf=fr;const k0=P._wk||0,k=on?Math.min(1,k0+.12):Math.max(0,k0-.12);P._wk=k;
+  const lx=P._lx,dx=lx==null?-1:Math.min(4,Math.abs(P.x-lx));P._lx=P.x;
+  if(on){const DC=(Af+Ab)*(44*.7*(typeof SZ=='number'?SZ:.7))/SN*1.5,sp=dx<0?.2:Math.min(.34,Math.max(.1,dx*6.2832/DC));P._wr=sp;P._wp=(P._wp||0)+sp}
+  else if(k>0)P._wp=(P._wp||0)+(P._wr||.12)*es(k)}
  const k=P._wk||0;if(k<=.001)return{k:0};
- const u=((P._wp||0)/6.2832)%1,Af=.3,Ab=.34,SN=.6,vs=(Ab+Af)/SN*(1-SN),
- pose=v=>{v=((v%1)+1)%1;if(v<SN)return[lp(-Af,Ab,v/SN),0];const s=(v-SN)/(1-SN),s2=s*s,s3=s2*s,
-  y=(2*s3-3*s2+1)*Ab+(s3-2*s2+s)*vs+(-2*s3+3*s2)*-Af+(s3-s2)*vs,w=Math.sin(Math.PI*s);return[y,w*w*15]},
+ const u=((P._wp||0)/6.2832)%1,mid=(Ab-Af)/2,amp=(Af+Ab)/2,
+ pose=v=>{v=((v%1)+1)%1;const st=v<SN,s=st?v/SN:(v-SN)/(1-SN),ph=st?3.14159*s:3.14159*(1+s),
+  cs=mid-amp*Math.cos(ph),ln=st?lp(-Af,Ab,s):lp(Ab,-Af,s),w=st?0:Math.sin(3.14159*s);
+  return[lp(cs,ln,.3),w*w*22]},
  L=pose(u),R=pose(u+.5),h=.5-.5*Math.cos(12.5664*u),ca=Math.cos(6.2832*u),
  sm=x=>(x+Math.sqrt(x*x+.004))/2;
- return{k:k,lL:L[0],lR:R[0],fL:L[1],fR:R[1],aU:-.27*ca+.02,bU:.27*ca+.02,aF:-.2-sm(.27*ca)*1.2,bF:-.2-sm(-.27*ca)*1.2,
-  brot:.04+.012*Math.sin(6.2832*u),bx:1.5+.8*Math.sin(12.5664*u+1),bob:-Math.pow(h,.8)*5.2}}
+ return{k:k,lL:L[0],lR:R[0],fL:L[1],fR:R[1],aU:-.34*ca+.03,bU:.34*ca+.03,aF:-.22-sm(.3*ca),bF:-.22-sm(-.3*ca),
+  brot:.05+.014*Math.sin(6.2832*u),bx:1.2+.8*Math.sin(12.5664*u+1),bob:4*(1-h)-1.2*h}}
 function hero(){const T=CHR[cur].t,R=RIGI[cur],bs=R&&R.base;if(!bs||!bs.im.naturalWidth)return;
 const t=fr,HH=150,k=HH/R.H,w=R.W*k,aa=P.atk>0,at=aa?1-P.atk/P.atkT:0,rl=aa?(P.atkT-12)/P.atkT:1,cc=CHR[cur].c,tr=PS[cur].tier,br=PS[cur].br,AS=T=='a'&&br==1,mv0=P.mv,WG=walkGait(mv0&&!aa&&T!='m'),sk=aa&&!!P.ln,col=skCol(aa?P.ln:'',cc),I=sk?1:.55,
  ph=t*.3,sa=Math.sin(ph),sw=aa?Math.sin(Math.min(1,at)*3.14):0,bob=T=='m'?-(18+Math.sin(t*.07)*3.6+(mv0?Math.sin(t*.28)*.9:0)):lp(Math.sin(t*.08)*1.4,WG.bob||0,es(WG.k));
