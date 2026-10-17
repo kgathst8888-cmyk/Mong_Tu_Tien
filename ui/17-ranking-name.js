@@ -54,7 +54,7 @@ function pows(){const c0=cur,e0=EQ,l0=P.lv,r=[];
  finally{cur=c0;EQ=e0;P.lv=l0}
  return r}
 function chars(){const w=pows();return CHR.map((c,i)=>{const p=PS[i],cv=p.cv||{},br=p.br;
- return{slot:i,name:CN(i),cls:c.t,cn:(br>=0&&c.br&&c.br[br])?c.br[br].n:CL[c.t],lv:((i==cur?P.lv:p.lv)|0)||1,tier:p.tier|0,cr:typeof cv.r=='number'?cv.r:-1,cs:cv.s|0,cq:Math.max(0,Math.floor(cv.q)||0),rm:(p.ct&&p.ct.d)?2:(p.hd&&p.hd.d)?1:0,pw:w[i]|0}})}
+ return{slot:i,name:CN(i),cls:c.t,cn:(br>=0&&c.br&&c.br[br])?c.br[br].n:CL[c.t],lv:((i==cur?P.lv:p.lv)|0)||1,tier:p.tier|0,cr:typeof cv.r=='number'?cv.r:-1,cs:cv.s|0,cq:Math.max(0,Math.floor(cv.q)||0),rm:(p.ct&&p.ct.d)?2:(p.hd&&p.hd.d)?1:0,pw:w[i]|0}}).filter(x=>x.slot===cur)}
 let lastH='',pushing=false;
 async function push(force){
  if(pushing||!window.KCL||!KCL.OK||!KCL.sess()||typeof started=='undefined'||!started)return;

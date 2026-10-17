@@ -6,6 +6,7 @@
   "modules": {
     "core": [
       "core/00-error-handler.js",
+      "systems/10-alpha-epoch.js",
       "systems/11-cloud-only.js",
       "core/01a-base-data.js",
       "core/01b-items-sets-wheel.js",
@@ -91,6 +92,8 @@
       "world/86-tien-nhan-bay-fx.js",
       "world/87-tien-gioi-auto-mon-phai.js",
       "world/91-bang-ten-nang.js",
+      "systems/93-single-char.js",
+      "ui/94-alpha-countdown.js",
       "world/90-tien-gioi-chi-tiet.js"
     ],
     "systems": [
