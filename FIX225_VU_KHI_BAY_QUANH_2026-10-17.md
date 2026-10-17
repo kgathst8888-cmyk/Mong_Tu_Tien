@@ -18,3 +18,10 @@ Chỉnh nhanh (console): `VPW3_CF.speed` (tốc độ, mặc định .5) · `.ra
 
 ## Fix225b
 Kích thước vũ khí về cỡ gốc (`VPW3_CF.scale=1`), quỹ đạo rộng hơn (bán kính .72×HH) để không dính sát người, bay nhanh hơn (`speed=.8`), góc bay tính theo đồng hồ tuyệt đối nên không bao giờ đứng yên.
+
+## Fix226 — Vũ khí đứng yên sau lưng, 3D sắc nét
+Thay Fix225: vũ khí KHÔNG xoay tròn nữa mà lơ lửng ĐỨNG YÊN sau lưng nhân vật (đeo chéo lệch vai), kích thước gốc (`scale=1`).
+- Quay theo hướng nhìn: nhìn về người xem → vũ khí ló sau vai (mặt trong tối); quay lưng → vũ khí hiện rõ phía trước thân (mặt sáng); nhìn ngang → nghiêng, lộ độ dày.
+- 12 lát ảnh theo trục sâu (xa tối, gần sáng), viền sáng màu môn phái, lắc nhẹ trục + nhấp nhô lơ lửng, hạt linh khí nhỏ, ánh sáng mờ. Đánh: bừng sáng, nhích tới trước.
+- Chỉnh: `VPW3_CF.dist` (ra sau lưng) · `.side` (lệch vai) · `.height` · `.lean` · `.scale` · `.slices` · `.depth` · `.minw` · `.sway` · `.glow` · `.fx`.
+- File sửa: `world/95-mon-phai-vu-khi-3d.js` (viết lại; world/73 và world/74 giữ như Fix225).
