@@ -1,5 +1,6 @@
 /* ===== 🖐 NHẤC TAY CẦM VŨ KHÍ — 6 môn phái (world/93-mon-phai-tay.js) — Fix206 — nạp sau assets/mon-phai-tay.js + assets/mon-phai-vukhi.js =====
  * Fix238 — gắn vào Fix237: vũ khí 3D mới (MPW3, đứng yên sau lưng ở world/95) khi TUNG CHIÊU được "triệu hồi" vào bàn tay: vũ khí sau lưng ẩn đi, tay nhấc lên cầm vũ khí đó; hết chiêu thu về sau lưng.
+ * Fix239: MẶC ĐỊNH LUÔN CẦM VŨ KHÍ TRONG TAY (vũ khí sau lưng ẩn hẳn) + hiệu ứng vung mạnh hơn: người ngả ra sau lấy đà rồi lao tới theo nhát chém, ảnh mờ của vũ khí, vệt kiếm 2 lớp, tia lửa + loé sáng lúc trúng, vũ khí đung đưa theo nhịp thở / bước đi.
  * Giữ NGUYÊN nét vẽ của ảnh 8 hướng (MP8): thân, tóc, đạo bào vẫn là tranh gốc. Chỉ phần TAY được tách ra làm "hoạt hình cắt rời":
  *   • assets/mon-phai-tay.js: với mỗi môn × nam/nữ × 8 hướng có sẵn CẲNG TAY + BÀN TAY cắt từ chính ảnh vẽ, và một mảng vá nền (đã xoá tay cũ) để lấp chỗ trống.
  *   • Khi tung chiêu: thân đổi sang bản đã xoá tay (hoà dần), cẳng tay xoay quanh khuỷu / nhấc khuỷu lên, bàn tay NẮM vũ khí vẽ sẵn (assets/mon-phai-vukhi.js).
@@ -7,11 +8,11 @@
  *     nhìn ngang thì vung ngang, nhìn lưng thì vung ra xa. Không phải vũ khí xoay tại chỗ.
  *   • 6 bước: cầm sẵn → GIƠ TAY (khuỷu nhấc, cẳng tay lên) → đỉnh (vũ khí sáng, tụ lực) → CHÉM/ĐÂM về phía trước (vệt sáng theo mũi) → theo đà → thu về. Mỗi môn một bộ hướng vũ khí riêng.
  * Được gọi từ world/74 (Tiên Giới 8 hướng) và world/73 (bản đồ 2D): MPAR.tick(o) mỗi khung, MPAR.img(f) lấy ảnh thân, MPAR.draw(g,f,alpha,HH) vẽ tay + vũ khí.
- * Chỉnh: MPAR_CF.enable=false (về như cũ) · .dur (số khung 1 lần giơ-chém, mặc định 56) · .trail=false (tắt vệt sáng) · .weapon=false (không vẽ vũ khí trong tay, vũ khí sau lưng giữ nguyên) · .always=true (luôn cầm vũ khí trong tay, không chỉ lúc tung chiêu). */
+ * Chỉnh: MPAR_CF.enable=false (về như cũ) · .dur (số khung 1 lần giơ-chém, mặc định 56) · .trail=false (tắt vệt sáng) · .weapon=false (không vẽ vũ khí trong tay, vũ khí sau lưng giữ nguyên) · .always=false (chỉ cầm lúc tung chiêu, còn lại vũ khí đứng sau lưng như Fix237) · .power (độ mạnh hiệu ứng vung: người lao tới/ngả, vệt mờ, tia lửa; mặc định 1, 0 = tắt). */
 (function(){
 'use strict';
 var CF=window.MPAR_CF=window.MPAR_CF||{};
-if(CF.enable===undefined)CF.enable=true;if(!CF.dur)CF.dur=56;if(CF.trail===undefined)CF.trail=true;if(CF.weapon===undefined)CF.weapon=true;if(CF.always===undefined)CF.always=false;
+if(CF.enable===undefined)CF.enable=true;if(!CF.dur)CF.dur=56;if(CF.trail===undefined)CF.trail=true;if(CF.weapon===undefined)CF.weapon=true;if(CF.always===undefined)CF.always=true;if(CF.power===undefined)CF.power=1;
 var PI=Math.PI,sin=Math.sin,cos=Math.cos,sqrt=Math.sqrt,abs=Math.abs,atan2=Math.atan2;
 var COL={umt:'#c070ff',hbd:'#7fe4ff',ptc:'#ff9a4a',tkt:'#9fc8ff',vdm:'#7cf08a',ngc:'#ffd890'};
 /* vũ khí tay thuận = ảnh MPW3 (cùng ảnh với vũ khí đứng sau lưng ở world/95). len = chiều dài (×chiều cao thân); grip = điểm nắm (0 đỉnh … 1 đáy ảnh) */
@@ -54,7 +55,7 @@ function strip(f){
  return STRIP[k]=c;
 }
 /* ---------- trạng thái ---------- */
-var S={f:-1e9,cs:-1e9,pa:0,t0:-1e9,u:-1,sa:0,hold:0,env:0,ang:PI/2,bp:0,k:0,tr:[],trf:-1,hv:0};
+var S={wh:[],wp:0,f:-1e9,cs:-1e9,pa:0,t0:-1e9,u:-1,sa:0,hold:0,env:0,ang:PI/2,bp:0,k:0,tr:[],trf:-1,hv:0};
 function env(u){if(u<0)return 0;var a=sm(u/.14),b=sm((1-u)/.14);return a<b?a:b}
 function tick(o){
  var fr=o.fr|0;if(S.f===fr)return;S.f=fr;
@@ -65,7 +66,7 @@ function tick(o){
   S.pa=o.atk|0;var uu=(fr-S.cs)/CF.dur;S.u=(uu>=0&&uu<1)?uu:-1;
  }
  S.env=env(S.u);S.hold+=((S.u>=0||CF.always?1:0)-S.hold)*.28;if(S.hold<.01)S.hold=0;if(S.hold>.99)S.hold=1;S.sa+=((S.u>=0?1:0)-S.sa)*.3;if(S.sa<.01)S.sa=0;if(S.sa>.99)S.sa=1;
- S.ang=o.ang!==undefined?o.ang:S.ang;S.bp=o.bp||0;S.k=o.k||0;S.hv=o.hv||0;
+ S.ang=o.ang!==undefined?o.ang:S.ang;S.wp=o.wp||0;S.bp=o.bp||0;S.k=o.k||0;S.hv=o.hv||0;
 }
 /* ---------- chiếu vector 3D (phải · lên · trước) → màn hình, theo hướng nhìn ---------- */
 function proj(v,cs,fx,fz,sc){
@@ -98,7 +99,7 @@ function draw(g,f,alpha,HH,wantTip){
   sg=M.s[0],cs=(sg===RSIDE[f.i])?1:-1,E0=M.e,H0=M.h,v0x=H0[0]-E0[0],v0y=H0[1]-E0[1],L0=sqrt(v0x*v0x+v0y*v0y)||1;v0x/=L0;v0y/=L0;
  var uu=u>=0?u:0,kind=WKIND[sid]||'sword';
  /* khuỷu nhấc + hướng cẳng tay */
- var ed=interp(ED,uu),pe=proj(ed,cs,fx,fz),Ex=E0[0]+pe.x*30*en,Ey=E0[1]+pe.y*30*en;
+ var ed=interp(ED,uu),pe=proj(ed,cs,fx,fz),Ex=E0[0]+pe.x*44*en,Ey=E0[1]+pe.y*44*en;
  var fd=interp(FD,uu),pf=proj(fd,cs,fx,fz),tl=sqrt(pf.x*pf.x+pf.y*pf.y)||1,tx=pf.x/tl,ty=pf.y/tl;
  var dx=lp(v0x,tx,en),dy=lp(v0y,ty,en),dl=sqrt(dx*dx+dy*dy)||1;dx/=dl;dy/=dl;
  var fsA=lp(1,Math.max(.4,pf.fs),en),Hx=Ex+dx*L0*fsA,Hy=Ey+dy*L0*fsA;
@@ -115,31 +116,55 @@ function draw(g,f,alpha,HH,wantTip){
   }
  }
  var hx0=S.sa>.01?Hx:H0[0],hy0=S.sa>.01?Hy:H0[1];
- /* vũ khí tay thuận (triệu hồi từ sau lưng vào tay: hiện dần theo S.hold) */
- var tipX=hx0,tipY=hy0;
+ /* vũ khí tay thuận */
+ var tipX=hx0,tipY=hy0,PW=CF.power,sw=sin(S.bp*1.1)*.035+sin(S.wp)*S.k*.07*(1-en);
  if(CF.weapon&&S.hold>.02){
   var wd=interp(WDS[kind],uu),cw=kind==='sword'?[.35,1,.1]:[.12,1,.05],wv=[lp(cw[0],wd[0],en),lp(cw[1],wd[1],en),lp(cw[2],wd[2],en)],pw=proj(wv,cs,fx,fz),
-   wfs=Math.max(.38,Math.min(1,pw.fs)),wim=wimg(sid),ang=pw.d,hh=sp.len*ih,tipD=sp.grip*hh*wfs,dxw=sin(ang),dyw=-cos(ang),ha=Math.min(1,S.hold*1.25);
+   wfs=Math.max(.38,Math.min(1,pw.fs)),wim=wimg(sid),ang=pw.d+sw*cs,hh=sp.len*ih,tipD=sp.grip*hh*wfs,dxw=sin(ang),dyw=-cos(ang),ha=Math.min(1,S.hold*1.25);
   g.save();g.globalAlpha=alpha*ha;
+  /* ảnh mờ của vũ khí khi vung (motion blur) */
+  if(wantTip&&PW>0){
+   if(S.trf!==S.f){S.wh.push(S.u>=.40&&S.u<.92?{x:hx0,y:hy0,a:ang,s:wfs}:null);if(S.wh.length>6)S.wh.shift()}
+   for(var gi=0;gi<S.wh.length-1;gi++){var gh=S.wh[gi];if(!gh)continue;var gk=(gi+1)/S.wh.length;g.save();g.globalAlpha=alpha*ha*.32*gk*Math.min(1,PW);drawW(g,wim,sp.len,sp.grip,ih,gh.x,gh.y,gh.a,gh.s,1,1);g.restore()}
+  }
   drawW(g,wim,sp.len,sp.grip,ih,hx0,hy0,ang,wfs,1,0);
-  var glw=Math.max(interp1(GLOWK,uu)*Math.min(1,en*1.4),(1-ha)*.9+(S.hold<1&&S.u>=0&&S.u<.2?.6:0));
+  var glw=Math.max(interp1(GLOWK,uu)*Math.min(1,en*1.4),(S.u>=0&&S.u<.2&&S.hold<1?.6:0));
   if(glw>.05)glow(g,hx0+dxw*tipD*.6,hy0+dyw*tipD*.6,30+28*glw,COL[sid],Math.min(.7,.22+.3*glw));
   g.restore();
   tipX=hx0+dxw*tipD;tipY=hy0+dyw*tipD;
  }
- /* vệt sáng theo mũi vũ khí khi chém */
- if(wantTip&&CF.trail){
-  if(S.trf!==S.f){S.trf=S.f;if(S.u>=.46&&S.u<.9){S.tr.push([tipX,tipY]);if(S.tr.length>10)S.tr.shift()}else if(S.tr.length)S.tr.shift()}
+ /* vệt kiếm 2 lớp + tia lửa / loé sáng khi trúng */
+ if(wantTip&&CF.trail&&PW>0){
+  if(S.trf!==S.f){S.trf=S.f;if(S.u>=.56&&S.u<.88){S.tr.push([tipX,tipY]);if(S.tr.length>9)S.tr.shift()}else if(S.tr.length)S.tr.shift()}
   if(S.tr.length>2){
-   var go=g.globalCompositeOperation;g.globalCompositeOperation='lighter';g.lineCap='round';
-   for(var q=1;q<S.tr.length;q++){var a=q/S.tr.length;g.beginPath();g.moveTo(S.tr[q-1][0],S.tr[q-1][1]);g.lineTo(S.tr[q][0],S.tr[q][1]);g.strokeStyle=rgba(COL[sid],.5*a*alpha);g.lineWidth=2+9*a;g.stroke()}
+   var go=g.globalCompositeOperation;g.globalCompositeOperation='lighter';g.lineCap='round';g.lineJoin='round';
+   for(var pass=0;pass<2;pass++){
+    for(var q=1;q<S.tr.length;q++){var a=q/S.tr.length;g.beginPath();g.moveTo(S.tr[q-1][0],S.tr[q-1][1]);g.lineTo(S.tr[q][0],S.tr[q][1]);
+     g.strokeStyle=pass?'rgba(255,255,255,'+(.7*a*alpha*PW)+')':rgba(COL[sid],Math.min(1,.55*a*alpha*PW));g.lineWidth=pass?1+4*a:3+16*a;g.stroke()}
+   }
    g.globalCompositeOperation=go;
+  }
+  if(S.u>=.56&&S.u<.76){
+   var ik=1-abs(S.u-.64)/.12;if(ik>0){
+    glow(g,tipX,tipY,34+46*ik,COL[sid],Math.min(.9,.35+.5*ik)*alpha*PW);
+    var go2=g.globalCompositeOperation;g.globalCompositeOperation='lighter';g.lineCap='round';
+    for(var sk=0;sk<9;sk++){var sa=sk*.7+S.f*.13,r0=8+ik*6,r1=r0+16+14*((sk*7+S.f)%5)/5*ik;
+     g.beginPath();g.moveTo(tipX+cos(sa)*r0,tipY+sin(sa)*r0);g.lineTo(tipX+cos(sa)*r1,tipY+sin(sa)*r1);g.strokeStyle='rgba(255,255,255,'+(.8*ik*alpha*PW)+')';g.lineWidth=1.6;g.stroke()}
+    g.globalCompositeOperation=go2;
+   }
   }
  }
  g.restore();
 }
+/* thân lao tới / ngả theo nhát chém (áp dụng lên toàn thân ở world/73, world/74) */
+var LUNA=[0,-.45,-.7,1,.55,0];
+function pose(HH){
+ var z={x:0,r:0,s:1};if(!CF.enable||S.u<0||!(CF.power>0))return z;
+ var l=interp1(LUNA,S.u)*CF.power,fx=cos(S.ang);
+ z.x=fx*l*HH*.085;z.r=fx*l*.1;z.s=1+.035*l*(1-abs(fx));return z;
+}
 function fin(f){return !!(CF.enable&&window.MPA&&f&&f.id&&MPA[f.id]&&MPA[f.id][f.gen])}
-window.MPAR={tick:tick,draw:draw,back:function(){},front:function(){},hold:function(){return CF.enable&&CF.weapon&&S.hold>.4},
+window.MPAR={tick:tick,draw:draw,pose:pose,back:function(){},front:function(){},hold:function(){return CF.enable&&CF.weapon&&S.hold>.4},
  img:function(f){if(!fin(f)||S.sa<.01)return null;return strip(f)},sa:function(){return S.sa},on:function(f){return fin(f)},state:S,CF:CF};
 /* vũ khí sau lưng (world/95) ẩn đi khi nhân vật đang cầm nó trong tay */
 try{if(window.VPW&&typeof VPW.draw==='function'&&!VPW.__mpar){var _vd=VPW.draw;VPW.draw=function(){if(window.MPAR&&MPAR.hold())return;return _vd.apply(this,arguments)};VPW.__mpar=1}}catch(e){}

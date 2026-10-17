@@ -70,6 +70,7 @@ function drawSect(o,sid){
   /* Fix238: tay nhấc cầm vũ khí (world/93): thân xoá tay khi tung chiêu + cẳng tay xoay + vũ khí */
   var MP=window.MPAR&&MPAR.CF.enable&&window.MPA?MPAR:null;
   if(MP){try{MP.tick({fr:t,ang:Math.PI/2-Math.max(-1,Math.min(1,fc))*(Math.PI/4),bp:bp,k:k,hv:hv,u:aa?Math.max(0,Math.min(1,at)):-1})}catch(e){MP=null}}
+  if(MP){try{var pz=MP.pose(HH);g.translate(pz.x,0);g.rotate(pz.r);g.scale(pz.s,pz.s)}catch(e){}}
   for(var pi=0;pi<pass.length;pi++){
    var o2=pass[pi][0],al=pass[pi][1],im=o2.im,w=HH*o2.w/o2.h,N=CF.strips,ih=im.naturalHeight,iw=im.naturalWidth,sh=ih/N,dh=HH/N;
    var sim=null,msa=0;if(MP){try{sim=MP.img(o2);msa=MP.sa()}catch(e){sim=null}}

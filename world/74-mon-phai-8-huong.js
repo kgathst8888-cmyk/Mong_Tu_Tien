@@ -58,6 +58,7 @@ function drawPose(o,alpha,ws,off,tw){off=off||0;tw=tw||0;
  try{
   g.imageSmoothingEnabled=true;try{g.imageSmoothingQuality='high'}catch(e){}
   g.globalAlpha=alpha;g.translate(off,0);g.scale(ws,1);g.translate(0,bob+HH*.012);g.rotate(rot);g.scale(sx,sy);
+  if(MP){try{var pz=MP.pose(HH);g.translate(pz.x,0);g.rotate(pz.r);g.scale(pz.s,pz.s)}catch(e){}}
   if(k>.45&&hv<.5&&alpha>.5){var ga=(k-.45)*.5*alpha*(1-.5*hv),sgn=hx>=0?-1:1;for(var q=2;q>=1;q--){g.globalAlpha=ga*(.5/q);g.drawImage(im,-w/2+sgn*q*8*Math.min(1,Math.abs(hx)*1.2),-HH,w,HH)}g.globalAlpha=alpha}
   /* Fix238: thân bản xoá tay khi tung chiêu (hoà dần) + tay nhấc cầm vũ khí (world/93) */
   var sim=null,msa=0;if(MP){try{sim=MP.img(o);msa=MP.sa()}catch(e){sim=null}}

@@ -18,3 +18,7 @@
 ## File đổi
 `world/93-mon-phai-tay.js` (mới) · `assets/mon-phai-tay.js` (mới, ~0.4MB) · `world/73`, `world/74` (thêm móc MPAR: id/gen/i cho khung ảnh, bản xoá tay, vẽ tay+vũ khí) · `index.html` (nạp sau world/95) · `MODULE_MANIFEST.json`.
 Lỗi → tự quay về tranh cũ (mọi móc bọc try/catch).
+
+## Fix239 — luôn cầm vũ khí + vung mạnh hơn
+- Mặc định `MPAR_CF.always=true`: vũ khí **luôn nằm trong tay**, vũ khí sau lưng (world/95) ẩn hẳn. Đặt `always=false` để về kiểu Fix238 (chỉ cầm lúc tung chiêu).
+- Vung mạnh hơn (`MPAR_CF.power`, mặc định 1, 0 = tắt): thân ngả ra sau lấy đà rồi **lao tới** theo nhát chém (`MPAR.pose` áp lên thân ở world/73, 74), khuỷu nhấc cao hơn, ảnh mờ của vũ khí khi vung, vệt kiếm 2 lớp, loé sáng + tia lửa lúc trúng, vũ khí đung đưa theo nhịp thở / bước đi.
