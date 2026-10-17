@@ -154,7 +154,7 @@ function confirmBox(text,yesLabel,noLabel,yes){if(document.getElementById('am-cf
  bx.appendChild(mk(yesLabel,yes));bx.appendChild(mk(noLabel,null));o.appendChild(bx);['pointerdown','pointerup','click','touchstart','touchend'].forEach(function(ev){o.addEventListener(ev,function(e){e.stopPropagation()})});document.body.appendChild(o)}
 /* ---------- cấu hình ---------- */
 function KC(){return(window.KTHANH&&KTHANH.cfg)||{hp:10,atk:10,def:3,rw:3}}
-var CF={mul:20,rw:10,size:.86,emerge:160,speed:1.9};   /* mul: mạnh gấp bao nhiêu lần Kiếm Thánh (HP và sát thương); rw: hệ số thưởng */
+var CF={mul:20,rw:10,size:.86,emerge:160,speed:1.9,cd:3600000,lk:10,pHam:.02,pBua:.02};   /* mul: mạnh gấp bao nhiêu lần Kiếm Thánh (HP và sát thương); rw: hệ số thưởng */
 function say(t,c,l){try{DT.push({x:P.x,y:200,s:t,c:c||'#ff9a8a',g:1,l:l||150})}catch(e){}}
 function save(){try{sv()}catch(e){}}
 function band(a,b){return a+Math.floor(R()*(b-a+1))}
@@ -171,9 +171,13 @@ var _hurt=dgHurt;dgHurt=function(e,mu){return _hurt.call(this,e,e&&e.am?mu*MT_AT
 /* ---------- vào / ra / thắng ---------- */
 function spawn(){dgSp('boss');var e=E[E.length-1],st=stats();e.am=1;e.nm='😈 Ác Ma Vương';e.lv=MT_LV;e.m=7;e.hp=e.max=st.hp;e.df=st.df;e.x=gateWX();e.y=0;e.in=CF.emerge;
  e.ac={st:'emerge',t:0,w:0,dir:-1,cd:70,y:0,nv:0};dg.pz=0;say('😈 ÁC MA VƯƠNG bước ra từ Thượng Giới!','#ff7a6a',200)}
-function enter(){if(!started||!LCT.on())return;if(!(window.HDAO&&HDAO.on())){say('☯ Chỉ nhân vật Đạo Thể (đã Hợp Đạo) mới vào được Ác Ma Thượng Giới','#ffd98a',170);return}if(bo)tg();try{LCT.off()}catch(e){}vil=0;lg=0;E=[];PETS=[];PJ=[];FX=[];P.pe=null;P.atk=0;P.x=120;P.hp=mx();P.mp=mm();dg={t:0,n:1,kill:1,am:1};say('😈 Tiến vào Ác Ma Thượng Giới!','#ff7a6a',130)}
+function cdD(){var p=PS[cur];if(!p)return{cd:0};if(!p.amv||typeof p.amv!=='object')p.amv={cd:0};return p.amv}
+function cdLeft(){var q=cdD(),n=Date.now(),c=+q.cd||0;if(c>n+CF.cd){c=n+CF.cd;q.cd=c}return Math.max(0,c-n)}
+function cdFmt(ms){var t=Math.ceil(ms/1000),h=Math.floor(t/3600),m=Math.floor(t%3600/60),s=t%60;return(h?h+':'+String(m).padStart(2,'0'):m)+':'+String(s).padStart(2,'0')}
+function enter(){if(!started||!LCT.on())return;if(cdLeft()>0){say('⏳ Ác Ma Thượng Giới: vào lại sau '+cdFmt(cdLeft()),'#ffd98a',170);return}cdD().cd=Date.now()+CF.cd;save();if(!(window.HDAO&&HDAO.on())){say('☯ Chỉ nhân vật Đạo Thể (đã Hợp Đạo) mới vào được Ác Ma Thượng Giới','#ffd98a',170);return}if(bo)tg();try{LCT.off()}catch(e){}vil=0;lg=0;E=[];PETS=[];PJ=[];FX=[];P.pe=null;P.atk=0;P.x=120;P.hp=mx();P.mp=mm();dg={t:0,n:1,kill:1,am:1};say('😈 Tiến vào Ác Ma Thượng Giới!','#ff7a6a',130)}
 function ask(){if(!started)return;if(!(window.HDAO&&HDAO.on())){say('☯ Chỉ nhân vật Đạo Thể (đã Hợp Đạo) mới vào được Ác Ma Thượng Giới','#ffd98a',170);return}
- confirmBox('Tiến vào ÁC MA THƯỢNG GIỚI?\\nChỉ có 1 boss — Ác Ma Vương (Lv'+MT_LV+', mạnh gấp '+CF.mul+' lần Kiếm Thánh) bước ra từ cổng giữa bản đồ. Không có quái phụ.\\nBạn có thể rời trận bất cứ lúc nào.','Tiến vào','Thôi',enter)}
+ if(cdLeft()>0){say('⏳ Ác Ma Thượng Giới: vào lại sau '+cdFmt(cdLeft()),'#ffd98a',170);return}
+ confirmBox('Tiến vào ÁC MA THƯỢNG GIỚI?\\nChỉ có 1 boss — Ác Ma Vương (Lv'+MT_LV+', mạnh gấp '+CF.mul+' lần Kiếm Thánh) bước ra từ cổng giữa bản đồ. Không có quái phụ.\\nMỗi giờ vào được 1 lần (tính từ lúc vào). Bạn có thể rời trận bất cứ lúc nào.','Tiến vào','Thôi',enter)}
 function exit(){mtExit();try{LCT.enter()}catch(e){}}
 function win(){try{QE('boss')}catch(e){}save();say('🏆 Hạ Ác Ma Vương!','#ffd070',230)}
 /* ---------- cổng trong Thành Thị Linh Giới (bản Fix168): THÊM Ô CỔNG MỚI ----------
@@ -292,7 +296,9 @@ var _tick=dgTick;dgTick=function(){if(!dg||!dg.am)return _tick.apply(this,argume
  if(!dg.bs&&dg.t>60){dg.bs=1;spawn()}
  else if(dg.bs&&!E.some(function(e){return e.am})&&!dg.done){dg.done=1;dg.out=300;win()}
  if(dg.done&&--dg.out<=0)exit()};
-var _drop=drop;drop=function(e){if(!e||!e.am)return _drop.apply(this,arguments);var L=MT_LV;gold+=gP(3000*L*CF.rw);var f=(30+Math.floor(R()*10))*CF.rw;frag+=f;DT.push({x:e.x,y:120,s:'🔹 +'+f+' mảnh chế tạo',c:'#6ff',l:140});for(var i=0;i<5;i++){if(window.EQD&&Math.random()>=EQD.boss)continue;give(gen(L,5),e.x+(i-2)*40,150+i*30)};try{ZC.gain(25000)}catch(x){}try{if(window.TTHONG){TTHONG.drop();TTHONG.drop()}}catch(x){}};
+var _drop=drop;drop=function(e){if(!e||!e.am)return _drop.apply(this,arguments);var L=MT_LV;gold+=gP(3000*L*CF.rw);var f=(30+Math.floor(R()*10))*CF.rw;frag+=f;DT.push({x:e.x,y:120,s:'🔹 +'+f+' mảnh chế tạo',c:'#6ff',l:140});for(var i=0;i<5;i++){if(window.EQD&&Math.random()>=EQD.boss)continue;give(gen(L,5),e.x+(i-2)*40,150+i*30)};try{ZC.gain(25000)}catch(x){}try{if(window.TTHONG){TTHONG.drop();TTHONG.drop()}}catch(x){}
+ try{if(window.LT&&LT.earnKS)LT.earnKS(CF.lk)}catch(x){}
+ try{if(window.CSH&&CSH.give){if(Math.random()<CF.pHam){CSH.give('ham',1);DT.push({x:e.x,y:170,s:'🔨 +1 Búa Đục Lỗ',c:'#ffe9a0',l:160})}if(Math.random()<CF.pBua){CSH.give('b10',1);DT.push({x:e.x,y:200,s:'📜 +1 Bùa Cường Hóa +10%',c:'#ffe9a0',l:160})}}}catch(x){}};
 var _hud=dgHud;dgHud=function(){_hud.apply(this,arguments);if(dg&&dg.am){var b=boss();dgh.innerHTML='<div class="dgt">😈 ÁC MA VƯƠNG · Lv'+MT_LV+' · ×'+CF.mul+' Kiếm Thánh</div>'+(b?'<div class="dgp"><i style="width:'+cl(b.hp/b.max*100,0,100)+'%"></i></div>':'')}};
 /* ---------- bản đồ: ảnh nền + cổng ma xoáy động ---------- */
 function layout(gy){var sc=Math.max(W/IW,gy/GROUND_Y);BG.sc=sc;BG.X0=W/2-GATE_X*sc;BG.Y0=gy-GROUND_Y*sc;return sc}

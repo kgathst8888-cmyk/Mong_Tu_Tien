@@ -315,7 +315,7 @@ function drawAll(){
  var i,it,a,X,Y,p,list=window.TGQ&&window.TGQ.KF;
  for(i=IMP.length-1;i>=0;i--){it=IMP[i];if(fr<it.t0)continue;p=(fr-it.t0)/it.life;if(p>=1){IMP.splice(i,1);continue}
   a=TG.S2(it.x,it.y);X=a[0];Y=a[1]-(it.z+it.h*.5)*s;if(X<-170||X>W+170||Y<-250||Y>H+210)continue;
-  g.save();g.translate(X,Y);g.scale(s,s);try{hitFx(it,p)}catch(e){}g.restore()}
+  g.save();g.translate(X,Y);g.scale(s,s);try{(window.TGFX&&window.TGFX.hitFx||hitFx)(it,p)}catch(e){}g.restore()}
  if(list)for(i=0;i<list.length;i++){it=list[i];a=TG.S2(it.wx,it.wy);X=a[0];Y=a[1]-(it.z+22)*s;if(X<-170||X>W+170||Y<-250||Y>H+210)continue;p=it.t/it.l;
   g.save();g.translate(X,Y);g.scale(s,s);try{if(it.sl)slashKF(p);else killFx(it,p)}catch(e){}g.restore()}}
 var _h=hero;

@@ -32,7 +32,7 @@ def('box',{x0:-13,x1:41,y0:-15,y1:51});
 try{if(window.TG8SK_CF&&TG8SK_CF.cd===5)TG8SK_CF.cd=60}catch(e){}
 
 var PI=Math.PI,TAU=PI*2,RM=34;
-var MON=[],FT=[],PR=[],TQ=[],KF=[],uid=0,kills=0,lastSp=0,lastSave=0,lastNote=0,bcd=0,lift=0,flying=false,seeded=0,hinted=0,SH={v:0,u:0};
+var AX=null,MON=[],FT=[],PR=[],TQ=[],KF=[],uid=0,kills=0,lastSp=0,lastSave=0,lastNote=0,bcd=0,lift=0,flying=false,seeded=0,hinted=0,SH={v:0,u:0};
 var KINDS=['gob','wolf','scorp','arch','mage','gob','wolf','scorp'],RANGED={arch:1,mage:1};
 function rnd(){return Math.random()}
 function nf(n){return(Math.round(Number(n))||0).toLocaleString('vi-VN')}
@@ -141,10 +141,11 @@ function xpOf(L){var base=Math.round(15*(1+L/5)),km=3,ex=.5;try{km=HDAO.cfg.kill
 var gB=0,gP=null,gC=-1,gLv=0,gNote=0;
 function addXp(n){try{P.xp+=n;if(gP===P&&gC===cur)gB+=n}catch(e){}}
 function kill(m){
- var xp=xpOf(m.lv);
+ var xp=m.xp||xpOf(m.lv);
  addXp(xp);
  try{ZC.kill(m)}catch(e){}try{petGain(m)}catch(e){}try{QE('kill')}catch(e){}
  kills++;ft(m,'+'+nf(xp)+' EXP','#8ff0ff',0,1);
+ try{if(m.ax&&AX&&AX.killed)AX.killed(m,xp)}catch(e){}
  KF.push({wx:m.x,wy:m.y,z:m.z,t:0,l:26});
  lvUp();
  if(Date.now()-lastSave>20000){lastSave=Date.now();try{sv()}catch(e){}}}
@@ -153,7 +154,9 @@ function kill(m){
 function mpOf(it){try{var c=it.k.charAt(0),j=+it.k.slice(1);
  if(c==='y'){var inf=YCANH.info();return(YCTT.cfg.sk[inf.path][j]||{}).mp|0}
  if(c==='f')return FABAO.cfg.mp|0}catch(e){}return 0}
-function canFight(){return flying||!CF.safeCity}
+/* Fix163: móc cho world/84 (Tiên Linh Chiến Cảnh): AX={on,upd,ai,draw,killed,defeat} */
+function axOn(){try{return !!(AX&&AX.on&&AX.on())}catch(e){return false}}
+function canFight(){return flying||!CF.safeCity||axOn()}
 function pre(it){
  if(!CF.enable||!tgOn())return true;
  if(!canFight()){if(Date.now()-lastNote>4000){lastNote=Date.now();say(tien()?'🏙 Thành thị là vùng an toàn — hãy bay ra ngoài để giao chiến':'🔒 Chỉ Tiên Nhân (đã chuyển thế) mới bay ra ngoài thành thị để chiến đấu')}return true}
@@ -228,21 +231,23 @@ function cast(it,sc,A){
 /* ---------- cập nhật mỗi khung (bọc vstep) ---------- */
 function reset(){MON.length=0;FT.length=0;PR.length=0;TQ.length=0;KF.length=0;lift=0;flying=false;seeded=0;bcd=0;SH.v=0}
 function defeat(){
+ if(axOn()&&AX.defeat){SH.v=0;MON.forEach(function(m){m.cd=90;m.atk=0});PR.length=0;try{AX.defeat()}catch(e){}return}
  ftHero('💀 Bại trận — được tiên khí đưa về thành','#ff8a7a');
  try{TG.set(14,36.6)}catch(e){}
  try{P.hp=Math.max(1,Math.round(mx()*.5));P.mp=Math.round(mm()*.5)}catch(e){P.hp=1}
  SH.v=0;MON.forEach(function(m){m.cd=90;m.atk=0});PR.length=0}
 function upd(){
- var h=TG.hero(),hx=h[0],hy=h[1],T=tien(),onG=!!TG.ground(hx,hy),i,m;
- flying=!!(T&&CF.fly&&!onG);
- var tgt=flying?CF.lift:0;lift+=(tgt-lift)*.12;if(Math.abs(lift-tgt)<.3)lift=tgt;
+ var h=TG.hero(),hx=h[0],hy=h[1],T=tien(),onG=!!TG.ground(hx,hy),i,m,X=axOn();
+ var air=!!(T&&CF.fly&&!onG);flying=air||X;
+ var tgt=air?CF.lift:0;lift+=(tgt-lift)*.12;if(Math.abs(lift-tgt)<.3)lift=tgt;
  if(T&&!hinted){hinted=1;say('🪽 Tiên Nhân có thể bay ra ngoài thành thị để đánh quái Tiên Giới (EXP ×3)')}
  if(P.atk>0)P.atk--;
- try{if(P.hp<=0){defeat()}else{var mxh=mx(),mxm=mm();if(P.hp<mxh)P.hp=Math.min(mxh,P.hp+(onG?mxh*.0016:.05));if(P.mp<mxm)P.mp=Math.min(mxm,P.mp+(onG?mxm*.0016:.09))}}catch(e){}
- if(!seeded){seeded=1;for(i=0;i<Math.ceil(CF.max*.7);i++)spawnOne()}
+ try{if(P.hp<=0){defeat()}else{var mxh=mx(),mxm=mm();if(P.hp<mxh)P.hp=Math.min(mxh,P.hp+(onG&&!X?mxh*.0016:.05));if(P.mp<mxm)P.mp=Math.min(mxm,P.mp+(onG&&!X?mxm*.0016:.09))}}catch(e){}
+ if(!seeded&&!X){seeded=1;for(i=0;i<Math.ceil(CF.max*.7);i++)spawnOne()}
  for(i=MON.length-1;i>=0;i--){m=MON[i];if(m.gone||(m.hp<=0&&m.dead)||Math.hypot(m.x-hx,m.y-hy)>CF.leash)MON.splice(i,1)}
- if(MON.length<CF.max&&fr-lastSp>CF.spawnEvery){lastSp=fr;spawnOne()}
- MON.forEach(function(q){if(q.hp>0)ai(q,hx,hy)});
+ if(!X&&MON.length<CF.max&&fr-lastSp>CF.spawnEvery){lastSp=fr;spawnOne()}
+ if(X&&AX.upd){try{AX.upd(hx,hy)}catch(e){}}
+ MON.forEach(function(q){if(q.hp>0){if(q.ax&&AX&&AX.ai)AX.ai(q,hx,hy);else ai(q,hx,hy)}});
  for(i=PR.length-1;i>=0;i--){var p=PR[i];p.t++;if(p.t<p.n*.6){p.tx=hx;p.ty=hy}if(p.t>=p.n){if(flying&&Math.hypot(hx-p.tx,hy-p.ty)<1.3)hurtHero(p.m,.85);PR.splice(i,1)}}
  for(i=TQ.length-1;i>=0;i--)if(TQ[i].t<=fr){var f=TQ[i].fn;TQ.splice(i,1);try{f()}catch(e){}}
  if(bcd>0)bcd--;
@@ -301,6 +306,7 @@ function drawFx(){
   var x=a[0]+t.dx*s*.5,y=a[1]-(t.z+u*46)*s;g.lineWidth=3*s;g.strokeStyle='rgba(0,0,0,.85)';g.strokeText(String(t.s),x,y);g.fillStyle=t.c;g.fillText(String(t.s),x,y)});
  g.restore()
 }
+function dMon(m){if(m.ax&&AX&&AX.draw)AX.draw(m);else drawMon(m)}
 var _h=hero;
 hero=function(){
  if(!CF.enable||!tgOn())return _h.apply(this,arguments);
@@ -309,12 +315,12 @@ hero=function(){
  var hd=h[0]+h[1],back=[],front=[];
  MON.forEach(function(m){if(m.hp<=0||m.gone)return;(m.x+m.y<=hd?back:front).push(m)});
  var srt=function(p,q){return(p.x+p.y)-(q.x+q.y)};back.sort(srt);front.sort(srt);
- back.forEach(drawMon);
+ back.forEach(dMon);
  try{if(tien()&&lift>4&&!(typeof wl==='function'&&wl()>0))wingsFB()}catch(e){}
  var r=_h.apply(this,arguments);
- front.forEach(drawMon);
+ front.forEach(dMon);
  try{drawFx()}catch(e){}
  return r};
 
-window.TGQ={KF:KF,pre:pre,cast:cast,CF:CF,xpOf:xpOf,stat:stats,addXp:addXp,tien:tien,mon:MON,spawn:spawnOne,reset:reset,flying:function(){return flying},kills:function(){return kills},hit:hitMon};
+window.TGQ={ext:function(o){AX=o},pr:PR,hurt:hurtHero,ft:ft,say:say,ftHero:ftHero,uid:function(){return ++uid},lvUp:lvUp,KF:KF,pre:pre,cast:cast,CF:CF,xpOf:xpOf,stat:stats,addXp:addXp,tien:tien,mon:MON,spawn:spawnOne,reset:reset,flying:function(){return flying},kills:function(){return kills},hit:hitMon};
 })();
