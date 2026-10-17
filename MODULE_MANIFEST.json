@@ -94,7 +94,8 @@
       "world/91-bang-ten-nang.js",
       "systems/93-single-char.js",
       "ui/94-alpha-countdown.js",
-      "world/90-tien-gioi-chi-tiet.js"
+      "world/90-tien-gioi-chi-tiet.js",
+      "world/96-thu-cuoi.js"
     ],
     "systems": [
       "systems/08-farming-alchemy.js",
