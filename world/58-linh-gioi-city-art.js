@@ -730,7 +730,14 @@ function camera(){
   cam=Math.max(0,Math.min(max,camX))}
 function blit(q,W,H,gy){
   var k=K()*s,top=gy-BASEY*k,c=capNow(k);
-  if(!B||Math.abs(B.c-c)>.01){try{build(c)}catch(e){if(window.console)console.error('LGART build',e);return}}
+  if(!B||Math.abs((B.want||B.c)-c)>.01){
+    /* Fix194: xoay màn hình → độ nét đổi → dựng lại lớp nền. Giải phóng lớp cũ trước (iOS giới hạn bộ nhớ canvas), lỗi thì thử độ nét thấp hơn,
+       vẫn lỗi thì vẽ nền trời thay vì bỏ trống cả bản đồ. */
+    try{if(B){[B.far,B.mid,B.near].forEach(function(l){if(l&&l.cv){l.cv.width=l.cv.height=0}})}if(NEB&&NEB.cv)NEB.cv.width=NEB.cv.height=0}catch(e0){}
+    var ok=false,tries=[c,Math.max(.6,Math.round(c*.6*4)/4)];
+    for(var ti=0;ti<tries.length&&!ok;ti++){try{build(tries[ti]);B.want=c;ok=true}catch(e){if(window.console)console.error('LGART build',e);B=null}}
+    if(!ok){try{var fg=q.createLinearGradient(0,0,0,H);fg.addColorStop(0,'#04061c');fg.addColorStop(.6,'#3a5cb8');fg.addColorStop(1,'#3f4d9c');q.fillStyle=fg;q.fillRect(0,0,W,H)}catch(e1){}A.L={W:W,H:H,gy:gy,sw:k,ih:IH*k,dy:top};return}
+  }
   A.L={W:W,H:H,gy:gy,sw:k,ih:IH*k,dy:top};
   gq=q;gk=k;gtop=top;gcam=cam;gs=s;gt=(typeof fr==='number'?fr:0);GW=W;GH=H;
   q.save();
@@ -758,7 +765,7 @@ if(window.requestIdleCallback)requestIdleCallback(idle,{timeout:2500});else setT
 function glow(x,y,r,rgb,a){var G=glowSpr(rgb);g.globalAlpha=a;g.drawImage(G.cv,x-r,y-r,r*2,r*2);g.globalAlpha=1}
 function rr(x,y,w,h,r){g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath()}
 function banner(x,y,G,op,fs){
-  var nm=G.n,sub=op?(G.sub||''):'🔒 '+(G.sub||'Tạm khóa'),F='KTH Serif,Georgia,serif';
+  var pt=!!PORT,nm=pt?(G.sn||G.n):G.n,sb=G.sub||'';if(pt)sb=sb.split(' · ')[0];var sub=op?sb:'🔒 '+(pt?(sb||'Khóa'):(G.sub||'Tạm khóa')),F='KTH Serif,Georgia,serif';
   g.save();g.textAlign='left';g.textBaseline='middle';
   g.font='700 '+fs+'px '+F;var w1=g.measureText(nm).width;g.font='600 '+(fs*.76)+'px '+F;var w2=g.measureText(sub).width;
   var ic=fs*1.18,bw=Math.max(w1,w2)+ic*2+fs*1.3,bh=fs*2.7,bx=x-bw/2,by=y-bh/2;
@@ -783,7 +790,7 @@ function gate(G,i,x,t,tgt){
     g.restore();
     if(!op){g.save();g.beginPath();g.ellipse(x,cy,rx*1.12,ry*1.12,0,0,6.2832);g.fillStyle='rgba(8,6,26,.52)';g.fill();g.restore()}}
   g.restore();
-  var fs=Math.max(12,Math.min(18,10.5*s)),ly=L.dy+LBL[i]*sw;
+  var fs=PORT?Math.max(6.5,Math.min(8.5,9*s)):Math.max(9,Math.min(12,8.5*s)),ly=L.dy+LBL[i]*sw; /* Fix194: màn dọc thu nhỏ tên cổng */
   banner(x,ly,G,op,fs);
   if(op||tgt===i){g.save();g.fillStyle=op?'#ffd54a':'#b9b4d0';g.font='bold '+fs+'px sans-serif';g.textAlign='center';g.fillText('▼',x,ly+fs*2.3+Math.sin(t*.12+i)*3);g.restore()}
   return true}

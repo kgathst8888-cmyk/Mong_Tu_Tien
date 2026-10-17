@@ -41,7 +41,7 @@ var CF={
  stoneP:.04,       /* xác suất rơi 1 Đá Cường Hóa thường / quái */
  minOffSec:60,     /* offline ngắn hơn mức này không tính */
  gapSec:20,        /* khung hình cách nhau > mức này (app bị đóng băng) → coi là offline */
- gateX:.945        /* vị trí cổng trong làng (tỉ lệ bề rộng làng) */
+ gateK:.72, gateX:.945        /* vị trí cổng trong làng (tỉ lệ bề rộng làng) */
 };
 
 var S={on:0,cur:-1,lg:0,ms:0,lgm:0,last:0,hb:0,hu:0,chk:0,nk:0,p0:0,p1:0,ses:null};
@@ -222,7 +222,7 @@ function plain(){try{return !window.VWD||(VWD.plain?VWD.plain():VWD.on())}catch(
 function drawGate(){
  if(!vil||!started||S.on||!plain())return;
  var t=fr,pu=.5+.5*Math.sin(t*.07),j;
- g.save();g.translate(gx()*s,GY);g.scale(s,s);
+ g.save();g.translate(gx()*s,GY);g.scale(s*CF.gateK,s*CF.gateK);
  g.fillStyle='rgba(0,0,0,.3)';g.beginPath();g.ellipse(0,2,52,8,0,0,6.28);g.fill();
  /* hào quang */
  g.save();g.globalCompositeOperation='lighter';
@@ -255,7 +255,7 @@ var _bld=bld;bld=function(i){var r=_bld.apply(this,arguments);if(i===4){try{draw
 c.addEventListener('pointerdown',function(e){
  gateGo=0;if(!vil||bo||!started||S.on||!plain()||(ov&&ov.style.display!=='none'))return;
  var x=e.offsetX/s,y=e.offsetY;
- if(Math.abs(x-gx())<46&&y>GY-185*s&&y<GY+40*s){vt=cl(gx(),40,vw()-40);vgo=-1;gateGo=1}});
+ if(Math.abs(x-gx())<46*CF.gateK&&y>GY-185*s*CF.gateK&&y<GY+40*s){vt=cl(gx(),40,vw()-40);vgo=-1;gateGo=1}});
 var _vstep=vstep;vstep=function(){
  var r=_vstep.apply(this,arguments);
  if(gateGo){if(mvDir)gateGo=0;else if(vt==null){gateGo=0;if(Math.abs(P.x-cl(gx(),40,vw()-40))<16)openPanel()}}

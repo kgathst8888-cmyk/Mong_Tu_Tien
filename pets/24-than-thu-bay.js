@@ -46,11 +46,22 @@ function hover(){
   var p=pet();if(!p||EP.at>0||p.k===0)return;
   var ty=(S.wy||70)+Math.sin(EP.t*.045)*7+Math.sin(EP.t*.017)*4+p.ev*4;
   EP.y+=(ty-EP.y)*.06;
-  if(p.k!==1&&Math.abs(EP.vx)>1.2&&EP.t%6===0){      /* vệt gió cho thú không có cánh */
+  if(p.k!==1&&Math.abs(EP.vx)>1.2&&EP.t%6===0&&PT.length<120){      /* vệt gió cho thú không có cánh */
     try{PT.push({x:EP.x-EP.d*10,y:EP.y+8,vx:-EP.d*.5,vy:.15,l:24,c:'#dfeaff'})}catch(e){}
   }
 }
 /* Bọc epstep: engine chạy bước thú cũ (tấn công, kỹ năng, chọn địch), rồi module chỉnh độ cao bay */
+/* Fix194: ở Làng / Thành Thị Linh Giới / Mỏ / Linh Điền, step() thoát ngay sau vstep() nên mảng hạt PT KHÔNG được cập nhật (l không giảm, không bị xoá)
+   trong khi draw() vẫn vẽ PT → vệt gió của thú bay đứng yên thành "chấm chấm" khắp bản đồ. Nay vstep tự làm già hạt (cùng công thức với step) + giới hạn số lượng. */
+function ageFx(){
+  try{
+    if(!Array.isArray(PT)||!PT.length)return;
+    if(PT.length>160)PT=PT.slice(-160);
+    for(var i=0;i<PT.length;i++){var q=PT[i];q.x+=q.vx||0;q.y-=q.vy||0;q.vy=(q.vy||0)+.2;q.l--}
+    PT=PT.filter(function(q){return q.l>0});
+  }catch(e){PT=[]}
+}
+if(typeof vstep==='function'){var _vsF=vstep;vstep=function(){var r=_vsF.apply(this,arguments);ageFx();return r}}
 var _ep=epstep;
 epstep=function(){
   var r=_ep.apply(this,arguments);

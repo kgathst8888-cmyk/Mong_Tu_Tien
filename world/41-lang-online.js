@@ -130,7 +130,7 @@ function drawAll(){
   g.strokeStyle='rgba(0,0,0,.8)';g.strokeText(tx,(window.VWD?VWD.cx():W/2),ty);g.fillStyle=errMsg?'#ff9a8a':'#cfe9ff';g.fillText(tx,(window.VWD?VWD.cx():W/2),ty);g.restore();
 }
 var _vd=vdraw;
-vdraw=function(){_vd();try{drawAll()}catch(e){try{console.warn('[Lang online]',e)}catch(x){}}};
+vdraw=function(){_vd();var dy=0;try{dy=window.VDY?VDY.dy():0}catch(x){}if(dy){g.save();g.translate(0,dy);VDY.skip=1}try{drawAll()}catch(e){try{console.warn('[Lang online]',e)}catch(x){}}finally{if(dy){VDY.skip=0;g.restore()}}};
 
 /* ---------- giao diện ---------- */
 function build(){

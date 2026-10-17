@@ -17,7 +17,7 @@ function rnd(i){var x=Math.sin(i*127.1+311.7)*43758.5453;return x-Math.floor(x)}
 function glowEl(x,y,rx,ry,rgb,a){g.save();g.translate(x,y);g.scale(1,ry/rx);var q=g.createRadialGradient(0,0,0,0,0,rx);q.addColorStop(0,'rgba('+rgb+','+a+')');q.addColorStop(1,'rgba('+rgb+',0)');g.fillStyle=q;g.beginPath();g.arc(0,0,rx,0,6.2832);g.fill();g.restore()}
 function rr(x,y,w,h,r){g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath()}
 function banner(x,y,fs){
-  var F='KTH Serif,Georgia,serif',nm=G.n,sub=G.sub;g.save();g.textBaseline='middle';
+  var F='KTH Serif,Georgia,serif',pt=!!PORT,nm=pt?(G.sn||G.n):G.n,sub=pt?String(G.sub||'').split(' · ')[0]:G.sub;g.save();g.textBaseline='middle';
   g.font='700 '+fs+'px '+F;var w1=g.measureText(nm).width;g.font='600 '+(fs*.76)+'px '+F;var w2=g.measureText(sub).width;
   var ic=fs*1.18,bw=Math.max(w1,w2)+ic*2+fs*1.3,bh=fs*2.7,bx=Math.max(4,x-bw/2),by=y-bh/2;
   g.shadowColor='rgba(0,0,0,.55)';g.shadowBlur=8;g.fillStyle='rgba(16,22,42,.88)';rr(bx,by,bw,bh,bh*.32);g.fill();g.shadowBlur=0;
@@ -69,7 +69,7 @@ LGART.gate=function(Gt,i,x,t,tgt){
   g.restore();
   /* 4) đốm sáng + cánh hoa bay lên quanh cổng */
   if(!lite){g.save();g.globalCompositeOperation='lighter';for(j=0;j<10;j++){var u=((t*.006+rnd(j+5))%1);g.fillStyle=j%3?'rgba(210,255,235,'+(.9*Math.sin(u*3.1416))+')':'rgba(150,235,130,'+(.9*Math.sin(u*3.1416))+')';g.beginPath();g.arc(x+(rnd(j+11)-.5)*rx*1.5+Math.sin(u*6+j)*4*sw,by-u*150*K*sw,Math.max(.8,1.8*sw*(1-u*.5)),0,6.2832);g.fill()}g.restore()}
-  var fs=Math.max(8,Math.min(11,7*s)),ly=L.dy+LB*sw,cx=banner(x,ly,fs);
+  var fs=PORT?Math.max(6.5,Math.min(8.5,9*s)):Math.max(8,Math.min(11,7*s)),ly=L.dy+LB*sw,cx=banner(x,ly,fs);
   g.save();g.fillStyle='#7af0b8';g.font='bold '+fs+'px sans-serif';g.textAlign='center';g.fillText('▼',cx,ly+fs*2.2+Math.sin(t*.12+i)*3);g.restore();
   return true};
 })();

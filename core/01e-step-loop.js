@@ -9,7 +9,15 @@ ult.style.cssText='';ult.className='sb';ult.id='ult';
 ae.onpointerdown=e=>{e.stopPropagation();auto=!auto;ae.style.opacity=auto?1:.5};
 c.addEventListener('pointerdown',e=>{if(auto||vil)return;mvDir=e.offsetX<W/2?-1:1});addEventListener('pointerup',()=>mvDir=0);
 addEventListener('keydown',e=>{if(e.key>='1'&&e.key<='6')cast(+e.key-1);{const zi='zxcvb'.indexOf(e.key);if(zi>=0)ZC.zcast(zi)}if(e.key==='a')ae.onpointerdown({stopPropagation(){}});if(e.key==='ArrowLeft')mvDir=-1;if(e.key==='ArrowRight')mvDir=1});addEventListener('keyup',()=>mvDir=0);
-function step(){fr++;ZC.tick();if(vil&&!bo&&started)vstep();if(vil||!started){if(P.act)actEnd();return}if(fr%90===0)sv();if(over){if(P.act)actEnd();if(--over===0)init();return}
+let _vPrev=0;
+/* Fix194: ở Làng/Thành Thị/Mỏ/Linh Điền step() thoát ngay nên DT (số sát thương), PT (hạt), FX, PJ không được cập nhật → còn nguyên từ bản đồ quái, hiện mãi.
+   Nay: vừa vào Làng thì xoá sạch; trong Làng hạt PT bị bỏ hẳn, chữ nổi DT/FX vẫn tàn dần như thường (thông báo trong Làng vẫn hiện được). */
+function vilClean(){
+  if(!_vPrev){PT=[];PJ=[];FX=[];DT=DT.filter(d=>!(d.k||typeof d.s==='number'||/^[+\-]?\d/.test(String(d.s))||d.s=='Trượt'||d.s=='Né'))}
+  _vPrev=1;PT.length=0;
+  DT.forEach(d=>{d.l--;d.y+=.7});DT=DT.filter(d=>d.l>0);
+  FX=FX.filter(f=>--f.l>0)}
+function step(){fr++;ZC.tick();if(vil&&!bo&&started)vstep();if(!vil)_vPrev=0;if(vil||!started){if(vil)try{vilClean()}catch(e){}if(P.act)actEnd();return}if(fr%90===0)sv();if(over){if(P.act)actEnd();if(--over===0)init();return}
 ZC.cds();cd=cd.map(v=>v-1);if(!(window.QL>=1)||(fr&1))bt.forEach((b,i)=>b.style.setProperty('--c',cl(cd[i]/(SK[i][3]*1.6),0,1)*360+'deg'));
 P.mp=Math.min(mm(),P.mp+.09);P.hp=Math.min(mx(),P.hp+.05);P.atk--;P.mv=0;if(P.pe&&--P.pe.l<=0){const f=P.pe.f;P.pe=null;f()}pstep();if(P.hp<mx()*.35&&hpP>0){hpP--;P.hp=Math.min(mx(),P.hp+mx()*.5);DT.push({x:P.x,y:130,s:'🧪+'+Math.round(mx()*.5),g:1,l:50})}if(P.mp<mm()*.2&&mpP>0){mpP--;P.mp=Math.min(mm(),P.mp+mm()*.5)}
 const t=near(2e3);let dir=0;

@@ -44,7 +44,7 @@ function drawDmgText(s,gy){
 function draw(){const gy=GY;g.setTransform(DPR,0,0,DPR,0,0);g.globalAlpha=1;g.imageSmoothingEnabled=true;g.imageSmoothingQuality=['high','medium','low'][window.QL|0];ZS.sh();if(vil)vdraw();else{bgd(gy);E.slice().sort((a,b)=>a.x-b.x).forEach(foe);pets();ZC.aura();hero();fxs();nameTag();
 ZS.pjs()}
 
-PT.forEach(p=>{g.globalAlpha=cl(p.l/25,0,1);g.fillStyle=p.c;g.fillRect((p.x-cam)*s,gy-p.y*s,4*s,4*s)});g.globalAlpha=1;
+PT.length=0;g.globalAlpha=1; /* Fix194c: bỏ toàn bộ hạt PT */
 drawDmgText(s,gy);g.globalAlpha=1;
 const hs=cl(Math.min(H/540,W/420),.6,1.1),ly=12;if(W<640)mhud();else{g.save();g.scale(hs,hs);
 const pg=g.createRadialGradient(60,60,5,60,60,42);pg.addColorStop(0,'#3a3050');pg.addColorStop(1,'#120c18');g.fillStyle=pg;g.beginPath();g.arc(60,60,42,0,6.28);g.fill();g.fillStyle='#f2d6b8';g.beginPath();g.arc(60,64,15,0,6.28);g.fill();g.fillStyle='#16121f';g.beginPath();g.arc(60,58,17,3.1,6.3);g.fill();g.beginPath();g.arc(60,40,7,0,6.28);g.fill();g.fillStyle=pg;g.beginPath();g.arc(60,60,42,0,6.28);g.fill();g.save();g.beginPath();g.arc(60,60,42,0,6.28);g.clip();if(IM[cur].naturalWidth){const m=IM[cur],w=m.naturalWidth,h=m.naturalHeight;const d=HD[cur];g.drawImage(m,d[0],d[1],d[2],d[3],17,15,86,86*d[3]/d[2])}g.restore();g.strokeStyle='#b8964e';g.lineWidth=4;g.beginPath();g.arc(60,60,42,0,6.28);g.stroke();

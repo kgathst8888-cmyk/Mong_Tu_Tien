@@ -4,7 +4,18 @@
 const c=document.getElementById('c'),g=c.getContext('2d');let W,H,s;
 let GY,DPR=1,PORT=0;
 function rs(){W=document.body.clientWidth;H=document.body.clientHeight;DPR=Math.min(window.devicePixelRatio||1,window.QCAP||2);c.width=Math.round(W*DPR);c.height=Math.round(H*DPR);PORT=H>W*1.05;s=PORT?Math.max(.5,Math.min(W/520,H/760)):Math.min(H/540,W/760);GY=H*(PORT?.64:.8)}
-addEventListener('resize',rs);addEventListener('orientationchange',()=>setTimeout(rs,250));rs();
+/* Fix194: xoay dọc↔ngang trên iOS Safari — sự kiện resize/orientationchange thường báo kích thước CŨ (thanh công cụ còn đang co/giãn) nên canvas
+   bị giữ cỡ cũ (mất bản đồ / lệch sàn). Nay: đo lại nhiều lần sau khi xoay + ResizeObserver + visualViewport + đồng hồ tự kiểm tra kích thước. */
+(function(){let tm=[];
+ const later=()=>{tm.forEach(clearTimeout);tm=[50,150,300,550,900,1500].map(d=>setTimeout(()=>{try{rs()}catch(e){}},d))};
+ addEventListener('resize',()=>{try{rs()}catch(e){}later()});
+ addEventListener('orientationchange',()=>{try{rs()}catch(e){}later()});
+ addEventListener('pageshow',later);
+ try{if(screen.orientation&&screen.orientation.addEventListener)screen.orientation.addEventListener('change',later)}catch(e){}
+ try{if(window.visualViewport)visualViewport.addEventListener('resize',later)}catch(e){}
+ try{if(window.ResizeObserver)new ResizeObserver(()=>{const b=document.body;if(b.clientWidth!==W||b.clientHeight!==H)rs()}).observe(document.body)}catch(e){}
+ setInterval(()=>{if(document.hidden)return;const b=document.body;if(b&&(b.clientWidth!==W||b.clientHeight!==H)){try{rs()}catch(e){}}},400)})();
+rs();
 const R=Math.random,cl=(v,a,b)=>Math.max(a,Math.min(b,v));
 const ADJ=['Thường','Tinh Anh','Hiếm','Sử Thi','Thần Thoại','Thiên Thần','Thánh'],
 SLS={w:[['Binh Khí','⚔️'],['Khiên','🛡️'],['Hộ Tâm Kính','🪞'],['Mũ Trụ','⛑️'],['Găng Sắt','🧤'],['Quần Giáp','👖'],['Giày Sắt','🥾'],['Nhẫn Hộ Vệ','💍'],['Nhẫn Dũng Khí','💍'],['Dây Chuyền','📿'],['Thú Nuôi','🐾']],
