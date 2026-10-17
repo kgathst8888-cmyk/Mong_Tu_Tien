@@ -218,7 +218,7 @@ function hudHide(){if(hudEl)hudEl.style.display='none'}
 
 /* ---------- cổng trong làng ---------- */
 function gx(){return vw()*CF.gateX}
-function plain(){try{return !window.VWD||VWD.on()}catch(e){return true}}
+function plain(){try{return !window.VWD||(VWD.plain?VWD.plain():VWD.on())}catch(e){return true}}
 function drawGate(){
  if(!vil||!started||S.on||!plain())return;
  var t=fr,pu=.5+.5*Math.sin(t*.07),j;

@@ -88,7 +88,8 @@
       "world/62-ac-ma-thuong-gioi.js",
       "world/85-skill-fold.js",
       "world/86-tien-nhan-bay-fx.js",
-      "world/87-tien-gioi-auto-mon-phai.js"
+      "world/87-tien-gioi-auto-mon-phai.js",
+      "world/90-tien-gioi-chi-tiet.js"
     ],
     "systems": [
       "systems/08-farming-alchemy.js",

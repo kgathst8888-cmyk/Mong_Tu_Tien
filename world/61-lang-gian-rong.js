@@ -11,7 +11,7 @@
    =================================================================== */
 (function(){
 'use strict';
-var WIDE=1320,begun=false,W0=0,cam0=0,camX=0,wasOn=false;
+var WIDE=1320,WIDE_ON=false,begun=false,W0=0,cam0=0,camX=0,wasOn=false;
 function g_(n){try{return typeof window[n]!=='undefined'?window[n]:null}catch(e){return null}}
 function plain(){
   if(typeof vil==='undefined'||!vil||typeof started==='undefined'||!started||(typeof over!=='undefined'&&over))return false;
@@ -23,20 +23,22 @@ function plain(){
   try{var f=g_('FSH');if(f&&f.open&&f.open())return false}catch(e){}
   return true;
 }
+function inVil(){return plain()}
+function plain0(){return WIDE_ON&&plain()}
 function realW(){return (begun?W0:W)}
 function ww(){return Math.max(realW()/s,WIDE)}
-window.VWD={on:plain,ww:ww,cam:function(){return camX},cx:function(){return begun?camX*s+W0/2:W/2}};
+window.VWD={on:plain0,plain:inVil,ww:ww,cam:function(){return camX},cx:function(){return begun?camX*s+W0/2:W/2}};
 
 /* bắt đầu phép dịch camera đúng lúc vẽ nền làng (xbg(-1)); kết thúc ở lớp vdraw ngoài cùng */
-if(typeof xbg==='function'){var _xbg=xbg;xbg=function(gy,m){if(m===-1&&!begun&&plain()){begun=true;W0=W;cam0=cam;g.save();g.translate(-camX*s,0);cam=0;W=ww()*s}return _xbg.apply(this,arguments)}}
+if(typeof xbg==='function'){var _xbg=xbg;xbg=function(gy,m){if(m===-1&&!begun&&plain0()){begun=true;W0=W;cam0=cam;g.save();g.translate(-camX*s,0);cam=0;W=ww()*s}return _xbg.apply(this,arguments)}}
 if(typeof vdraw==='function'){var _vd=vdraw;vdraw=function(){try{return _vd.apply(this,arguments)}catch(e){try{VWD.err=String(e&&e.stack||e).slice(0,300)}catch(x){}throw e}finally{if(begun){begun=false;W=W0;cam=cam0;g.restore()}}}}
 
 /* Fix189: làng rộng gấp ~2,5 lần màn hình nên chạy cuối bản đồ thấy rất nhanh → giảm tốc độ đi bộ RIÊNG ở làng thường (WALK = hệ số, 1 = như cũ). Linh Điền/Mỏ/Thành Thị không đổi. */
 var WALK=.75;
-try{var _vspd=window.VSPD;window.VSPD=function(){var b=_vspd?_vspd():1;try{return plain()?b*WALK:b}catch(e){return b}};window.VWD.walk=function(v){if(v>0)WALK=v;return WALK}}catch(e){}
+try{var _vspd=window.VSPD;window.VSPD=function(){var b=_vspd?_vspd():1;try{return inVil()?b*WALK:b}catch(e){return b}};window.VWD.walk=function(v){if(v>0)WALK=v;return WALK}}catch(e){}
 /* camera bám nhân vật khi đi trong làng */
 function tick(){
-  if(plain()){
+  if(plain0()){
     var rv=realW()/s,max=Math.max(0,ww()-rv),tg=Math.max(0,Math.min(max,P.x-rv/2));   /* Fix188: dùng bề rộng màn hình THẬT (realW) */
     if(!(P.x>=0))return; /* chặn NaN */
     if(!isFinite(camX))camX=isFinite(tg)?tg:0;
@@ -51,13 +53,13 @@ function tick(){
 }
 function leave(){wasOn=false;camX=0;cam=0;try{P.x=cl(P.x,40,W/s-40)}catch(e){}}
 if(typeof vstep==='function'){var _vs=vstep;vstep=function(){var r=_vs.apply(this,arguments);try{tick()}catch(e){console.error('[lang-gian-rong]',e)}return r}}
-if(typeof step==='function'){var _st=step;step=function(){if(wasOn&&!plain()){try{leave()}catch(e){}}return _st.apply(this,arguments)}}
+if(typeof step==='function'){var _st=step;step=function(){if(wasOn&&!plain0()){try{leave()}catch(e){}}return _st.apply(this,arguments)}}
 
 /* toạ độ chạm: cộng camera trước mọi trình xử lý khác trên canvas */
 try{
   if(typeof c!=='undefined'&&c&&c.addEventListener){
     c.addEventListener('pointerdown',function(e){
-      if(!plain()||camX===0||e.__vwd)return;
+      if(!plain0()||camX===0||e.__vwd)return;
       try{Object.defineProperty(e,'offsetX',{value:e.offsetX+camX*s,configurable:true});e.__vwd=1}catch(x){}
     },true);
   }

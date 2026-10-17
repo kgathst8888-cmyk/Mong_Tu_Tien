@@ -17,7 +17,7 @@ var PCY=442,PRX=36,PRY=58;
 var LBL=[351,306,302,323,321];
 var CAP=1.5;
 var camX=0,camOn=false,B=null,NZ=null,GS={},CLS=[];
-function K(){return Math.max(KB,vw()/IW)}
+function K(){return vw()/IW} /* Fix192: về cơ chế cũ — ảnh vừa khít khung, không camera */
 function WW(){return IW*K()}
 function ql(){return window.QL|0}
 function lite(){return ql()>=2}
@@ -725,7 +725,7 @@ function vign(){var q=gq;q.fillStyle=rg(q,GW/2,GH*.52,GH*.3,Math.max(GW,GH)*.8,[
 /* =====================  KHUNG HÌNH  ===================== */
 function camera(){
   if(!(LCT.on&&LCT.on())){camOn=false;return}
-  var v=vw(),max=Math.max(0,WW()-v),tg=Math.max(0,Math.min(max,P.x-v/2));
+  var v=vw(),max=0,tg=Math.max(0,Math.min(max,P.x-v/2));
   if(!camOn){camX=tg;camOn=true}else{camX+=(tg-camX)*.16;if(Math.abs(tg-camX)<.4)camX=tg}
   cam=Math.max(0,Math.min(max,camX))}
 function blit(q,W,H,gy){
