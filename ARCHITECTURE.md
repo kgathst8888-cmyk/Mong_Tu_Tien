@@ -1,0 +1,332 @@
+KIẾM TIÊN HOANG MẠC — MODULAR ARCHITECTURE v2
+
+Mục tiêu: tổ chức code theo domain để khi thêm tính năng chỉ cần đọc/sửa phần liên quan, đồng thời giữ nguyên gameplay/runtime hiện tại.
+
+NGUYÊN TẮC AN TOÀN
+- Nội dung JavaScript gameplay được giữ nguyên byte-for-byte khi di chuyển file; chỉ đổi đường dẫn script trong index.html.
+- Thứ tự load script giữ nguyên 00 → 18 để không thay đổi dependency runtime.
+- Base64 được giữ riêng trong assets/game-assets.js; không inline lại vào gameplay.
+- Không đổi save schema, global API, combat formulas hoặc UI behavior.
+
+CẤU TRÚC
+core/       engine + error handler
+player/     reserved cho player/stat/cultivation mới; hiện chưa tách gameplay cũ để tránh rủi ro
+combat/     status effects + enemy/combat extension
+equipment/  equipment/cosmetics; nơi mở rộng item/equipment
+world/      village, demon realm, tower, farming map, mining, boss
+ui/         stats, icons, guide, tutorial, ranking/name
+systems/    farming/alchemy, input guards, cloud save
+assets/     Base64 payloads/images/fonts, tách khỏi gameplay
+
+TẠI SAO player/ TRỐNG?
+Core player logic hiện nằm trong core/01-engine.js. Tách tiếp bằng cách cắt nhỏ engine là rủi ro cao vì nhiều global/dependency cũ. Bản này ưu tiên 100% tương thích trước. Khi cần, có thể bóc từng hệ thống player thành module facade/hook nhỏ mà không rewrite engine.
+
+QUY TẮC CHO AI
+- Chỉ đọc module liên quan trực tiếp.
+- Không đọc assets/game-assets.js nếu không thêm/sửa asset.
+- Không rewrite file lớn.
+- Không inline Base64.
+- Ưu tiên thêm data/config hoặc module mới.
+- Giữ thứ tự load và backward compatibility.
+
+MAPPING MODULE CŨ → MỚI
+00-module.js       -> core/00-error-handler.js
+01-module.js       -> core/01-engine.js
+02-module.js       -> world/02-demon-realm.js
+03-module.js       -> world/03-village.js
+04-module.js       -> ui/04-character-stats.js
+05-module.js       -> world/05-demon-boss.js
+06-module.js       -> ui/06-combat-icons.js
+07-module.js       -> world/07-trial-tower.js
+08-module.js       -> systems/08-farming-alchemy.js
+09-module.js       -> systems/09-input-guard.js
+10-module.js       -> world/10-farming-map.js
+11-module.js       -> combat/11-status-effects.js
+12-module.js       -> systems/12-cloud-save.js
+13-module.js       -> world/13-mining.js
+14-module.js       -> equipment/14-cosmetics-shop.js
+15-module.js       -> ui/15-guide.js
+16-module.js       -> ui/16-tutorial.js
+17-module.js       -> ui/17-ranking-name.js
+18-module.js       -> combat/18-enemies.js
+
+## Chay game
+- Windows: double-click `PLAY_GAME.bat`.
+- macOS/Linux: chay `PLAY_GAME.command` neu Python 3 co san.
+- Hoac mo `index.html` truc tiep trong Chrome/Edge.
+- De test tot nhat, dung local server: `python -m http.server 8765`.
+
+
+## Arena v4
+- `systems/19-arena.js` dùng sprite nhân vật thật từ `RIGI` và weapon assets đã được engine load sẵn.
+- Bộ skill lấy từ `CHR/PS` hiện tại; tên, icon, MP, cooldown và multiplier sát thương dùng trực tiếp từ skill data.
+- Arena vẫn là PvE/local simulation; chưa phải server-authoritative PvP.
+- Không inline Base64 và không sửa `assets/game-assets.js`.
+
+
+## Arena v5 — Real Map Combat
+- Đấu Trường không còn là battle log đứng yên. Khi vào trận, engine tạm chuyển canvas game sang Arena mode.
+- Nhân vật người chơi dùng trực tiếp `hero()` của map, vì vậy sprite thân/tay/chân, vũ khí, cánh và animation đánh dùng cùng renderer với đánh quái.
+- Skill người chơi đi qua `cast()`/`fire()`/`dm()` thật; các skill đặc biệt có dash/jump của engine được giữ nguyên.
+- Arena thêm lướt/nhảy giữa các đòn để tạo chuyển động trên màn hình nhỏ; nút kỹ năng hiển thị skill thật của nhân vật hiện tại.
+- Đối thủ cũng dùng `RIGI` + `WPI/WXI` thật, có chạy, nhảy, đánh và HP/MP.
+- Arena vẫn local PvE, không phải server-authoritative PvP.
+- Không chỉnh Base64/assets payload.
+
+
+## Chu Tước (thay chim ưng) — pets/22-chu-tuoc.js
+- Thú số 1 (trước là Ưng) nay là Chu Tước, 4 cấp tiến hoá, mỗi cấp một hình (assets/phoenix-assets.js, base64 webp tách riêng).
+- Module `PHX` (pets/22-chu-tuoc.js) lo vẽ (lưới biến dạng vỗ cánh/đuôi), bay lượn, tấn công, kỹ năng theo cấp, hồi sinh Niết Bàn và điều kiện tiến hoá (khối `EVO`).
+- Engine chỉ có 11 hook nhỏ trong core/01-engine.js (`typeof PHX!='undefined'`): pimg/pcol/peg, PB, giao diện Tab Thú, pev, epstep, drawEP, hiệu ứng PF và hồi sinh khi chết. Thêm `window.PFH` để module dùng lại hiệu ứng của ZS.
+- Dữ liệu PT4[1]/PK[1]/PSK[1]/PTU[1] được module ghi đè lúc nạp, không sửa mảng gốc.
+
+## Bản chạy trên Claude — Mong_Tu_Tien_CLAUDE.html
+- File duy nhất, gộp toàn bộ script theo đúng thứ tự trong index.html (tạo bằng script ghép, không đổi mã nguồn).
+- Chạy được khi mở trang trong Claude (hoặc mở thẳng trong trình duyệt). Tiến trình lưu trong localStorage của trình duyệt.
+- Lưu mây (Supabase) cần gọi mạng ngoài nên không hoạt động trên trang Claude; các tính năng còn lại không ảnh hưởng.
+
+## Cập nhật 2026-10-07 · Thú triệu hồi v2 + icon trang bị
+- `pets/23-summon-beasts.js`: vẽ lại Sói Linh / Thạch Cự (golem) / Cổ Thụ bằng khung xương (IK): chân bước theo quãng đường, tay vung-đập-giơ, đầu/hàm/tai/đuôi/cành lá cử động. Chỉ đổi hiển thị, logic đánh vẫn ở `combat/18-enemies.js`. Chỉnh kích thước ở bảng `LOOK` (trường `z`).
+- `ui/24-equip-icon-fit.js`: thu nhỏ icon trong ô trang bị đang mặc (biến CSS `--eq-cell`, `--eq-ico`, `--eq-tip`). Hình trong túi đồ giữ nguyên.
+- Thứ tự load: sau `pets/22-chu-tuoc.js`. Bản HTML đơn (`Mong_Tu_Tien_CLAUDE.html`) đã nhúng sẵn 2 module này.
+- `ui/25-pet-preview.js`: nhân vật dưới Lv20 (chưa chuyển chức) xem trước được tab 🐾 Thú (4 thần thú, tiến hoá, kỹ năng); chỉ xem, chưa chọn được. Bọc `petUI` gốc, không sửa engine.
+- `ui/26-pet-evo4-lock.js`: khoá tiến hoá cấp 4 của cả 4 thú nuôi (cờ `LOCK_EV4`) cho tới khi cập nhật đủ; thú đã cấp 4 từ trước giữ nguyên.
+
+
+## Boss Bất Tử hằng ngày — world/27-immortal-boss.js
+- Nút 💀 "Boss Bất Tử" nằm ngay bên trái nút 🏆 Xếp hạng (đặt theo vị trí `#rkb` của ui/17-ranking-name.js).
+- Mỗi ngày (giờ VN) một boss khác nhau theo thứ (bảng `BC.days`). Boss không thể bị hạ: mỗi nhịp module đo máu boss mất đi → cộng vào sát thương, rồi hồi đầy máu.
+- Mỗi lượt `BC.secs` = 60 giây (hoặc tới khi gục / bấm Thoát). 3 lượt/ngày/nhân vật. Mỗi lượt nhận 💰 `BC.gold` = 500.000.
+- Lượt sát thương cao nhất trong ngày lên bảng trên mây. Sang ngày mới, vào panel để nhận thưởng hạng hôm trước (bảng `RW`): Top1 = 2 Mảnh Thánh + rương (30% Thiên Thần / 70% Thần Thoại); Top2-3 = 5 Nguyệt Thạch + rương; Top4-10 = 2 Nguyệt Thạch + rương; còn lại = rương thường (mọi độ hiếm trừ Thánh).
+- Máy chủ: chạy `boss_hang_ngay.sql` 1 lần trong Supabase (SQL Editor). RPC: boss_status / boss_begin / boss_end / boss_claim_ack. Máy chủ tự kiểm tra 3 lượt/ngày và chỉ nhận kết quả của lượt đang chờ (≤10 phút), trần 1e12 sát thương/lượt.
+- Chưa đăng nhập ☁ hoặc chưa cài SQL: vẫn đánh được ở chế độ cục bộ (chỉ nhận vàng, không lên bảng).
+- Engine chỉ thêm `HL.addSH(k)` (cộng Mảnh Thánh) trong core/01-engine.js. Module móc vào `dgTick/dgExit/init/dgHurt/dgHud/dgFoe` giống Tháp Thí Luyện; dữ liệu cục bộ lưu ở `PS[cur].bs`.
+- Chỉnh độ khó/thưởng: khối hằng số `BC` và `RW` ở đầu file module.
+
+## Đổi tên nút Hầm Ngục → "Phụ bản"
+- Nút đáy màn hình 🕳 hiện chữ "Phụ bản" khi vào được (thay cho "Mở!"); phần đếm ngược giữ nguyên. Sửa trong `dgBtn()` (core/01-engine.js), index.html và đoạn Cẩm nang.
+
+## Cập nhật 2026-10-07 · Nhiệm vụ+ · Túi đồ+ · thuộc tính mới
+- `systems/20-quest-hud.js`: bấm vào phần nhiệm vụ 📜 ở màn hình chính (mobile: dòng dưới thanh EXP; máy tính: khung "Chương … · Chính tuyến") → mở bảng chi tiết: chính tuyến + quà, hằng ngày, hằng tuần, nút Nhận / Nhận tất cả / mở bảng đầy đủ.
+- `systems/29-quest-plus.js` (chỉ sửa dữ liệu): chính tuyến 11 → 27 chương (chương mới xen giữa; save cũ tự đổi chỉ số chương nên giữ nguyên vị trí), hằng ngày 8 → 14 nhiệm vụ, hằng tuần 6 → 10, thành tựu 9 → 12, tăng quà ×1.5-1.6, rương hoạt lực & thành tựu có thêm Nguyệt Thạch / Chìa Khóa Vòng Quay (khoá thưởng `kk`). Hệ số: `UP_CH`, `UP_WK` đầu file.
+- `ui/30-bag-plus.js`: icon trong túi nhỏ lại (lưới 6 cột, `--bg-cell`, `--bg-ico`), thanh "🔗 Ghép trang bị" ngay trong túi (chạm món Sử Thi/Thần Thoại → Chọn ghép, hoặc ⚡ Chọn tự động). Ghép không cần về Làng.
+- `core/01-engine.js`: bỏ dòng "So với đồ đang mặc"; Tự bán / Bán nhanh thêm bậc ≤Sử Thi (có hỏi xác nhận); thuộc tính mới `ls` Hút máu và `ms` Hút năng lượng (chỉ vũ khí, 1-7%), `goldp` Tăng vàng nhận được (1-20%, mọi trang bị) — khoảng giá trị cố định trong `AXF`, không đổi theo phẩm. Hút máu/năng lượng tối đa 10% HP/MP mỗi đòn. Vàng cộng thêm áp cho vàng rơi từ quái, hầm ngục, Tháp, Ma Thần và quà nhiệm vụ (hàm `gP`).
+
+## Cập nhật 2026-10-07 (lần 2) · sửa lỗi túi đồ / chuyển chức / trồng trọt / Nguyên Anh
+- `ui/31-bag-scroll.js`: túi đồ không còn bị cuộn lên đầu khi bấm nút trong tab (giữ vị trí cuộn khi vẽ lại cùng một tab; đổi tab/mục nhiệm vụ vẫn về đầu).
+- Nhiệm vụ chuyển chức: nhận và trả nhiệm vụ không còn bắt buộc ở Làng (`core/01-engine.js`, tab Nhiệm vụ › Chuyển chức); bảng nhiệm vụ ở màn hình chính cũng có mục 🎓 Chuyển chức để nhận / chọn nhánh.
+- Linh Điền: trồng, thu hoạch, mở ô đất ngay trong tab 🌱 của túi đồ, không cần vào bản đồ Linh Điền (`systems/08-farming-alchemy.js`: `noF` luôn cho phép, `farmUI` luôn hiện bảng đầy đủ).
+- Nguyên Anh thu thập vàng nhiều hơn (`world/13-mining.js`): gốc 300 → 1000/phút, nhân thêm (1 + Lv/`auLv`) và % "Tăng vàng nhận được" của trang bị, vẫn nhân theo (cảnh giới − Nguyên Anh + 1). Quặng sắt/Huyền Kim giữ nguyên.
+
+## Cập nhật 2026-10-07 (lần 3) · cấp độ trên icon trang bị
+- Mỗi ô trang bị (túi + ô đang mặc) hiện cấp độ ở góc dưới phải. Trang bị chưa mặc được (cấp cao hơn nhân vật, không phải đồ chế tác ✦) bị làm mờ + xám, số cấp màu đỏ nhạt. Sửa ở hàm `cell` trong `core/01-engine.js` và CSS trong `ui/30-bag-plus.js` (`.ce>i.il`, `.ce.nw>img`).
+
+## Cập nhật 2026-10-07 (lần 4) · Chợ Giao Dịch online + Linh Thạch
+- `systems/32-cho-giao-dich.js` (load sau `ui/31-bag-scroll.js`) + `cho_giao_dich.sql` (chạy 1 lần trong Supabase SQL Editor). Không sửa engine/assets.
+- Nút 🏮 ngay bên phải nút 💬 Chat. Ba tab: 🛒 Chợ (lọc loại/sắp xếp giá, mua) · 📦 Đăng bán (chọn trang bị trong túi, nhập giá) · 📜 Của tôi (hủy bán). Chạm một món để xem chi tiết/opt.
+- Tiền tệ 💎 Linh Thạch: ví nằm trên máy chủ theo tài khoản ☁ (dùng chung mọi nhân vật). Cách kiếm CHƯA có — tạm cấp thủ công: `select public.cho_admin_grant('<uuid>', 1000);`. API phía game: `window.LT.get()` / `.refresh()` / `.open()`. Khi làm cách kiếm, thêm RPC kiếm riêng trong SQL rồi gọi từ game (đừng cho client tự cộng số dư).
+- Luật: phí bán 5% · tối đa 10 món/tài khoản · hết hạn 48 giờ · giá 1 → 1.000.000.000 · không tự mua đồ của mình. Chỉnh ở khối `CF` (JS) và hằng số trong SQL.
+- An toàn nhân bản đồ: đăng bán → đồ rời túi trước, máy chủ giữ (ký gửi). Mua / hủy / hết hạn → đồ vào HÒM NHẬN trên máy chủ, game chuyển vào túi rồi mới xác nhận (`cho_ack`); túi đầy thì đồ nằm lại hòm. Mất mạng giữa chừng khi đăng: game tự kiểm tra mã `_mk` để không nhân/mất đồ.
+- Lưu ý: giống cloud save/boss, dữ liệu món đồ do client gửi lên; máy chủ chỉ kiểm tra giá trị hợp lệ cơ bản (loại, phẩm, cấp, kích thước), không chống được client bị sửa.
+- Bản HTML chạy trên Claude (không có mạng ngoài): nút chợ vẫn có, mở ra chỉ báo cần ☁ + mạng; không ảnh hưởng phần còn lại của game.
+
+## Linh Thạch từ Boss — systems/32-cho-giao-dich.js (khối "KIẾM LINH THẠCH TỪ BOSS") + cho_linh_thach_boss.sql
+- Mỗi boss hạ được = 1 💎 vào ví tài khoản ☁; tối đa 500/ngày (giờ VN). Máy chủ tự cắt trần qua RPC `cho_earn` (bảng `cho_daily`); client gom lô ≤ 50 viên/lần.
+- Hook: bọc `ZC.kill(e)` — tính khi `e.b >= 2` (boss thường, siêu boss, boss Hầm Ngục/Tháp/Ma Thần). Quái tinh anh (b=1) và quái thường không tính. Boss Bất Tử (world/27) tính 1 viên mỗi lượt đánh.
+- Chưa đăng nhập ☁ thì không nhận Linh Thạch (hiện nhắc 1 lần). Panel Chợ hiện "(+đã kiếm/500)". API: `LT.earn(n)`, `LT.today()`.
+
+## Đột phá tầng Linh Căn tốn Linh Thạch — systems/18-linh-can.js + cho_linh_thach_spend.sql
+- Luyện LÊN tầng t tốn thêm 💎 ngoài vàng (hàm `LTC` trong 18-linh-can.js): tầng 2-10 = 10💎 · tầng 11-14 = 20💎 · tầng 15 (Viên Mãn) = 300💎.
+- Linh Thạch trừ trong ví ☁ trên máy chủ qua RPC `cho_spend` (nguyên tử, không âm). Game giữ chỗ vàng trước, máy chủ từ chối/lỗi mạng thì hoàn vàng; chống bấm đúp bằng `lcBusy`.
+- API ví trong systems/32-cho-giao-dich.js: `LT.spend(n,why)`, `LT.sync()` (RPC `cho_bal`), `LT.logged()`. Chưa đăng nhập ☁ thì không luyện được tầng mới.
+
+## Hợp Đạo · Đạo Cảnh — world/33-hop-dao.js
+- Cửa vào: Thành Thị Linh Giới → cổng 2 "☯ Hợp Đạo Đài" (mảng `LCG` trong world/10-farming-map.js, thay ô "Bí Cảnh" cũ). Mở bảng Hợp Đạo Đài (overlay), không phải bản đồ chiến đấu.
+- Điều kiện: Lv100, mỗi nhân vật hợp đạo 1 lần (`PS[cur].hd={d:1,t,lv0}`), không hoàn tác.
+- Hợp đạo: về Lv1/EXP 0 · điểm tiềm năng (`pts`, `al`) giữ nguyên · cảnh giới thay bằng Đạo Cảnh Lv1-100 (= cấp nhân vật; hiển thị "Đạo Cảnh Lv N" ở HUD/tab 🧘/tên nhân vật) · EXP lên cấp ×5 (`nx()` nhân `HD.xm()`; chỉnh `CF.xpMul`) · xoá kỹ năng phàm thể (chặn `cast()`, ẩn `#sk`/`#ult`), chỉ còn Thần Thông (`zcast`) + đánh thường.
+- Dữ liệu cảnh giới cũ `PS[cur].cv` được giữ nguyên bên dưới để Thần Thông đã mở vẫn dùng được; nút Đột phá cảnh giới bị chặn sau khi hợp đạo.
+- API global là `HDAO` (KHÔNG dùng tên `HD` — trùng biến có sẵn trong engine). Engine sửa: `nx` (EXP ×HDAO.xm()), kill EXP (nhân `HDAO.xg()`), 6 chỗ so cấp trang bị (`.l>P.lv` → bỏ qua cấp khi Đạo Cảnh), `gen()` chặn cấp ≤80. Module bọc `cast`, `ZC.nm/rn/tx/pg/col/bt/ui`.
+- Đạo Cảnh chỉ nhận EXP từ quái khi `mi()>=8` (Linh Giới trở lên); chỉnh `CF.mapMin`. Quà nhiệm vụ/rương EXP không bị chặn.
+- Cấp trang bị tối đa 80 (`CF.itemLv`, và hằng số trong `gen`); đồ cũ vượt cấp trong túi/đang mặc tự về 80.
+- Đạo Cảnh mặc được mọi trang bị bất kể cấp.
+- Lưu ý: trang bị cấp cao hơn nhân vật không mặc được → sau khi về Lv1 cần lên cấp lại hoặc dùng đồ cấp thấp.
+- Xoá trang bị cũ 1 lần: `HDAO.wipe()` chạy sau khi vào game, xoá toàn bộ trang bị (túi + đang mặc) của nhân vật Lv>1 hoặc đã hợp đạo, rồi đặt cờ `PS[i].wp=CF.wipeId` ('w80'). Nhân vật Lv1 chưa hợp đạo giữ đồ khởi đầu. Vàng/nguyên liệu/thú/cánh giữ nguyên. Muốn xoá lại: đổi `CF.wipeId`.
+- Tối ưu Đạo Cảnh: chuỗi EXP trên HUD chỉ định dạng lại khi số đổi (bớt toLocaleString mỗi khung hình); gộp 2 timer thành 1 (1s, bỏ qua khi tab ẩn); hoạt ảnh nghi lễ chỉ dùng transform/opacity (will-change) và tắt khi hệ thống bật "giảm chuyển động".
+- HUD (mobile + máy tính): nhãn "EXP" đổi thành "Đạo Linh" khi nhân vật đã hợp đạo (engine: `HDAO.on()` ở 2 chỗ vẽ thanh EXP). Các bảng của Đạo Cảnh cũng gọi EXP là Đạo Linh.
+
+## Thần Thông · Đạo Cảnh — world/34-than-thong.js
+- Chỉ nhân vật đã hợp đạo (`HDAO.on()`). 6 hệ × 5 thần thông, xếp theo ngũ hành tương sinh từ linh căn sở trường: ô1 ★ chiến đấu (tự mở khi hợp đạo), ô2 chiến đấu, ô3 buff, ô4 chiến đấu cực nghĩa, ô5 nội tại. Bảng `K` (kỹ năng) và `SC` (hệ số, hồi chiêu, MP, số mảnh: 0/10/20/35/60) chỉnh ở đầu file.
+- Hệ = lớp (`CHR[cur].t`) + nhánh (`PS[cur].br`): 0 Kiếm Khách, 1 Thương Thủ, 2 Triệu Hồi Sư, 3 Ma Thuật Sư, 4 Xạ Thủ, 5 Thích Khách. Dữ liệu học: `PS[cur].tt={on:[5 cờ]}`.
+- Linh căn: sát thương/buff/nội tại nhân `lcMul(e)` (e: 0 Hỏa, 1 Mộc, 2 Thủy, 3 Kim, 4 Thổ) khi trùng linh căn nhân vật (×1,2–1,5).
+- Mảnh Sách Thần Thông = vật phẩm xếp chồng trong túi `{s:5,r:4,c:1,tt:{h,e,q[,k]}}` (h hệ, e linh căn, q số lượng) → bán/mua được ở Chợ giao dịch (module 32). Chạm mảnh trong túi mở bảng Thần Thông (`pk`/`fzt` được bọc để không mặc/bán/hợp nhầm); c:1 giữ khỏi Bán nhanh/Dọn đồ. Hệ khác không học được mảnh của hệ này. Nút ⇄ đổi 5 mảnh bất kỳ → 1 mảnh tùy chọn; nút Tách chia chồng để đăng bán một phần.
+- Nguồn mảnh: chỉ boss Kiếm Thánh (chưa có) gọi `TTHONG.drop()` = 5–20 mảnh, linh căn ngẫu nhiên, cho hệ nhân vật hạ boss. Test: thêm `?ttest` vào URL để hiện nút "Nhặt thử".
+- Nút thần thông riêng `#tt-bar` (4 nút: 3 chiến đấu + buff; nội tại không có nút). Ẩn `#zk` khi `body.hd-on`. Bọc: `dm` (buff/nội tại sát thương, chí mạng), `ZC.shd/dg` (giảm sát thương, né), `ZC.kill` (Minh Thổ Ảnh Tâm), `ZC.zauto/zcast` (AUTO + phím ZXCV), `ZC.ui` (nút mở bảng trong tab 🧘).
+- Thẻ "Thần thông Linh căn" trong bảng Thần Thông chỉ hiển thị thần thông tự động thi triển của linh căn (module systems/18-linh-can.js, `PS[cur].lc`). Nó độc lập với 5 ô của hệ, không dùng mảnh, hợp đạo không xóa.
+- Tối ưu hoạt ảnh Thần Thông: đo thời gian khung hình (EMA) → `fps.q` 0/1/2; máy yếu tự giảm hiệu ứng phụ (sigil/gwave/vcol/flash/shake, số mục tiêu có hiệu ứng, số hạt vệt kiếm), bỏ hiệu ứng phụ khi hàng đợi `FX` > 50. Sát thương và hồi chiêu không đổi. `pass()` cache 200ms, nút #tt-bar chỉ ghi DOM khi đổi trạng thái, CSS dùng opacity thay filter.
+- Hoạt ảnh tung chiêu Thần Thông: thời gian dựng chiêu `WU=[11,14,8,18]` khung hình (★/ô2/buff/cực nghĩa; trước là 18 cho tất cả) + hồi thế 7 khung; bấm khi đang tung chiêu khác thì lệnh được đệm 0,45s (`pend`, xử lý mỗi khung trong `flush()`); tự quay mặt về địch gần nhất; chỉ cực nghĩa hiện tên nổi.
+
+
+## Kiếm Thánh (Fix15)
+- world/35-kiem-thanh.js: boss Kiếm Thánh, cổng ở Thành Thị Linh Giới (ô 3), mạnh gấp 10 lần Ma Thần, hồi sinh 10 phút, thông báo hồi sinh trên màn hình chính. Chỉnh khối CF đầu file.
+
+## Thần thú bay tự do — pets/24-than-thu-bay.js (load sau ui/26-pet-evo4-lock.js)
+- API global `PFLY` (không dùng tên HD/THB: dễ trùng biến engine). Cả 4 thần thú bay lượn khắp bản đồ (toàn chiều ngang `vw()`), nhiều độ cao, lao tới địch ở bất cứ đâu; không còn bị kéo về khi ở xa chủ.
+- Ở Làng / Thành Thị Linh Giới / Mỏ / Linh Điền (không có vòng lặp thú của engine) module tự lượn bằng `PFLY.idle()` (rAF riêng, nhường engine khi đang ở bản đồ chiến đấu).
+- Móc trong engine: `epstep` (bỏ teleport >480px, tìm địch bán kính 9999, đích đến/tốc độ lấy từ `PFLY.tx/run`), `vstep` (không dính chủ), `pets/22-chu-tuoc.js` step (Chu Tước). Bọc `epstep` để giữ độ cao bay khi không tung đòn.
+- Bật/tắt bằng nút "🕊 Bay tự do" trong tab 🐾 Thú (`PS[cur].thb`: 0 = tắt → hành vi cũ; mặc định bật). Khoá tiến hoá cấp 4 (ui/26) không bị đụng tới.
+
+## Bản đồ Linh Giới — world/36-linh-gioi-maps.js
+- Cổng 1 (Chiến Trường) của Thành Thị Linh Giới mở bảng chọn 6 bản đồ (`LGMAP.open()`); Đạo Thể còn có danh sách bản đồ trong tab 🗺 (bọc `lgUI`). Chọn bản đồ lưu `PS[cur].lgm` (0..4); vẫn là `lg=1`, `mapSel=4`, `mi()=8` nên Đạo Cảnh vẫn nhận EXP.
+- Bản đồ 1 = quái hiện tại Lv80-100. Bản đồ 2–5 = quái mới cho Đạo Thể Lv1-20/21-40/41-60/61-80 (chỉ Đạo Thể): `LR[4]` đổi theo bản đồ mỗi khung (bọc `step`), `spawn()` được bọc để tính lại máu/thủ/sức đánh theo `LGS`. Bản đồ 6 Thánh Địa: Đạo Thể Lv100, tạm khóa (`LGMAP.holy.open=false`).
+- Quái/nền mới: 4 chủ đề thêm vào `LVX.LT` (chỉ số 5–8), tên quái trong `window.LGNMN`; `05-demon-boss.js` được sửa 4 chỗ nhỏ để đọc `e.lgi` / `window.LGI` / `LGNMN` (hình dáng quái dùng chung khung `MON`, đổi màu + tên).
+- Fix27: Đạo Thể chỉ vào bản đồ 2–6 khi đủ cấp Đạo Cảnh tối thiểu (Lv1/21/41/61/100); Đạo Linh (EXP) chỉ tăng ở bản đồ Đạo Thể (`LGMAP.expOk()`, `HDAO.xg` đọc hàm này; bản đồ 1 không cho EXP Đạo Thể); mỗi cấp Đạo Cảnh nhận 10 điểm tiềm năng (engine dòng lên cấp: `HDAO.on()?10:5`).
+ - Fix28: quái bản đồ Đạo Thể (2–5) mạnh hơn nhiều: bảng `LGS` (máu ×5–8, thủ ×1,8–2,4, sức đánh ×4–6 qua `e.m`), Đạo Linh nhận ×`LGS[i].exp` (0,5) qua `LGMAP.expMul()` (HDAO.xg trả hệ số này). Muốn dễ/khó hơn chỉ sửa `LGS`.
+- Fix29: máu quái Đạo Thể cố định `LGS[i].hpn` (bản đồ 2 = 100k, gấp đôi mỗi bản đồ sau), Tinh Anh ×`LGE.e`=3, Boss ×`LGE.b`=10; sức đánh `at` 12/14/16/20 (Tinh Anh ×1,5, Boss ×2 thêm). Chỉnh trong module 36.
+
+## Cường hóa trang bị — hệ số chỉ số + hiệu ứng +7/+10 (Fix30)
+- `UM(u)` trong core/01-engine.js: hệ số chỉ số cơ bản (Công/Thủ/HP) theo cấp cường hóa +0..+10 = [1,1.3,1.6,1.9,2.2,2.5,2.8,3.4,3.8,4.2,10] (cũ: 1+0,15×cấp, tối đa ×2,5). Mốc +7 nhảy 0,6 và +10 = ×10 (Fix31). Dùng trong `sm()` (chỉ số thật) và `ev()` (hiển thị).
+- world/37-cuong-hoa-fx.js: huy hiệu +N trên ô trang bị; +7 viền xanh quay, +10 viền vàng-lửa; bùng nổ toàn màn hình khi cường hóa lên đúng +7/+10 (bọc `en1`); hào quang quanh nhân vật khi mặc đồ +7 (xanh) / +10 (vàng-lửa) (bọc `hero`).
+
+## Đá cường hóa — world/38-da-cuong-hoa.js (Fix32)
+- Cường hóa lần 1–7 (+0→+7) tốn 💰 + 1 🪨 Đá Cường Hóa. Từ +7 lên +8/+9/+10 tốn 💰 + 1 💠 Đá Cường Hóa Cao Cấp; thất bại ở giai đoạn này → trang bị về +0 (có hộp xác nhận). Kho đá `PS[cur].dch={a,b}`. Rơi từ quái (Boss/Ma Thần/Kiếm Thánh rơi đá cao cấp) + mua ở Thợ Rèn (`DCH.price`). Module nạp TRƯỚC 37 để hiệu ứng +7/+10 bọc được `en1`; nút Cường hóa trong engine gọi `DCH.need/buyBtn`.
+
+
+## Vẽ lại boss phụ bản (Fix33)
+- world/39-dg-boss-art.js: thay DGI.boss (ảnh webp) bằng sprite canvas theo phong cách Ma Thần v2; DGI.bossKS (trường kiếm, rune xanh) cho Kiếm Thánh. Engine: nhãn tên boss đọc e.nm.
+
+
+## Phụ Bản 2 (Fix34)
+- world/40-phu-ban-2.js: nút 🕳 mở bảng chọn phụ bản; Phụ Bản 2 "Địa Long Điện" (Lv80, vào lại sau 10 phút, boss Ngục Long Vương ×5 Trùm Hầm Ngục) rơi Mảnh Đan Đột Phá Cảnh Giới 4 Thần Thú (2-5/lần, 100 mảnh ghép 1 Đan; Thú dùng Đan khi tiến hoá cấp 4). Sprite boss: DGI.boss2 trong world/39. Engine: e.big (cỡ boss), e.gc (màu hào quang).
+
+## Opt nhẫn "Cấp thần thông" — equipment/43-nhan-than-thong.js
+- `it.ttl` (1-3) chỉ trên Nhẫn (s=7/8): nhẫn thường siêu hiếm (`CF.chance` theo phẩm), nhẫn Bộ Thánh chắc chắn có (ngẫu nhiên 1-3). Mỗi +1 cấp: kỹ năng Linh Căn +1 tầng (`L0()`/cast trong systems/18-linh-can.js), thần thông/tiên thuật +10% sức mạnh (bọc `lcMul`). Cộng dồn các món đang mặc.
+- Patch nhỏ: engine (xHtml hiển thị, HL.gen nhẫn Thánh, SPK/autoKeep/sa/pk không bán đồ có ttl), systems/18-linh-can.js (2 chỗ). `holyAll=true` trong CF nếu muốn mọi món Thánh đều có opt này.
+- Túi đồ: nút "💰 Bán nhanh < Thần Thoại (N)" cạnh "↕ Sắp xếp" gọi sa(4) có sẵn (bán Thường→Sử Thi, giữ đồ chế tác, đã cường hóa, nhẫn Cấp Thần Thông), có hộp xác nhận; N = số món sẽ bán.
+- Túi đồ: nút "💰 Bán nhanh < Thần Thoại" mở bảng chọn từng món (ui/44-ban-nhanh-chon.js, API `BNC`): tick từng món, chọn/bỏ theo phẩm, xem tổng vàng, bấm Bán. Vẫn bảo vệ đồ chế tác/cường hóa/nhẫn Cấp Thần Thông/đồ Thánh. Không tải module thì nút tự quay về sa(4).
+
+
+## Ý Cảnh (Fix39)
+- world/45-y-canh.js: Ý Cảnh Tiên Đạo / Ma Đạo trong Hợp Đạo Đài (Linh Giới). Chọn 1 đạo, 5 cảnh giới × 3 tiểu cảnh; sát thương phụ 10-50% cho kỹ năng + Thần Thông (bọc dm() khi SKF=1). Chưa có cách tu luyện (YCANH.up(n) chừa sẵn). Patch nhỏ: engine DT đọc d.sc (màu viền), world/33-hop-dao.js thêm khối YCANH.mini() + nút data-a="yc".
+
+## Phụ Bản 4 "Ma Thần" + Kiếm Thánh chỉ Đạo Thể — world/47-phu-ban-ma-than.js
+- Thẻ số 4 trong bảng 🕳 Phụ Bản (world/40 gọi `PBMT.html/refresh/canEnter/enter`). Tái dùng Boss Ma Thần + bản đồ Huyết Nguyệt Ma Điện của world/02 + 05 (cờ `dg.mt=1`, thêm cờ `dg.pm=1` để tách phần thưởng/thoát trận). API global `PBMT`.
+- Chỉ mở sau khi hạ Ma Thần lần đầu (`lgDone()`). Hồi chiêu 1 giờ tính từ lúc vào (`PS[cur].pmt.cd`). Rơi "Ma Thần Tinh Huyết" 5–10/lần (+ vàng, mảnh chế tạo, tu vi như Ma Thần; trang bị Thần Thoại `CF.gear=0`).
+- Tinh Huyết nâng Ý Cảnh Ma Đạo qua `YCANH.up(1)`: giá = `CF.base + CF.step × (cấp − 1)`. Chỉ Ma Đạo dùng được; Tiên Đạo vẫn tích luỹ.
+- Thoát trận / chết giữa trận → `back(w)` đưa về đúng bản đồ trước đó (Làng / Linh Giới). Lần hạ Ma Thần đầu tiên (không có `dg.pm`) giữ nguyên.
+- Kiếm Thánh (world/35): `ask()`/`enter()` chặn nếu không phải Đạo Thể (`HDAO.on()`); ô cổng hiện "Chỉ Đạo Thể được đánh".
+
+
+## Thần Thông Ý Cảnh (Fix43)
+- world/49-y-canh-than-thong.js: 3 thần thông riêng cho Tiên Đạo (vàng kim) và Ma Đạo (tím đen), mở khoá theo cảnh giới Ý Cảnh [1,3,5]; nút #yt-bar (tự dịch khi có #fb-bar), tự dùng khi AUTO (bọc step()/cast() trong vòng AUTO + ZC.zauto dự phòng). world/45-y-canh.js render thêm YCTT.card().
+
+## Sửa lỗi ô đồ: ngôi sao ✦ bị đơ + đồ +7 "xanh màn" (world/37-cuong-hoa-fx.js)
+- **Triệu chứng:** ô đồ Sử Thi trở lên mất hiệu ứng lấp lánh (ngôi sao ✦ đứng yên, vệt sáng lạ), đồ cường hóa +7 phủ một khung xanh lên cả ô; vài máy còn bị xanh màn vài giây khi cường hóa lên +7/+10.
+- **Nguyên nhân:** hiệu ứng +7/+10 từng dùng `.ce::before/::after`, trùng với `.spk::before` (vệt sáng, `inset:-60%`) và `.spk::after` (ngôi sao ✦) của đồ Sử Thi+ → huy hiệu bị kéo giãn thành khung màu phủ ô, ngôi sao mất nội dung nhưng giữ animation. Màn bùng nổ dựa hoàn toàn vào animation CSS nên khi animation bị tắt thì lớp phủ đứng yên.
+- **Cách sửa (đã nằm sẵn trong bản này):** huy hiệu `+N` (`.ufb`) và vòng sáng (`.ufr`) là PHẦN TỬ CON do `skin()` thêm vào ô, không đụng pseudo-element của `.spk`; `skin()` chỉ ghi DOM khi đổi và gọi `MutationObserver.takeRecords()` để không tự kích hoạt lại. Bùng nổ `burst()` mặc định `opacity:0`, tự bỏ lớp phủ nếu `animationName==='none'`, QL2 chỉ còn ít tia (không toàn màn). Hào quang nhân vật tính theo đúng `EQ` đang vẽ (Làng Online/Đấu trường mượn `EQ`) và tắt ở QL2; vòng sáng ẩn ở `html[data-ql="2"]`.
+- **File:** chỉ `world/37-cuong-hoa-fx.js` (+ bản nhúng trong `Mong_Tu_Tien_CLAUDE.html`). Quy ước: module khác KHÔNG được thêm `::before/::after` lên `.ce` (đã chiếm bởi `.spk`); muốn thêm nhãn lên ô đồ thì thêm phần tử con như `.ufb`.
+
+
+
+## Nâng cấp mỏ (Fix53)
+- world/13-mining.js: mỗi mỏ có cấp S.ml[k] (1-5) và đồng hồ nâng cấp S.ut[k]; 50 Linh Thạch/lần (LT.spend, cần đăng nhập), chờ 1 giờ (đồng hồ thật, tính cả offline). Mỏ Vàng x2^(cấp-1) số lượng; Quặng Sắt/Huyền Kim +(cấp-1); áp dụng đào tay + Nguyên Anh tự thu thập. Giao diện: khối "Nâng cấp mỏ" trong tab Khai khoáng; chỉnh ở CFG.up.
+
+## Sàn sát thương Thần Thông + Phụ Bản Ma Thần chỉ Đạo Thể
+- `world/54-than-thong-sat-thuong.js` (API `TTSAT`): nâng "sàn" hệ số nhân của thần thông để không thua kỹ năng phàm thể. Bậc nhỏ 7,5 (> chiêu thường mạnh nhất ~6,2) · bậc vừa 9,5 · bậc lớn 17 (> tuyệt kỹ thường ~12,6). Chỉ nâng khi thấp hơn sàn. Sửa trực tiếp `TTHONG.cfg[j].m` (world/34: 3,5→7,5 · 6→9,5 · 14→17) và `YCTT.cfg.sk.*.mul` (world/49, dùng chung cho world/53: ô1 →7,5 · ô3 16→17; ô2 5 đòn giữ nguyên); tiên thuật (engine ZC) bọc `ZS.zf(i,col,f)` nhân `f` với hệ số bù (ô1 ×2,5 · ô3 ×1,58 · ô4/ô5 ×1,06). `CF.on=false` để tắt; chỉnh `CF.small/mid/big`.
+- `world/47-phu-ban-ma-than.js`: thêm `daoThe()` (HDAO.on()) vào `canEnter()`/`status()`: chỉ nhân vật Đạo Thể mới vào Phụ Bản Ma Thần.
+
+## Bảo vệ túi đồ: không tự mặc · không tự bán mảnh Ý Cảnh (ui/45-bao-ve-tui-do.js)
+- **Không tự mặc:** nhánh "🔄 Tự mặc" trong `give()` của engine chỉ chạy khi `window.AUTOEQ===1` (patch 1 điều kiện). Mặc định `AUTOEQ=0`; bật lại bằng `BAOVE.autoEquip(true)`.
+- **Không tự bán mảnh Ý Cảnh:** vật phẩm có `it.yc` hoặc tên chứa "Ý Cảnh" được gắn `it.c=1` khi rơi (bọc `give`) và khi quét túi (bọc `ui`, mỗi 3 giây) → engine bỏ qua ở tự bán khi nhặt, Bán nhanh, Dọn đồ yếu, bán 1 chạm. Nguyên liệu Ý Cảnh hiện có (Tinh Huyết, Ngộ Đạo, Ma Khí) là bộ đếm trong `PS`, vốn không bán được; muốn tạo mảnh dạng đồ trong túi thì đặt `yc:1`.
+
+
+
+## Tố Tâm (Fix58)
+- world/47-phu-ban-ma-than.js: Phụ Bản Ma Thần rơi thêm Tố Tâm (5-10/lần, CF.tt) cùng Ma Thần Tinh Huyết. Mỗi phe chỉ nâng Ý Cảnh bằng nguyên liệu phe mình: Ma Đạo = Tinh Huyết (PS[cur].pmt.m), Tiên Đạo = Tố Tâm (PS[cur].pmt.t). Giá = CF.base + CF.step x (cấp-1), tối đa cấp 15. Bảng Phụ Bản hiện cả hai nguyên liệu; nút nâng tự theo phe.
+
+## Hệ opt trang bị mới — equipment/55-opt-moi.js (API `OPT2`)
+- Khoảng giá trị mỗi dòng (không còn tăng theo cấp/phẩm; 11 bậc roll z=0..10 chia đều): Sát thương 2-10 · %HP 2-10 · %mana 2-10 · ST kỹ năng 5-15 · Chí mạng/Né/Chính xác/Xuyên giáp/Giảm ST/Tỉ lệ choáng/Tỉ lệ đóng băng 2-5 · ST kỹ năng theo thời gian (`dotd`) 10-20 · ST chí mạng 5-15 · Tốc độ thi triển kỹ năng (`aspd`, Chiến binh+Cung thủ) 10-20 · Tốc độ niệm chú (`cspd`, chỉ Pháp sư) 10-20 · MỚI `ndr` Bỏ qua giảm ST 2-5 · MỚI `defp` +% giáp 5-10. Giữ: hút máu/hút năng lượng (vũ khí)/tăng vàng; `eres` thu về 2-5.
+- Thay `rollXM`, `kxv` (rèn lại opt), HL.gen (đồ Thánh: 7 dòng ở mức tối đa). Đồ cũ được chuẩn hoá 1 lần (cờ `it.o2`; bậc cũ → khoảng mới; đổi aspd↔cspd theo lớp nhân vật).
+- Hiệu lực: `defp` nhân `df()`; `ndr` giảm giáp mục tiêu trong `dm()` (trần 50%); `aspd`/`cspd` rút ngắn thời gian thi triển kỹ năng thường (engine `cast`) và thần thông (world/34, 49 qua `OPT2.cs()`); đánh thường không còn nhận `aspd`; `dotd` nhân sát thương theo thời gian của world/11 và world/50 (`dotX`).
+- Vũ khí +10: ngẫu nhiên `it.sk` = `mb` (Triệt tiêu mana 10% mỗi lần thi triển, phá 20% mana tối đa) hoặc `hb` (Triệt tiêu HP 5%, phá 10% HP tối đa); không áp dụng Boss; quái chưa có mana dùng thanh ảo 100 (cạn → mất lượt đánh ~2,5s). Gán qua bọc `en1` + quét nền 2 giây (đồ đã +10 sẵn). Chỉ kích hoạt khi tung kỹ năng thường và tiên thuật (thần thông world/34, 49 chưa gắn).
+
+
+## Cấp riêng từng thần thông Ý Cảnh (Fix62)
+- world/49-y-canh-than-thong.js: mỗi thần thông có cấp 1-15 (PS[cur].yc.sl=[l0,l1,l2]), mỗi cấp +10% sát thương (CF.lvScale); API YCTT.lv/lvUp/mul/unlocked.
+- world/47-phu-ban-ma-than.js: Tinh Huyết (Ma Đạo) / Tố Tâm (Tiên Đạo) CHỈ dùng nâng cấp thần thông; giá = (base+step*(cấp-1)) x CF.skMul[j] (1,2,3) nên thần thông sau tốn nhiều hơn. Cách cũ nâng tiểu cảnh bằng nguyên liệu đã tắt (CF.realmUp=false, PBMT.upRealm).
+
+
+## Mốc cấp thần thông 5/10/15 (Fix63)
+- world/49-y-canh-than-thong.js: lvFactor(L): mỗi cấp +10% (CF.lvScale), riêng cấp 5/10/15 (CF.milestones) cộng +30% (CF.msScale) => cấp 5 x1.6, cấp 10 x2.3, cấp 15 x3.0. world/47 hiện ⭐ mốc trên nút/mô tả.
+
+## Đúc luyện Hồn Phách + Bế Quan Đài — world/57-hon-phach.js (+ assets/hon-phach-assets.js, API `HONP`)
+- Tab 🧘 Tu tiên trong túi: mục "🔮 Hồn Phách" nằm dưới Tu vi + Linh căn (bọc `window.lcUI`). Chọn 1 trong 4 (Phật Tôn · Yêu Hoàng · Tiên Đế · Minh Vương), chọn xong KHÔNG đổi được (`PS[cur].hpc={t,r,x,b}`).
+- Cổng 4 Thành Thị Linh Giới (`LCT.gates[3]`) → "Bế Quan Đài": cảnh dựng theo mẫu Thành Thị Linh Giới (bọc `vdraw`/`vstep`, nút 🏘 quay lại). Nền = ảnh 2; hồn phách ngồi giữa đài. Phải đi tới đài và chạm vào hồn phách mới mở bảng tu luyện (chạm từ xa → tự đi tới).
+- 9 cảnh giới (tên như `RN`: Sơ Khai … Hợp Thể, Đại Thừa). Lúc đầu chỉ có hồn phách; đạt cảnh giới cuối thì hiệu ứng phía sau hiện (ảnh 1 tách thành `fig` = chỉ người ngồi, `fx` = hiệu ứng, `card` = tranh đầy đủ, `meta` = căn khung).
+- "Đúc thần thể" 0..`CF.theMax`(10): phải tối đa mới đột phá được Hợp Thể → Đại Thừa.
+- Cách tu luyện CHƯA có: dùng `HONP.addXp(n)`, `HONP.forge(n)`, `HONP.breakthrough()` khi làm sau; nút Tu luyện/Đúc thần thể đang báo "cập nhật sau". Chưa có chỉ số thưởng từ hồn phách.
+
+## Hồn Phách: tu vi nạp hồn phách + thần thông BUFF — world/57, world/59 (API `HONP`, `HONSK`)
+- Ảnh hồn phách được tách lại (assets/hon-phach-assets.js): khử viền tối, mép mềm, đáy mờ hoà vào đài; cảnh Bế Quan Đài thêm bóng đổ, vòng ấn xoay (nhiều vòng hơn khi cảnh giới cao), tia sáng bay, nhãn dạng viên mờ.
+- Tu vi hồn phách = số HỒN PHÁCH đã nạp. Quái thường rơi 1, Boss rơi 5 (`HONP.cfg.dropN/dropB`; chỉ rơi khi đã chọn hồn phách; bay về nhân vật rồi cộng vào `hpc.bag`). Vào Bế Quan Đài → nút "Nạp hồn phách" (`HONP.deposit()`) chuyển `bag` vào tu vi. Đủ `CF.need[r]` mới đột phá. `CF.need=[200…25600]` là số tạm.
+- Chỉ số: mỗi CẢNH GIỚI +10% HP / sát thương / phòng thủ nhân vật (`HONP.sm()` nhân vào `atk/mx/df` trong engine, 3 chỗ); tiểu cảnh không tăng.
+- Đúc thần thể KHÔNG liên quan cảnh giới/tu vi (cập nhật sau); đã bỏ điều kiện chặn Hợp Thể → Đại Thừa (`CF.breakNeedsBody=-1`).
+- Thần thông hồn phách (world/59), giá trị nhân (1 + `CF.scale`(0,1) × cảnh giới): Phật Tôn ☸️ Đại Nhật Chân Thân (chủ động: bất tử 3s + 10% sát thương 10s, hồi 25s; bất tử = `ZC.shd()` trả 0 + giữ HP) · Yêu Hoàng 🐉 Vạn Yêu Quy Tâm (nội tại: +20% sát thương kỹ năng triệu hồi = `PETS[].m` + thần thông Ý Cảnh Ma Đạo qua `mulOf`) · Tiên Đế ⚡ Tiên Đạo Thánh Vận (nội tại: +20% kỹ năng tiên tu = Ý Cảnh Tiên Đạo + tiên thuật `ZS.zf`) · Minh Vương 👹 U Minh Hồi Nguyên (chủ động: xoá hồi chiêu kỹ năng thường `cd`, tiên thuật `cz`, thần thông hệ `TTHONG.cdReset`, Ý Cảnh `YCTT.cd`; hồi 25s). Nút `#hp-bar` (xếp vào `#sk-side`), tự dùng khi bật AUTO.
+- Đúc thần thể (world/57, world/59): mọi Boss rơi 1% "Mảnh Đúc Thần Thể" (`HONP.cfg.shardChance`, chỉ khi đã chọn hồn phách; tính theo `isBoss`). `HONP.craft()`: 10 mảnh → 1 viên; `HONP.anvil()`: 10 viên → +1 cấp thần thể (tối đa `CF.theMax`=10). Dữ liệu `PS[cur].hpc.{m,v,b}`. Thần thể độc lập cảnh giới/tu vi/chỉ số; hiệu lực thần thể: cập nhật sau. Ghép/đúc ở nút trong bảng Bế Quan Đài; Tu tiên chỉ hiện số mảnh/viên.
+
+## Thành Thị Linh Giới bằng ảnh + 5 cổng (world/58-linh-gioi-city-art.js, vá nhỏ world/10-farming-map.js)
+- Nền thành thị = ảnh người chơi gửi (đảo bay, lâu đài, 5 cổng), đã xoá nhãn/nhân vật mẫu; ảnh nhúng trong module 58. Game vẽ lại nhãn cổng sắc nét + hiệu ứng sống động (cổng xoáy sáng, hào quang tượng thần, cột sáng lâu đài, sương trôi, cánh hoa rơi, tinh quang, vệt sáng sàn, cột sáng khởi điểm). QL≥2 chỉ giữ cổng xoáy + nhãn.
+- 5 cổng: ⚔️ Chiến Trường Linh Giới (chọn bản đồ) · ☯️ Hợp Đạo Đài · 🗡️ Kiếm Thánh Đài · 🌀 Hư Không Truyền Tống (TẠM KHÓA, `open:0`) · 🧘 Bế Quan Đài (Hồn Phách). Muốn mở cổng khóa: sửa `open:1` + viết `go` cho phần tử `LCT.gates[3]`.
+- Vá world/10: `GX` đọc `LGART.fx`, khóa cache thêm `LGART.ver`, `stat`→`LGART.paint`, `gate`→`LGART.gate`, vòng cổng theo `LCG.length` (cả vẽ và chạm), bỏ mây/đèn/cực quang vẽ tay khi đã có ảnh. Chỉnh vị trí cổng/nhãn/đường sàn ở đầu module 58 (`FX`, `LBL`, `BASEY`).
+
+## Thành Thị Linh Giới: bản đồ ảnh + 5 cổng + camera đi theo nhân vật (world/58 + vá nhỏ world/10, core/01-engine.js vstep)
+- Nền = ảnh người chơi gửi (đã xoá nhãn/nhân vật mẫu, kéo dài thêm trời sao phía trên + mây phía dưới cho màn hình dọc); nhãn cổng vẽ lại sắc nét + hiệu ứng động. 5 cổng: ⚔️ Chiến Trường Linh Giới · ☯️ Hợp Đạo Đài · 🗡️ Kiếm Thánh Đài · 🌀 Hư Không Truyền Tống (TẠM KHÓA, `open:0`) · 🧘 Bế Quan Đài. Muốn mở cổng khóa: sửa `open:1` + viết `go` cho `LCT.gates[3]`.
+- **Không khóa cứng/co vào:** thế giới thành thị cố định `WW=IW×K` đơn vị logic (K≥0,95; màn ngang rộng thì vừa khít). Màn dọc chỉ thấy một phần; **camera `cam` đi theo nhân vật** (nhân vật ở giữa, mượt, dừng ở mép bản đồ), `cam=0` khi rời thành thị.
+- Toạ độ: cổng `GX(i)=LGART.gx(i)` (toạ độ thế giới); vẽ/chạm dùng `(GX-cam)*s`; chạm di chuyển `vt=px/s+cam`; biên đi lại ở `vstep` = `LGART.ww()` (rộng hơn màn hình khi ở thành thị, bằng `vw()` nơi khác). Ảnh vẽ mỗi khung theo camera (`LGART.blit`).
+- Sửa lỗi "Attempted to assign to readonly property @58:22": đối tượng cổng bị đóng băng được sao chép thay vì gán trực tiếp.
+- Chỉnh: `KB` (độ phóng), `FX` (vị trí cổng), `LBL`, `BASEY`, `ET/EB` ở đầu module 58.
+
+
+
+## Bản đồ quái từ ảnh + quái tách từ ảnh
+- assets/ban-do-assets.js (ảnh nền đã xoá quái/bảng tên + 5 sprite quái) và world/60-ban-do-tu-tien.js: nền 5 map luyện cấp = ảnh người dùng gửi (map 0 nguyên màu, map 1-4 chỉnh màu + thời tiết riêng) có hoạt ảnh phủ; quái (MON wolf/gob/scorp/arch/mage/ogre/golem/pal) dùng sprite tách từ ảnh, hoạt ảnh mượt bọc foe(). NẠP SAU world/05. world/13-mining vá 2 chỗ: không vẽ ngọn núi lớn khi nền ảnh chạy, hệ số K thu nhỏ vùng chạm; cửa hầm vẽ trong world/60. Tắt: BDTT.on=false.
+
+## Bạch Hổ (thay Hổ) — pets/27-bach-ho.js + assets/bach-ho-assets.js
+- Thú số 0 nay là Bạch Hổ, 4 cấp tiến hoá, mỗi cấp một hình (webp trong suốt, `window.PTG_URIS`): Sơ Sinh → Chiến Binh → Cổ Đại Đại Sư (hổ-rồng hợp thể) → Tối Thượng Thần Thú (có cánh).
+- Module `PTG` (cơ chế như `PHX` của Chu Tước) lo vẽ (lưới biến dạng: chân bước, đuôi lượn, bờm/đầu rồng đung đưa, cánh vỗ cấp 4), chạy trên mặt đất, đánh (cào liên hoàn · vồ nhảy chảy máu · kỹ năng riêng), kỹ năng theo cấp, hồi sinh Thần Hổ Thủ Hộ (cấp 4) và điều kiện tiến hoá (khối `EVO`: vàng + dược thảo Linh Điền + cảnh giới).
+- Móc trong engine (`typeof PTG!='undefined'`): `peg`, `epstep`, `drawEP`, `pimg/pcol`, `ZS.pf.skill` (nhánh k==0), `petUI` (kỹ năng + điều kiện), `pev`, `PB` (+% ST chí mạng cấp 2, giảm ST nhận cấp 3), hồi sinh khi chết. `pets/24-than-thu-bay.js`: Bạch Hổ chạy đất nên `hover()` bỏ qua k==0.
+- Dữ liệu PT4[0]/PK[0]/PSK[0]/PTU[0] được module ghi đè lúc nạp. Thứ tự nạp: sau `pets/22-chu-tuoc.js`.
+- Tiến hoá cấp 4 vẫn bị khoá bởi `ui/26-pet-evo4-lock.js` cho tới khi cập nhật đủ 4 thú.
+
+## Tối ưu hệ thống thú nuôi (2026-10-14)
+- Lưới biến dạng Chu Tước / Bạch Hổ: giảm số ô (Chu Tước 18×22→14×17, Bạch Hổ 15×15) và vẽ qua bộ nhớ đệm `cmesh` (dựng lại lưới mỗi 2 khung, khung còn lại chỉ blit 1 ảnh). Đo trong trình duyệt headless: chi phí vẽ Bạch Hổ giảm ~2–2,5 lần, Chu Tước cấp 1 ~2,5 lần.
+- Bỏ qua vẽ khi thú (Chu Tước, Bạch Hổ, 3 thú triệu hồi) ở ngoài màn hình.
+- Chu Tước cấp 4: gradient 16 tia sáng tạo 1 lần rồi dùng lại (trước tạo lại mỗi khung).
+- Sửa lỗi Bạch Hổ: `shake/gwave/fx` gọi như biến toàn cục (không tồn tại) → đổi sang `PFH`; trước đó đòn vồ nhảy có thể báo lỗi và không hiện hiệu ứng cào.
+- Đã thử rồi bỏ: cache vòng ấn / vòng triệu hồi bằng canvas phụ (chậm hơn khi chạy phần mềm vì tốn fill-rate).
+
+## Bắt buộc đăng nhập + phiên chơi duy nhất — systems/60-dang-nhap-bat-buoc.js, phien_dang_nhap.sql (API `KTHM_GATE`)
+- Mở game → cổng đăng nhập phủ kín (`#kg`, `window.__GATE=1`, `step()` bị bỏ qua nên game đứng yên). Đăng nhập/đăng ký qua Supabase Auth (`KCL.signIn/signUp` của systems/12), quên mật khẩu → `/auth/v1/recover`.
+- Sau đăng nhập gọi RPC `kthm_claim_session(sid)`: máy chủ ghi `kthm_session(uid,sid)` = phiên DUY NHẤT (máy mới thay phiên cũ; trả `replaced`). Mọi request có đăng nhập kèm header `x-session-id` (patch `hdr` trong systems/12).
+- Máy chủ kiểm tra TRƯỚC MỌI request (PostgREST `db_pre_request` = `public.kthm_check_session`): sid thiếu/không khớp → HTTP 409 `SESSION_INVALID` ⇒ phiên cũ không tải/cập nhật được dữ liệu (pull_save, push_save, chợ, chat, xếp hạng…). Khách (anon) không bị chặn. Tắt: `alter role authenticator reset pgrst.db_pre_request; notify pgrst,'reload config';`.
+- Máy cũ: request bị 409 hoặc nhịp kiểm tra 40s/quay lại tab (`kthm_session_status`) → `KTHM_GATE.kick()`: lưu cục bộ, xoá phiên (`KCL.out`), hiện cổng "đã đăng nhập ở máy khác". Đăng xuất gọi `kthm_end_session`.
+- Patch systems/12: header `x-session-id`, bắt lỗi SESSION_INVALID, lưu/xoá `sid` cùng phiên, `vi()` tiếng Việt, mở rộng `KCL` (`sid,setSid,signIn,signUp,out,vi,afterLogin`).
+
+
+THANH LONG & HUYỀN VŨ (cơ chế như Chu Tước): pets/31-than-thu-co-che.js, đăng ký window.PETX[2], PETX[3]; móc trong engine cạnh PHX/PTG. Xem THAN_THU_CO_CHE_2026-10-14.md.
+
+
+## Tách engine thành module (Fix80)
+`core/01-engine.js` (282KB) → 22 file `core/01a…01v-*.js`, ghép lại đúng nguyên văn (đã kiểm tra), nạp liên tiếp ở vị trí cũ.
+Chỉ 1 chỗ phải sửa vì hết "nâng hàm" giữa các file: hai móc bọc `sv()`/`ng()` của hệ nhiệm vụ chuyển sang cuối `01s-save-load.js`.
+Công cụ mới: `tools/build.py` (sinh HTML đơn từ index.html) · `tools/symbols.py` (SYMBOL_INDEX.tsv + MODULE_MAP.md) ·
+`tools/where.py` (tra ký hiệu) · `tools/check.py` (kiểm tra). Lưu ý: file `Mong_Tu_Tien_CLAUDE.html` trong Fix79 là bản cũ
+(thiếu `pets/31-than-thu-co-che.js` và `systems/60-dang-nhap-bat-buoc.js`, sai thứ tự); bản mới sinh từ index.html nên đầy đủ.
+
+## Chống nhân bản đồ + 1 tab + toàn vẹn dữ liệu — systems/61-chong-dube-bao-mat.js, chong_dube.sql (API `ANTIDUPE`)
+- 1 tab/trình duyệt: khoá `kthm_tab_lock` (localStorage, nhịp 1,5s, hết hạn 6s). Tab thứ hai bị chặn ("đang mở ở tab khác", `window.__TABLOCK=1`): game đứng yên, `sv()` và `Storage.setItem` cho kthm2/kthm_qs/kthm_dg bị chặn. Nút "Dùng tab này" chiếm khoá rồi tải lại (tab cũ tự bị khoá); tab chủ đóng → tab bị khoá tự tải lại và nhận quyền.
+- Mã đồ `it.uid` (20 hex): `gen()` gán khi tạo, đồ cũ gán khi quét. Quét 3s/lần túi + đang mặc của 3 nhân vật: trùng uid ⇒ thu hồi bản sao (giữ bản đang mặc/bản đầu), cộng `PS[cur].sec.dup`, báo trên màn hình.
+- Chữ ký dữ liệu: mọi lần ghi `kthm2` ký `kthm_sig_kthm2` (hàm băm 2×53-bit + muối). Kiểm tra lúc mở game và mỗi 10s; lệch ⇒ `window.__TAMPER=1`, chặn ghi, bắt xoá dữ liệu cục bộ và tải lại từ đám mây (có nút tải bản sao lưu JSON). systems/12 `lsSet` gọi `ANTIDUPE.resign(k)` vì ghi bằng hàm gốc.
+- Chốt chặn nhẹ: vàng/mảnh âm, NaN, vô hạn hoặc > 1e13 → đưa về mốc hợp lệ gần nhất.
+- Chợ (systems/32): đăng bán gán uid; nhận từ hòm bỏ bản trùng uid (vẫn ack); lỗi máy chủ DUPE_ITEM/BAD_ITEM ⇒ KHÔNG trả đồ về túi; thông báo tiếng Việt cho DUPE_ITEM, BAD_ITEM, RATE_LIMIT.
+- Máy chủ (chong_dube.sql, chạy sau cho_giao_dich.sql; chỉ gắn TRIGGER, không viết lại hàm cho_*): sổ cái `kthm_item_ledger(uid→owner,state listed/inbox/owned)`; đăng bán từ chối DUPE_ITEM nếu uid đã có mà chủ khác hoặc chưa ở trạng thái owned; `kthm_item_ok` kiểm tra cấp/chỉ số/opt trong khoảng cho phép (BAD_ITEM); tối đa 20 lượt đăng/60s/tài khoản (RATE_LIMIT). Bán xong → chủ = người mua (inbox); hủy/hết hạn → chủ = người bán (inbox); ack (xoá khỏi hòm) → owned.
+- Giới hạn: lớp trình duyệt chỉ cản sửa dữ liệu thông thường; lớp quyết định là máy chủ (sổ cái + kiểm tra đồ + phiên duy nhất).
