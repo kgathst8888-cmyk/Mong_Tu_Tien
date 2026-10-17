@@ -7,16 +7,16 @@
  *   - Xếp vài lát ảnh theo trục sâu → có độ dày khi nhìn nghiêng. Lơ lửng nhấp nhô, nghiêng nhẹ theo quỹ đạo, có vệt sáng mờ phía sau và hạt linh khí theo môn phái.
  * Khi đánh (P.at của world/73 hoặc P.atk/P.atkT của game, Tiên Giới cũng chạy): vũ khí XOAY NHANH quanh người, quỹ đạo nở rộng, vệt sáng dài + vòng khí quét quanh thân; xong thì chậm lại dần.
  * Hook: VPW.draw(sid,'back',P) gọi TRƯỚC khi vẽ thân, VPW.draw(sid,'front',P) gọi SAU khi vẽ thân (world/73 + world/74; cần VPG_CF.weapon / VPG8_CF.weapon = true — file này tự bật).
- * Chỉnh: VPW3_CF.enable (false = tắt) · .speed (tốc độ bay, rad/giây, mặc định .5 ≈ 12 giây/vòng) · .radius (bán kính ×1) · .height (độ cao tâm quỹ đạo ×HH, .52) ·
- *   .count (số bản vũ khí rải đều quanh người, mặc định 1; thử 3) · .scale (kích thước vũ khí, .6) · .trail (vệt sáng, 0 = tắt) · .fx (hạt, 0 = tắt) · .depth (độ dày) · .minw (bề ngang tối thiểu) · .slices
+ * Chỉnh: VPW3_CF.enable (false = tắt) · .speed (tốc độ bay, rad/giây, mặc định .8 ≈ 8 giây/vòng) · .radius (bán kính ×1) · .height (độ cao tâm quỹ đạo ×HH, .52) ·
+ *   .count (số bản vũ khí rải đều quanh người, mặc định 1; thử 3) · .scale (kích thước vũ khí, 1 = cỡ gốc Fix220) · .trail (vệt sáng, 0 = tắt) · .fx (hạt, 0 = tắt) · .depth (độ dày) · .minw (bề ngang tối thiểu) · .slices
  * Thử chiêu đánh trong console: VPW3.play(900). */
 (function(){
 'use strict';
 if(typeof g==='undefined'||!window.MPW3||!window.VPW)return;
 var CF=window.VPW3_CF=window.VPW3_CF||{};
 function def(k,v){if(CF[k]===undefined)CF[k]=v}
-def('enable',true);def('depth',1);def('minw',.22);def('fx',1);def('slices',5);def('scale',.6);
-def('speed',.5);def('radius',1);def('height',.52);def('count',1);def('trail',1);
+def('enable',true);def('depth',1);def('minw',.22);def('fx',1);def('slices',5);def('scale',1);
+def('speed',.8);def('radius',1);def('height',.52);def('count',1);def('trail',1);
 /* world/73 + world/74 để lớp vũ khí TẮT mặc định (CF.weapon=false) → bật lên để vũ khí được gọi vẽ */
 try{if(window.VPG_CF)VPG_CF.weapon=true;if(window.VPG8_CF)VPG8_CF.weapon=true}catch(e){}
 var PI=Math.PI,TAU=PI*2,DEPTHK=.22,OLD=function(){}; /* vũ khí tay cũ lệch với tranh mới → không dùng làm dự phòng */
@@ -28,7 +28,7 @@ var SPEC={
  vdm:{len:1.12,c1:'#7cf08a',c2:'#e0ffb8',fx:'mote'},
  ngc:{len:1.14,c1:'#5ee8ff',c2:'#ffe9a8',fx:'star'}
 };
-var IM={},DK={},S={th:0,v:CF.speed,t:0,sid:'',pl:0,pd:900};
+var IM={},DK={},S={th:0,ex:0,v:0,t:0,sid:'',pl:0,pd:900};
 function img(sid){var k=IM[sid];if(k)return k;var d=MPW3[sid];if(!d)return null;var im=new Image();im.src=d[0];return IM[sid]={im:im,w:d[1],h:d[2]}}
 function ok(o){return o&&o.im.complete&&o.im.naturalWidth>0}
 function dark(sid,o,amt){var key=sid+amt,c=DK[key];if(c)return c;var cv=document.createElement('canvas');cv.width=o.im.naturalWidth;cv.height=o.im.naturalHeight;var x=cv.getContext('2d');x.drawImage(o.im,0,0);x.globalCompositeOperation='source-atop';x.fillStyle='rgba(6,8,22,'+amt+')';x.fillRect(0,0,cv.width,cv.height);return DK[key]=cv}
@@ -78,10 +78,10 @@ function atOf(pp,now){
  return -1}
 /* tiến góc bay: chậm khi bình thường, nhanh khi đánh, mượt khi đổi tốc */
 function step(sid,now,pu){
- var dt=(S.sid!==sid||now-S.t>600)?0:Math.min(.08,(now-S.t)/1000),tg=CF.speed+7*pu;
- S.v+=(tg-S.v)*(1-Math.exp(-dt*5));S.th=(S.th+S.v*dt)%TAU;S.t=now;S.sid=sid}
+ var dt=(S.sid!==sid||now-S.t>600)?0:Math.min(.08,(now-S.t)/1000);
+ S.v+=(7*pu-S.v)*(1-Math.exp(-dt*5));S.ex+=S.v*dt;S.th=((now/1000)*CF.speed+S.ex)%TAU;S.t=now;S.sid=sid}
 function drawOne(sid,o,sp,pp,th,z,i,by,pu,now){
- var HH=pp.HH,t=now/1000,bp=pp.bp||0,R=HH*.5*CF.radius*(1+.3*pu),yc=HH*CF.height,
+ var HH=pp.HH,t=now/1000,bp=pp.bp||0,R=HH*.72*CF.radius*(1+.3*pu),yc=HH*CF.height,
   sc=1+.12*z,dh=sp.len*HH*CF.scale*sc*(1+.18*pu),dw=dh*o.w/o.h,
   cx=Math.cos(th)*R,cy=-yc-by+z*R*DEPTHK,
   ang=Math.cos(th)*.28+Math.sin(t*.9+i*1.7)*.05,
@@ -106,7 +106,7 @@ function drawOne(sid,o,sp,pp,th,z,i,by,pu,now){
 function draw3(sid,phase,pp,o,sp){
  var now=performance.now(),atk=atOf(pp,now),pu=atk>=0?Math.sin(atk*PI):0,
   front=phase==='front',n=Math.max(1,CF.count|0),HH=pp.HH,k=pp.k||0,t=now/1000,
-  R=HH*.5*CF.radius*(1+.3*pu),yc=HH*CF.height,i,th,z,by;
+  R=HH*.72*CF.radius*(1+.3*pu),yc=HH*CF.height,i,th,z,by;
  if(phase!=='back'&&phase!=='front')return;
  if(now-S.t>=2||S.sid!==sid)step(sid,now,pu);
  g.save();
