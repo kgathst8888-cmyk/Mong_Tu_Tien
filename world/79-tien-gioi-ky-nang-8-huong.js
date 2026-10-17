@@ -8,7 +8,7 @@
 (function(){
 'use strict';
 if(typeof hero!=='function'||typeof PS==='undefined'||typeof RGBA!=='function'||!window.TG||!window.VP)return;
-var CF=window.TG8SK_CF=window.TG8SK_CF||{};if(CF.enable===undefined)CF.enable=true;if(!CF.cd)CF.cd=5;if(!CF.max)CF.max=10;
+var CF=window.TG8SK_CF=window.TG8SK_CF||{};if(CF.enable===undefined)CF.enable=true;if(!CF.cd)CF.cd=5;if(!CF.max)CF.max=2;if(!CF.slow)CF.slow=1.7;
 var PI=Math.PI,FXS=[],CD={},FA=PI/2,lastF=-1;
 var SCOL={umt:'#c070ff',hbd:'#7fe4ff',ptc:'#ff9a4a',tkt:'#9fc8ff',vdm:'#7cf08a',ngc:'#ffd890'};
 var FBT=[{n:'Kiếm Linh',i:'🗡️',c:'#6fd0ff'},{n:'Hồ Lô Dưỡng Linh',i:'🏺',c:'#ffb84a'},{n:'Hồn Phiên',i:'🚩',c:'#b585ff'},{n:'Cự Phủ',i:'🪓',c:'#ff8a3a'}];
@@ -174,7 +174,7 @@ function fire(it){
  var sc=sector(),A=sc*PI/4,F={f:{A:A,c:Math.cos(A),sn:Math.sin(A)},col:it.col,ic:it.ic,sp:it.sp||{},ma:it.ma},r=recipe(it)(F);
  CD[it.k]=now+Math.min(it.cd,CF.cd)*1000;
  while(FXS.length>=CF.max)FXS.shift();
- FXS.push({t0:fr,life:r.life,draw:r.draw});
+ FXS.push({t0:fr,life:Math.round(r.life*(CF.slow||1)),draw:r.draw});   /* Fix200: CF.slow = hệ số làm chậm hiệu ứng kỹ năng (1 = gốc) */
  try{P.atk=Math.max(P.atk|0,16)}catch(e){}
  try{if(window.TGQ&&TGQ.cast)TGQ.cast(it,sc,A)}catch(e){}
  return true;

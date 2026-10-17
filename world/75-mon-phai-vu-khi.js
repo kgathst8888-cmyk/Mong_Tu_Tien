@@ -37,22 +37,25 @@ var IM={};
 function img(id,i){var k=id+i;if(IM[k])return IM[k];var d=MPW[id]&&MPW[id][i];if(!d)return null;var im=new Image();im.src=d[0];return IM[k]={im:im,w:d[1],h:d[2],t:d[3]}}
 function ok(o){return o&&o.im.complete&&o.im.naturalWidth>0}
 function ease(x){x=Math.max(0,Math.min(1,x));return x*x*(3-2*x)}
+/* nhịp vung vũ khí 0..1: gồng lên (0-.3) → chém (.3-.55) → thu về (.55-1); đơn vị rad */
+function swing(e){return e<.3?-.9*ease(e/.3):e<.55?-.9+1.75*ease((e-.3)/.25):.85*(1-ease((e-.55)/.45))}
 function held(o,sp,an,P){
  var HH=P.HH,dh=sp.len*HH,dw=dh*o.w/o.h,ang=an.a*R;
  if(P.at>=0&&P.kind==='front'){ /* chiêu đánh: vung từ sau lưng ra trước */
   var e=ease(P.at);ang=(sp.role==='main'?-70+200*e:-40+150*e)*R}
- else{ang+=Math.sin(P.bp*1.1+(sp.role==='off'?1.7:0))*.03+(P.k?Math.sin(P.wp+(sp.role==='off'?PI:0))*.12*P.k:0)}
+ else{ang+=Math.sin(P.bp*1.1+(sp.role==='off'?1.7:0))*.03+(P.k?Math.sin(P.wp+(sp.role==='off'?PI:0))*.12*P.k:0);
+  if(P.at>=0)ang+=swing(P.at)*(sp.role==='main'?1:.65)}   /* Fix198: mọi hướng — giơ lên · chém tới · thu về, mượt */
  g.save();
  try{g.translate(an.x*P.w,-an.y*HH);g.rotate(ang);g.drawImage(o.im,-dw/2,-sp.grip*dh,dw,dh)}finally{g.restore()}
 }
 function floaty(o,sp,an,P,sid){
- var HH=P.HH,dh=sp.len*HH,dw=dh*o.w/o.h,t=P.bp,
-  x=an.x*P.w+Math.sin(t*.8)*1.8,y=-an.y*HH+Math.sin(t*1.3)*2.4-(P.k?Math.abs(Math.sin(P.wp))*1.5:0),col=COL[sid]||'#fff';
+ var HH=P.HH,pu=P.at>=0?Math.sin(P.at*PI):0,dh=sp.len*HH*(1+.22*pu),dw=dh*o.w/o.h,t=P.bp,
+  x=an.x*P.w*(1+.45*pu)+Math.sin(t*.8)*1.8,y=-an.y*HH+Math.sin(t*1.3)*2.4-(P.k?Math.abs(Math.sin(P.wp))*1.5:0),col=COL[sid]||'#fff';
  g.save();
  try{
   g.translate(x,y);
-  g.save();g.globalCompositeOperation='lighter';var rg=g.createRadialGradient(0,0,1,0,0,dh*.62);rg.addColorStop(0,col);rg.addColorStop(1,'rgba(0,0,0,0)');g.globalAlpha=.30+.10*Math.sin(t*1.7);g.fillStyle=rg;g.beginPath();g.arc(0,0,dh*.62,0,6.2832);g.fill();g.restore();
-  g.rotate(sp.spin?t*.9:Math.sin(t*.9)*.12);
+  g.save();g.globalCompositeOperation='lighter';var rg=g.createRadialGradient(0,0,1,0,0,dh*.62);rg.addColorStop(0,col);rg.addColorStop(1,'rgba(0,0,0,0)');g.globalAlpha=.30+.10*Math.sin(t*1.7)+.35*pu;g.fillStyle=rg;g.beginPath();g.arc(0,0,dh*.62,0,6.2832);g.fill();g.restore();
+  g.rotate(sp.spin?t*(.9+3*pu):Math.sin(t*.9)*.12+pu*.5);
   g.drawImage(o.im,-dw/2,-dh/2,dw,dh)}
  finally{g.restore()}
 }

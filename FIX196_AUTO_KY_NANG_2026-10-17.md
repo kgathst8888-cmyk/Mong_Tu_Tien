@@ -5,3 +5,15 @@
 3. **Dáng bay** — Fix197: bay như pháp sư, thân đứng thẳng, không nghiêng, không lắc tà áo, không tàn ảnh; chỉ lơ lửng lên xuống nhẹ (world/73 + world/74).
 
 File đổi: `world/87`, `world/74`, `world/73` (+getter `VPG.state`), `world/91` (mới), `index.html`, `MODULE_MANIFEST.json`.
+
+## Fix198 — Quay theo hướng chiêu + vũ khí vung theo kỹ năng (Tiên Giới)
+`world/87`: mọi chiêu (bấm tay hoặc auto) đặt hướng chiêu cho `VPG8.state` (ca/cf). `world/74`: trong 30 khung sau chiêu người quay mượt về hướng đó; ghi nhịp vung (`s0`) khi `P.atk` tăng, truyền `at` cho vũ khí. `world/75`: mọi tư thế vũ khí cầm tay giơ lên → chém → thu về; pháp bảo lơ lửng phóng to, sáng và xoay nhanh khi tung chiêu.
+
+## Fix199 — Xoay người mượt
+`world/74`: khi bay, đổi tư thế/hướng không còn lật đột ngột: thân thu hẹp bề ngang rồi mở ra ở tư thế mới (~14 khung, `VPG8_CF.turn`). Đi bộ giữ hoà mờ cũ.
+
+## Fix200 — Hiệu ứng kỹ năng 6 phái chậm lại
+`world/79`: thời lượng mọi hiệu ứng chiêu ×`TG8SK_CF.slow` (mặc định 1,7; 1 = như cũ); `TG8SK_CF.max` nâng 10→14 vì hiệu ứng tồn tại lâu hơn.
+
+## Fix201 — Mỗi lần chỉ 1-2 hiệu ứng chiêu
+`TG8SK_CF.max`=2 (tối đa 2 hiệu ứng cùng lúc, chiêu tay mới nhất thay chiêu cũ nhất); auto chỉ tung 1 chiêu/lượt và chờ khi đã đủ 2 hiệu ứng (`TGAUTO_CF.perTick`=1).

@@ -6,17 +6,17 @@
  *   • Hướng đánh dùng đúng góc tới quái (không bị làm tròn 8 hướng) nên không trượt khi quái lệch hướng.
  * Fix182: khi đang bay ngoài thành, AUTO còn TỰ BAY về phía quái gần nhất (TG.autoMove của world/61) và dừng cách quái CF.stop ô để giao chiến; vuốt/phím/chạm của người chơi luôn được ưu tiên; không tự bay vào thành thị.
  * Áp dụng cả ở TIÊN LINH CHIẾN CẢNH (world/84, bản đồ quái theo cấp của Tiên Nhân): quái của map đó nằm trong TGQ.mon nên auto bay tới + tung chiêu như ngoài thành.
- * Fix196: tự tung ĐỦ mọi nút kỹ năng ở cột world/79 — môn phái (s) · ý cảnh (y) · đạo thể (f) · linh căn (l); mỗi nhóm 1 chiêu/lượt, tối đa CF.perTick (mặc định 3) chiêu/lượt; hướng nhân vật quay mượt về phía quái. Chỉnh: TGAUTO_CF.enable=false để tắt · .range (tầm tìm quái, đơn vị ô, mặc định 5) · .every (số khung giữa 2 lần xét, mặc định 10) · .move=false để chỉ tung chiêu không tự bay · .seek (tầm tìm quái để bay tới, mặc định 14 ô) · .stop (khoảng cách dừng, mặc định 2.4 ô). */
+ * Fix196: tự tung ĐỦ mọi nút kỹ năng ở cột world/79 — môn phái (s) · ý cảnh (y) · đạo thể (f) · linh căn (l); mỗi nhóm 1 chiêu/lượt, tối đa CF.perTick (mặc định 1) và chỉ tung khi đang có < TG8SK_CF.max (2) hiệu ứng chiêu trên màn hình → không chồng chéo chiêu/lượt; hướng nhân vật quay mượt về phía quái. Chỉnh: TGAUTO_CF.enable=false để tắt · .range (tầm tìm quái, đơn vị ô, mặc định 5) · .every (số khung giữa 2 lần xét, mặc định 10) · .move=false để chỉ tung chiêu không tự bay · .seek (tầm tìm quái để bay tới, mặc định 14 ô) · .stop (khoảng cách dừng, mặc định 2.4 ô). */
 (function(){
 'use strict';
 if(typeof vstep!=='function'||!window.TG||!window.TG8SK||!window.TGQ||!TG8SK.list||!TG8SK.fire)return;
-var CF=window.TGAUTO_CF=window.TGAUTO_CF||{};if(CF.enable===undefined)CF.enable=true;if(!CF.range)CF.range=5;if(CF.move===undefined)CF.move=true;if(!CF.seek)CF.seek=14;if(!CF.stop)CF.stop=2.4;if(!CF.every)CF.every=10;if(!CF.perTick)CF.perTick=3;
+var CF=window.TGAUTO_CF=window.TGAUTO_CF||{};if(CF.enable===undefined)CF.enable=true;if(!CF.range)CF.range=5;if(CF.move===undefined)CF.move=true;if(!CF.seek)CF.seek=14;if(!CF.stop)CF.stop=2.4;if(!CF.every)CF.every=10;if(!CF.perTick)CF.perTick=1;
 var PI=Math.PI,last=0,nt={},AA=null,hooked=false,GRP=[{c:'s',o:[4,3,1,2,0]},{c:'y'},{c:'f'},{c:'l'}];
 function on(){try{return typeof auto!=='undefined'&&!!auto}catch(e){return false}}
 /* ép hướng tung chiêu = góc thật tới quái (world/79 chỉ cho 8 hướng) */
 function hook(){
  if(hooked||!window.TGQ||!TGQ.cast)return;hooked=true;
- var _c=TGQ.cast;TGQ.cast=function(it,sc,A){return _c.call(this,it,sc,AA===null?A:AA)}
+ var _c=TGQ.cast;TGQ.cast=function(it,sc,A){var a=AA===null?A:AA;try{var S=window.VPG8&&VPG8.state;if(S){S.ca=a;S.cf=fr+30}}catch(e){}return _c.call(this,it,sc,a)}   /* Fix198: mọi chiêu (tay hoặc auto) → nhân vật quay mượt về hướng chiêu */
 }
 var mvOn=false;
 function axOn(){try{return !!(window.TGQA&&TGQA.on&&TGQA.on())}catch(e){return false}}
@@ -50,6 +50,7 @@ function step(){
   a0=TG.S2(tg.x,tg.y),a1=TG.S2(hx,hy),A=Math.atan2((a0[1]-a1[1])*2,a0[0]-a1[0]);
  var L=TG8SK.list(),hp=1;try{hp=P.hp/mx()}catch(e){}
  /* Fix196: tung đủ MỌI nhóm kỹ năng của cột nút world/79 (s = môn phái · y = ý cảnh · f = đạo thể · l = linh căn), mỗi nhóm tối đa 1 chiêu/lượt, tối đa CF.perTick chiêu/lượt */
+ try{if(TG8SK.fx&&TG8SK_CF&&TG8SK.fx.length>=TG8SK_CF.max)return}catch(e){}   /* Fix201: đủ 1-2 hiệu ứng đang chạy → chờ hết rồi mới tung chiêu tiếp */
  var now=fr,fired=0,sw=null,ST=null;
  try{ST=window.VPG8&&VPG8.state;if(ST)sw=[ST.sec,ST.ang,ST.tg]}catch(e){ST=null}
  /* ép hướng tung chiêu = góc thật tới quái, xong trả lại hướng cũ để hình nhân vật quay MƯỢT (không giật hướng) */

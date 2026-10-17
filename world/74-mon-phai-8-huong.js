@@ -19,9 +19,10 @@ function back(id,g){return ld('b'+id+g,MPS2[id]&&MPS2[id][g==='f'?'bf':'bm'])}
 function run(id){return ld('r'+id,MPS2[id]&&MPS2[id].run)}
 function ok(o){return o&&o.im.complete&&o.im.naturalWidth>0}
 function own(){return typeof P==='object'&&P&&!('maxMp' in P)&&!(P.hp===1&&P.mp===1&&P.atkT===1)}
+function ease2(x){x=Math.max(0,Math.min(1,x));return x*x*(3-2*x)}
 function wrap(a){while(a>PI)a-=2*PI;while(a<-PI)a+=2*PI;return a}
 /* ----- trạng thái hướng/nhịp (cập nhật 1 lần/khung) ----- */
-var ST={f:-1,ang:PI/2,tg:PI/2,sec:2,k:0,bp:0,wp:0,key:'',prev:null,fade:0,fl:1,hv:0,fo:0,mh:0,ln:0};
+var ST={f:-1,ang:PI/2,tg:PI/2,sec:2,k:0,bp:0,wp:0,key:'',prev:null,fade:0,fl:1,hv:0,fo:0,mh:0,ln:0,s0:-99,pa:0,ca:0,cf:0};
 /* Fix178: Tiên Nhân (CTHE.on()) cả 6 môn phái BAY LƠ LỬNG ở Thành Tiên Giới: không bước chân/không tư thế chạy, người nhấp nhô nhẹ cách mặt đất CF.hoverH, nghiêng theo hướng bay, tà áo bay, vòng linh khí + hạt linh khí dưới chân. Tắt: VPG8_CF.hover=false */
 function hovOn(){try{return !!(CF.hover&&window.CTHE&&CTHE.on&&CTHE.on())}catch(e){return false}}
 function tick(){
@@ -31,13 +32,16 @@ function tick(){
  if(hn0){if(mv)ST.mh=14;else if(ST.mh>0){ST.mh--;mv=1}}else ST.mh=0;
  ST.k+=(mv-ST.k)*(mv?(hn0?.1:.22):(hn0?.06:.16));if(ST.k<.002)ST.k=0;
  var v=window.TGV;if(P.mv&&v&&(v.sx||v.sy))ST.tg=Math.atan2(v.sy*2,v.sx);
- ST.ang=wrap(ST.ang+wrap(ST.tg-ST.ang)*(hn0?.12:.3));
+ /* Fix198: vừa tung chiêu (P.atk tăng) → bắt đầu nhịp vung vũ khí; trong 30 khung sau chiêu, người quay mượt về hướng chiêu (ST.ca) */
+ if((P.atk|0)>ST.pa)ST.s0=fr;ST.pa=P.atk|0;
+ var cst=ST.cf>fr;if(cst)ST.tg=ST.ca;
+ ST.ang=wrap(ST.ang+wrap(ST.tg-ST.ang)*(hn0?(cst?.2:.12):.3));
  var raw=((Math.round(ST.ang/(PI/4))%8)+8)%8;
  if(raw!==ST.sec&&Math.abs(wrap(ST.ang-ST.sec*PI/4))>PI/8+(hn0?.3:.14))ST.sec=raw;
  var fly=false;try{fly=!!(window.TGQ&&TGQ.flying&&TGQ.flying())}catch(e){}
  var hn=hovOn();ST.hv+=((hn?1:0)-ST.hv)*.08;if(ST.hv<.004)ST.hv=0;
  ST.fo+=((hn&&!fly?CF.hoverH:0)-ST.fo)*.12;if(ST.fo<.05)ST.fo=0;
- ST.bp+=.05;ST.wp+=.3*ST.k*(hn?.2:1);if(ST.fade>0)ST.fade-=1/CF.fade;
+ ST.bp+=.05;ST.wp+=.3*ST.k*(hn?.2:1);if(ST.fade>0)ST.fade-=1/(hn?(CF.turn||14):CF.fade);
 }
 /* sec: 0=E 1=SE 2=S 3=SW 4=W 5=NW 6=N 7=NE (góc màn hình, y hướng xuống) */
 var CX=[1,.7071,0,-.7071,-1,-.7071,0,.7071];
@@ -55,7 +59,7 @@ function pick(sid,gen,sec,mv){
  return{o:o,fl:fl,sq:sq,fw:fw,HH:HH,c:c,run:kind==='run',kind:kind,key:kind+fl}
 }
 /* ----- vẽ 1 tư thế (dải ngang: đầu đứng yên, gấu áo/tóc bay) ----- */
-function drawPose(p,alpha,col,sid){
+function drawPose(p,alpha,col,sid,ws){
  var k=ST.k,wp=ST.wp,bp=ST.bp,HH=p.HH,o=p.o,im=o.im,w=HH*o.w/o.h*p.sq,
   hv=ST.hv,bob=-(k*Math.abs(Math.sin(wp))*2.6*(1-hv))+Math.sin(bp)*.7,
   rot0=p.c*k*(p.run?.015:.06)*(1+hv*1.3)+Math.sin(wp)*(p.run?.012:.028)*k*(1-hv)+hv*Math.sin(bp*.9)*.022,
@@ -64,8 +68,8 @@ function drawPose(p,alpha,col,sid){
   N=p.run?20:26,ih=im.naturalHeight,iw=im.naturalWidth,sh=ih/N,dh=HH/N;
  g.save();
  try{
-  g.globalAlpha=alpha;g.scale(p.fl,1);g.translate(0,bob);g.rotate(rot);g.scale(sx,sy);
-  var wk={kind:p.kind==='side'||p.kind==='run'||p.kind.indexOf('back')===0||p.kind.indexOf('front')===0?p.kind:'front',w:w,HH:HH,k:k,bp:bp,wp:wp,at:-1};
+  g.globalAlpha=alpha;g.scale(p.fl*(ws===undefined?1:ws),1);g.translate(0,bob);g.rotate(rot);g.scale(sx,sy);
+  var wk={kind:p.kind==='side'||p.kind==='run'||p.kind.indexOf('back')===0||p.kind.indexOf('front')===0?p.kind:'front',w:w,HH:HH,k:k,bp:bp,wp:wp,at:(function(){var e=(fr-ST.s0)/24;return e>=0&&e<1?e:-1})()};
   if(alpha>.5)try{if(window.VPW)VPW.draw(sid,'back',wk)}catch(e){}
   if(k>.45&&p.fw>.3&&hv<.5){var ga=(k-.45)*.5*alpha*(1-.5*ST.hv);for(var q=2;q>=1;q--){g.globalAlpha=ga*(.5/q);g.drawImage(im,-w/2-q*9*k*p.fw,-HH,w,HH)}g.globalAlpha=alpha}
   for(var j=0;j<N;j++){
@@ -101,7 +105,10 @@ function draw8(sid){
   g.save();g.translate(0,1);g.scale(1,.24);g.globalCompositeOperation='lighter';g.strokeStyle=col;g.globalAlpha=(.28+.1*Math.sin(bp*1.6)+.18*k)*(1-.65*ST.hv);g.lineWidth=2.2;g.beginPath();g.arc(0,0,23+2*Math.sin(bp*1.6),0,6.2832);g.stroke();g.restore();
   if(ST.hv>.02)hovFx(col,up,k,bp);
   g.save();if(up)g.translate(0,-up);
-  if(ST.fade>0&&ST.prev){drawPose(ST.prev,Math.max(0,ST.fade),col,sid);drawPose(p,1-Math.max(0,ST.fade)*.6,col,sid)}
+  if(ST.fade>0&&ST.prev&&ST.hv>.3){ /* Fix199: XOAY NGƯỜI — thân thu hẹp bề ngang như đang quay rồi mở ra ở tư thế mới (không lật đột ngột) */
+   var tf=1-Math.max(0,ST.fade),e1=tf<.5?ease2(tf*2):ease2((tf-.5)*2);
+   if(tf<.5)drawPose(ST.prev,1,col,sid,Math.max(.1,Math.cos(e1*PI/2)));else drawPose(p,1,col,sid,Math.max(.1,Math.sin(e1*PI/2)))}
+  else if(ST.fade>0&&ST.prev){drawPose(ST.prev,Math.max(0,ST.fade),col,sid);drawPose(p,1-Math.max(0,ST.fade)*.6,col,sid)}
   else drawPose(p,1,col,sid);
   g.restore();
  }finally{g.restore()}
