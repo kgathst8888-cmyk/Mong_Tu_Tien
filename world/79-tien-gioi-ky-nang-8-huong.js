@@ -8,7 +8,7 @@
 (function(){
 'use strict';
 if(typeof hero!=='function'||typeof PS==='undefined'||typeof RGBA!=='function'||!window.TG||!window.VP)return;
-var CF=window.TG8SK_CF=window.TG8SK_CF||{};if(CF.enable===undefined)CF.enable=true;if(!CF.cd)CF.cd=5;if(!CF.max)CF.max=2;if(!CF.slow)CF.slow=1.7;
+var CF=window.TG8SK_CF=window.TG8SK_CF||{};if(CF.enable===undefined)CF.enable=true;if(!CF.cd)CF.cd=5;if(!CF.max)CF.max=2;if(!CF.slow)CF.slow=2.2;
 var PI=Math.PI,FXS=[],CD={},FA=PI/2,lastF=-1;
 var SCOL={umt:'#c070ff',hbd:'#7fe4ff',ptc:'#ff9a4a',tkt:'#9fc8ff',vdm:'#7cf08a',ngc:'#ffd890'};
 var FBT=[{n:'Kiếm Linh',i:'🗡️',c:'#6fd0ff'},{n:'Hồ Lô Dưỡng Linh',i:'🏺',c:'#ffb84a'},{n:'Hồn Phiên',i:'🚩',c:'#b585ff'},{n:'Cự Phủ',i:'🪓',c:'#ff8a3a'}];

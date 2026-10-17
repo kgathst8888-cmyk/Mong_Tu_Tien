@@ -13,7 +13,7 @@ File đổi: `world/87`, `world/74`, `world/73` (+getter `VPG.state`), `world/91
 `world/74`: khi bay, đổi tư thế/hướng không còn lật đột ngột: thân thu hẹp bề ngang rồi mở ra ở tư thế mới (~14 khung, `VPG8_CF.turn`). Đi bộ giữ hoà mờ cũ.
 
 ## Fix200 — Hiệu ứng kỹ năng 6 phái chậm lại
-`world/79`: thời lượng mọi hiệu ứng chiêu ×`TG8SK_CF.slow` (mặc định 1,7; 1 = như cũ); `TG8SK_CF.max` nâng 10→14 vì hiệu ứng tồn tại lâu hơn.
+`world/79`: thời lượng mọi hiệu ứng chiêu ×`TG8SK_CF.slow` (mặc định 2,2 từ Fix203; 1 = như cũ); `TG8SK_CF.max` nâng 10→14 vì hiệu ứng tồn tại lâu hơn.
 
 ## Fix201 — Mỗi lần chỉ 1-2 hiệu ứng chiêu
 `TG8SK_CF.max`=2 (tối đa 2 hiệu ứng cùng lúc, chiêu tay mới nhất thay chiêu cũ nhất); auto chỉ tung 1 chiêu/lượt và chờ khi đã đủ 2 hiệu ứng (`TGAUTO_CF.perTick`=1).
