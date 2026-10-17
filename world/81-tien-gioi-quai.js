@@ -141,7 +141,7 @@ function xpOf(L){var base=Math.round(15*(1+L/5)),km=3,ex=.5;try{km=HDAO.cfg.kill
 var gB=0,gP=null,gC=-1,gLv=0,gNote=0;
 function addXp(n){try{P.xp+=n;if(gP===P&&gC===cur)gB+=n}catch(e){}}
 function kill(m){
- var xp=m.xp||xpOf(m.lv);
+ var xp=XR(m.xp||xpOf(m.lv));
  addXp(xp);
  try{ZC.kill(m)}catch(e){}try{petGain(m)}catch(e){}try{QE('kill');QE('tgk')}catch(e){}
  kills++;ft(m,'+'+nf(xp)+' EXP','#8ff0ff',0,1);

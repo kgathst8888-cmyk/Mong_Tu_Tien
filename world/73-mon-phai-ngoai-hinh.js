@@ -13,7 +13,7 @@ var CF=window.VPG_CF=window.VPG_CF||{};if(CF.enable===undefined)CF.enable=true;i
 var COL={umt:'#c070ff',hbd:'#7fe4ff',ptc:'#ff9a4a',tkt:'#9fc8ff',vdm:'#7cf08a',ngc:'#ffd890'};
 var IM={};
 function img(id,gk){var k=id+gk;if(IM[k])return IM[k];var d=MPS[id]&&MPS[id][gk];if(!d)return null;var im=new Image();im.src=d[0];return IM[k]={im:im,w:d[1],h:d[2]}}
-function fimg(id,g,i){var k='8'+id+g+i;if(IM[k])return IM[k];var d=window.MP8&&MP8[id]&&MP8[id][g]&&MP8[id][g][i];if(!d)return null;var im=new Image();im.src=d[0];return IM[k]={im:im,w:d[1],h:d[2]}}
+function fimg(id,g,i){var k='8'+id+g+i;if(IM[k])return IM[k];var d=window.MP8&&MP8[id]&&MP8[id][g]&&MP8[id][g][i];if(!d)return null;var im=new Image();im.src=d[0];return IM[k]={im:im,w:d[1],h:d[2],id:id,gen:g,i:i}}
 function fok(o){return o&&o.im.complete&&o.im.naturalWidth>0}
 function V(){var p=PS[cur];if(!p)return null;var v=p.vp;if(!v||typeof v!=='object')v=p.vp={id:'',u:{},mx:1};return v}
 function gender(){var v=V();return v&&v.g==='f'?'f':'m'}
@@ -67,8 +67,13 @@ function drawSect(o,sid){
   g.imageSmoothingEnabled=true;try{g.imageSmoothingQuality='high'}catch(e){}
   var wk=null;if(CF.weapon){try{if(window.VPW){wk={kind:'front',dir:d,w:HH*A.w/A.h,HH:HH,k:k,bp:bp,wp:wp,at:aa?Math.max(0,Math.min(1,at)):-1};VPW.draw(sid,'back',wk)}}catch(e){wk=null}} /* Fix225: vũ khí bay quanh người — nửa sau vẽ TRƯỚC thân */
   var pass=[[A,1]];if(wB>.998)pass=[[B,1]];else if(wB>.002)pass.push([B,wB]);
+  /* Fix238: tay nhấc cầm vũ khí (world/93): thân xoá tay khi tung chiêu + cẳng tay xoay + vũ khí */
+  var MP=window.MPAR&&MPAR.CF.enable&&window.MPA?MPAR:null;
+  if(MP){try{MP.tick({fr:t,ang:Math.PI/2-Math.max(-1,Math.min(1,fc))*(Math.PI/4),bp:bp,k:k,hv:hv,u:aa?Math.max(0,Math.min(1,at)):-1})}catch(e){MP=null}}
   for(var pi=0;pi<pass.length;pi++){
    var o2=pass[pi][0],al=pass[pi][1],im=o2.im,w=HH*o2.w/o2.h,N=CF.strips,ih=im.naturalHeight,iw=im.naturalWidth,sh=ih/N,dh=HH/N;
+   var sim=null,msa=0;if(MP){try{sim=MP.img(o2);msa=MP.sa()}catch(e){sim=null}}
+   if(sim){im=sim;ih=im.height;iw=im.width;sh=ih/N;if(msa<.99){g.globalAlpha=al*(1-msa);for(var j0=0;j0<N;j0++)g.drawImage(o2.im,0,j0*(o2.im.naturalHeight/N),o2.im.naturalWidth,o2.im.naturalHeight/N+.6,-w/2,-HH+j0*dh,w,dh+.6);al=al*msa}}
    g.globalAlpha=al;
    if(k>.45&&hv<.5&&al>.5){var ga=(k-.45)*.55*(1-.5*hv);for(var q=2;q>=1;q--){g.globalAlpha=ga*(.55/q);g.drawImage(im,-w/2-d*q*9*k,-HH,w,HH)}g.globalAlpha=al}
    for(var j=0;j<N;j++){
@@ -76,6 +81,7 @@ function drawSect(o,sid){
      dx=(1-hv)*uu*(Math.sin(bp*1.3-u*2.6)*1.5+hv*Math.sin(bp*1.6-u*3)*uu*2.2+k*(1+hv*.6)*(-5.2+Math.sin(wp*2-u*3.4)*2.6))+Math.sin(wp+1.2)*k*u*u*1.8,
      dxs=hv*uu*(Math.sin(bp*1.1-u*2.4)*2.1+Math.sin(bp*.7-u*3.1+1)*1.1-d*2.8*k);
     g.drawImage(im,0,j*sh,iw,sh+.6,-w/2+dx*d+dxs,-HH+j*dh,w,dh+.6)}
+   if(MP){try{g.globalAlpha=pass[pi][1];MP.draw(g,o2,pass[pi][1],HH,pass[pi][1]>.5)}catch(e){}}
   }
   g.globalAlpha=1;
   if(CF.weapon&&wk){try{VPW.draw(sid,'front',wk)}catch(e){}}

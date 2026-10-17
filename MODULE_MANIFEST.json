@@ -75,6 +75,7 @@
       "world/73-mon-phai-ngoai-hinh.js",
       "world/74-mon-phai-8-huong.js",
       "world/75-mon-phai-vu-khi.js",
+      "world/93-mon-phai-tay.js",
       "world/76-chuyen-the.js",
       "world/77-thanh-online.js",
       "world/78-canh-8-huong.js",
@@ -95,7 +96,9 @@
       "systems/93-single-char.js",
       "ui/94-alpha-countdown.js",
       "world/90-tien-gioi-chi-tiet.js",
-      "world/96-thu-cuoi.js"
+      "world/96-thu-cuoi.js",
+      "world/97-drop-than-thoai-thien-than.js",
+      "world/98-tiem-nang-chay.js"
     ],
     "systems": [
       "systems/08-farming-alchemy.js",
@@ -148,6 +151,7 @@
     "assets/hon-phach-assets.js",
     "assets/mon-phai-8h.js",
     "assets/mon-phai-vukhi.js",
+    "assets/mon-phai-tay.js",
     "world/57-hon-phach.js",
     "world/58-linh-gioi-city-art.js",
     "phien_dang_nhap.sql",

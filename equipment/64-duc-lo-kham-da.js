@@ -75,12 +75,12 @@ function lv5(i){
   var n=0;
   try{var A=EQS[i];if(A)for(var j=0;j<A.length;j++){var it=A[j];if(it&&it.gz)for(var q=0;q<it.gz.length;q++){var g=it.gz[q];if(g&&(g.lv|0)>=CF.maxLv)n++}}}catch(e){}
   return n*CF.lv5}
-/* PS[i].al[0..3] = điểm thuộc tính: đọc = điểm gốc + bonus đá cấp 5; ghi (al[i]++) trừ bonus; toJSON lưu điểm gốc (không cộng dồn vào save). */
+/* PS[i].al[0..5] = điểm thuộc tính: đọc = điểm gốc + bonus đá cấp 5; ghi (al[i]++) trừ bonus; toJSON lưu điểm gốc (không cộng dồn vào save). */
 function hookAl(i){
   var p=PS[i];if(!p||!Array.isArray(p.al)||p.al.__gm)return;
-  var a=p.al,base=[+a[0]||0,+a[1]||0,+a[2]||0,+a[3]||0];
+  var a=p.al,base=[0,1,2,3,4,5].map(function(k){return +a[k]||0});
   try{
-    [0,1,2,3].forEach(function(k){Object.defineProperty(a,k,{configurable:true,enumerable:true,get:function(){return base[k]+lv5(i)},set:function(v){base[k]=(+v||0)-lv5(i)}})});
+    [0,1,2,3,4,5].forEach(function(k){Object.defineProperty(a,k,{configurable:true,enumerable:true,get:function(){return base[k]+lv5(i)},set:function(v){base[k]=(+v||0)-lv5(i)}})});
     Object.defineProperty(a,'toJSON',{value:function(){return base.slice()},enumerable:false,configurable:true});
     Object.defineProperty(a,'__gm',{value:1,enumerable:false,configurable:true})
   }catch(e){}}

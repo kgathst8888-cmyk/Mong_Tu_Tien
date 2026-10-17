@@ -43,8 +43,11 @@ function poolFor(c,weapon){
 function shuffle(a){return a.sort(function(){return R()-.5})}
 
 /* ---- roll mới thay rollXM ---- */
+/* Số dòng opt theo phẩm (Fix233): Thường 0 · Tinh Anh 1-2 · Hiếm 1-2 · Sử Thi 1-3 · Thần Thoại 1-6 · Thiên Thần 3-6 · Thánh 7 */
+var OPTN={0:[0,0],1:[1,2],2:[1,2],3:[1,3],4:[1,6],5:[3,6]};
+function optN(r){if(r>=6)return 7;var t=OPTN[r]||OPTN[5];return t[0]+Math.floor(R()*(t[1]-t[0]+1))}
 rollXM=function(r,l,mp,s){
-  var n=r>=6?7:1+Math.floor(R()*6),ks=shuffle(poolFor(cls(),s===CF.weapon)).slice(0,n),x={},q={};
+  var n=optN(r),ks=shuffle(poolFor(cls(),s===CF.weapon)).slice(0,n),x={},q={};
   ks.forEach(function(k){var z=Math.floor(R()*11);q[k]=z;
     x[k]=AXF[k]?round1(AXF[k][0]+(AXF[k][1]-AXF[k][0])*z/10):val(k,z)});
   return{x:x,q:q}};

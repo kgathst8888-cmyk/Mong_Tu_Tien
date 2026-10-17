@@ -1,6 +1,6 @@
 
 /*==== THÁP THÍ LUYỆN · Tháp 9 tầng ở Thanh Vân Tiên Thôn ====
-  - 9 tầng × 10 Boss, độ khó tăng dần. Hạ lần lượt từng Boss; hạ đủ 10 Boss thì lên tầng kế.
+  - 9 tầng × 10 Boss, độ khó tăng dần. Hạ lần lượt từng Boss; hạ đủ 10 Boss thì lên tầng kế. Boss/tầng đã qua bị khoá (chỉ đánh Boss cao nhất hiện tại); sau Boss 90 được chọn tự do nhưng chỉ TW_DAILY lượt/ngày.
   - Boss mạnh hơn Trùm Thần Thoại (Hầm Ngục, màu cam-vàng "hoàng kim") ngay từ Boss đầu tiên.
   - Boss 1-9 mỗi tầng: 1% rơi trang bị Thiên Thần. Boss 10: rơi 1 Mảnh Linh Căn (nhận 1 lần/tầng).
   - Đủ 9 mảnh -> hợp thành Viên Linh Căn -> chọn thuộc tính Linh Căn (Kim/Mộc/Thủy/Hỏa/Thổ), cộng chỉ số vĩnh viễn.
@@ -11,7 +11,10 @@ const TW_DFS=.012;               // Giáp boss tăng thêm mỗi boss
 const TW_B10=1.25;               // Boss 10 mỗi tầng (Tháp Chủ) máu ×1.25, sát thương ×1.15
 const TW_DROP5=.01;              // Tỉ lệ rơi trang bị Thiên Thần (Boss 1-9 mỗi tầng)
 const TW_GOLD=600;               // Vàng thưởng = TW_GOLD × cấp boss × (1+n/30)
-const TW_REPLAY=true;            // Cho đánh lại boss đã hạ (vẫn có 1% Thiên Thần, KHÔNG nhận thêm mảnh Linh Căn)
+const TW_REPLAY=false;           // Boss/tầng đã qua bị KHOÁ: chỉ được khiêu chiến Boss cao nhất hiện tại
+const TW_DAILY=20;               // Sau khi hạ Boss 90: được chọn bất kỳ Boss, giới hạn số lượt vào trận mỗi ngày (đặt lại 0h giờ VN)
+const twDay=()=>new Date(Date.now()+25200000).toISOString().slice(0,10);
+function twLeft(){const st=twS();if(!st.dl||st.dl.d!==twDay())st.dl={d:twDay(),n:0};return Math.max(0,TW_DAILY-st.dl.n)}
 const TW_TH=['Thạch Linh','Phong Lôi','Hàn Băng','Liệt Hỏa','Thanh Mộc','Hoàng Sa','U Minh','Kim Cang','Hỗn Độn'];
 const TW_RK=['Hộ Vệ','Thống Lĩnh','Sứ Giả','Tướng Quân','Trưởng Lão','Hộ Pháp','Yêu Vương','Chiến Thần','Quân Chủ','Tháp Chủ'];
 const TW_COL=['#c8b27a','#8fd0ff','#9fe8ff','#ff7a3a','#7be07a','#e0c060','#b070ff','#ffd860','#ff5ad0'];
@@ -37,17 +40,17 @@ let twF=-1,twMsg='',twGoF=0;
 {const st=document.createElement('style');st.textContent='#twp{display:none;position:fixed;inset:0;background:#000a;align-items:center;justify-content:center;z-index:9}#twp .twf{display:grid;grid-template-columns:repeat(9,1fr);gap:3px;margin:6px 0}#twp .twf button{margin:0;padding:6px 0;font-size:12px;position:relative}#twp .twf button.on{background:#8a6420}#twp .twf button.lk{opacity:.4}#twp .ar>div:first-child{min-width:0;flex:1}#twp .twm{background:#1c3a24;border:1px solid #7fe0a0;border-radius:6px;padding:6px 8px;margin:6px 0;font-size:12px}#twp .twfr{font-size:20px;letter-spacing:3px;text-align:center;margin:4px 0}';document.head.appendChild(st);
  const el=document.createElement('div');el.id='twp';el.addEventListener('pointerdown',e=>e.stopPropagation());document.body.appendChild(el)}
 function twRender(){
- const el=document.getElementById('twp'),st=twS(),p=st.p,fl=p>=90?8:(p/10|0);
- if(twF<0||twF>fl)twF=fl;
+ const el=document.getElementById('twp'),st=twS(),p=st.p,fl=p>=90?8:(p/10|0),al=p>=90,lf=al?twLeft():0;
+ if(twF<0||twF>fl||(!al&&twF<fl))twF=fl;
  const f=twF,col=TW_COL[f],nf=twPop(st.fg);
  let h='<div class="bx"><div class="bh"><span><b>🗼 Tháp Thí Luyện</b></span><span><button onclick="twClose()">✕</button></span></div>';
  if(twMsg){h+='<div class="twm">'+twMsg+'</div>';twMsg=''}
- h+='<div class="dt">9 tầng · mỗi tầng 10 Boss, <b>khó hơn cả Trùm Thần Thoại</b> (Hầm Ngục). Hạ lần lượt từng Boss để mở Boss kế và tầng kế.<br>🌟 Boss 1-9: <b>1%</b> rơi trang bị <b style="color:#ff5ad0">Thiên Thần</b> · 🔷 Boss 10: rơi <b>Mảnh Linh Căn</b> (lần đầu hạ).</div>';
+ h+='<div class="dt">9 tầng · mỗi tầng 10 Boss, <b>khó hơn cả Trùm Thần Thoại</b> (Hầm Ngục). Hạ lần lượt từng Boss để mở Boss kế và tầng kế.<br>'+(al?'👑 <b>Đã chinh phục Tháp</b> · được chọn bất kỳ Boss · <b style="color:'+(lf?'#7fe0a0':'#ff8a7a')+'">còn '+lf+'/'+TW_DAILY+' lượt hôm nay</b> (mỗi lần vào trận tính 1 lượt, kể cả khi thua; làm mới lúc 0h).':'🔒 <b>Chỉ được khiêu chiến Boss cao nhất hiện tại</b> — tầng/Boss đã qua bị khoá. Sau khi hạ Boss 90, Tháp mở '+TW_DAILY+' lượt/ngày.')+'<br>🌟 Boss 1-9: <b>1%</b> rơi trang bị <b style="color:#ff5ad0">Thiên Thần</b> · 🔷 Boss 10: rơi <b>Mảnh Linh Căn</b> (lần đầu hạ).</div>';
  h+='<div class="qb" style="margin:6px 0"><i style="width:'+(p/90*100)+'%"></i><span>Tiến độ '+p+'/90 Boss</span></div>';
- h+='<div class="twf">'+Array.from({length:9},(_,i)=>{const lk=i>fl,dn=p>=(i+1)*10;return'<button class="'+(i==f?'on':'')+(lk?' lk':'')+'" '+(lk?'disabled':'onclick="twSel('+i+')"')+'>'+(dn?'✔':lk?'🔒':'T')+(dn||lk?'':(i+1))+'</button>'}).join('')+'</div>';
+ h+='<div class="twf">'+Array.from({length:9},(_,i)=>{const ps=!al&&i<fl,lk=i>fl||ps,dn=p>=(i+1)*10;return'<button class="'+(i==f?'on':'')+(lk?' lk':'')+'" '+(lk?'disabled':'onclick="twSel('+i+')"')+'>'+(dn?'✔':lk?'🔒':'T')+(dn||lk?'':(i+1))+'</button>'}).join('')+'</div>';
  h+='<div class="st" style="margin:2px 0 4px;color:'+col+'"><b>Tầng '+(f+1)+' · '+TW_TH[f]+'</b> — Boss: máu ×'+(twHp(f*10)/60).toFixed(1)+'→×'+(twHp(f*10+9)/60).toFixed(1)+' · sát thương ×'+twAt(f*10).toFixed(1)+'→×'+twAt(f*10+9).toFixed(1)+' (so với Trùm Thần Thoại)</div>';
- for(let i=0;i<10;i++){const n=f*10+i,dn=n<p,nx=n==p,ok=n<=p&&(TW_REPLAY||nx),rw=i<9?'🌟 1%':(st.fg>>f&1?'🔷 đã nhận':'🔷 Mảnh Linh Căn');
-  h+='<div class="ar"><div><b style="color:'+(nx?'#ffe08a':dn?'#7fe0a0':'#8a7a68')+'">'+(dn?'✔':nx?'▶':'🔒')+' '+(i+1)+'. '+twName(n)+'</b><br><small>HP ×'+(twHp(n)/60).toFixed(1)+' · ST ×'+twAt(n).toFixed(1)+' · '+rw+'</small></div>'+(ok?'<button class="sm" onclick="twGo('+n+')">'+(dn?'Đánh lại':'Khiêu chiến')+'</button>':'')+'</div>'}
+ for(let i=0;i<10;i++){const n=f*10+i,dn=n<p,nx=n==p,ok=al?(n<=p&&lf>0):nx,rw=i<9?'🌟 1%':(st.fg>>f&1?'🔷 đã nhận':'🔷 Mảnh Linh Căn');
+  h+='<div class="ar"><div><b style="color:'+(nx?'#ffe08a':dn?'#7fe0a0':'#8a7a68')+'">'+(dn?'✔':nx?'▶':'🔒')+' '+(i+1)+'. '+twName(n)+'</b><br><small>HP ×'+(twHp(n)/60).toFixed(1)+' · ST ×'+twAt(n).toFixed(1)+' · '+rw+'</small></div>'+(ok?'<button class="sm" onclick="twGo('+n+')">'+(dn?'Đánh lại':'Khiêu chiến')+'</button>':(dn?'<small style="color:#8a7a68">'+(al?'⛔ Hết lượt':'🔒 Đã khoá')+'</small>':''))+'</div>'}
  const rt=st.root>=0?TW_ROOTS[st.root]:null;
  h+='<div class="qst-card"><h4>🔷 Linh Căn</h4>';
  if(rt)h+='<div>Linh căn của bạn: <b style="color:'+rt.c+'">'+rt.e+' '+rt.n+' Linh Căn</b><br><small>'+twDesc(rt)+'</small></div>';
@@ -63,7 +66,8 @@ function twFuse(){const st=twS();if(twPop(st.fg)<9||st.fz)return;st.fz=1;st.pill
 function twPick(i){const st=twS();if(!st.pill)return;const r=TW_ROOTS[i];if(!confirm('Dùng Viên Linh Căn để chọn '+r.n+' Linh Căn?\n'+twDesc(r)+'\nKhông thể đổi lại.'))return;st.root=i;st.pill=0;try{P.hp=Math.min(P.hp,mx())}catch(e){}sv();twMsg='✨ Linh căn <b style="color:'+r.c+'">'+r.e+' '+r.n+'</b> thức tỉnh!';twRender()}
 
 /* ---------- vào trận ---------- */
-function twGo(n){const st=twS();if(!started||!vil||n>st.p||n>89||(!TW_REPLAY&&n<st.p))return;
+function twGo(n){const st=twS();if(!started||!vil||n>89)return;const al=st.p>=90;if(al?twLeft()<=0:n!=st.p){if(al){twMsg='⛔ Hôm nay đã hết <b>'+TW_DAILY+'</b> lượt Tháp. Quay lại vào ngày mai!';twRender()}return}
+ if(al){st.dl.n++;sv()}
  twClose();bo=0;bag.style.display='none';const l0=lg;lg=0;vil=0;vt=null;vgo=-1;E=[];PETS=[];PJ=[];FX=[];P.pe=null;P.atk=0;P.x=120;P.hp=mx();P.mp=mm();SLT=[9e9,9e9,9e9,9e9,9e9];
  dg={t:0,n:20,kill:20,tw:1,tn:n,lg0:l0};DT.push({x:P.x,y:200,s:'🗼 Tháp Thí Luyện · Tầng '+((n/10|0)+1)+' · Boss '+(n%10+1),c:TW_COL[n/10|0],g:1,l:140})}
 function twSpawn(){dgSp('boss');const e=E[E.length-1],n=dg.tn,k=n%10==9;
@@ -182,7 +186,7 @@ const _bgd4=bgd;bgd=function(gy){if(dg&&dg.tw)twBgDraw(gy,dg.tn/10|0);else _bgd4
 /* ---------- phần thưởng ---------- */
 const _drop4=drop;drop=function(e){if(!e.tw)return _drop4(e);
  const n=e.tn,f=n/10|0,i=n%10,L=e.lv,st=twS(),first=n==st.p;
- gold+=gP(Math.round(TW_GOLD*L*(1+n/30)));const fr_=10+Math.floor(n/3);frag+=fr_;DT.push({x:e.x,y:120,s:'🔹 +'+fr_+' mảnh chế tạo',c:'#6ff',l:120});
+ gold+=gP(Math.round(TW_GOLD*L*(1+n/30)));const fr_=FB(10+Math.floor(n/3));frag+=fr_;DT.push({x:e.x,y:120,s:'🔹 +'+fr_+' mảnh chế tạo',c:'#6ff',l:120});
  for(let j=0;j<3;j++){if(R()>=EQD.boss)continue;give(gen(L,R()<.35?4:3),e.x+(j-1)*40,150+j*34)}
  if(i<9){if(R()<TW_DROP5*EQD.rare){DT.push({x:e.x,y:270,s:'🌟 Trang bị THIÊN THẦN!',c:RC[5],l:200,g:1});give(gen(L,5),e.x,240)}}
  else if(!(st.fg>>f&1)){st.fg|=1<<f;DT.push({x:e.x,y:270,s:'🔷 Mảnh Linh Căn Tầng '+(f+1)+' ('+twPop(st.fg)+'/9)',c:'#8fe8ff',l:220,g:1});if(twPop(st.fg)>=9)DT.push({x:e.x,y:310,s:'✨ Đủ 9 mảnh! Về Tháp để hợp Viên Linh Căn',c:'#ffe08a',l:240,g:1})}

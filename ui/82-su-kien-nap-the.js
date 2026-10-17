@@ -4,6 +4,7 @@
  *     - 📅 Điểm Danh 7 Ngày: mỗi ngày (giờ VN) nhận 1 phần, đủ 7 ngày thì quay lại ngày 1. CFG.ck.
  *     - ⏱ Quà Online: cộng dồn phút online trong ngày (reset 0h VN), đạt mốc nào nhận mốc đó. CFG.ol.
  *     - Sự kiện giới hạn thời gian: thêm 1 dòng vào CFG.events (from/to = ngày VN, mỗi nhân vật nhận 1 lần). Hết hạn tự khoá.
+ *  🎁 GÓI QUÀ: CFG.gq (Tân Thủ 200💎 · Ưu Đãi 1 500💎 · Ưu Đãi 2 1.000💎, đều 💎 KHÔNG KHOÁ, mỗi nhân vật 1 lần/gói; PS[cur].evt.pk). it:[{s,r,l,u,o,n}] = trang bị mẫu (+u, o opt ngẫu nhiên).
  *  💳 BẢNG GIÁ NẠP: 20.000đ = 200💎 KHÔNG KHOÁ, tuyến tính (100đ = 1💎, không tặng thêm) đến 1.000.000đ = 10.000💎; hướng dẫn nạp + bảng "💎 mua được gì" lấy từ Cash Shop.
  *     💎 KHÔNG KHOÁ (nạp) dùng được ở Chợ Online; 🔒 Linh Thạch KHOÁ (kiếm từ đánh Boss) thì không (xem linh_thach_khoa.sql).
  *     Game KHÔNG có cổng thanh toán: người chơi chuyển khoản → admin cộng 💎 bằng 🛡 Admin → 👤 Tài khoản → Cộng Linh Thạch (= không khoá).
@@ -46,6 +47,14 @@ var CFG={
     {id:'ev_dai_hoi',ico:'🏮',n:'Đại Hội Linh Vân',from:'2026-11-18',to:'2026-11-30',
      d:'Sắp diễn ra — quà sẽ mở nhận khi đến ngày.',
      q:{gold:8000000,csh:{b15:2,ham:3},eq:{r:3,n:1}}}],
+  /* 🎁 Gói quà (mua bằng 💎 KHÔNG KHOÁ, mỗi nhân vật mua 1 lần/gói). it = trang bị: s=ô (0 Vũ khí · 4 Nhẫn · 5 Dây chuyền) · r=phẩm (4 Thần Thoại) · l=cấp · u=cường hoá · o=số opt ngẫu nhiên · n=số món */
+  gq:[
+    {id:'gq_tan_thu',ico:'🎒',n:'Gói Tân Thủ',price:200,d:'Khởi đầu thuận lợi cho tân binh.',
+     q:{csh:{x5:2},it:[{s:0,r:4,l:21,u:7,o:6,n:1}]}},
+    {id:'gq_uu_dai_1',ico:'🎁',n:'Gói Ưu Đãi 1',price:500,d:'Trọn bộ vé tăng EXP để cày cấp.',
+     q:{csh:{vx:2,x5:2,x7:1}}},
+    {id:'gq_uu_dai_2',ico:'👑',n:'Gói Ưu Đãi 2',price:1000,d:'Gói lớn: vàng, bùa EXP và trang sức Thần Thoại.',
+     q:{gold:10000000,csh:{x7:5},it:[{s:4,r:4,l:21,u:7,o:6,n:2},{s:5,r:4,l:21,u:7,o:6,n:1}]}}],
   /* 💳 Bảng giá nạp: vnd = số tiền · lt = 💎 KHÔNG KHOÁ nhận được. Tỉ lệ 20.000đ = 200💎 (100đ = 1💎), nhân lên đến 1.000.000đ. */
   pk:[
     {vnd:20000,lt:200},
@@ -96,6 +105,7 @@ function E(){
   if(!e.ol)e.ol={d:'',s:0,c:[]};
   if(!e.one)e.one={};
   if(!e.gc)e.gc={on:0,f:{},c:{}};
+  if(!e.pk)e.pk={};
   return e}
 function nm(k){try{var o=CSH.cfg.lt.filter(function(x){return x.k===k})[0];if(o)return o.e+' '+o.n}catch(e){}return k}
 function desc(q){
@@ -105,21 +115,30 @@ function desc(q){
   if(q.fe)a.push('🔩 Quặng Sắt ×'+q.fe);
   if(q.hk)a.push('🌑 Huyền Kim ×'+q.hk);
   if(q.gm)Object.keys(q.gm).forEach(function(l){a.push('🪨 Đá Khảm cấp '+l+' chưa mài ×'+q.gm[l])});
+  if(q.it)q.it.forEach(function(t){var c='#ffe9a0',n='';try{c=RC[t.r];n=RN[t.r]}catch(e){}a.push('🎁 '+({0:'Vũ khí',4:'Nhẫn',5:'Dây chuyền'}[t.s]||'Trang bị')+' <span style="color:'+c+'">'+esc(n)+'</span> Lv'+t.l+(t.u?' +'+t.u:'')+(t.o?' ('+t.o+' opt ngẫu nhiên)':'')+' ×'+t.n)});
   if(q.eq){var r=q.eq.r|0,c='#ffe9a0',n='';try{c=RC[r];n=RN[r]}catch(e){}a.push('🎁 Trang bị <span style="color:'+c+'">'+esc(n)+'</span> ×'+q.eq.n)}
   return a.join(' · ')}
 function merge(list){
-  var o={gold:0,csh:{},fe:0,hk:0,eq:{},gm:{}};
+  var o={gold:0,csh:{},fe:0,hk:0,eq:{},gm:{},it:[]};
   list.forEach(function(q){
     o.gold+=q.gold|0;o.fe+=q.fe|0;o.hk+=q.hk|0;
     if(q.csh)Object.keys(q.csh).forEach(function(k){o.csh[k]=(o.csh[k]|0)+q.csh[k]});
     if(q.gm)Object.keys(q.gm).forEach(function(l){o.gm[l]=(o.gm[l]|0)+q.gm[l]});
+    if(q.it)q.it.forEach(function(t){o.it.push(t)});
     if(q.eq){var r=q.eq.r|0;o.eq[r]=(o.eq[r]|0)+q.eq.n}});
   return o}
+/* tạo trang bị theo mẫu: đúng ô/phẩm/cấp, đúng t.o opt ngẫu nhiên, cường hoá +t.u */
+function mkIt(t){
+  var it=null,k;
+  for(k=0;k<120;k++){it=gen(t.l,t.r,t.s);if(it&&it.x&&Object.keys(it.x).length===t.o)break}
+  if(it&&t.u)it.u=t.u;
+  return it}
 /* cộng quà (đã gộp) — trả '' nếu OK, hoặc câu báo lỗi (chưa cộng gì) */
 function grant(list){
   var p=me();if(!p)return'Chưa chọn nhân vật.';
   var m=merge(list),eqN=0;
   Object.keys(m.eq).forEach(function(r){eqN+=m.eq[r]});
+  m.it.forEach(function(t){eqN+=t.n|0});
   if(Object.keys(m.csh).length&&!window.CSH)return'Chưa có Cash Shop để nhận vật phẩm.';
   if((m.fe||m.hk)&&!(typeof MN!=='undefined'&&MN.get))return'Chưa có kho quặng để nhận quặng.';
   if(Object.keys(m.gm).length&&!(window.GEMX&&GEMX.add))return'Chưa có kho Đá Khảm để nhận đá.';
@@ -132,7 +151,8 @@ function grant(list){
     if(m.fe)MN.get().fe+=m.fe;
     if(m.hk)MN.get().hk+=m.hk;
     Object.keys(m.gm).forEach(function(l){GEMX.add(m.gm[l],+l)});
-    Object.keys(m.eq).forEach(function(r){for(var i=0;i<m.eq[r];i++)BAG.push(gen(lv(),+r))})
+    Object.keys(m.eq).forEach(function(r){for(var i=0;i<m.eq[r];i++)BAG.push(gen(lv(),+r))});
+    m.it.forEach(function(t){for(var i=0;i<t.n;i++)BAG.push(mkIt(t))})
   }catch(e){return'Lỗi khi nhận quà, thử lại.'}
   return''}
 
@@ -183,6 +203,26 @@ function claimEv(id){
   if(err){note=err;render();return}
   e.one[id]=1;note='✅ '+ev.n+': '+desc(ev.q);say(ev.ico+' '+ev.n,'#ffe9a0');save();try{ui()}catch(x){}render()}
 
+/* ====================== GÓI QUÀ ====================== */
+function gqBuy(id){
+  var e=E(),g=CFG.gq.filter(function(x){return x.id===id})[0];
+  if(!e||!g||busy||e.pk[id])return;
+  if(!ltLogged()){note='☁ Cần đăng nhập tài khoản để dùng Linh Thạch.';render();return}
+  if(unl()<g.price){note='Không đủ 💎 KHÔNG KHOÁ: cần '+nf(g.price)+'💎, bạn có '+nf(unl())+'💎.';render();return}
+  var n=0;(g.q.it||[]).forEach(function(t){n+=t.n|0});
+  if(n){var cap=90;try{cap=capN()}catch(x){}
+    if(BAG.length+n>cap){note='🎒 Túi không đủ chỗ cho '+n+' trang bị — dọn túi rồi mua lại.';render();return}}
+  var who=me();
+  busy=true;note='Đang trừ '+nf(g.price)+'💎 không khoá…';render();
+  LT.spend(g.price,'gq:'+id,{unlocked:true}).then(function(r){
+    busy=false;
+    if(!r||!r.ok){note=r&&r.err==='poor'?'Không đủ 💎 KHÔNG KHOÁ: cần '+nf(g.price)+'💎, bạn có '+nf(r.lt|0)+'💎.':'Không trừ được Linh Thạch ('+((r&&(r.msg||r.err))||'lỗi')+')';render();return}
+    if(me()!==who){note='⚠ Đã đổi nhân vật khi đang mua — liên hệ Admin để nhận gói.';render();return}
+    var err=grant([g.q]);
+    if(err){note='⚠ Đã trừ '+nf(g.price)+'💎 nhưng chưa nhận được quà: '+err+' Liên hệ Admin.';render();return}
+    e.pk[id]=1;note='✅ Đã mua '+g.n+' (−'+nf(g.price)+'💎): '+desc(g.q);say(g.ico+' '+g.n,'#ffe9a0');save();try{ui()}catch(x){}render()
+  }).catch(function(){busy=false;note='Không trừ được Linh Thạch (lỗi mạng)';render()})}
+
 /* ====================== THẺ TRƯỞNG THÀNH ====================== */
 function gcClaim(track,l){
   var e=E(),t=CFG.gc.tiers.filter(function(x){return x.lv===l})[0];
@@ -227,7 +267,7 @@ function mk(){
   +'#evt{display:none;position:fixed;z-index:12;background:linear-gradient(#2a2118,#0e0a08);color:#f2e3b3;font-family:'+FONT+';box-sizing:border-box;flex-direction:column;padding-bottom:env(safe-area-inset-bottom,0px)}'
   +'#evt.pt{left:0;right:0;bottom:0;top:18%;border-top:2px solid #b8964e}#evt.ls{top:0;bottom:0;right:0;width:min(440px,100%);border-left:2px solid #b8964e}'
   +'#evt .eh{display:flex;justify-content:space-between;align-items:center;padding:8px 10px 4px;font-size:16px;font-weight:bold}'
-  +'#evt .et{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;padding:0 10px 6px}'
+  +'#evt .et{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:0 10px 6px}'
   +'#evt button{font:inherit;color:#ffe9a0;background:linear-gradient(#8a6420,#5a3e12);border:1px solid #c9a24f;border-radius:6px;padding:5px 9px;cursor:pointer;touch-action:manipulation}#evt button:disabled{opacity:.45}'
   +'#evt .et button{font-size:12px;padding:6px 2px}#evt .et button.on{background:linear-gradient(#2e6fb8,#1b4478);border-color:#8fd0ff;color:#fff}#evt .et i{background:#e33;color:#fff;border-radius:8px;font:700 10px/14px sans-serif;padding:0 4px;margin-left:3px;font-style:normal}'
   +'#evt .eb{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:2px 10px 14px}'
@@ -291,6 +331,13 @@ function tabNap(){
   h+='<div class="er"><div class="ei">🪪</div><div class="ex"><b>'+esc(CFG.gc.name)+'</b><small>Mở đường quà THẺ ở 10 mốc cấp độ (tab 🪪)</small></div><b style="white-space:nowrap">'+nf(CFG.gc.price)+'💎<br><small>không khoá</small></b></div>';
   h+='<div class="en">Linh Thạch gắn với tài khoản ☁, không chuyển nhượng ngoài game. Nạp xong không hoàn lại.</div>';
   return h}
+function tabGq(){
+  var e=E(),h='<div class="en">Mua bằng 💎 <b>KHÔNG KHOÁ</b> (bạn có '+nf(ltLogged()?unl():0)+'💎). Mỗi nhân vật mua 1 lần/gói. Trang bị trong gói là Thần Thoại, mặc định 6 opt ngẫu nhiên, cần chỗ trống trong túi.</div>';
+  CFG.gq.forEach(function(g){
+    var got=!!e.pk[g.id],can=!got&&!busy&&ltLogged()&&unl()>=g.price;
+    h+='<div class="er'+(got?' dn':'')+'"><div class="ei">'+g.ico+'</div><div class="ex"><b>'+esc(g.n)+'</b><small>'+esc(g.d)+'<br>'+desc(g.q)+'</small></div>'
+     +'<button '+(can?'':'disabled ')+'onclick="EVT.pk(\''+g.id+'\')">'+(got?'Đã mua':nf(g.price)+'💎<br>Mua')+'</button></div>'});
+  return h}
 function tabThe(){
   var e=E(),g=e.gc,L=lv(),n=0,h='';
   CFG.gc.tiers.forEach(function(t){if(L>=t.lv){if(!g.f[t.lv])n++;if(g.on&&!g.c[t.lv])n++}});
@@ -316,12 +363,12 @@ function render(){
   var lt=ltLogged()?unl():0,lk=ltLogged()?lkd():0;
   var h='<div class="eh"><span>🎉 Sự Kiện & Nạp Thẻ</span><button onclick="EVT.close()">✕</button></div>'
    +'<div class="en" style="margin:0 10px 4px">💎 '+nf(lt)+' không khoá (dùng chung) · 🔒 '+nf(lk)+' khoá (nhân vật này) · 💰 '+nf(Math.floor(gold))+' vàng</div>'
-   +'<div class="et"><button class="'+(tab==='sk'?'on':'')+'" onclick="EVT.tab(\'sk\')">🎉 Sự kiện'+bb('',skN)+'</button><button class="'+(tab==='nap'?'on':'')+'" onclick="EVT.tab(\'nap\')">💳 Bảng giá nạp</button><button class="'+(tab==='the'?'on':'')+'" onclick="EVT.tab(\'the\')">🪪 Thẻ'+bb('',thN)+'</button></div>'
-   +'<div class="eb">'+(note?'<div class="nt">'+note+'</div>':'')+(!e?'<div class="en">Chưa chọn nhân vật.</div>':tab==='sk'?tabSk():tab==='nap'?tabNap():tabThe())+'</div>';
+   +'<div class="et"><button class="'+(tab==='sk'?'on':'')+'" onclick="EVT.tab(\'sk\')">🎉 Sự kiện'+bb('',skN)+'</button><button class="'+(tab==='nap'?'on':'')+'" onclick="EVT.tab(\'nap\')">💳 Bảng giá nạp</button><button class="'+(tab==='gq'?'on':'')+'" onclick="EVT.tab(\'gq\')">🎁 Gói quà</button><button class="'+(tab==='the'?'on':'')+'" onclick="EVT.tab(\'the\')">🪪 Thẻ'+bb('',thN)+'</button></div>'
+   +'<div class="eb">'+(note?'<div class="nt">'+note+'</div>':'')+(!e?'<div class="en">Chưa chọn nhân vật.</div>':tab==='sk'?tabSk():tab==='nap'?tabNap():tab==='gq'?tabGq():tabThe())+'</div>';
   el.innerHTML=h}
 function show(t){
   if(!el)mk();
-  open=true;note='';if(t==='sk'||t==='nap'||t==='the')tab=t;
+  open=true;note='';if(t==='sk'||t==='nap'||t==='gq'||t==='the')tab=t;
   el.style.display='flex';render();
   try{if(window.LT&&LT.sync)LT.sync().then(function(){if(open)render()})}catch(x){}}
 function close(){open=false;note='';if(el)el.style.display='none'}
@@ -338,5 +385,5 @@ setInterval(function(){try{
   if(open&&tab==='sk'&&Date.now()%15000<1000)render()
 }catch(x){}},1000);
 
-window.EVT={show:show,close:close,tab:setTab,ck:claimCk,ol:claimOl,ev:claimEv,gc:gcClaim,all:gcAll,buy:gcBuy,badge:badge,cfg:CFG};
+window.EVT={show:show,close:close,tab:setTab,ck:claimCk,ol:claimOl,ev:claimEv,gc:gcClaim,all:gcAll,buy:gcBuy,pk:gqBuy,badge:badge,cfg:CFG};
 })();

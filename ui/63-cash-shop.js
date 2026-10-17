@@ -33,7 +33,7 @@ var CFG={
   tkPct:.2,
   xp:{vx:.2,x5:.5,x7:.7},          /* % EXP của từng loại vé/bùa EXP (lấy mức CAO NHẤT đang còn hạn) */
   chestEq:10000000, chestOre:5000000,
-  eqW:[30,25,20,13,8,4],          /* trọng số Thường, Tinh Anh, Hiếm, Sử Thi, Thần Thoại, Thiên Thần (r = 0..5) */
+  eqW:[32,28,20,11,6,3],          /* trọng số Thường, Tinh Anh, Hiếm, Sử Thi, Thần Thoại, Thiên Thần (r = 0..5) */
   oreAmt:[50,100,150,200]
 };
 var TK={vx:'xe',vt:'te',x5:'e5',x7:'e7'}; /* vé → khoá hạn trong PS[cur].csh */

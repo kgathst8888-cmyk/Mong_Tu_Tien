@@ -380,7 +380,7 @@ function resetChar(){
   var p=PS[cur];if(!p)return false;
   var BASE={lv:1,xp:1,pts:1,tier:1,br:1,al:1,cv:1,pet:1,lc:1,wg:1,lg:1,nm:1,rc:1},KEEP={},nm=p.nm; /* chỉ giữ sổ thư đã nhận (tránh nhận lại thư cũ); kho Cash Shop .csh và .td nay cũng bị xoá */
   Object.keys(p).forEach(function(k){if(!BASE[k]&&!KEEP[k])delete p[k]});
-  p.lv=1;p.xp=0;p.pts=0;p.tier=0;p.br=-1;p.al=[0,0,0,0];p.cv={r:-1,s:0,q:0,f:0};p.pet=null;p.lc=null;p.wg=0;p.lg=0;p.nm=nm;p.rc=0;
+  p.lv=1;p.xp=0;p.pts=0;p.tier=0;p.br=-1;p.al=[0,0,0,0,0,0];p.cv={r:-1,s:0,q:0,f:0};p.pet=null;p.lc=null;p.wg=0;p.lg=0;p.nm=nm;p.rc=0;
   /* Linh căn: gốc nằm ở Tháp Thí Luyện (PS.tw.root) + cấp kỹ năng (PS.lc) → đặt lại tường minh về chưa có linh căn */
   p.tw={p:0,fg:0,fz:0,pill:0,root:-1};p.lc={root:-1,lv:[1,1,1,1,1]};
   EQS[cur]=Array(NS).fill(null);BAGS[cur]=[];

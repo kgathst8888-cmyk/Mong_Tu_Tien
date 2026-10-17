@@ -29,9 +29,9 @@ HDAO.xm=function(){var v=_xm.apply(this,arguments);return on()?v*CF.xpK:v};
 /* Thuộc tính gốc Lv1 gấp đôi Đạo Thể Lv1: cộng thêm đúng 1 lần phần gốc Lv1 vào công thức (nhân qua ZC.pa/ph/pm/pd, engine gọi qua ZC) */
 function bonus(base,cur_){return cur_>0?1+base/cur_:1}
 var _pa=ZC.pa,_ph=ZC.ph,_pm=ZC.pm,_pd=ZC.pd;
-ZC.pa=function(){var v=_pa.apply(this,arguments);if(!on())return v;try{return v*bonus(28*CHR[cur].a,(20+P.lv*8)*CHR[cur].a+sm('a')+(TK()=='w'?al(0):TK()=='a'?al(3):al(2))*3)}catch(e){return v}};
+ZC.pa=function(){var v=_pa.apply(this,arguments);if(!on())return v;try{return v*bonus(28*CHR[cur].a,(20+P.lv*8)*CHR[cur].a+sm('a'))}catch(e){return v}};
 ZC.ph=function(){var v=_ph.apply(this,arguments);if(!on())return v;try{return v*bonus(260*CHR[cur].h,(200+P.lv*60)*CHR[cur].h+sm('h'))}catch(e){return v}};
-ZC.pm=function(){var v=_pm.apply(this,arguments);if(!on())return v;try{return v*bonus(68*CHR[cur].m,(60+P.lv*8)*CHR[cur].m+al(2)*10)}catch(e){return v}};
+ZC.pm=function(){var v=_pm.apply(this,arguments);if(!on())return v;try{return v*bonus(68*CHR[cur].m,(60+P.lv*8)*CHR[cur].m)}catch(e){return v}};
 ZC.pd=function(){var v=_pd.apply(this,arguments);if(!on())return v;try{return v*bonus(50,P.lv*30+20+sm('d')+alD())}catch(e){return v}};
 
 /* Chỉ mặc được trang bị Thánh (mọi cấp). Đồ khác bị chặn; đồ đang mặc được tháo về túi */

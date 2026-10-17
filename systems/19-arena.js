@@ -55,8 +55,8 @@ function renderLobby(){if(!root||root.classList.contains('battle')||root.classLi
 function openLobby(){load();if(!root)build();onlineStyles();root.classList.remove('battle','result');root.classList.add('on');NET.err='';NET.tab=0;NET.bots=[];NET.ops=cloudOn()?NET.ops:[];rebuildOps();renderLobby();if(cloudOn())netRefresh()}
 /* ===== PvP: hồ sơ đầy đủ + LIVE + bản sao ===== */
 function sx(k){try{return Number(SX(k))||0}catch(e){return 0}}
-function critP(){try{return Math.min(.85,.15+Math.floor(al(3)/5)*.005+ZC.crit()+(setOn()?.1:0)+SX('crit')/100+HL.crit())}catch(e){return .2}}
-function critD(){try{return 1.8+SX('cdmg')/100+Math.floor(al(3)/5)*.01+HL.cdmg()}catch(e){return 1.8}}
+function critP(){try{return Math.min(.85,.15+ZC.crit()+(setOn()?.1:0)+SX('crit')/100+HL.crit())}catch(e){return .2}}
+function critD(){try{return 1.8+SX('cdmg')/100+HL.cdmg()}catch(e){return 1.8}}
 function makeProf(){var h=heroInfo(),sk=[],ps=PS[cur]||{},eq=[];try{sks().forEach(function(k,i){if(k&&ok(i))sk.push(k.slice(0,8))})}catch(e){}try{eq=JSON.parse(JSON.stringify(EQ||[]))}catch(e){eq=[]}
  return{v:2,name:pname(),realm:String(realm()).slice(0,24),ci:h.ci,br:h.br,lv:Math.max(1,Math.round(num(P&&P.lv,1))),tier:ps.tier|0,fa:ps.fa,pw:myPower(),hp:mx(),mp:mm(),atk:atk(),df:df(),cp:critP(),cd:critD(),dodge:sx('dodge'),dred:sx('dred'),ls:sx('ls'),ms:sx('ms'),sk:sk,eq:eq}}
 function putProf(){return KCL.rpc('arena_prof_put',{p_slot:slotNow(),p_prof:makeProf()}).then(function(r){if(r&&r.status!=='ok')throw new Error('Không gửi được hồ sơ chiến đấu ('+r.status+').');return r})}

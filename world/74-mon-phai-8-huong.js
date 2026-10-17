@@ -13,7 +13,7 @@ if(typeof hero!=='function'||typeof PS==='undefined'||typeof CHR==='undefined'||
 var CF=window.VPG8_CF=window.VPG8_CF||{};if(CF.enable===undefined)CF.enable=true;if(!CF.spin)CF.spin=.2;if(!CF.spinHover)CF.spinHover=.1;if(CF.hover===undefined)CF.hover=true;if(!CF.hoverH)CF.hoverH=22;if(CF.weapon===undefined)CF.weapon=false;
 var COL={umt:'#c070ff',hbd:'#7fe4ff',ptc:'#ff9a4a',tkt:'#9fc8ff',vdm:'#7cf08a',ngc:'#ffd890'};
 var PI=Math.PI,IM={};
-function fr8(id,gen,i){var k=id+gen+i;if(IM[k])return IM[k];var d=MP8[id]&&MP8[id][gen]&&MP8[id][gen][i];if(!d)return null;var im=new Image();im.src=d[0];return IM[k]={im:im,w:d[1],h:d[2]}}
+function fr8(id,gen,i){var k=id+gen+i;if(IM[k])return IM[k];var d=MP8[id]&&MP8[id][gen]&&MP8[id][gen][i];if(!d)return null;var im=new Image();im.src=d[0];return IM[k]={im:im,w:d[1],h:d[2],id:id,gen:gen,i:i}}
 function ok(o){return o&&o.im.complete&&o.im.naturalWidth>0}
 function own(){return typeof P==='object'&&P&&!('maxMp' in P)&&!(P.hp===1&&P.mp===1&&P.atkT===1)}
 function ease2(x){x=Math.max(0,Math.min(1,x));return x*x*(3-2*x)}
@@ -53,18 +53,23 @@ function drawPose(o,alpha,ws,off,tw){off=off||0;tw=tw||0;
   bob=-(k*Math.abs(Math.sin(wp))*2.6*(1-hv))+Math.sin(bp)*.7+hv*Math.sin(bp*2.1+.8)*.5,
   rot=hx*(.05*(1-hv)+.012*hv)+Math.sin(wp)*.024*k*(1-hv)+hv*Math.sin(bp*.9)*.016,
   sy=1+Math.sin(bp)*.006+Math.cos(wp*2)*.012*k*(1-hv),sx=1/sy,
-  N=26,ih=im.naturalHeight,iw=im.naturalWidth,sh=ih/N,dh=HH/N;
+  N=26,ih=im.naturalHeight,iw=im.naturalWidth,sh=ih/N,dh=HH/N,MP=(window.MPAR&&MPAR.on(o))?MPAR:null;
  g.save();
  try{
   g.imageSmoothingEnabled=true;try{g.imageSmoothingQuality='high'}catch(e){}
   g.globalAlpha=alpha;g.translate(off,0);g.scale(ws,1);g.translate(0,bob+HH*.012);g.rotate(rot);g.scale(sx,sy);
   if(k>.45&&hv<.5&&alpha>.5){var ga=(k-.45)*.5*alpha*(1-.5*hv),sgn=hx>=0?-1:1;for(var q=2;q>=1;q--){g.globalAlpha=ga*(.5/q);g.drawImage(im,-w/2+sgn*q*8*Math.min(1,Math.abs(hx)*1.2),-HH,w,HH)}g.globalAlpha=alpha}
+  /* Fix238: thân bản xoá tay khi tung chiêu (hoà dần) + tay nhấc cầm vũ khí (world/93) */
+  var sim=null,msa=0;if(MP){try{sim=MP.img(o);msa=MP.sa()}catch(e){sim=null}}
+  var LST=sim?(msa>.99?[[sim,alpha]]:[[im,alpha*(1-msa)],[sim,alpha*msa]]):[[im,alpha]];
+  for(var li=0;li<LST.length;li++){var im2=LST[li][0],ih2=im2.naturalHeight||im2.height,iw2=im2.naturalWidth||im2.width,sh2=ih2/N;g.globalAlpha=LST[li][1];
   for(var j=0;j<N;j++){
    var u=(j+.5)/N,uu=Math.pow(Math.max(0,u-.12)/.88,1.55),
     dx=uu*((1-hv)*Math.sin(bp*1.3-u*2.6)*1.5+hv*(Math.sin(bp*1.1-u*2.4)*2.1+Math.sin(bp*.7-u*3.1+1)*1.1)
       -5.6*hx*(1+.45*hv)+k*Math.sin(wp*2-u*3.4)*3.2*(1-hv)+hv*k*Math.sin(bp*2.2-u*3)*1.6)
       +Math.sin(wp+1.2)*k*u*u*1.6*(1-hv)+tw*(.5-u)*2;
-   g.drawImage(im,0,j*sh,iw,sh+.5,-w/2+dx,-HH+j*dh,w,dh+.9)}
+   g.drawImage(im2,0,j*sh2,iw2,sh2+.5,-w/2+dx,-HH+j*dh,w,dh+.9)}}
+  if(MP){try{g.globalAlpha=alpha;MP.draw(g,o,alpha,HH,alpha>.5)}catch(e){}}
  }finally{g.restore()}
 }
 function hovFx(col,up,k,bp){
@@ -86,6 +91,7 @@ function draw8(sid){
  if(!ok(A))A=B;if(!ok(B))B=A;
  var wB=t<.35?0:(t>.65?1:ease2((t-.35)/.3)),ws=1-.16*Math.sin(PI*t)*ST.tr,sf=Math.sin(ST.ang)>=0?1:-1,HHd=(window.VPG_CF&&VPG_CF.h)||76,dl=HHd*.04*ST.tr,tw=sf*ST.sd*HHd*.03*ST.tr;
  ST.key=i0+'';
+ try{if(window.MPAR&&MPAR.CF.enable)MPAR.tick({fr:fr,ang:ST.ang,bp:ST.bp,k:ST.k,hv:ST.hv,t0:ST.cf>0?ST.cf-30:-1e9,atk:P.atk|0})}catch(e){}
  var col=COL[sid]||'#fff',k=ST.k,bp=ST.bp;
  var up=ST.fo+ST.hv*(Math.sin(bp*1.25)*3.2+Math.sin(bp*2.3+1.1)*.9);
  try{if(typeof drawWings==='function'){g.save();if(up)g.translate(0,-up*s);drawWings();g.restore()}}catch(e){}

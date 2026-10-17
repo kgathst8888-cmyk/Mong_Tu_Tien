@@ -1,6 +1,6 @@
 /* core/01u-wings.js — Cánh (wg*, drawWings)
    (tách từ core/01-engine.js; thứ tự nạp giữ nguyên, xem index.html) */
-const WGC=[3,4,5],WGD=[.1,.08,.06],WGT=[2,3,3],WGN=['Bạch Vũ Dực','Lam Phụng Dực','Thiên Phượng Dực'],WGH=[72,100,110],WGB=[.12,-.26,-.3],WGK=['#bfe8ff','#52c8ff','#ffb050'],
+const WGC=[3,4,5],WGG=[2e6,1e7,5e7],WGL=[20,100,200],WGD=[.1,.08,.06],WGT=[2,3,3],WGN=['Bạch Vũ Dực','Lam Phụng Dực','Thiên Phượng Dực'],WGH=[72,100,110],WGB=[.12,-.26,-.3],WGK=['#bfe8ff','#52c8ff','#ffb050'],
 WGA=[{"b":ASSET_PAYLOAD("p004"),"w":208,"h":259,"px":189.0,"py":176.0,"cx":101.6,"cy":135.0},{"b":ASSET_PAYLOAD("p005"),"w":147,"h":380,"px":141.4,"py":214.3,"cx":76.0,"cy":177.1},{"b":ASSET_PAYLOAD("p006"),"w":169,"h":380,"px":149.0,"py":215.3,"cx":93.9,"cy":187.0}].map(o=>{const i=new Image();i.src='data:image/webp;base64,'+o.b;o.im=i;o.R=Math.hypot(Math.max(o.px,o.w-o.px),Math.max(o.py,o.h-o.py));return o}),
 WS={ph:0,sp:.075,am:.13,pt:[],lf:-1},
 WFR=i=>i==0?wfr:i==1?wf2:wf3,WFA=(i,n)=>{if(i==0)wfr+=n;else if(i==1)wf2+=n;else wf3+=n};
@@ -8,9 +8,21 @@ WFR=i=>i==0?wfr:i==1?wf2:wf3,WFA=(i,n)=>{if(i==0)wfr+=n;else if(i==1)wf2+=n;else
 function wgUI(){const p=PS[cur],t=p.tier,l=wl();
 let h='<div class="dt">🪽 <b>Cánh</b> — '+(l?WGN[l-1]+' · Cấp '+l+'<br><small>+'+8*l+'% công · +'+8*l+'% máu · +'+4*l+'% né</small>':'chưa có')+'<br><small>Mảnh cánh rơi từ Trùm 🕳 Hầm Ngục theo cấp cánh đang có: cấp 1 · '+WGD[0]*100+'%, cấp 2 · '+WGD[1]*100+'%, cấp 3 · '+WGD[2]*100+'%</small></div>';
 for(let i=0;i<3;i++){const Wg=WGA[i],own=l>i,nxt=l==i,ok=t>=WGT[i],hv=WFR(i),c=WGC[i],z=80/Wg.h,bw=Math.round(Wg.w*z),o=(Wg.px/Wg.w*100).toFixed(1)+'% '+(Wg.py/Wg.h*100).toFixed(1)+'%',inner='<div class="wga wgv'+i+'" style="width:'+bw+'px;height:80px;transform-origin:'+o+'"></div>';
- h+='<div class="dt" style="'+(own||nxt?'':'opacity:.6')+'"><div class="wgc"><div class="wgp"><div class="wgm">'+inner+'</div><div class="wgm" style="transform:scaleX(-1)">'+inner+'</div></div><div><b style="color:'+WGK[i]+'">Cấp '+(i+1)+' · '+WGN[i]+'</b><br><small>+'+8*(i+1)+'% công · +'+8*(i+1)+'% máu · +'+4*(i+1)+'% né</small><br>'+(own?'✅ Đã sở hữu':'Mảnh cánh cấp '+(i+1)+': <b>'+hv+'</b>/'+c+(ok?'':'<br>🔒 Cần chuyển chức lần '+WGT[i]))+(nxt?'<br><button '+(ok&&hv>=c?'':'disabled')+' onclick="wgMake()">⚒ Hợp thành ('+c+' mảnh)</button>':'')+(!own&&!nxt?'<br>🔒 Cần Cánh Cấp '+i+' trước':'')+'</div></div></div>'}
+ h+='<div class="dt" style="'+(own||nxt?'':'opacity:.6')+'"><div class="wgc"><div class="wgp"><div class="wgm">'+inner+'</div><div class="wgm" style="transform:scaleX(-1)">'+inner+'</div></div><div><b style="color:'+WGK[i]+'">Cấp '+(i+1)+' · '+WGN[i]+'</b><br><small>+'+8*(i+1)+'% công · +'+8*(i+1)+'% máu · +'+4*(i+1)+'% né</small><br>'+(own?'✅ Đã sở hữu':'Mảnh cánh cấp '+(i+1)+': <b>'+hv+'</b>/'+c+(ok?'':'<br>🔒 Cần chuyển chức lần '+WGT[i]))+(nxt?'<br><button '+(ok&&hv>=c?'':'disabled')+' onclick="wgMake()">⚒ Hợp thành ('+c+' mảnh · '+fmtN(WGG[i])+'💰 · '+WGL[i]+'💎)</button>':'')+(!own&&!nxt?'<br>🔒 Cần Cánh Cấp '+i+' trước':'')+'</div></div></div>'}
 return h}
-function wgMake(){const p=PS[cur],l=wl();if(l>=3||p.tier<WGT[l]||WFR(l)<WGC[l])return;WFA(l,-WGC[l]);p.wg=l+1;dgSave();sv();msg='🪽 Đã hợp thành '+WGN[l]+' (Cánh Cấp '+(l+1)+')!';ui()}
+let wgBusy=0;
+function wgMake(){const p=PS[cur],l=wl();if(wgBusy||l>=3||p.tier<WGT[l]||WFR(l)<WGC[l])return;
+ const g=WGG[l],c=WGL[l];
+ if(gold<g){msg='Không đủ vàng: cần '+fmtN(g)+'💰';ui();return}
+ if(!window.LT||!LT.spend){msg='Chưa có ví Linh Thạch (cần module Chợ Giao Dịch)';ui();return}
+ if(!LT.logged()){msg='☁ Cần đăng nhập tài khoản để dùng Linh Thạch ('+c+'💎)';ui();return}
+ const go=()=>{wgBusy=1;
+  LT.spend(c,'wing'+(l+1)).then(r=>{wgBusy=0;
+   if(!r.ok){msg=r.err==='poor'?'Không đủ Linh Thạch: cần '+c+'💎, bạn có '+fmtN(r.lt||0)+'💎':'Không trừ được Linh Thạch ('+(r.msg||r.err)+')';ui();return}
+   const q=PS[cur];if(wl()!==l||gold<g||WFR(l)<WGC[l]){msg='Điều kiện hợp cánh đã thay đổi, hãy thử lại (đã trừ '+c+'💎)';ui();return}
+   gold-=g;WFA(l,-WGC[l]);q.wg=l+1;dgSave();sv();msg='🪽 Đã hợp thành '+WGN[l]+' (Cánh Cấp '+(l+1)+')! (−'+fmtN(g)+'💰, −'+c+'💎)';ui()})};
+ const q='Hợp '+WGN[l]+' (Cấp '+(l+1)+')?\nTốn '+WGC[l]+' mảnh cánh, '+fmtN(g)+' vàng và '+c+' Linh Thạch (khoá hoặc không khoá).';
+ if(typeof gcf==='function')gcf(q,go);else if(confirm(q))go()}
 const wgWv=q=>Math.sin(q)+.28*Math.sin(2*q+.6);
 function wgSide(Wg,sd,k,th,am,ph0,al,comp,sx,N){const R0=Wg.R;g.save();g.scale(sd,1);g.globalCompositeOperation=comp;
  for(let i=0;i<N;i++){const u=(i+.5)/N,a=th+am*wgWv(WS.ph+ph0-.9*u)*(.7+.6*u),r0=R0*i/N*k,r1=(R0*(i+1)/N+(i<N-1?2:8))*k;

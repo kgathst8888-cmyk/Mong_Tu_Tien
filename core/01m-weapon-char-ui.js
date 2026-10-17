@@ -24,13 +24,28 @@ function WPNIMG(){const t=CHR[cur].t,p=PS[cur];if(t=='m')return(p.br==0?WXI.book
 function WCARD(){const S=WSET[CHR[cur].t],p=PS[cur],l=S.L[p.br<0?S.def:p.br];return'<div style="text-align:center"><img src="'+l[2][p.tier]+'" style="height:104px;filter:drop-shadow(0 0 8px #ffd76a)"><br>⚔️ Nhận vũ khí: <b>'+l[3][p.tier]+'</b></div>'}
 let wo=0;
 function bar(v,m,c){return'<div style="height:7px;background:#000a;border-radius:4px;overflow:hidden;margin-top:2px"><div style="width:'+Math.max(0,Math.min(100,v/m*100))+'%;height:100%;background:'+c+'"></div></div>'}
-function ap5(i){const n=Math.min(5,PS[cur].pts);if(n>0){PS[cur].pts-=n;PS[cur].al[i]+=n;ui()}}
+let tnBusy=0;
+function tnReset(){const p=PS[cur];if(tnBusy||!p||!Array.isArray(p.al))return;
+ const base=typeof p.al.toJSON==='function'?p.al.toJSON():p.al.slice(),tot=base.reduce((s,v)=>s+(+v||0),0);
+ if(tot<=0){msg='Chưa cộng điểm tiềm năng nào để tẩy';ui();return}
+ if(!window.LT||!LT.spend){msg='Chưa có ví Linh Thạch (cần module Chợ Giao Dịch)';ui();return}
+ if(!LT.logged()){msg='☁ Cần đăng nhập tài khoản để dùng Linh Thạch (20💎)';ui();return}
+ const go=()=>{tnBusy=1;
+  LT.spend(20,'tiemnang_reset').then(r=>{tnBusy=0;
+   if(!r.ok){msg=r.err==='poor'?'Không đủ Linh Thạch: cần 20💎, bạn có '+fmtN(r.lt||0)+'💎':'Không trừ được Linh Thạch ('+(r.msg||r.err)+')';ui();return}
+   const q=PS[cur],b=typeof q.al.toJSON==='function'?q.al.toJSON():q.al.slice(),t2=b.reduce((s,v)=>s+(+v||0),0);
+   for(let k=0;k<6;k++)q.al[k]=(q.al[k]|0)-(+b[k]||0);
+   q.pts+=t2;try{P.hp=Math.min(P.hp,mx());P.mp=Math.min(P.mp,mm())}catch(e){}
+   msg='🔄 Đã tẩy điểm tiềm năng, hoàn '+fmtN(t2)+' điểm (−20💎)';try{sv()}catch(e){}ui()})};
+ const q='Tẩy toàn bộ điểm tiềm năng đã cộng ('+fmtN(tot)+' điểm) của nhân vật này?\nTốn 20 Linh Thạch (khoá hoặc không khoá). Điểm được hoàn lại để cộng lại.';
+ if(typeof gcf==='function')gcf(q,go);else if(confirm(q))go()}
+function ap5(i){const n=Math.min(5,PS[cur].pts);if(n>0){PS[cur].pts-=n;PS[cur].al[i]=(PS[cur].al[i]|0)+n;ui()}}
 function charUI(){const p=PS[cur],t=p.tier,c=CHR[cur],S=WSET[c.t],wl=S.L[p.br<0?S.def:p.br];
 let h='';
 h+='<div class="cc"><img src="'+PIC[cur]+'"><div style="flex:1;min-width:0"><b style="font-size:15px">'+CN(cur)+'</b> <button class="sm" onclick="RK.name(cur)" title="Đặt / đổi tên" style="padding:1px 6px">✏</button> <span class="tg">Lv'+P.lv+'</span><div class="st">'+CL[c.t]+' · '+TN[t]+(p.br>=0?' · '+c.br[p.br].n:'')+'</div><div class="st">🧘 '+ZC.nm()+'</div><div class="st" style="margin-top:4px">❤ '+Math.max(0,Math.round(P.hp))+'/'+mx()+'</div>'+bar(P.hp,mx(),'#d04040')+'<div class="st" style="margin-top:3px">💧 '+Math.round(P.mp)+'/'+mm()+'</div>'+bar(P.mp,mm(),'#4a8ae0')+'</div></div>';
 const sd=Math.round(SX('sdmg')*10)/10,as=Math.round(Math.min(100,SX('aspd'))*10)/10,cs=Math.round(Math.min(100,SX('cspd'))*10)/10;
 h+='<div class="cs"><div><span>⚔ Công</span><b>'+atk()*5+'</b></div><div><span>🛡 Thủ</span><b>'+df()+'</b></div><div><span>❤ HP</span><b>'+mx()+'</b></div><div><span>💧 MP</span><b>'+mm()+'</b></div></div><div class="cs c3"><div><span>ST kỹ năng</span><b>+'+sd+'%</b></div><div><span>Tốc đánh</span><b>+'+as+'%</b></div><div><span>Tốc niệm</span><b>+'+cs+'%</b></div></div>';
-h+='<div class="dt" style="min-height:0"><div style="display:flex;justify-content:space-between;align-items:center"><b>Tiềm năng</b><span class="tg" style="'+(p.pts?'background:#8a6420':'')+'">Điểm: '+p.pts+'</span></div>'+ANM((a,i)=>'<div class="ar"><span><b>'+a[0]+' '+p.al[i]+'</b><br><small>'+a[1]+'</small></span><span><button class="sm" '+(p.pts?'':'disabled')+' onclick="ap('+i+')">+1</button><button class="sm" '+(p.pts?'':'disabled')+' onclick="ap5('+i+')">+5</button></span></div>').join('')+'</div>';
+h+='<div class="dt" style="min-height:0"><div style="display:flex;justify-content:space-between;align-items:center"><b>Tiềm năng</b> <small style="opacity:.7">(hiệu quả giảm dần: 300 đầu 100% · 300 sau 40% · 400 sau 20% · rồi 10%)</small><span class="tg" style="'+(p.pts?'background:#8a6420':'')+'">Điểm: '+p.pts+'</span></div>'+ANM((a,i)=>'<div class="ar"><span><b>'+a[0]+' '+(p.al[i]|0)+' <small>(hiệu quả '+Math.round(EF(p.al[i]))+')</small></b><br><small>'+a[1]+'</small></span><span><button class="sm" '+(p.pts?'':'disabled')+' onclick="ap('+i+')">+1</button><button class="sm" '+(p.pts?'':'disabled')+' onclick="ap5('+i+')">+5</button></span></div>').join('')+'<div class="ar"><span><small>Tẩy toàn bộ điểm đã cộng, hoàn lại điểm chưa dùng</small></span><span><button class="sm" onclick="tnReset()">🔄 Tẩy (20💎)</button></span></div></div>';
 h+='<div class="st" style="margin-top:8px"><b>Kỹ năng</b></div><div class="sk">'+SK.map((k,i)=>ok(i)?'<div><span style="font-size:20px">'+k[1]+'</span><span><b>'+k[0]+'</b><br><small>'+k[2]+'MP · '+(k[3]/60).toFixed(1)+'s</small></span></div>':'<div style="opacity:.45"><span style="font-size:20px">🔒</span><small>Mở khi chuyển chức '+(i>=5?3:i>=4?2:1)+'</small></div>').join('')+'</div>';
 h+='<details class="wd" '+(wo?'open':'')+' ontoggle="wo=this.open?1:0"><summary><img src="'+wl[2][t]+'" style="height:30px;vertical-align:middle"> <b>'+wl[3][t]+'</b> <small>· xem các cấp vũ khí</small></summary>'+wpnUI()+'</details>';
 return h}

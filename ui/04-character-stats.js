@@ -8,8 +8,8 @@ const r1=v=>Math.round(v*10)/10,pc=v=>r1(v)+'%',sg=v=>(v>=0?'+':'')+r1(v)+'%';
 const row=(a,b,z,w)=>'<div class="sr'+(z?' z':'')+(w?' w':'')+'"><span>'+a+'</span><b>'+b+'</b></div>';
 function stUI(){
  const p=PS[cur],t=p.tier,pt=pet(),wv=wl(),ch=CHR[cur];
- const crit=Math.min(85,15+Math.floor(al(3)/5)*.5+ZC.crit()*100+(setOn()?10:0)+SX('crit')+HL.crit()*100),
-  cdm=180+SX('cdmg')+Math.floor(al(3)/5)+HL.cdmg()*100,
+ const crit=Math.min(85,15+ZC.crit()*100+(setOn()?10:0)+SX('crit')+HL.crit()*100),
+  cdm=180+SX('cdmg')+HL.cdmg()*100,
   hit=cl(88+SX('acc')-(3+mi()*2),35,100),
   dod=Math.min(40,SX('dodge')),dre=Math.min(50,SX('dred')),
   flat=P.lv+Math.floor((sm('d')+alD())*ZC.pd()*HL.df()/5),
@@ -20,7 +20,7 @@ function stUI(){
  h+='<div class="sgt">⚔️ Cơ bản</div><div class="sg">'+row('❤️ Sinh lực',mx())+row('💧 Năng lượng',mm())+row('🗡 Công',atk()*5)+row('🛡 Thủ',df())+'</div>';
  h+='<div class="sgt">💥 Tấn công</div><div class="sg">'+row('Chí mạng',pc(crit))+row('ST chí mạng',pc(cdm))+row('Chính xác (quái thường)',pc(hit))+row('Tăng % sát thương',sg(SX('dmgp')),z(SX('dmgp')))+row('ST kỹ năng',sg(SX('sdmg')),z(SX('sdmg')))+row('Tốc độ thi triển',sg(asp),z(asp))+row('Tốc niệm chú',sg(csp),z(csp))+'</div>';
  h+='<div class="sgt">🛡 Phòng thủ</div><div class="sg">'+row('Né tránh',pc(dod),z(dod))+row('Giảm ST nhận',pc(dre),z(dre))+row('Giáp trừ cứng/đòn','−'+flat)+row('Tăng % máu',sg(SX('hpp')),z(SX('hpp')))+row('Tăng % năng lượng',sg(SX('mpp')),z(SX('mpp')))+'</div>';
- h+='<div class="sgt">⭐ Điểm cộng</div><div class="sg">'+ANM((a,i)=>row(a[0],p.al[i]+' <small>('+a[1]+')</small>',z(p.al[i]))).join('')+row('🍀 May mắn rơi đồ','+'+(Math.floor(al(1)/15)*.5)+'%',!Math.floor(al(1)/15))+row('Điểm chưa dùng','<span style="color:'+(p.pts?'#7fff9a':'inherit')+'">'+p.pts+'</span>',z(p.pts),1)+'</div>';
+ h+='<div class="sgt">⭐ Điểm cộng</div><div class="sg">'+ANM((a,i)=>row(a[0],(p.al[i]|0)+' <small>('+a[1]+')</small>',z(p.al[i]|0))).join('')+row('🍀 May mắn rơi đồ','+'+(Math.round(alE(5)*2)/100)+'%',!alE(5))+row('📦 Mảnh chế tạo nhận','+'+(Math.round(alE(5)*2)/100)+'%',!alE(5))+row('🧘 Đạo Linh (EXP) nhận','+'+(Math.round(alE(5)*2)/100)+'%',!alE(5))+row('🏃 Tốc chạy (làng/thành)','+'+(Math.round(alE(3))/100)+'%',!alE(3))+row('Điểm chưa dùng','<span style="color:'+(p.pts?'#7fff9a':'inherit')+'">'+p.pts+'</span>',z(p.pts),1)+'</div>';
  const mult=[['Chuyển chức','×'+(1+.25*t).toFixed(2)+' công/máu',t>0],['Tu vi','×'+ZC.cb().toFixed(2)+' công/thủ/máu · ×'+ZC.mb().toFixed(2)+' MP',ZC.cb()>1.0001||ZC.mb()>1.0001],['Đan dược',(typeof FM!='undefined'?FM.sumTxt():''),(typeof FM!='undefined'&&FM.any())],['Bộ Thần Thoại',setN()+'/6'+(setOn()?' · +30% công/máu, +10% chí mạng':''),setN()>0],['Bộ Thánh',HL.n()+'/10'+HL.sum(),HL.n()>0]];
  h+='<div class="sgt">✨ Nguồn tăng chỉ số</div><div class="sg">'+mult.map(m=>row(m[0],m[1],!m[2],1)).join('');
  if(pt){const nm=PT4[pt.k].n[pt.ev],bs=['dmgp','crit','acc','cdmg','cdr','dred','hpp'].filter(k=>PB(k)).map(k=>AXN[k]+' +'+r1(PB(k))+'%').join(', ');h+=row('🐾 '+nm+' · Lv '+pt.lv,bs||'—',0,1)}else h+=row('🐾 Thú nuôi','chưa có',1,1);
