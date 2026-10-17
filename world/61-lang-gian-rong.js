@@ -29,17 +29,19 @@ window.VWD={on:plain,ww:ww,cam:function(){return camX},cx:function(){return begu
 
 /* bắt đầu phép dịch camera đúng lúc vẽ nền làng (xbg(-1)); kết thúc ở lớp vdraw ngoài cùng */
 if(typeof xbg==='function'){var _xbg=xbg;xbg=function(gy,m){if(m===-1&&!begun&&plain()){begun=true;W0=W;cam0=cam;g.save();g.translate(-camX*s,0);cam=0;W=ww()*s}return _xbg.apply(this,arguments)}}
-if(typeof vdraw==='function'){var _vd=vdraw;vdraw=function(){try{return _vd.apply(this,arguments)}finally{if(begun){begun=false;W=W0;cam=cam0;g.restore()}}}}
+if(typeof vdraw==='function'){var _vd=vdraw;vdraw=function(){try{return _vd.apply(this,arguments)}catch(e){try{VWD.err=String(e&&e.stack||e).slice(0,300)}catch(x){}throw e}finally{if(begun){begun=false;W=W0;cam=cam0;g.restore()}}}}
 
 /* camera bám nhân vật khi đi trong làng */
 function tick(){
   if(plain()){
-    var rv=W/s,max=Math.max(0,ww()-rv),tg=Math.max(0,Math.min(max,P.x-rv/2));
+    var rv=realW()/s,max=Math.max(0,ww()-rv),tg=Math.max(0,Math.min(max,P.x-rv/2));   /* Fix188: dùng bề rộng màn hình THẬT (realW) */
     if(!(P.x>=0))return; /* chặn NaN */
+    if(!isFinite(camX))camX=isFinite(tg)?tg:0;
     if(!wasOn){wasOn=true;camX=tg}else{
       camX+=(tg-camX)*.16;if(Math.abs(tg-camX)<.2)camX=tg;
       /* không bao giờ để nhân vật ra khỏi dải giữa màn hình (30%-70%) dù camera bị trễ khung/bước */
       camX=Math.max(P.x-rv*.7,Math.min(P.x-rv*.3,camX));camX=Math.max(0,Math.min(max,camX));
+      if(P.x-camX>rv*.8)camX=Math.max(0,Math.min(max,P.x-rv*.7)); /* Fix188: chốt cứng, nhân vật không trôi ra mép phải */
     }
     cam=camX;
   }
@@ -57,4 +59,10 @@ try{
     },true);
   }
 }catch(e){console.error('[lang-gian-rong] pointer',e)}
+
+/* Fix188: bảng chẩn đoán — mở game với ?dbg=1 để hiện (P.x, camera, lỗi vẽ). Không ảnh hưởng game khi không bật. */
+try{if(/[?&]dbg=1/.test(location.search)){
+  var dv=document.createElement('div');dv.style.cssText='position:fixed;left:4px;bottom:100px;z-index:99999;background:#000b;color:#9f9;font:10px/1.3 monospace;padding:4px;max-width:70vw;pointer-events:none;white-space:pre-wrap';document.body.appendChild(dv);
+  window.addEventListener('error',function(e){VWD.err=String(e.message)+' @'+String(e.filename||'').split('/').pop()+':'+e.lineno});
+  setInterval(function(){try{dv.textContent='Px '+(P.x|0)+' cam '+(camX|0)+' scr '+(((P.x-camX)*s)|0)+'/'+(realW()|0)+' s '+s.toFixed(2)+' begun '+begun+' plain '+plain()+' vil '+vil+'\nTT '+(window.TTT&&TTT.on)+' gate '+(typeof gateX==='function'?(gateX()|0):'-')+'\nERR '+(VWD.err||'-')}catch(e){dv.textContent='dbg '+e}},300)}}catch(e){}
 })();
