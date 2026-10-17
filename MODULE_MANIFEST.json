@@ -78,7 +78,10 @@
       "world/77-thanh-online.js",
       "world/78-canh-8-huong.js",
       "world/79-tien-gioi-ky-nang-8-huong.js",
-      "world/80-map-treo.js"
+      "world/80-map-treo.js",
+      "world/81-tien-gioi-quai.js",
+      "world/82-tien-gioi-fx-pro.js",
+      "world/83-map-treo-fx-pro.js"
     ],
     "systems": [
       "systems/08-farming-alchemy.js",

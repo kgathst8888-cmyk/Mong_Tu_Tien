@@ -45,6 +45,7 @@ function cast(){
   say(P.x,230,R_.si+' '+R_.sk+' · Tầng '+L,R_.c);
 }
 function fire(root,L){
+  try{if(window.TGFX2&&TGFX2.cast)TGFX2.cast('l',{r:root,tg:foes()[0]})}catch(z){}
   if(root==0){S.fires.push({t:240+12*L,L:L,k:0})}
   else if(root==1){S.god={x:P.x+110,t:1200+60*L,L:L,k:0,nx:30,at:0,ph:0,name:'',nc:'#5adf7a'}}
   else if(root==2){S.rain={t:480+18*L,L:L}}

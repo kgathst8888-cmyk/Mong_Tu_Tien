@@ -91,7 +91,7 @@ function applyData(full,msg){
  toast(msg||'☁ Đã tải tiến trình từ mây');
  setTimeout(()=>location.reload(),900)}
 /* ---------- LƯU NHANH LÊN MÂY: gộp thay đổi, đẩy thẳng 1 yêu cầu (không hỏi meta trước), ~2-5s sau lần thay đổi cuối ---------- */
-const DEB=2000,MINGAP=5000,FP={busy:false,last:0,fail:0};
+const DEB=700,MINGAP=1500,FP={busy:false,last:0,fail:0};
 function markDirty(){if(!OK||S.block)return;if(!S.dirty){S.dirty=true;S.dueAt=Math.max(Date.now()+DEB,FP.last+MINGAP)}}
 function fastTick(){
  if(!S.dirty||!OK||!S.sess||S.block||S.conflict||FP.busy||S.busy||Date.now()<S.dueAt)return;
@@ -111,7 +111,7 @@ function fastPush(){
    if(r&&r.status==='ok'){S.meta={uid:uid(),rev:r.rev,hash:h,at:Date.now()};persist();S.cloud=Object.assign(S.cloud||{},{rev:r.rev,at:new Date().toISOString()});FP.fail=0;FP.last=Date.now();S.err='';if(!S.conflict){S.st='ok';S.okAt=Date.now()}
     if(hashLocal()!==h)markDirty()}
    else await conflict()}
-  catch(e){FP.fail++;S.dirty=true;S.dueAt=Date.now()+Math.min(30000,2000*Math.pow(2,FP.fail));S.err=e.net?e.message:vi(e);if(S.sess)S.st='err'}
+  catch(e){FP.fail++;S.dirty=true;S.dueAt=Date.now()+Math.min(15000,1000*Math.pow(2,FP.fail));S.err=e.net?e.message:vi(e);if(S.sess)S.st='err'}
   finally{FP.busy=false;ui()}})}
 function saveNow(){try{if(typeof started!='undefined'&&started&&typeof sv=='function')sv()}catch(e){}S.dirty=true;S.dueAt=0;FP.last=0;const m=mine();if(m&&m.rev>=1)return fastPush();S.next=0;S.chk=true;return reconcile()}
 function tick(){if(!OK||!S.sess||S.busy||S.block||S.conflict||!S.chk||Date.now()<S.next)return;S.chk=false;const m=mine();if(m&&hashLocal()===m.hash)return;reconcile()}
@@ -148,7 +148,7 @@ function close(){if(ov)ov.classList.remove('on')}
 const COL={off:'#777',out:'#888',busy:'#e8b84a',ok:'#6fd36f',err:'#e05a4a',conf:'#e8b84a'};
 const fmt=t=>{try{return new Date(t).toLocaleString('vi-VN',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'2-digit'})}catch(e){return''}};
 function stText(){return S.st=='off'?'Chưa cấu hình':S.st=='out'?'Chưa đăng nhập':S.st=='busy'?'Đang đồng bộ…':S.st=='ok'?'Đã đồng bộ'+(S.okAt?' lúc '+fmt(S.okAt):''):S.st=='conf'?'Cần chọn bản lưu (máy ≠ mây)':'Lỗi: '+S.err+' (sẽ tự thử lại)'}
-function mb(){const x=document.getElementById('cl-mb');if(x)x.innerHTML='<span class="cl-dot" style="background:'+COL[S.st]+'"></span>☁ Tài khoản &amp; Xếp hạng'}
+function mb(){const x=document.getElementById('cl-mb');if(x)x.innerHTML='<span class="cl-dot" style="background:'+COL[S.st]+'"></span>☁ Tài khoản'}
 function inject(){const b=document.querySelector('#mn .bx');if(!b||b.querySelector('#cl-mb')||b.querySelector('#pn'))return;const x=document.createElement('button');x.id='cl-mb';x.style.cssText='width:100%;padding:12px';x.onclick=()=>open('acc');b.appendChild(x);mb()}
 function ui(force){mb();if(!ov||!ov.classList.contains('on'))return;const a=document.activeElement;if(!force&&a&&a.tagName=='INPUT'&&ov.contains(a))return;render()}
 const msgBox=()=>S.msg?'<div class="cl-msg">'+esc(S.msg)+'</div>':'';
@@ -170,7 +170,7 @@ function viewLb(){if(!OK)return viewAcc();let h='<div class="cl-note">Xếp theo
   h+='<div class="cl-note">Tổng '+(L.total|0)+' người chơi'+(S.sess?'':' · đăng nhập để có tên trên bảng')+'</div>'}
  return h+'<button data-a="lbr"'+(S.lbBusy?' disabled':'')+'>🔄 Làm mới</button>'}
 function render(){const b=ov&&ov.querySelector('.cl-bx');if(!b)return;
- b.innerHTML='<div class="cl-h"><span>☁ Tài khoản &amp; Xếp hạng</span><button data-a="x">✕</button></div><div class="cl-tabs"><button data-a="tab:acc" class="'+(S.tab=='acc'?'on':'')+'">Tài khoản</button><button data-a="tab:lb" class="'+(S.tab=='lb'?'on':'')+'">Xếp hạng</button></div>'+(S.tab=='lb'?viewLb():S.view=='cf'?viewCf():viewAcc())}
+ b.innerHTML='<div class="cl-h"><span>☁ Tài khoản</span><button data-a="x">✕</button></div><div class="cl-tabs"><button data-a="tab:acc" class="'+(S.tab=='acc'?'on':'')+'">Tài khoản</button></div>'+(S.view=='cf'?viewCf():viewAcc())}
 async function loadLb(){S.lbBusy=true;S.lbErr='';render();try{S.lb=S.sess?await rpc('get_leaderboard',{p_limit:50}):await http('/rest/v1/rpc/get_leaderboard',{method:'POST',body:{p_limit:50}});S.lbAt=Date.now()}catch(e){S.lbErr=e.net?e.message:vi(e)}S.lbBusy=false;render()}
 function afterLogin(){S.msg='';S.pw='';S.openCf=true;S.next=0;S.st='busy';ui(true);reconcile()}
 async function doAuth(kind){const em=(S.em||'').trim(),pw=S.pw||'';if(!em||pw.length<6){S.msg=!em?'Nhập email.':'Mật khẩu cần từ 6 ký tự.';render();return}
@@ -213,7 +213,7 @@ inject();
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',wrapAll);else wrapAll();
 if(OK){
- const loopTick=()=>{fastTick();tick()};setInterval(loopTick,1000);try{if(window.KTHM_TICK)KTHM_TICK.slow(loopTick)}catch(e){}
+ const loopTick=()=>{fastTick();tick()};setInterval(loopTick,250);try{if(window.KTHM_TICK){let lt=0;KTHM_TICK.fast(()=>{const n=Date.now();if(n-lt>=250){lt=n;loopTick()}})}}catch(e){}   /* nhịp 0,25s (cả khi thu nhỏ nhờ Worker) */
  if(window.CLOUDONLY)CLOUDONLY.onWrite=()=>markDirty();
  document.addEventListener('visibilitychange',()=>{if(document.hidden)flush();else if(S.sess&&Date.now()-S.vis>60000){S.vis=Date.now();S.next=0;reconcile()}});
  addEventListener('pagehide',flush);addEventListener('beforeunload',flush);

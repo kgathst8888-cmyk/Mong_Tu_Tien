@@ -66,7 +66,7 @@ var _tick=dgTick;dgTick=function(){if(!dg||!dg.ks)return _tick.apply(this,argume
  else if(dg.bs&&!E.some(function(e){return e.k=='boss'})&&!dg.done){dg.done=1;dg.out=300;win()}
  if(dg.done&&--dg.out<=0)exit()};
 
-var _drop=drop;drop=function(e){if(!e||!e.ks)return _drop.apply(this,arguments);var L=MT_LV;gold+=gP(3000*L*CF.rw);var f=(30+Math.floor(R()*10))*CF.rw;frag+=f;DT.push({x:e.x,y:120,s:'🔹 +'+f+' mảnh chế tạo',c:'#6ff',l:140});for(var i=0;i<4;i++)give(gen(L,4),e.x+(i-1.5)*40,150+i*30);try{ZC.gain(5000)}catch(x){}try{if(window.TTHONG)TTHONG.drop()}catch(x){}};
+var _drop=drop;drop=function(e){if(!e||!e.ks)return _drop.apply(this,arguments);var L=MT_LV;gold+=gP(3000*L*CF.rw);var f=(30+Math.floor(R()*10))*CF.rw;frag+=f;DT.push({x:e.x,y:120,s:'🔹 +'+f+' mảnh chế tạo',c:'#6ff',l:140});for(var i=0;i<4;i++){if(Math.random()>=EQD.boss)continue;give(gen(L,4),e.x+(i-1.5)*40,150+i*30)}try{ZC.gain(5000)}catch(x){}try{if(window.TTHONG)TTHONG.drop()}catch(x){}};
 
 var _hud=dgHud;dgHud=function(){_hud.apply(this,arguments);if(dg&&dg.ks){var b=E.find(function(e){return e.k=='boss'});dgh.innerHTML='<div class="dgt">🗡️ KIẾM THÁNH · Lv'+MT_LV+' · ×'+CF.hp+' Ma Thần</div>'+(b?'<div class="dgp"><i style="width:'+cl(b.hp/b.max*100,0,100)+'%"></i></div>':'')}};
 

@@ -7,15 +7,17 @@
  *   📢 Thông báo : đăng thông báo toàn game (hiện ở mục 📢 Thông báo của người chơi) + đặt hạn + xoá
  *   ✉️ Đã gửi    : danh sách thư đã gửi + 🗑 thu hồi thư CHƯA nhận
  *   📜 Nhật ký   : 40 thao tác admin gần nhất
- *   🧪 Test      : chỉnh tu vi / cảnh giới của nhân vật ĐANG CHƠI (cộng tu vi, +10%/+50%/đầy, đặt cảnh giới + tầng, ±1 tầng, Đại Thừa 9) — chỉ trên máy, bỏ qua điều kiện đột phá
+ *   🧪 Test      : chỉnh nhân vật ĐANG CHƠI (cộng tu vi, đặt cảnh giới + tầng, ☯ Đạo Linh (EXP), cấp độ Đạo Thể, cấp độ Tiên Nhân, ♻ reset nhân vật) — chỉ trên máy, bỏ qua điều kiện đột phá
  * Máy chủ: chạy admin.sql 1 lần trong Supabase → SQL Editor, rồi tự cấp quyền admin cho email của bạn (câu lệnh ở cuối đầu file admin.sql).
  * Không sửa module cũ; chỉ dùng KCL.rpc (systems/12-cloud-save.js). Quà trong thư dùng đúng định dạng của ui/69-thong-bao-thu.js. */
 (function(){
 'use strict';
 var FONT='KTH Serif,Songti SC,STKaiti,KaiTi,serif';
 var RN=['Thường','Tinh Anh','Hiếm','Sử Thi','Thần Thoại','Thiên Thần'];
+function itM(){try{return window.MAIL&&window.MAIL.IT||{}}catch(e){return{}}}
+function itl(){var m=itM(),o=[];Object.keys(m).forEach(function(k){o.push([k,m[k].e+' '+m[k].n,m[k].max])});return o}
 var CSHL=[['b10','📜 Bùa Cường Hóa +10%'],['b15','📜 Bùa Cường Hóa +15%'],['b20','📜 Bùa Cường Hóa +20%'],['ham','🔨 Búa Đục Lỗ'],
-  ['g10','📜 Bùa Ghép Ngọc +10%'],['dh','🔮 Ngọc Định Hồn'],['vx','📈 Vé Tăng 20% EXP'],['vt','🧘 Vé Tăng 20% Tu Vi']];
+  ['g10','📜 Bùa Ghép Ngọc +10%'],['dh','🔮 Ngọc Định Hồn'],['vx','📈 Vé Tăng 20% EXP'],['vt','🧘 Vé Tăng 20% Tu Vi'],['tc','🎯 Vé Tẩy Opt Chọn'],['x5','📈 Bùa EXP +50%'],['x7','📈 Bùa EXP +70%']];
 var DUR=[[1,'1 giờ'],[24,'1 ngày'],[72,'3 ngày'],[168,'7 ngày'],[720,'30 ngày'],[876000,'Vĩnh viễn']];
 var ACTL={lt:'💎 Linh Thạch',mail:'🎁 Gửi thư',mail_del:'🗑 Thu hồi thư',kick:'⏏ Đá khỏi game',notice:'📢 Đăng thông báo',notice_del:'🗑 Xoá thông báo',ban:'🔒 Khoá tài khoản',unban:'🔓 Mở khoá',chat_ban:'🤐 Cấm chat',chat_unban:'🔊 Gỡ cấm chat'};
 
@@ -41,7 +43,7 @@ function errMsg(e){
 
 /* ---------- trạng thái ---------- */
 var isAdmin=false,checkedFor='',checking=false,el=null,btn=null,open=false;
-function defF(){return{title:'Quà từ Hệ Thống',body:'',gold:'',fe:'',hk:'',eqr:'3',eqn:'',days:'14',c:{}}}
+function defF(){return{title:'Quà từ Hệ Thống',body:'',gold:'',fe:'',hk:'',eqr:'3',eqn:'',days:'14',c:{},it:{}}}
 var S={notes:null,nf:{title:'',body:'',days:'7'},tab:'acc',q:'',lastQ:'',list:null,sel:'',selU:null,busy:false,note:'',mails:null,logs:null,to:'all',f:defF(),reset:0};
 
 function val(id){var n=document.getElementById(id);return n?n.value:''}
@@ -54,6 +56,7 @@ function qs(q){
   if(q.fe)t.push('⛏ '+nf(q.fe)+' sắt');
   if(q.hk)t.push('⛏ '+nf(q.hk)+' huyền kim');
   if(q.eq)t.push('🎁 Rương trang bị '+(RN[q.eq.r]||q.eq.r)+' ×'+q.eq.n);
+  if(q.it){var M=itM();Object.keys(q.it).forEach(function(k){t.push((M[k]?M[k].e+' '+M[k].n:k)+' ×'+nf(q.it[k]))})}
   return t.join(' · ');
 }
 function buildQ(f){
@@ -65,6 +68,8 @@ function buildQ(f){
   if((n=Math.floor(+f.hk))>0)q.hk=Math.min(n,1e6);
   var r=Math.floor(+f.eqr),k=Math.floor(+f.eqn);
   if(k>0&&r>=0&&r<=5)q.eq={r:r,n:Math.min(k,20)};
+  var it={};itl().forEach(function(x){var v=Math.floor(+(f.it||{})[x[0]]);if(v>0)it[x[0]]=Math.min(v,x[2])});
+  if(Object.keys(it).length)q.it=it;
   return Object.keys(q).length?{qua:q,txt:qs(q)}:{qua:null,txt:''};
 }
 function saveForm(){
@@ -73,7 +78,7 @@ function saveForm(){
   var f=S.f;
   Array.prototype.forEach.call(el.querySelectorAll('[data-f]'),function(n){
     var k=n.getAttribute('data-f');
-    if(k.indexOf('c_')===0){f.c=f.c||{};f.c[k.slice(2)]=n.value}else f[k]=n.value;
+    if(k.indexOf('c_')===0){f.c=f.c||{};f.c[k.slice(2)]=n.value}else if(k.indexOf('i_')===0){f.it=f.it||{};f.it[k.slice(2)]=n.value}else f[k]=n.value;
   });
 }
 
@@ -153,12 +158,12 @@ function vUser(u){
   if(isBanned(u))b+='<span class="tg bn">KHOÁ</span>';
   if(u.chat_ban)b+='<span class="tg cb">CẤM CHAT</span>';
   var h='<div class="ai'+(sel?' sl':'')+'"><div class="ar2" data-a="pick" data-id="'+esc(u.id)+'"><div class="tc"><b>'+esc(u.email||'(không có email)')+'</b>'
-    +'<small>💎 '+nf(u.lt)+' LT · đăng nhập gần nhất: '+(u.last_sign_in_at?fmtT(u.last_sign_in_at):'—')+'</small></div>'+b+'<span>'+(sel?'▴':'▾')+'</span></div>';
+    +'<small>💎 '+nf(u.lt)+' LT'+(u.lk?' · 🔒 '+(u.lks||[]).map(nf).join('/'):'')+' · đăng nhập gần nhất: '+(u.last_sign_in_at?fmtT(u.last_sign_in_at):'—')+'</small></div>'+b+'<span>'+(sel?'▴':'▾')+'</span></div>';
   if(sel){
     h+='<div class="ac"><small>UUID: '+esc(u.id)+'</small>';
     if(isBanned(u))h+='<small>Khoá đến: '+fmtT(u.banned_until)+'</small>';
     if(u.online&&u.device)h+='<small>Thiết bị: '+esc(u.device)+'</small>';
-    h+='<h4>💎 Linh Thạch (hiện có '+nf(u.lt)+')</h4><div class="ar"><input id="adm-lt" type="number" inputmode="numeric" min="1" placeholder="Số lượng"><button class="bt gr" data-a="ltadd">➕ Cộng</button><button class="bt dg" data-a="ltsub">➖ Trừ</button></div>';
+    h+='<h4>💎 Linh Thạch KHÔNG KHOÁ (hiện có '+nf(u.lt)+(u.lk?' · khoá NV1/2/3: '+(u.lks||[]).map(nf).join('/'):'')+') — cộng ở đây = tiền nạp</h4><div class="ar"><input id="adm-lt" type="number" inputmode="numeric" min="1" placeholder="Số lượng"><button class="bt gr" data-a="ltadd">➕ Cộng</button><button class="bt dg" data-a="ltsub">➖ Trừ</button></div>';
     h+='<h4>🎁 Quà</h4><div class="ar"><button class="bt" data-a="giftto">Gửi thư quà cho người này</button></div>';
     h+='<h4>🔒 Khoá đăng nhập</h4><div class="ar">'+durSel('adm-bh',24)+'<button class="bt dg" data-a="ban">Khoá</button><button class="bt gr" data-a="unban">Mở khoá</button></div>';
     h+='<h4>🤐 Cấm chat</h4><div class="ar">'+durSel('adm-ch',24)+'<button class="bt dg" data-a="cban">Cấm</button><button class="bt gr" data-a="cunban">Gỡ cấm</button></div>';
@@ -181,10 +186,13 @@ function vGift(){
   h+='<div class="gr2">';
   CSHL.forEach(function(x){h+='<span>'+x[1]+'</span><input data-f="c_'+x[0]+'" type="number" inputmode="numeric" min="0" max="1000" value="'+esc((f.c||{})[x[0]]||'')+'">'});
   h+='</div>';
+  h+='<h4 style="margin:10px 0 2px;font-size:13px;color:#ffd76a">🆕 Vật phẩm mới</h4><div class="gr2">';
+  itl().forEach(function(x){h+='<span>'+x[1]+'</span><input data-f="i_'+x[0]+'" type="number" inputmode="numeric" min="0" max="'+x[2]+'" value="'+esc((f.it||{})[x[0]]||'')+'">'});
+  h+='</div>';
   h+='<div class="ar"><span>🎁 Rương trang bị</span><select data-f="eqr">'+RN.map(function(n,i){return'<option value="'+i+'"'+(String(f.eqr)===String(i)?' selected':'')+'>'+n+'</option>'}).join('')+'</select>'
     +'<input data-f="eqn" type="number" inputmode="numeric" min="0" max="20" placeholder="SL" value="'+esc(f.eqn)+'" style="max-width:70px"></div>';
   h+='<div class="ar"><span>⏳ Hạn nhận</span><select data-f="days">'+[1,3,7,14].map(function(d){return'<option value="'+d+'"'+(String(f.days)===String(d)?' selected':'')+'>'+d+' ngày</option>'}).join('')+'</select></div>';
-  h+='<div class="tq">Giới hạn mỗi thư: vàng ≤ 2 tỉ · mỗi loại vật phẩm ≤ 1000 · quặng ≤ 1 triệu · rương ≤ 20. Linh Thạch gửi ở tab 👤 Tài khoản (không đi qua thư).</div>';
+  h+='<div class="tq">Giới hạn mỗi thư: vàng ≤ 2 tỉ · mỗi loại vật phẩm Cash Shop ≤ 1000 · quặng ≤ 1 triệu · rương ≤ 20 · vật phẩm mới có mức tối đa ghi ở ô nhập (tuỳ loại). Hồn Phách chỉ nhận được khi người chơi đã chọn hồn phách. Linh Thạch gửi ở tab 👤 Tài khoản (không đi qua thư).</div>';
   h+='<div class="ar"><button class="bt gr" data-a="send">📨 Gửi thư</button><button class="bt" data-a="clear">Xoá form</button></div>';
   return h;
 }
@@ -323,7 +331,48 @@ function vTest(){
   h+='<h4 style="margin:10px 0 4px;font-size:13px;color:#ffd76a">🌟 Cảnh giới</h4><div class="ar"><select id="adm-cr">'+CGN.map(function(n,k){return'<option value="'+(k-1)+'"'+(k-1===c.r?' selected':'')+'>'+n+'</option>'}).join('')+'</select>'
     +'<select id="adm-cs">'+[1,2,3,4,5,6,7,8,9].map(function(t){return'<option value="'+t+'"'+(t===(c.s||1)?' selected':'')+'>Tầng '+t+'</option>'}).join('')+'</select></div>';
   h+='<div class="ar"><button class="bt gr" data-a="t_cgset">✅ Đặt cảnh giới</button><button class="bt" data-a="t_cgup">⬆ +1 tầng</button><button class="bt dg" data-a="t_cgdn">⬇ −1 tầng</button><button class="bt" data-a="t_cgmax">👑 Đại Thừa 9</button></div>';
+  var H4='<h4 style="margin:12px 0 4px;font-size:13px;color:#ffd76a">',nxv=1;try{nxv=nx()}catch(e){}
+  h+=H4+'☯ Đạo Linh (EXP) — '+nf(Math.floor(P.xp))+'/'+nf(nxv)+'</h4><div class="ar"><input id="adm-xp" type="number" inputmode="numeric" min="1" placeholder="Số Đạo Linh"><button class="bt gr" data-a="t_xpadd">➕ Cộng</button></div>';
+  h+='<div class="ar"><button class="bt" data-a="t_xpp" data-v="0.1">+10%</button><button class="bt" data-a="t_xpp" data-v="0.5">+50%</button><button class="bt gr" data-a="t_xpp" data-v="1">⚡ Đầy (lên cấp)</button></div>';
+  h+=secLv('d','☯ Cấp độ Đạo Thể','adm-lvd')+secLv('t','✨ Cấp độ Tiên Nhân','adm-lvt');
+  h+=H4+'♻ Reset nhân vật</h4><div class="tq">Đưa nhân vật ĐANG CHƠI về như mới tạo (Lv1): xoá cấp, tu vi, điểm, trang bị đang mặc, túi đồ, thú, Hợp Đạo/Chuyển Thế và mọi dữ liệu hệ thống của riêng nhân vật. Giữ tên, lớp, kho Cash Shop, thư. Vàng và dữ liệu chung của tài khoản không đổi.</div>'
+    +'<div class="ar"><button class="bt dg" data-a="t_reset">♻ Reset nhân vật</button></div>';
   return h;
+}
+function lvMode(){try{if(window.CTHE&&CTHE.on())return't';if(window.HDAO&&HDAO.on())return'd'}catch(e){}return'p'}
+function lvName(m){return m==='t'?'Tiên Nhân':m==='d'?'Đạo Thể':'Phàm Thể'}
+function ptsPer(m){try{return m==='t'?CTHE.cfg.pts:m==='d'?10:5}catch(e){return 5}}
+function lvCap(){try{return LC(PS[cur].tier)}catch(e){return 100}}
+function secLv(m,title,inId){
+  var h='<h4 style="margin:12px 0 4px;font-size:13px;color:#ffd76a">'+title+' — Lv '+P.lv+'/'+lvCap()+'</h4>';
+  if(lvMode()!==m)return h+'<div class="tq">Nhân vật đang chơi là <b>'+lvName(lvMode())+'</b> nên mục này chưa áp dụng.</div>';
+  h+='<div class="ar"><input id="'+inId+'" type="number" inputmode="numeric" min="1" max="100" placeholder="Cấp độ"><button class="bt gr" data-a="t_lv'+m+'_set">✅ Đặt cấp</button></div>';
+  h+='<div class="ar"><button class="bt" data-a="t_lv'+m+'_up1">⬆ +1</button><button class="bt" data-a="t_lv'+m+'_up10">⬆ +10</button><button class="bt dg" data-a="t_lv'+m+'_dn1">⬇ −1</button><button class="bt gr" data-a="t_lv'+m+'_max">👑 Tối đa</button></div>';
+  return h+'<small>Tăng cấp được cộng '+ptsPer(m)+' điểm tiềm năng/cấp; EXP về 0.</small>';
+}
+function setLv(L,m){
+  var p=PS[cur],d;L=Math.max(1,Math.min(lvCap(),L|0));d=L-P.lv;
+  if(d>0)p.pts=(p.pts|0)+d*ptsPer(m);
+  P.lv=L;p.lv=L;P.xp=0;p.xp=0;
+  try{P.hp=mx();P.mp=mm()}catch(e){}
+  return L;
+}
+function addXp(n){
+  try{if(window.TGQ&&TGQ.addXp){TGQ.addXp(n);return}}catch(e){}
+  P.xp+=n;
+}
+/* reset RIÊNG nhân vật đang chơi (khác ng() của game: ng() xoá cả 3 nhân vật + vàng) */
+function resetChar(){
+  var p=PS[cur];if(!p)return false;
+  var BASE={lv:1,xp:1,pts:1,tier:1,br:1,al:1,cv:1,pet:1,lc:1,wg:1,lg:1,nm:1,rc:1},KEEP={csh:1,td:1,mail:1,mailIds:1},nm=p.nm;
+  Object.keys(p).forEach(function(k){if(!BASE[k]&&!KEEP[k])delete p[k]});
+  p.lv=1;p.xp=0;p.pts=0;p.tier=0;p.br=-1;p.al=[0,0,0,0];p.cv={r:-1,s:0,q:0,f:0};p.pet=null;p.lc=null;p.wg=0;p.lg=0;p.nm=nm;p.rc=0;
+  EQS[cur]=Array(NS).fill(null);BAGS[cur]=[];
+  lg=0;rf();
+  P.lv=1;P.xp=0;
+  try{init()}catch(e){}
+  try{vil=1;cam=0;pp.x=0}catch(e){}
+  return true;
 }
 function testDone(msg){
   try{ZC.refresh()}catch(e){}
@@ -344,6 +393,22 @@ function testAct(a){
     n=Math.floor(+val('adm-tv'));
     if(!(n>0)){S.note='⚠ Nhập số tu vi lớn hơn 0.';draw();return}
     ZC.gain(n);testDone('✅ Đã cộng '+nf(n)+' tu vi → '+ZC.nm());return}
+  var mL=/^t_lv([dt])_(.+)$/.exec(a);
+  if(a==='t_xpadd'||a==='t_xpp'){
+    n=a==='t_xpadd'?Math.floor(+val('adm-xp')):Math.max(1,Math.ceil(nx()*(+S.tvf||0)));
+    if(!(n>0)){S.note='⚠ Nhập số Đạo Linh lớn hơn 0.';draw();return}
+    addXp(n);testDone('✅ Đã cộng '+nf(n)+' Đạo Linh (EXP) — đang lên cấp nếu đủ');return}
+  if(mL){
+    var md=mL[1],op=mL[2],L=P.lv;
+    if(lvMode()!==md){S.note='⚠ Nhân vật đang chơi là '+lvName(lvMode())+', không phải '+lvName(md)+'.';draw();return}
+    if(op==='up1')L+=1;else if(op==='up10')L+=10;else if(op==='dn1')L-=1;else if(op==='max')L=lvCap();
+    else if(op==='set')L=Math.floor(+val(md==='t'?'adm-lvt':'adm-lvd'));
+    if(!(L>=1)){S.note='⚠ Nhập cấp độ từ 1 trở lên.';draw();return}
+    L=setLv(L,md);testDone('✅ '+lvName(md)+' đã đặt Lv '+L+(L>=lvCap()?' (tối đa)':''));return}
+  if(a==='t_reset'){
+    if(!confirm('RESET nhân vật đang chơi ('+ZC.nm()+') về Lv1 như mới tạo?\nXoá cấp, tu vi, trang bị, túi đồ, thú, Hợp Đạo/Chuyển Thế…'))return;
+    if(!confirm('Chắc chắn? Thao tác này KHÔNG hoàn tác được.'))return;
+    resetChar();testDone('✅ Đã reset nhân vật về Lv1');return}
   if(a==='t_tvp'){
     n=Math.max(1,Math.ceil(ZC.tvInfo().need*(+S.tvf||0)));
     ZC.gain(n);testDone('✅ Đã cộng '+nf(n)+' tu vi → '+ZC.nm());return}

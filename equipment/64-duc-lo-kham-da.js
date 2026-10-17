@@ -328,7 +328,7 @@ setInterval(scanBag,700);
 
 window.GEMX={cfg:CF,open:openMain,close:close,pick:pickSlot,cancelPick:cancelPick,socket:socket,drill:drill,grind:grind,unsocket:unsocket,tog:tog,merge:merge,
   tal:function(){useTal=!useTal;render()},clr:function(){pick=[];render()},
-  add:function(n){addRaw(n|0||1);save();if(isOpen)render()},         /* tiện test: GEMX.add(3) */
+  add:function(n,lv){addRaw(n|0||1,null,lv);save();if(isOpen)render()},         /* thêm đá CHƯA MÀI: GEMX.add(3) = 3 viên cấp 1; GEMX.add(1,3) = 1 viên cấp 3 */
   count:function(){var r=0,f=0;store().forEach(function(g){g.raw?r++:f++});return{raw:r,ground:f}},
   valOf:valOf,pool:pool,lv5:lv5,bonus:gemBonus,
   list:mkList,peek:mkPeek,take:mkTake,back:mkBack,txt:mkTxt,col:mkCol};

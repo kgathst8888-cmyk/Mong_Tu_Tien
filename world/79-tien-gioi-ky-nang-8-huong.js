@@ -2,7 +2,7 @@
  * Thành Tiên Giới là bản đồ thành thị (vil, không có quái) nên 4 hệ kỹ năng gốc bị ẩn. Module này thêm bảng nút riêng #tg8-sk CHỈ khi TG.on():
  *   • 5 kỹ năng môn phái (world/72) · 3 thần thông Ý Cảnh (world/49+53) · Pháp Bảo Bổn Mệnh (world/48) · Linh Căn đang chọn (systems/18).
  * Bấm nút → ra HIỆU ỨNG theo 8 hướng nhân vật đang quay mặt (cùng góc với world/74: E,SE,S,SW,W,NW,N,NE; vẽ theo mặt đất isometric 2:1).
- * CHỈ LÀ HIỆU ỨNG: không sát thương, không trừ MP, không tăng số lần dùng/cấp kỹ năng. Chỉ hiện nút của kỹ năng nhân vật đã có; chưa mở khoá → bấm báo khoá.
+ * Fix152: ngoài hiệu ứng, kỹ năng GÂY SÁT THƯƠNG lên quái Tiên Giới qua móc TGQ.pre(it) / TGQ.cast(it,sector,angle) của world/81-tien-gioi-quai.js (không có module đó → vẫn chỉ là hiệu ứng như cũ). Không tăng số lần dùng/cấp kỹ năng. Chỉ hiện nút của kỹ năng nhân vật đã có; chưa mở khoá → bấm báo khoá.
  * Hiệu ứng là bản vẽ riêng cho Tiên Giới (theo loại chiêu + màu hệ), không phải bản sao 1:1 hiệu ứng ở bản đồ đánh quái.
  * Chỉnh: TG8SK_CF.enable=false để tắt · TG8SK_CF.cd (giây tối đa hồi chiêu, mặc định 5) · TG8SK_CF.max (số hiệu ứng cùng lúc, mặc định 10). */
 (function(){
@@ -170,11 +170,13 @@ function fire(it){
  var now=Date.now();
  if(!it.ok){msg(it.lock||'🔒 Chưa mở khoá');return false}
  if((CD[it.k]||0)>now)return false;
+ try{if(window.TGQ&&TGQ.pre&&TGQ.pre(it)===false)return false}catch(e){}
  var sc=sector(),A=sc*PI/4,F={f:{A:A,c:Math.cos(A),sn:Math.sin(A)},col:it.col,ic:it.ic,sp:it.sp||{},ma:it.ma},r=recipe(it)(F);
  CD[it.k]=now+Math.min(it.cd,CF.cd)*1000;
  while(FXS.length>=CF.max)FXS.shift();
  FXS.push({t0:fr,life:r.life,draw:r.draw});
  try{P.atk=Math.max(P.atk|0,16)}catch(e){}
+ try{if(window.TGQ&&TGQ.cast)TGQ.cast(it,sc,A)}catch(e){}
  return true;
 }
 /* ----- bảng nút ----- */

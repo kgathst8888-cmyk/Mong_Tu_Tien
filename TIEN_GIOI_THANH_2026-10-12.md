@@ -14,3 +14,9 @@
 ## Fix131 — không đi tiếp được tới các mục (2026-10-16)
 - Nguyên nhân: vùng đi được của cầu bị thu vào 0.25 ô ở mọi cạnh nên hở 0.3–0.6 ô với đảo/cầu chính → cầu Bắc (tới Thiên Cung/Đấu Trường/Động Phủ), cầu Tây (Đan Dược Các), cầu Đông (Tiên Thú Viên/Vạn Pháp Tháp) bị đứt. Thiên Binh Các có cửa nằm ngoài đảo nên không tới được.
 - Sửa (world/61-tien-gioi-thanh.js): ground() kéo dài cầu chồng vào đảo/cầu chính (cầu chính +0.9 ô phía Bắc, cầu phụ +0.9 ô hai đầu); Thiên Binh Các dời lên y=26.3, cửa [4.8,28.2].
+
+## Cập nhật (Fix159)
+- Tỉ lệ kết hợp 10 Mảnh Thánh → 1 món Thánh: 30% → **20%** (`shRate` trong core/01b-items-sets-wheel.js và bản build Mong_Tu_Tien_CLAUDE.html). Giao diện/hộp xác nhận tự đọc theo giá trị này.
+
+## Cập nhật (Fix160)
+- Mỗi lần bấm Kết hợp Thánh tốn **100💎 Linh Thạch** (`shFee`, trừ ví tài khoản ☁ qua LT.spend, cả khi thành công lẫn thất bại). Cần đăng nhập; không đủ LT hoặc lỗi mạng → không mất mảnh nào. Hộp xác nhận và bảng ② đều ghi rõ phí. Không cần SQL mới.

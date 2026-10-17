@@ -53,6 +53,7 @@ function lvFactor(L){var f=1;for(var k=2;k<=L;k++)f+=CF.milestones.indexOf(k)>=0
 function mulOf(s,inf){return s.mul*(1+CF.scale*(inf.realm-1))*lvFactor(slv(skIdx(s,inf)))*(window.HONSK?HONSK.skMul(inf.path):1)}
 function lvUp(j){var p=PS[cur],y=p&&p.yc;if(!y||j<0||j>2)return 0;var L=slv(j);if(L>=CF.lvMax)return 0;y.sl[j]=L+1;try{sv()}catch(e){}return L+1}
 function fire(j,s,inf){
+  try{if(window.TGFX2&&TGFX2.cast)TGFX2.cast('y',{k:s.k,ic:s.i,ma:inf.path==='m',tg:nearE()[0]})}catch(z){}
   try{window.STLAST=[s.n,fr]}catch(e){}  /* ghi tên chiêu để combat/11 + world/50 áp trạng thái */
   var T=inf.path,px=P.x,dd=P.d||1,mul=mulOf(s,inf),lg=light(),
     P_=T==='t'?['#fff3b0','#ffd84a']:['#7a40c0','#ff2a6a'];

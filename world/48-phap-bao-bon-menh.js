@@ -111,7 +111,7 @@ function castFB(auto){
   if(cdT>now)return false;if(P.mp<CF.mp){if(!auto)say('Không đủ MP');return false}
   if(!nearL(900).length){if(!auto)say('Không có địch trong tầm');return false}
   if(!AR.init)arUpd();if(!SKL[t]())return false;
-  P.mp-=CF.mp;cdT=now+CF.cd*1000;pul=26;if(!auto)say(FB[t].i+' '+FB[t].ac.n);
+  P.mp-=CF.mp;cdT=now+CF.cd*1000;pul=26;try{if(window.TGFX2&&TGFX2.cast)TGFX2.cast('f',{t:t,tg:nearL(900)[0]})}catch(z){}if(!auto)say(FB[t].i+' '+FB[t].ac.n);
   try{var fb=D();fb.c[t]=(fb.c[t]|0)+1;if(ov&&ov.style.display==='flex'&&!busy)render()}catch(e){}return true}
 
 /* ---------- Cập nhật mỗi khung hình (gọi trong step) ---------- */

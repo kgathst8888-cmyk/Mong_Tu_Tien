@@ -10,7 +10,7 @@
  *    - Túi đầy thì chưa cho nhận quà trang bị (không mất thư). Thư đã đọc + đã nhận quà tự xoá sau 30 ngày; tối đa 60 thư.
  *    - Thư hệ thống từ máy chủ: bảng `thong_bao` (loai='thu', cột qua = jsonb) — mỗi nhân vật nhận 1 lần/thư (PS[cur].mailIds).
  * API cho module khác:
- *    MAIL.send({id?, from, title, body, q:{gold, csh:{b10:1,vx:2}, fe, hk, eq:{r:3,n:1}}}) → true nếu thêm được (id trùng = bỏ qua, trả false)
+ *    MAIL.send({id?, from, title, body, q:{gold, csh:{b10:1,vx:2}, fe, hk, eq:{r:3,n:1}, it:{nt:5,dtc:2}}})  (it = vật phẩm mới, khoá trong bảng ITM bên dưới, xuất ra MAIL.IT) → true nếu thêm được (id trùng = bỏ qua, trả false)
  *    MAIL.unread() · MAIL.open('mail'|'noti') · MAIL.close()
  *    NOTI.push({id,t,b}) thêm thông báo tạm trong phiên (không lưu) · NOTI.unread()
  * Quà "Linh Thạch" KHÔNG có trong thư (ví nằm trên máy chủ, chỉ cộng qua SQL cho_admin_grant).
@@ -53,7 +53,29 @@ function unreadN(){var r=rdRead();return allN().filter(function(n){return !r[n.i
 /* ---------- THƯ ---------- */
 function mails(){var p=me();if(!p)return[];if(!Array.isArray(p.mail))p.mail=[];return p.mail}
 function ids(){var p=me();if(!p)return{};if(!p.mailIds||typeof p.mailIds!=='object')p.mailIds={};return p.mailIds}
-var CSHK={b10:1,b15:1,b20:1,ham:1,g10:1,dh:1,vx:1,vt:1};
+var CSHK={b10:1,b15:1,b20:1,ham:1,g10:1,dh:1,vx:1,vt:1,tc:1,x5:1,x7:1};
+/* Vật phẩm mới gửi qua thư: q.it={khoá:số lượng}. t = cách cộng vào kho (xem giveIt). max = tối đa mỗi thư. */
+var ITM={
+  nt:{t:'nt',e:'🌙',n:'Mảnh Nguyệt Thạch',max:1000},
+  sh:{t:'sh',e:'✨',n:'Mảnh Thánh',max:1000},
+  kt:{t:'kt',e:'💎',n:'Mảnh Kim Tinh',max:100000},
+  fr:{t:'fr',e:'🔹',n:'Mảnh Chế Tạo',max:1000000},
+  hp:{t:'hp',e:'🔮',n:'Hồn Phách',max:10000},
+  pts:{t:'pts',e:'📊',n:'Điểm Tiềm Năng',max:1000},
+  hb:{t:'hb',e:'🧪',n:'Bình Máu',max:1000},
+  mb:{t:'mb',e:'💧',n:'Bình Mana',max:1000},
+  dtc:{t:'pill',e:'🟡',n:'Trúc Cơ Đan',max:100},
+  dkd:{t:'pill',e:'🟠',n:'Kim Đan Đan',max:100},
+  dna:{t:'pill',e:'🟣',n:'Nguyên Anh Đan',max:100},
+  dht:{t:'pill',e:'🔴',n:'Hoá Thần Đan',max:100},
+  dlh:{t:'pill',e:'🔵',n:'Luyện Hư Đan',max:100},
+  mtc:{t:'herb',e:'🪷',n:'NL Trúc Cơ Đan',max:1000},
+  mkd:{t:'herb',e:'🔸',n:'NL Kim Đan',max:1000},
+  mna:{t:'herb',e:'🔮',n:'NL Nguyên Anh Đan',max:1000},
+  mht:{t:'herb',e:'🌠',n:'NL Hoá Thần Đan',max:1000},
+  mlh:{t:'herb',e:'🌀',n:'NL Luyện Hư Đan',max:1000},
+  mdna:{t:'herb',e:'🧿',n:'NL Đúc Nguyên Anh',max:1000}
+};
 function normQ(q){
   if(!q||typeof q!=='object')return null;
   var o={},n;
@@ -62,6 +84,7 @@ function normQ(q){
   if((n=Math.floor(+q.fe))>0)o.fe=Math.min(n,1e6);
   if((n=Math.floor(+q.hk))>0)o.hk=Math.min(n,1e6);
   if(q.eq&&typeof q.eq==='object'){var r=Math.floor(+q.eq.r),k=Math.floor(+q.eq.n);if(r>=0&&r<=5&&k>0&&k<=20)o.eq={r:r,n:k}}
+  if(q.it&&typeof q.it==='object'){var t={};Object.keys(q.it).forEach(function(k){var v=Math.floor(+q.it[k]);if(ITM[k]&&v>0&&v<=ITM[k].max)t[k]=v});if(Object.keys(t).length)o.it=t}
   return Object.keys(o).length?o:null;
 }
 function hasAtt(m){return !!(m&&m.q&&!m.c)}
@@ -94,7 +117,30 @@ function qLines(q){
   if(q.fe)a.push('🔩 Quặng Sắt ×'+nf(q.fe));
   if(q.hk)a.push('🌑 Huyền Kim ×'+nf(q.hk));
   if(q.eq){var rn='';try{rn=RN[q.eq.r]}catch(e){}a.push('🎁 '+q.eq.n+' trang bị '+rn)}
+  if(q.it)Object.keys(q.it).forEach(function(k){var d=ITM[k];a.push((d?d.e+' '+d.n:k)+' ×'+nf(q.it[k]))});
   return a;
+}
+function itErr(it){
+  var ks=Object.keys(it),i,d;
+  for(i=0;i<ks.length;i++){d=ITM[ks[i]];if(!d)continue;
+    if((d.t==='nt'||d.t==='sh')&&!(typeof HL!=='undefined'&&HL.addNT&&HL.addSH))return'Chưa có kho '+d.n+'.';
+    if((d.t==='pill'||d.t==='herb')&&!(typeof FM!=='undefined'&&FM.get))return'Chưa có Linh Điền / Luyện Đan để nhận '+d.n+'.';
+    if(d.t==='hp'&&!(window.HONP&&HONP.chosen&&HONP.chosen()))return'🔮 Hãy chọn Hồn Phách (tab 🧘 Tu tiên trong túi) rồi nhận lại thư.';
+  }
+  return'';
+}
+function giveIt(k,n){
+  var d=ITM[k],p=me(),s;if(!d||!(n>0))return;
+  if(d.t==='nt')HL.addNT(n);
+  else if(d.t==='sh')HL.addSH(n);
+  else if(d.t==='kt')KT+=n;
+  else if(d.t==='fr')frag+=n;
+  else if(d.t==='hp')HONP.collect(n);
+  else if(d.t==='pts')p.pts=(p.pts|0)+n;
+  else if(d.t==='hb')hpP+=n;
+  else if(d.t==='mb')mpP+=n;
+  else if(d.t==='pill'){s=FM.get();if(!s.pills)s.pills={};s.pills[k]=(s.pills[k]|0)+n}
+  else if(d.t==='herb'){s=FM.get();if(!s.herbs)s.herbs={};s.herbs[k]=(s.herbs[k]|0)+n}
 }
 /* trả về chuỗi lỗi nếu chưa nhận được, '' nếu thành công */
 function claimOne(m){
@@ -102,6 +148,7 @@ function claimOne(m){
   var q=m.q,p=me();if(!p)return'Chưa chọn nhân vật.';
   if(q.csh&&!window.CSH)return'Chưa có Cash Shop để nhận vật phẩm.';
   if((q.fe||q.hk)&&!(typeof MN!=='undefined'&&MN.get))return'Chưa có kho quặng để nhận quặng.';
+  if(q.it){var ie=itErr(q.it);if(ie)return ie}
   if(q.eq){
     var cap=90;try{cap=capN()}catch(e){}
     if(BAG.length+q.eq.n>cap)return'🎒 Túi không đủ chỗ cho '+q.eq.n+' trang bị — dọn túi rồi nhận lại.';
@@ -112,6 +159,7 @@ function claimOne(m){
     if(q.csh){var d=p.csh||(p.csh={});Object.keys(q.csh).forEach(function(k){d[k]=(d[k]|0)+q.csh[k]})}
     if(q.fe)MN.get().fe+=q.fe;
     if(q.hk)MN.get().hk+=q.hk;
+    if(q.it)Object.keys(q.it).forEach(function(k){giveIt(k,q.it[k])});
     if(q.eq)for(var i=0;i<q.eq.n;i++)BAG.push(gen(P.lv,q.eq.r));
   }catch(e){return'Lỗi khi nhận quà, thử lại.'}
   m.c=1;m.r=1;sv_();try{ui()}catch(e){}
@@ -284,7 +332,7 @@ function boot(){
   setInterval(function(){try{if(started_()&&me()&&lastCur!==cur){lastCur=cur;welcome();setTimeout(pull,4000)}}catch(e){}},1000);
   setInterval(function(){try{if(started_())pull()}catch(e){}},120000);
 }
-window.MAIL={send:send,unread:unreadM,open:show,close:close,list:mails};
+window.MAIL={send:send,unread:unreadM,open:show,close:close,list:mails,IT:ITM};
 window.NOTI={push:function(n){if(n&&n.id){tmpN.unshift({id:String(n.id),t:String(n.t||''),b:String(n.b||''),ts:Date.now()});if(open)draw()}},unread:unreadN};
 if(document.body)boot();else document.addEventListener('DOMContentLoaded',boot);
 })();

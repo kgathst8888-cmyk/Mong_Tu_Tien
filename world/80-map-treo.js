@@ -6,6 +6,7 @@
  *    (module chặn give() + thay hẳn drop() khi đang ở map treo, nên mọi module khác bọc drop() phía trong cũng không chạy).
  *  - Cấp quái = ĐÚNG cấp nhân vật (spawn() được bọc: đổi e.lv = P.lv rồi nhân lại máu/thủ theo công thức gốc).
  *      Phàm Thể  → map thường theo cấp (Lv1-20 map 1 · 21-40 map 2 · 41-60 map 3 · 61-80 map 4 · 81+ map 5), quái thường.
+ *      Fix154: TIÊN NHÂN (CTHE.on()) → quái TIÊN GIỚI đúng cấp nhân vật (world/81: máu TGQ_CF.hp, EXP ×3 quái Đạo Thể, e.lgi=5); EXP cộng qua TGQ.addXp (engine không cho EXP Tiên Nhân).
  *      Đạo Thể / Tiên Nhân (HDAO.on(), Tiên Nhân luôn là Đạo Thể đã chuyển thế) → quái ĐẠO THỂ (Linh Giới bản đồ 2-5 theo cấp Đạo Cảnh:
  *      Lv1-20 / 21-40 / 41-60 / 61-80 / 81+ dùng bản đồ 61-80), nên Đạo Linh (EXP) vẫn được tính (LGMAP.expOk()).
  *  - Không có Boss/Tinh Anh: bộ đếm pq/NK (hàng đợi boss của map thường) được giữ nguyên, boss thế giới bị bỏ qua trong map này.
@@ -65,6 +66,7 @@ function isTien(){try{return !!(window.CTHE&&CTHE.on())}catch(e){return false}}
 function daoMap(){var L=P.lv|0;return L<=20?1:L<=40?2:L<=60?3:4}
 function nomMap(){return Math.max(0,Math.min(4,Math.floor(((P.lv|0)-1)/20)))}
 function mapName(){
+ try{if(isTien()&&window.TGQ)return 'Tiên Giới · quái Tiên Giới'}catch(e){}
  try{if(isDao())return LGMAP.maps[daoMap()].n}catch(e){}
  try{return MP[MPX[nomMap()]].n}catch(e){}
  return 'Bản đồ theo cấp'}
@@ -72,7 +74,7 @@ function who(){return isTien()?'✨ Tiên Nhân':isDao()?'☯ Đạo Thể':'Ph�
 
 /* EXP / quái đúng công thức engine (core/01e dòng xử lý quái chết): round(15×(1+Lv/5)) × HDAO.xg() */
 function xpPer(L){
- var b=Math.round(15*(1+L/5));if(!isDao())return b;
+ var b=Math.round(15*(1+L/5));if(isTien()&&window.TGQ&&TGQ.xpOf)return TGQ.xpOf(L);if(!isDao())return b;
  var k=3,ex=.5;try{k=HDAO.cfg.killMul}catch(e){}try{var m=LGMAP.cfg[daoMap()];if(m&&m.exp)ex=m.exp}catch(e){}
  return Math.round(b*k*ex)}
 
@@ -96,7 +98,7 @@ function enter(){
  var r=canEnter();if(r!==true){note(r,'#ffb0b0');render();return r}
  close();try{if(bo)tg()}catch(e){}
  var a=A();
- if(isDao()){PS[cur].lgm=daoMap();lgEnter()}else{gm(nomMap())}
+ if(isDao()){PS[cur].lgm=(isTien()&&window.TGQ)?1:daoMap();lgEnter()}else{gm(nomMap())}
  if(vil){note('Không vào được map treo','#ffb0b0');return'fail'}
  S.on=1;S.cur=cur;S.lg=lg;S.ms=mapSel;S.lgm=PS[cur].lgm|0;S.last=Date.now();S.hb=S.last;S.hu=0;
  S.nk=NK;S.p0=pq[0];S.p1=pq[1];S.ses={n:0,gold:0,frag:0,fe:0,hk:0,st:0,sec:0};
@@ -128,7 +130,7 @@ function offline(sec,kind){
  use(a,t);
  var L=Math.max(1,P.lv|0),n=Math.floor(t/CF.spk*CF.offEff);
  if(n<=0)return;
- var xp=xpPer(L)*n;P.xp+=xp;
+ var xp=xpPer(L)*n;if(window.TGQ&&TGQ.addXp)TGQ.addXp(xp);else P.xp+=xp;
  try{if(ZC.rI()<5){var tf=(ZC.TV&&ZC.TV.farm)||1,tv=Math.ceil((3+L*.8)*tf)*(isDao()?LGX:1)*n;ZC.gain(tv)}}catch(e){}
  try{var pt=pet();if(pt&&pt.lv<pcap(pt)){pt.xp+=n*(1+L/10);pcheck(pt)}}catch(e){}
  var rw=award(n,L);
@@ -164,7 +166,9 @@ var _step=step;step=function(){var r=_step.apply(this,arguments);try{tick()}catc
 
 /* quái đúng cấp nhân vật */
 function fit(e){
- if(!e||e.k==='pal')return;var L1=Math.max(1,P.lv|0),L0=e.lv||L1;if(L0===L1)return;
+ if(!e||e.k==='pal')return;var L1=Math.max(1,P.lv|0),L0=e.lv||L1;
+ if(isTien()&&window.TGQ&&TGQ.stat){var st=TGQ.stat(L1);e.hp=e.max=st.hp;e.df=st.df;e.m=st.m;e.lv=L1;e.lgi=5;return}   /* Tiên Nhân: quái Tiên Giới (máu cố định theo TGQ_CF.hp) */
+ if(L0===L1)return;
  e.df*=(8+L1*2.2)/(8+L0*2.2);
  if(!lg){var q=(60+L1*25)/(60+L0*25);e.hp*=q;e.max*=q}   /* quái Đạo Thể có máu cố định (LGS.hpn) nên chỉ đổi thủ */
  e.lv=L1}
@@ -181,6 +185,7 @@ function f_(n){try{return fmtN(n)}catch(e){return nf(n)}}
 var _drop=drop;drop=function(e){
  if(!S.on)return _drop.apply(this,arguments);
  try{
+  if(isTien()&&window.TGQ&&TGQ.addXp)TGQ.addXp(xpPer(e.lv||P.lv));   /* engine không cho EXP Tiên Nhân → cộng EXP quái Tiên Giới ở đây */
   var L=e.lv||P.lv,m=e.b==3?10:e.b?4:1,rw=award(m,L),q=S.ses;
   q.n++;q.gold+=rw.gold;q.frag+=rw.frag;q.fe+=rw.fe;q.hk+=rw.hk;q.st+=rw.st;
   DT.push({x:e.x,y:110,s:'+'+f_(rw.gold)+'💰',c:'#ffd54a',l:50});
@@ -267,7 +272,7 @@ function panelHtml(){
  try{lt=LT.get();logged=!!LT.logged()}catch(x){}
  var pc=Math.round(freeLeft(a)/CF.freeSec*100);
  var h='<h2 style="margin:0 0 6px;color:#9dffd8;font-size:19px">⏳ Cổng Treo Máy</h2>'
- +'<div style="font-size:13px;opacity:.9">Quái <b>Lv'+P.lv+'</b> theo cấp bạn · '+who()+' → <b style="color:#ffe27a">'+mapName()+'</b>'+(isDao()?'<br>Quái Đạo Thể (Linh Giới) · vẫn nhận Đạo Linh':'')+'</div>'
+ +'<div style="font-size:13px;opacity:.9">Quái <b>Lv'+P.lv+'</b> theo cấp bạn · '+who()+' → <b style="color:#ffe27a">'+mapName()+'</b>'+(isTien()&&window.TGQ?'<br>Quái Tiên Giới · EXP gấp 3 quái Đạo Thể · Tiên Nhân chỉ tăng EXP bằng quái Tiên Giới':isDao()?'<br>Quái Đạo Thể (Linh Giới) · vẫn nhận Đạo Linh':'')+'</div>'
  +'<div class="afkc"><div>🕒 Miễn phí hôm nay: <b>'+hms(freeLeft(a))+'</b> / '+hms(CF.freeSec)+'</div>'
  +'<div style="height:8px;border-radius:5px;background:#2a1c10;overflow:hidden;margin:3px 0 5px"><i style="display:block;height:100%;width:'+pc+'%;background:linear-gradient(90deg,#3ad0a0,#8affd0)"></i></div>'
  +'<div>🎫 Giờ đã mua (kho): <b>'+hms(a.b)+'</b></div>'

@@ -46,10 +46,10 @@ if(dg.n<20){if(dg.t>60&&a<8&&dg.t%38==0){const q=dg.n%10;dgSp(q==2||q==5||q==8?'
 else if(!dg.bs&&!a){dg.bs=1;dgSp('boss');DT.push({x:P.x,y:210,s:'👹 Trùm Thần Thoại xuất hiện!',c:'#ff8a50',g:1,l:150})}
 else if(dg.bs&&!E.some(e=>e.k=='boss')&&!dg.done){dg.done=1;dg.out=260;QE('dg');DT.push({x:P.x,y:200,s:'🏆 Hoàn thành Hầm Ngục!',c:'#ffe08a',g:1,l:200})}
 if(dg.done&&--dg.out<=0)dgExit()}
-const _drop=drop;drop=function(e){if(!e.dg)return _drop(e);const L=e.lv;if(e.k!='boss'){dg.kill++;gold+=gP(6*L);if(R()<.3)give(gen(L,rr(0)),e.x,90);if(R()<.01)give(gen(L,4),e.x,150);return}
+const _drop=drop;drop=function(e){if(!e.dg)return _drop(e);const L=e.lv;if(e.k!='boss'){dg.kill++;gold+=gP(6*L);if(R()<.3*EQD.mob)give(gen(L,rr(0)),e.x,90);if(R()<.01*EQD.rare)give(gen(L,4),e.x,150);return}
 gold+=gP(400*L);const f=8+Math.floor(R()*6);frag+=f;DT.push({x:e.x,y:120,s:'🔹 +'+f+' mảnh chế tạo',c:'#6ff',l:120});
-for(let i=0;i<3;i++){const x=R();give(gen(L,x<.15?3:x<.6?2:1),e.x+(i-1)*40,150+i*34)}
-if(R()<BOSSMY){DT.push({x:e.x,y:260,s:'✨ Trang bị Thần Thoại!',c:RC[4],l:150,g:1});give(gen(L,4),e.x,230)}
+for(let i=0;i<3;i++){const x=R();if(R()>=EQD.boss)continue;give(gen(L,x<.15?3:x<.6?2:1),e.x+(i-1)*40,150+i*34)}
+if(R()<BOSSMY*EQD.rare){DT.push({x:e.x,y:260,s:'✨ Trang bị Thần Thoại!',c:RC[4],l:150,g:1});give(gen(L,4),e.x,230)}
 {const wv=wl(),nl=Math.min(2,wv);if(wv<3&&R()<WGD[nl]){WFA(nl,1);dgSave();DT.push({x:e.x,y:300,s:'🪽 +1 Mảnh Cánh Cấp '+(nl+1),c:['#fff3c0','#8fdcff','#ffc070'][nl],l:170,g:1})}}}
 const _fire=fire;fire=function(i){const n0=PJ.length;SKF=1;try{_fire(i)}finally{SKF=0}for(let j=n0;j<PJ.length;j++)PJ[j].sk=1};
 const _foe=foe;foe=function(e){e.dg?dgFoe(e):_foe(e)};

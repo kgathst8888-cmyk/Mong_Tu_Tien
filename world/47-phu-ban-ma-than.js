@@ -117,7 +117,7 @@ var _drop=drop;drop=function(e){
  DT.push({x:e.x,y:160,s:CF.ic+' +'+n+' '+CF.name,c:CF.col,g:1,l:200});
  var n2=CF.tt[0]+Math.floor(R()*(CF.tt[1]-CF.tt[0]+1));d.t=(d.t|0)+n2;
  DT.push({x:e.x,y:195,s:CF.ic2+' +'+n2+' '+CF.name2,c:CF.col2,g:1,l:200});
- for(var i=0;i<CF.gear;i++)give(gen(L,4),e.x+(i-1)*40,150+i*34);
+ for(var i=0;i<CF.gear;i++){if(Math.random()>=EQD.boss)continue;give(gen(L,4),e.x+(i-1)*40,150+i*34)}
  try{ZC.gain(5000)}catch(x){}
  try{sv()}catch(x){}};
 var _mx=mtExit;mtExit=function(){var w=dg&&dg.pm?dg:null;_mx.apply(this,arguments);if(w)back(w)};

@@ -1,3 +1,4 @@
+-- ⚠ SAU KHI đã dùng linh_thach_khoa.sql: KHÔNG chạy lại file này (sẽ ghi đè hàm về bản cũ, Linh Thạch Boss lại thành không khoá). Cần chạy lại thì chạy linh_thach_khoa.sql sau cùng.
 -- =====================================================================
 -- TIÊU LINH THẠCH (Supabase) — chạy sau cho_giao_dich.sql, an toàn khi chạy lại.
 --   * cho_spend(p_n, p_why): trừ p_n Linh Thạch trong ví tài khoản ☁ (nguyên tử, không âm).

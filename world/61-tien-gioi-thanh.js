@@ -41,6 +41,10 @@ SPOTS.forEach(function(p){p.rect=[p.x-p.w/2,p.y-p.d/2,p.x+p.w/2,p.y+p.d/2]});
 function blocked(x,y){for(var i=0;i<SPOTS.length;i++){var r=SPOTS[i].rect;if(x>r[0]-.25&&x<r[2]+.25&&y>r[1]-.25&&y<r[3]+.25)return true}return false}
 function ground(x,y){var i;for(i=0;i<BRG.length;i++){var b=BRG[i],ex=b.main?0:.9,ey=b.main?.9:0;/* Fix131: cầu kéo dài chồng vào đảo/cầu chính (trước đây hở 0.3-0.6 ô nên không đi tiếp được) */if(x>=b.x0+.25-ex&&x<=b.x1-.25+ex&&y>=b.y0-ey&&y<=b.y1)return true}for(i=0;i<ISL.length;i++)if(!ISL[i].k||ISL[i].k!=='deco')if(inPoly(ISL[i].wp,x,y))return true;return false}
 function walk(x,y){return ground(x,y)&&!blocked(x,y)}
+/* Fix152: Tiên Nhân bay ra ngoài thành thị — module world/81 đăng ký TG.flyHook(canFly, lift). wk() = đi bộ được HOẶC bay được (không xuyên công trình). */
+var FLYF=null,LFTF=null;
+function wk(x,y){if(walk(x,y))return true;try{return !!(FLYF&&!blocked(x,y)&&FLYF(x,y))}catch(e){return false}}
+function LFT(){try{return LFTF?(LFTF()||0):0}catch(e){return 0}}
 function seg(ax,ay,bx,by){var n=Math.ceil(Math.hypot(bx-ax,by-ay)/.3);for(var i=1;i<=n;i++){var t=i/n;if(!walk(ax+(bx-ax)*t,ay+(by-ay)*t))return false}return true}
 var NODES=[[14,36],[14,30],[14,24],[14,22],[14,18.8],[14,13.6],[5.4,24],[23.4,22],[9.4,12.6],[18.6,12.6],[9,36.4],[19.4,34.2],[14,10.6],[5,29.6],[23,28.2],[9,21],[19.8,24],[3.8,23]].filter(function(n){return walk(n[0],n[1])});
 function nearest(x,y){if(walk(x,y))return[x,y];var best=null,bd=1e9;for(var r=.4;r<8&&!best;r+=.4)for(var a=0;a<24;a++){var px=x+Math.cos(a/24*TAU)*r,py=y+Math.sin(a/24*TAU)*r;if(walk(px,py)){var d=r;if(d<bd){bd=d;best=[px,py]}}}return best}
@@ -239,7 +243,7 @@ function stepTG(){var kx=(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1
   if(swv){path=[];pend=-1;dx=swv[0];dy=swv[1]}
   else if(kx||ky){path=[];pend=-1;dx=kx+ky;dy=-kx+ky;var L=Math.hypot(dx,dy);dx/=L;dy/=L}
   else if(path.length){var T=path[0],ax=T[0]-hx,ay=T[1]-hy,d=Math.hypot(ax,ay);if(d<sp*1.3){hx=T[0];hy=T[1];path.shift();if(!path.length){moving=0;arrive()}}else{dx=ax/d;dy=ay/d}}
-  if(dx||dy){var nx=hx+dx*sp,ny=hy+dy*sp;if(walk(nx,ny)){hx=nx;hy=ny}else if(walk(nx,hy))hx=nx;else if(walk(hx,ny))hy=ny;else{path=[];dx=dy=0}moving=(dx||dy)?1:0;if(moving){TGV.sx=(dx-dy)*2;TGV.sy=dx+dy}var sd=dx-dy;if(Math.abs(sd)>.05)face=sd>0?1:-1}else if(!path.length)moving=0;
+  if(dx||dy){var nx=hx+dx*sp,ny=hy+dy*sp;if(wk(nx,ny)){hx=nx;hy=ny}else if(wk(nx,hy))hx=nx;else if(wk(hx,ny))hy=ny;else{path=[];dx=dy=0}moving=(dx||dy)?1:0;if(moving){TGV.sx=(dx-dy)*2;TGV.sy=dx+dy}var sd=dx-dy;if(Math.abs(sd)>.05)face=sd>0?1:-1}else if(!path.length)moving=0;
   try{P.mv=moving;P.d=face}catch(e){}}
 function onTap(e){var px=e.offsetX,py=e.offsetY;hideCard();var ord=SPOTS.map(function(p,i){return i}).sort(function(a,b){return SPOTS[b].x+SPOTS[b].y-SPOTS[a].x-SPOTS[a].y});
   for(var j=0;j<ord.length;j++){var k=ord[j],p=SPOTS[k],a=S2(p.x,p.y),v=bSpr(k,p),bx=a[0]-v.ax+v.w*.16,by=a[1]-v.ay+v.h*.1,bw=v.w*.68,bh=v.h*.84;if(px>=bx&&px<=bx+bw&&py>=by&&py<=by+bh){goSpot(k);return}}
@@ -258,7 +262,7 @@ function warmList(){WARM=[];var jobs=[];function add(d,f){jobs.push([d,f])}ISL.f
 function warmStep(){if(!WARM.length)return;var t0=performance.now();do{try{WARM.shift()()}catch(e){}}while(WARM.length&&performance.now()-t0<4)}
 function ensure(){var k=[s.toFixed(3),DPR,W,H].join('|');if(k!==SK){SK=k;SC={};HW=46*s;HH=23*s;ZU=36*s;DECB=[];buildDraw();warmList()}}
 function heroDraw(){var a=S2(hx,hy),ox=P.x,oc=cam,og=GY,os=s,K=CF.heroK;g.save();g.fillStyle='rgba(0,0,30,.4)';g.beginPath();g.ellipse(a[0],a[1],22*s*K,9*s*K,0,0,TAU);g.fill();g.restore();
-  try{s=os*K;P.x=a[0]/s;cam=0;GY=a[1];try{if(typeof EP!=='undefined'&&EP){EP.x=P.x-50*(P.d||1)}drawEP()}catch(e){}hero();nameTag()}finally{s=os;P.x=ox;cam=oc;GY=og}}
+  try{s=os*K;P.x=a[0]/s;cam=0;GY=a[1]-LFT()*s;try{if(typeof EP!=='undefined'&&EP){EP.x=P.x-50*(P.d||1)}drawEP()}catch(e){}hero();nameTag()}finally{s=os;P.x=ox;cam=oc;GY=og}}
 function lines(x0,y0,x1,y1,z,k){var a=S2(x0,y0),b=S2(x1,y1);g.beginPath();g.moveTo(a[0],a[1]-z*ZU);g.lineTo(b[0],b[1]-z*ZU);g.stroke()}
 function drawTG(){ensure();var t=fr,i,j,sk=skyCache(),ql=(typeof QL!=='undefined'?QL:0)|0,cb=[22,9,3][Math.min(2,ql)],cf=[8,3,0][Math.min(2,ql)],nb=0,nf=0;camUpd();
   g.drawImage(sk.c,-(sk.w-W)/2-(ccx-ccy)*HW*.012,-(sk.h-H)*.35-(ccx+ccy)*HH*.008,sk.w,sk.h);
@@ -325,5 +329,5 @@ window.addEventListener('keydown',function(e){if(!on)return;var tg0=e.target&&e.
 window.addEventListener('keyup',function(e){var k=(e.key||'').toLowerCase();delete keys[k]},true);
 try{var vlb=document.getElementById('vl'),_ov=vlb&&vlb.onpointerdown;if(vlb)vlb.onpointerdown=function(e){if(on){e.stopPropagation();if(started)leave();return}return _ov&&_ov.call(this,e)}}catch(e){}
 try{var _ft=g.fillText,_stk=g.strokeText;g.fillText=function(a,x,y,m){if(on&&a==='Thanh Vân Tiên Thôn')a='Thành Thị Tiên Giới';return _ft.call(this,a,x,y,m)};g.strokeText=function(a,x,y,m){if(on&&a==='Thanh Vân Tiên Thôn')a='Thành Thị Tiên Giới';return _stk.call(this,a,x,y,m)}}catch(e){}
-window.TG={gateSlot:function(){return GT},pos:function(k){var a=S2(SPOTS[k].x,SPOTS[k].y);return[a[0],a[1],SPOTS[k].z*ZU]},hero:function(){return[hx,hy]},card:function(){return card&&card.style.display==='block'},dbg:function(k){ensure();var v=bSpr(k,SPOTS[k]);return v.c.toDataURL('image/png')},on:function(){return on},enter:enter,leave:leave,spots:SPOTS,CF:CF,set:function(x,y){hx=x;hy=y;ccx=x;ccy=y},gate:cityGate};
+window.TG={ground:ground,blocked:blocked,S2:S2,flyHook:function(f,l){FLYF=f;LFTF=l},gateSlot:function(){return GT},pos:function(k){var a=S2(SPOTS[k].x,SPOTS[k].y);return[a[0],a[1],SPOTS[k].z*ZU]},hero:function(){return[hx,hy]},card:function(){return card&&card.style.display==='block'},dbg:function(k){ensure();var v=bSpr(k,SPOTS[k]);return v.c.toDataURL('image/png')},on:function(){return on},enter:enter,leave:leave,spots:SPOTS,CF:CF,set:function(x,y){hx=x;hy=y;ccx=x;ccy=y},gate:cityGate};
 })();

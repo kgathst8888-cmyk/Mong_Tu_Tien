@@ -1,17 +1,18 @@
 
 /* ================= XẾP HẠNG + TÊN NHÂN VẬT (RK) =================
    - Nút 🏆 nằm cạnh đồng hồ Boss Thế Giới ở HUD.
-   - 3 bảng: Tu vi · Cấp độ · Lực chiến (từng hệ). Dữ liệu từng nhân vật lên Supabase qua xep_hang.sql.
+   - 2 bảng: Cấp độ (cảnh giới Phàm › Đạo Thể › Tiên Nhân, rồi cấp độ, rồi tu vi) · Lực chiến. Dữ liệu từng nhân vật lên Supabase qua xep_hang_v2.sql.
    - Mỗi nhân vật 1 tên riêng: đặt lần đầu miễn phí, đổi lại được 1 lần (PS[i].nm / PS[i].rc). */
 (function(){
 'use strict';
 const C={pushMs:60000,ttl:30000,limit:50,maxRename:1,
  pow:()=>Math.round(atk()*5+df()*3+mx()/5)};   /* công thức lực chiến: công×5 + thủ×3 + HP÷5 */
 const RNm=['Luyện Khí','Trúc Cơ','Kim Đan','Nguyên Anh','Hoá Thần','Luyện Hư','Hợp Thể','Đại Thừa'];
+const RMN=['Phàm Thể','Đạo Thể','Tiên Nhân'];
 const realm=(cr,cs)=>cr<0?'Sơ Khai':(RNm[cr]||'?')+' tầng '+cs;
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const nf=n=>(Number(n)||0).toLocaleString('vi-VN');
-const S={on:false,mode:'rank',tab:'cult',cls:'w',busy:false,err:'',legacy:false,data:{},at:{},ni:0,nmsg:''};
+const S={on:false,mode:'rank',tab:'lv',busy:false,err:'',legacy:false,data:{},at:{},ni:0,nmsg:''};
 /* ---------- CSS + DOM ---------- */
 const st=document.createElement('style');st.textContent=`
 #rkb{position:fixed;z-index:2;width:34px;height:34px;box-sizing:border-box;border-radius:50%;border:2px solid #c9a24f;background:radial-gradient(circle at 50% 30%,#4b3a2c,#120b08 78%);box-shadow:0 3px 8px #000b,inset 0 0 8px #000;color:#ffe27a;font-size:16px;line-height:28px;text-align:center;padding:0;display:none;cursor:pointer}
@@ -30,7 +31,7 @@ const st=document.createElement('style');st.textContent=`
 .rk-l tr.me{background:#4a3410;font-weight:bold}.rk-l .r{width:30px;text-align:center;color:#ffd54a}.rk-l .v{text-align:right;color:#ffe9a0;white-space:nowrap;padding-left:6px}
 `;document.head.appendChild(st);
 const btn=document.createElement('button');btn.id='rkb';btn.type='button';btn.textContent='🏆';btn.title='Xếp hạng';
-btn.onpointerdown=e=>e.stopPropagation();btn.onclick=e=>{e.stopPropagation();open('cult')};document.body.appendChild(btn);
+btn.onpointerdown=e=>e.stopPropagation();btn.onclick=e=>{e.stopPropagation();open('lv')};document.body.appendChild(btn);
 const ov=document.createElement('div');ov.id='rk-ov';ov.innerHTML='<div class="rk-bx"></div>';document.body.appendChild(ov);
 ['keydown','keyup','keypress'].forEach(n=>ov.addEventListener(n,e=>{e.stopPropagation();if(n=='keydown'&&e.key==='Enter'&&e.target&&e.target.id=='rk-nm')act('save')}));
 ov.addEventListener('click',e=>{let n=e.target;while(n&&n!==ov&&!(n.getAttribute&&n.getAttribute('data-a')))n=n.parentNode;if(n&&n!==ov)act(n.getAttribute('data-a'));else if(e.target===ov)close()});
@@ -53,55 +54,49 @@ function pows(){const c0=cur,e0=EQ,l0=P.lv,r=[];
  finally{cur=c0;EQ=e0;P.lv=l0}
  return r}
 function chars(){const w=pows();return CHR.map((c,i)=>{const p=PS[i],cv=p.cv||{},br=p.br;
- return{slot:i,name:CN(i),cls:c.t,cn:(br>=0&&c.br&&c.br[br])?c.br[br].n:CL[c.t],lv:((i==cur?P.lv:p.lv)|0)||1,tier:p.tier|0,cr:typeof cv.r=='number'?cv.r:-1,cs:cv.s|0,pw:w[i]|0}})}
+ return{slot:i,name:CN(i),cls:c.t,cn:(br>=0&&c.br&&c.br[br])?c.br[br].n:CL[c.t],lv:((i==cur?P.lv:p.lv)|0)||1,tier:p.tier|0,cr:typeof cv.r=='number'?cv.r:-1,cs:cv.s|0,cq:Math.max(0,Math.floor(cv.q)||0),rm:(p.ct&&p.ct.d)?2:(p.hd&&p.hd.d)?1:0,pw:w[i]|0}})}
 let lastH='',pushing=false;
 async function push(force){
  if(pushing||!window.KCL||!KCL.OK||!KCL.sess()||typeof started=='undefined'||!started)return;
- const ch=chars(),h=JSON.stringify(ch.map(c=>[c.name,c.lv,c.tier,c.cr,c.cs,Math.round(c.pw/50)]));
+ const ch=chars(),h=JSON.stringify(ch.map(c=>[c.name,c.lv,c.rm,c.cr,c.cs,Math.round(c.cq/500),Math.round(c.pw/50)]));
  if(!force&&h===lastH)return;
  pushing=true;
- try{const r=await KCL.rpc('submit_chars',{p_chars:ch});if(r&&r.status==='ok')lastH=h}
+ try{const r=await KCL.rpc('rank2_submit',{p_chars:ch});if(r&&r.status==='ok')lastH=h}
  catch(e){if(e&&(e.status===404||e.code==='PGRST202'))lastH=h}   /* máy chủ chưa cài SQL: đừng thử lại liên tục */
  finally{pushing=false}}
 setInterval(()=>push(false),C.pushMs);setTimeout(()=>push(false),9000);
 /* ---------- tải bảng ---------- */
-const keyOf=()=>S.tab+(S.tab=='pow'?':'+S.cls:'');
-async function legacy(kind){
- const body={p_limit:50};let r;
- r=KCL.sess()?await KCL.rpc('get_leaderboard',body):await KCL.http('/rest/v1/rpc/get_leaderboard',{method:'POST',body});
- const top=((r&&r.top)||[]).map(x=>({name:x.name,cn:x.cls,lv:x.lv|0,cr:x.cult_r|0,cs:x.cult_s|0,pw:0,me:!!x.me}));
- if(kind=='cult')top.sort((a,b)=>(b.cr-a.cr)||(b.cs-a.cs)||(b.lv-a.lv));else top.sort((a,b)=>(b.lv-a.lv)||(b.cr-a.cr)||(b.cs-a.cs));
- top.forEach((x,i)=>x.rank=i+1);return{top,mine:[],total:r&&r.total|0,legacy:true}}
-async function fetchRank(kind,cls){
+const keyOf=()=>S.tab;
+const byLv=(a,b)=>((b.rm|0)-(a.rm|0))||((b.lv|0)-(a.lv|0))||((b.cr|0)-(a.cr|0))||((b.cs|0)-(a.cs|0))||((b.cq|0)-(a.cq|0));
+async function fetchRank(kind){
  if(!window.KCL||!KCL.OK)return{top:[],mine:[],total:0,offline:true};
- const body={p_kind:kind,p_cls:kind=='pow'?cls:null,p_limit:C.limit};
- try{return KCL.sess()?await KCL.rpc('get_rank',body):await KCL.http('/rest/v1/rpc/get_rank',{method:'POST',body})}
- catch(e){if(e&&(e.status===404||e.code==='PGRST202')){if(kind=='pow')return{top:[],mine:[],total:0,legacy:true};return legacy(kind)}throw e}}
+ const body={p_kind:kind,p_limit:C.limit};
+ try{return KCL.sess()?await KCL.rpc('rank2_get',body):await KCL.http('/rest/v1/rpc/rank2_get',{method:'POST',body})}
+ catch(e){if(e&&(e.status===404||e.code==='PGRST202'))return{top:[],mine:[],total:0,legacy:true};throw e}}
 async function load(force){
  const k=keyOf();if(!force&&S.data[k]&&Date.now()-(S.at[k]||0)<C.ttl){render();return}
  S.busy=true;S.err='';render();
- try{await push(true);S.data[k]=await fetchRank(S.tab,S.cls);S.at[k]=Date.now()}
+ try{await push(true);S.data[k]=await fetchRank(S.tab);S.at[k]=Date.now()}
  catch(e){S.err=(e&&e.net)?e.message:((e&&e.message)||'Lỗi tải bảng xếp hạng')}
  S.busy=false;render()}
 /* ---------- giao diện ---------- */
 function open(tab){if(tab)S.tab=tab;S.mode='rank';S.on=true;ov.classList.add('on');render();load(false)}
 function close(){S.on=false;ov.classList.remove('on')}
 const medal=r=>['🥇','🥈','🥉'][r-1]||r;
-function val(x){return S.tab=='cult'?esc(realm(x.cr|0,x.cs|0)):S.tab=='lv'?'Lv '+(x.lv|0):'⚔ '+nf(x.pw)}
-function sub(x){return esc((x.cn||'')+' · Lv '+(x.lv|0)+(S.tab=='cult'?'':' · '+realm(x.cr|0,x.cs|0)))}
+function val(x){return S.tab=='pow'?'\u2694 '+nf(x.pw):esc(RMN[x.rm|0]||RMN[0])+' Lv '+(x.lv|0)}
+function sub(x){return esc((x.cn||'')+' \u00b7 '+(S.tab=='pow'?(RMN[x.rm|0]||RMN[0])+' Lv '+(x.lv|0):realm(x.cr|0,x.cs|0)))}
 function rowH(x){return'<tr class="'+(x.me?'me':'')+'"><td class="r">'+medal(x.rank)+'</td><td>'+esc(x.name)+'<br><small style="opacity:.75">'+sub(x)+'</small></td><td class="v">'+val(x)+'</td></tr>'}
-function mineLocal(){const f=S.tab=='pow'?(c=>c.cls==S.cls):(()=>true);return chars().filter(f).map(c=>({rank:'–',name:c.name,cn:c.cn,lv:c.lv,cr:c.cr,cs:c.cs,pw:c.pw,me:true}))}
+function mineLocal(){return chars().sort(S.tab=='pow'?((a,b)=>b.pw-a.pw):byLv).map((c,i)=>({rank:i+1,name:c.name,cn:c.cn,lv:c.lv,rm:c.rm,cr:c.cr,cs:c.cs,cq:c.cq,pw:c.pw,me:true}))}
 function viewRank(){
- const TT={cult:'🧘 Tu vi',lv:'🎖 Cấp độ',pow:'⚔ Lực chiến'};
+ const TT={lv:'\u{1F396} C\u1ea5p \u0111\u1ed9',pow:'\u2694 L\u1ef1c chi\u1ebfn'};
  let h='<div class="rk-t">'+Object.keys(TT).map(k=>'<button data-a="tab:'+k+'" class="'+(S.tab==k?'on':'')+'">'+TT[k]+'</button>').join('')+'</div>';
- if(S.tab=='pow')h+='<div class="rk-t">'+Object.keys(CL).map(k=>'<button data-a="cls:'+k+'" class="'+(S.cls==k?'on':'')+'">'+esc(CL[k])+'</button>').join('')+'</div>';
- h+='<div class="rk-n">'+(S.tab=='cult'?'Xếp theo cảnh giới › tầng › cấp độ.':S.tab=='lv'?'Xếp theo số lần chuyển chức › cấp độ › cảnh giới.':'Xếp riêng từng hệ. Lực chiến = công×5 + thủ×3 + HP÷5, cập nhật khi bạn chơi.')+' Mỗi nhân vật là một dòng riêng.</div>';
+ h+='<div class="rk-n">'+(S.tab=='pow'?'X\u1ebfp theo l\u1ef1c chi\u1ebfn = c\u00f4ng\u00d75 + th\u1ee7\u00d73 + HP\u00f75, c\u1eadp nh\u1eadt khi b\u1ea1n ch\u01a1i.':'X\u1ebfp theo c\u1ea3nh gi\u1edbi (Ph\u00e0m Th\u1ec3 \u203a \u0110\u1ea1o Th\u1ec3 \u203a Ti\u00ean Nh\u00e2n) \u203a c\u1ea5p \u0111\u1ed9 \u203a tu vi.')+' M\u1ed7i nh\u00e2n v\u1eadt l\u00e0 m\u1ed9t d\u00f2ng ri\u00eang.</div>';
  const D=S.data[keyOf()];
  if(S.busy&&!D)h+='<div class="rk-m">Đang tải…</div>';
  if(S.err)h+='<div class="rk-m">⚠ '+esc(S.err)+'</div>';
  if(D){
   if(D.offline)h+='<div class="rk-m">Chưa cấu hình máy chủ, chỉ xem được nhân vật của bạn trên máy này.</div>';
-  else if(D.legacy)h+='<div class="rk-m">⚠ Máy chủ chưa cài bảng xếp hạng nâng cao (file <b>xep_hang.sql</b>). '+(S.tab=='pow'?'Chưa có bảng lực chiến toàn máy chủ.':'Đang dùng bảng cũ: mỗi tài khoản chỉ hiện nhân vật mạnh nhất.')+'</div>';
+  else if(D.legacy)h+='<div class="rk-m">\u26a0 M\u00e1y ch\u1ee7 ch\u01b0a c\u00e0i b\u1ea3ng x\u1ebfp h\u1ea1ng m\u1edbi (file <b>xep_hang_v2.sql</b>). \u0110ang hi\u1ec7n nh\u00e2n v\u1eadt c\u1ee7a b\u1ea1n tr\u00ean m\u00e1y n\u00e0y.</div>';
   const top=D.top||[];
   if(top.length)h+='<table class="rk-l">'+top.map(rowH).join('')+'</table>';
   else if(!D.offline&&!D.legacy)h+='<div class="rk-m">Chưa có ai trên bảng này.</div>';
@@ -140,7 +135,6 @@ function act(a){
  if(a=='x')return close();
  if(a=='ref')return load(true);
  if(a=='save')return saveName();
- if(a.indexOf('tab:')==0){S.tab=a.slice(4);render();load(false);return}
- if(a.indexOf('cls:')==0){S.cls=a.slice(4);render();load(false);return}}
+ if(a.indexOf('tab:')==0){S.tab=a.slice(4);render();load(false);return}}
 window.RK={open,close,push,chars,pows,name:i=>{S.mode='name';S.ni=i|0;S.nmsg='';S.on=true;ov.classList.add('on');render()},nameLeft,realm};
 })();

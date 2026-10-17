@@ -15,7 +15,7 @@ const C={
  crit:20,cdmg:50,dc:.05,/* opt4: +20% chí mạng, +50% ST chí mạng, 5% x2 ST chí mạng */
  pvp:.2,tn:.4,          /* opt5: +20% ST lên người chơi, +40% ST lên Quái Thiên Nhân */
  fe:1000,hk:1000,nt:10, /* 1 Mảnh Thánh = 1000 Quặng Sắt + 1000 Huyền Kim + 10 Mảnh Nguyệt Thạch */
- shNeed:10,shRate:.3,   /* 10 Mảnh Thánh, 30% ra 1 món Thánh */
+ shNeed:10,shFee:100,shRate:.2,   /* 10 Mảnh Thánh, 20% ra 1 món Thánh (trước đây 30%) */
  shLose:10,             /* thất bại mất bao nhiêu Mảnh Thánh (10 = mất hết, 0 = không mất) */
  ntShop:.05             /* tỉ lệ nhận 1 Mảnh Nguyệt Thạch khi mở Rương trang bị ở Tạp Hóa */
 };
@@ -35,12 +35,19 @@ const say=t=>{msg=t;ui()};
 function forge(k){const m=mat();k=Math.min(k|0,Math.floor((m.fe|0)/C.fe),Math.floor((m.hk|0)/C.hk),Math.floor(S.nt/C.nt));
  if(k<1){say('Thiếu nguyên liệu: cần '+C.fe+' Quặng Sắt, '+C.hk+' Huyền Kim, '+C.nt+' Mảnh Nguyệt Thạch cho mỗi Mảnh Thánh');return}
  m.fe-=C.fe*k;m.hk-=C.hk*k;S.nt-=C.nt*k;S.sh+=k;try{sv()}catch(e){}say('💠 Luyện thành '+k+' Mảnh Thánh (hiện có '+S.sh+')')}
-function combine(){if(S.sh<C.shNeed){say('Cần '+C.shNeed+' Mảnh Thánh');return}
+let cbBusy=false;
+function combine(){if(cbBusy)return;if(S.sh<C.shNeed){say('Cần '+C.shNeed+' Mảnh Thánh');return}
  if(BAG.length>=capN()){say('Túi đầy, hãy dọn chỗ trước khi kết hợp');return}
- if(!confirm('Dùng '+C.shNeed+' Mảnh Thánh để kết hợp?\nTỉ lệ thành công '+Math.round(C.shRate*100)+'%.\nThất bại sẽ mất '+C.shLose+' Mảnh Thánh.'))return;
- S.tr++;
- if(R()<C.shRate){S.sh-=C.shNeed;S.ok++;const it=gen(PIECES[Math.floor(R()*PIECES.length)]);BAG.push(it);tab=0;sel={k:'b',i:BAG.length-1};try{sv()}catch(e){}msg='🌟 Kết hợp thành công! Nhận '+it.n+' (cần Lv'+it.l+' để mặc)';ui()}
- else{S.sh-=Math.min(S.sh,C.shLose);try{sv()}catch(e){}say('💥 Kết hợp thất bại'+(C.shLose?', mất '+C.shLose+' Mảnh Thánh':'')+'.')}}
+ const L=window.LT;if(!(L&&L.logged&&L.logged()&&L.spend)){say('☁ Cần đăng nhập tài khoản để trả phí kết hợp '+C.shFee+'💎');return}
+ if(!confirm('Chi phí mỗi lần kết hợp: '+C.shNeed+' Mảnh Thánh + '+C.shFee+'💎 Linh Thạch.\n(Linh Thạch trừ cả khi thất bại; thất bại mất thêm mảnh theo luật cũ.)\nTỉ lệ thành công '+Math.round(C.shRate*100)+'%.\nThất bại sẽ mất '+C.shLose+' Mảnh Thánh.'))return;
+ cbBusy=true;say('Đang trừ phí '+C.shFee+'💎…');
+ L.spend(C.shFee,'ghep_thanh').then(r=>{cbBusy=false;
+  if(!r||!r.ok){say(r&&r.err==='poor'?'Không đủ Linh Thạch: cần '+C.shFee+'💎, bạn có '+(r.lt|0)+'💎 (chưa mất mảnh nào)':'Không trừ được Linh Thạch ('+((r&&(r.msg||r.err))||'lỗi')+') — chưa mất mảnh nào');return}
+  if(S.sh<C.shNeed){say('Không đủ Mảnh Thánh');return}
+  S.tr++;
+  if(R()<C.shRate){S.sh-=C.shNeed;S.ok++;const it=gen(PIECES[Math.floor(R()*PIECES.length)]);BAG.push(it);tab=0;sel={k:'b',i:BAG.length-1};try{sv()}catch(e){}msg='🌟 Kết hợp thành công! Nhận '+it.n+' (cần Lv'+it.l+' để mặc) · −'+C.shFee+'💎';ui()}
+  else{S.sh-=Math.min(S.sh,C.shLose);try{sv()}catch(e){}say('💥 Kết hợp thất bại'+(C.shLose?', mất '+C.shLose+' Mảnh Thánh':'')+' · −'+C.shFee+'💎.')}
+ }).catch(()=>{cbBusy=false;say('Không trừ được Linh Thạch (lỗi mạng) — chưa mất mảnh nào')})}
 function addNT(k){S.nt+=k|0}
 function addSH(k){S.sh+=k|0}
 function shopNT(){if(R()<C.ntShop){S.nt++;return' · 🌙 +1 Mảnh Nguyệt Thạch!'}return''}
@@ -50,7 +57,7 @@ function ui_(){if(!vil)return NV;const m=mat(),fe=m.fe|0,hk=m.hk|0,mxk=Math.min(
  let h='<div class="dt" style="color:#ffe27a"><b>✨ Lò Luyện Thánh Khí</b><br><small>Trang bị Thánh <b>không rơi</b> từ bất kỳ Boss nào, chỉ chế tạo tại đây. Cấp mặc định Lv'+C.lv+'.</small></div>';
  h+='<div class="dt"><b>① Luyện Mảnh Thánh</b><br>'+row('🔩','Quặng Sắt',fe,C.fe)+row('🌑','Huyền Kim',hk,C.hk)+row('🌙','Mảnh Nguyệt Thạch',S.nt,C.nt)
   +'<button '+(mxk<1?'disabled':'')+' onclick="HL.forge(1)">⚒ Luyện 1</button><button '+(mxk<1?'disabled':'')+' onclick="HL.forge('+mxk+')">Luyện tối đa ('+mxk+')</button></div>';
- h+='<div class="dt"><b>② Kết hợp Trang bị Thánh</b><br><div class="st">💠 Mảnh Thánh: <b style="color:'+(S.sh>=C.shNeed?'#7fe08a':'#ff7a7a')+'">'+S.sh+'</b> / '+C.shNeed+'</div><div class="st">'+C.shNeed+' Mảnh Thánh → <b>'+Math.round(C.shRate*100)+'%</b> ra 1 món Thánh ngẫu nhiên (10 vị trí). Thất bại mất '+C.shLose+' mảnh.</div><div class="st">Đã kết hợp: '+S.ok+' thành công / '+S.tr+' lần</div>'
+ h+='<div class="dt"><b>② Kết hợp Trang bị Thánh</b><br><div class="st">💠 Mảnh Thánh: <b style="color:'+(S.sh>=C.shNeed?'#7fe08a':'#ff7a7a')+'">'+S.sh+'</b> / '+C.shNeed+'</div><div class="st">'+C.shNeed+' Mảnh Thánh → <b>'+Math.round(C.shRate*100)+'%</b> ra 1 món Thánh ngẫu nhiên (10 vị trí). Thất bại mất '+C.shLose+' mảnh. Phí mỗi lần: <b>'+C.shFee+'💎</b>.</div><div class="st">Đã kết hợp: '+S.ok+' thành công / '+S.tr+' lần</div>'
   +'<button '+(S.sh<C.shNeed?'disabled':'')+' onclick="HL.combine()">✨ Kết hợp</button></div>';
  const k=n();
  h+='<div class="dt"><b>③ Bộ Thánh đang mặc: <span style="color:#ffe27a">'+k+'/10</span></b>'+OPT.map((o,i)=>{const a=k>=C.need[i];return'<div class="st" style="color:'+(a?'#ffe27a':'#8a8a8a')+'">'+(a?'✔':'🔒')+' '+C.need[i]+' món: '+(a?o:'???')+'</div>'}).join('')+'</div>';

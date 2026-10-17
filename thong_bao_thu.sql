@@ -24,6 +24,6 @@ grant execute on function public.lay_thong_bao() to anon, authenticated;
 -- ===== VÍ DỤ (bỏ dấu -- để chạy) =====
 -- Thông báo:
 -- insert into public.thong_bao(loai,tieu_de,noi_dung) values ('tb','Bảo trì 22h tối nay','Máy chủ bảo trì khoảng 30 phút.');
--- Thư có quà (qua: gold · csh{b10,b15,b20,ham,g10,dh,vx,vt} · fe · hk · eq{r:0-5,n}). Mỗi nhân vật nhận 1 lần, thư trong 14 ngày gần nhất:
+-- Thư có quà (qua: gold · csh{b10,b15,b20,ham,g10,dh,vx,vt,x5,x7} · fe · hk · eq{r:0-5,n}). Mỗi nhân vật nhận 1 lần, thư trong 14 ngày gần nhất:
 -- insert into public.thong_bao(loai,tieu_de,noi_dung,qua) values ('thu','Quà tạ lỗi bảo trì','Cảm ơn đạo hữu đã chờ!',
 --   '{"gold":1000000,"csh":{"vx":1,"vt":1},"eq":{"r":3,"n":1}}');

@@ -1,6 +1,7 @@
 /* ===== 🏮 CHỢ GIAO DỊCH ONLINE · LINH THẠCH =====
  * Dùng chung tài khoản ☁ (KCL.rpc). Cần chạy cho_giao_dich.sql 1 lần trong Supabase.
  * - Linh Thạch (💎) nằm trong ví trên máy chủ, theo tài khoản ☁ (dùng chung mọi nhân vật).
+ * - 💎 KHÔNG KHOÁ (nạp tiền, tiền bán đồ) dùng được ở Chợ; 🔒 KHOÁ (kiếm từ Boss) KHÔNG mua đồ ở Chợ được — chạy linh_thach_khoa.sql.
  * - Cách kiếm Linh Thạch: hạ BOSS = 1 viên, tối đa 500 viên/ngày (xem khối KIẾM LINH THẠCH TỪ BOSS cuối file; cần cho_linh_thach_boss.sql).
  *   Vẫn có thể cấp thủ công bằng cho_admin_grant trong SQL Editor.
  * - Đăng bán: đồ rời túi, ký gửi ở máy chủ. Mua/hủy/hết hạn: đồ về HÒM NHẬN, tự vào túi (túi đầy thì giữ lại).
@@ -12,7 +13,7 @@
 if(typeof BAG==='undefined'||typeof capN!=='function'||typeof SL==='undefined')return;
 var CF={fee:5,max:10,hours:48,minP:1,maxP:1000000000,poll:20000};
 var RAR=['Thường','Tinh Anh','Hiếm','Sử Thi','Thần Thoại','Thiên Thần','Thánh'];
-var pending='',tab='shop',slot='',sort='new',off=0,lt=null,rows=[],mine=[],busy=false,open=false,note='',openId=0,gap=0;
+var pending='',tab='shop',slot='',sort='new',off=0,lt=null,lks=[0,0,0],rows=[],mine=[],busy=false,open=false,note='',openId=0,gap=0;
 var btn,pnl,body,nt,ltEl,timer=0;
 
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
@@ -93,7 +94,7 @@ function tabsHtml(){
 }
 function draw(){
   pnl.querySelector('#cho-tabs').innerHTML=tabsHtml();
-  ltEl.innerHTML='💎 '+(lt==null?'…':nf(lt))+(lt==null?'':' <small style="opacity:.75" title="Linh Thạch kiếm từ Boss hôm nay">(+'+earned+'/'+EMAX+')</small>');
+  ltEl.innerHTML='💎 '+(lt==null?'…':nf(lt))+(lt==null?'':' <small style="opacity:.8" title="🔒 Linh Thạch KHOÁ (kiếm từ Boss) không dùng được ở Chợ · (+x/'+EMAX+') = số kiếm hôm nay">🔒'+nf(lk_())+' (+'+earned+'/'+EMAX+')</small>');
   if(!logged()){body.innerHTML='<div class="hint">Chợ giao dịch cần đăng nhập ☁ (menu chính) và kết nối mạng.<br>Bản chạy trong Claude không có mạng ngoài nên chợ không dùng được ở đó — game vẫn chơi bình thường.</div>';return}
   var h='';
   if(tab==='shop'){
@@ -129,7 +130,7 @@ async function load(){
   busy=true;var keep=pending;pending='';setNote('');
   try{
     var me=await call('cho_me');
-    if(me&&me.status==='ok'){lt=+me.lt||0;if(me.earned!=null){earned=+me.earned||0;eDay=vnDay()}mine=me.mine||[];await claim(me.inbox||[]);
+    if(me&&me.status==='ok'){lt=+me.lt||0;setLks(me);if(me.earned!=null){earned=+me.earned||0;eDay=vnDay()}mine=me.mine||[];await claim(me.inbox||[]);
       (me.sold||[]).forEach(function(s){setNote('💰 Đã bán '+(s.item&&s.item.n||'1 món')+' · +'+nf(s.net)+' 💎')})}
     if(tab==='shop'){
       var r=await call('cho_list',{p_slot:slot===''?null:+slot,p_sort:sort,p_off:off});
@@ -231,60 +232,73 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
  * Mỗi boss hạ được = 1 viên (boss thường/siêu boss ngoài map, boss Hầm Ngục, Tháp, Ma Thần, Boss Bất Tử mỗi lượt).
  * Tối đa EMAX viên/ngày/tài khoản ☁ — MÁY CHỦ tự cắt trần (cho_linh_thach_boss.sql), ngày tính theo giờ VN.
  * Client gom lô gửi cho_earn; chưa đăng nhập ☁ thì không nhận được. API: LT.earn(n), LT.today(). */
-var EMAX=500,earned=0,eDay='',eQ=0,eT=0,eBusy=false,eErr=false,eHint=false,eCapDay='';
+/* 🔒 Linh Thạch KHOÁ tính RIÊNG TỪNG NHÂN VẬT (slot = cur: 0,1,2); 💎 không khoá dùng chung tài khoản. */
+function cs(){try{var c=cur|0;return c<0?0:c>2?2:c}catch(e){return 0}}
+function lk_(){return lks[cs()]||0}
+function setLks(r){if(r&&Array.isArray(r.lks))lks=[+r.lks[0]||0,+r.lks[1]||0,+r.lks[2]||0]}
+var EMAX=500,earned=0,eDay='',eQ=[0,0,0],eT=0,eBusy=false,eErr=false,eHint=false,eCapDay='';
+function eTot(){return eQ[0]+eQ[1]+eQ[2]}
 function vnDay(){return new Date(Date.now()+25200000).toISOString().slice(0,10)}
 function eSay(t,c){try{if(typeof DT!=='undefined'&&typeof P!=='undefined')DT.push({x:P.x,y:215,s:t,c:c||'#8fe9ff',g:1,l:100})}catch(e){}}
 function earn(n){
   n=n|0;if(n<=0)return;
   if(!logged()){if(!eHint){eHint=true;eSay('💎 Đăng nhập ☁ để nhận Linh Thạch từ Boss','#ffd98a')}return}
   var d=vnDay();if(eDay!==d){eDay=d;earned=0}
-  if(earned+eQ>=EMAX){if(eCapDay!==d){eCapDay=d;eSay('💎 Hôm nay đã đủ '+EMAX+' Linh Thạch','#ffd98a')}return}
-  eQ+=n;eSay('💎 +'+n+' Linh Thạch');
-  if(eQ>=10)flushE();else{clearTimeout(eT);eT=setTimeout(flushE,4000)}
+  if(earned+eTot()>=EMAX){if(eCapDay!==d){eCapDay=d;eSay('💎 Hôm nay đã đủ '+EMAX+' Linh Thạch','#ffd98a')}return}
+  eQ[cs()]+=n;eSay('🔒 +'+n+' Linh Thạch khoá');
+  if(eTot()>=10)flushE();else{clearTimeout(eT);eT=setTimeout(flushE,4000)}
 }
 async function flushE(){
   clearTimeout(eT);
-  if(eBusy||eQ<=0||!logged())return;
-  eBusy=true;eErr=false;var n=Math.min(eQ,50);eQ-=n;
+  if(eBusy||eTot()<=0||!logged())return;
+  var s=eQ[cs()]>0?cs():(eQ[0]>0?0:eQ[1]>0?1:2);   /* gửi hàng đợi của đúng nhân vật đã kiếm */
+  eBusy=true;eErr=false;var n=Math.min(eQ[s],50);eQ[s]-=n;
   try{
-    var r=await call('cho_earn',{p_n:n});
-    if(r&&(r.status==='ok'||r.status==='cap')){earned=+r.today||0;eDay=vnDay();if(r.lt!=null)lt=+r.lt;if(open)draw()}
-  }catch(e){eErr=true;eQ=Math.min(eQ+n,100)}
+    var r=await call('cho_earn',{p_n:n,p_slot:s});
+    if(r&&(r.status==='ok'||r.status==='cap')){earned=+r.today||0;eDay=vnDay();if(r.lt!=null)lt=+r.lt;setLks(r);if(open)draw()}
+  }catch(e){eErr=true;eQ[s]=Math.min(eQ[s]+n,100)}
   eBusy=false;
-  if(eQ>0)eT=setTimeout(flushE,eErr?15000:(eQ>=10?200:4000));
+  if(eTot()>0)eT=setTimeout(flushE,eErr?15000:(eTot()>=10?200:4000));
 }
 document.addEventListener('visibilitychange',function(){if(document.hidden)flushE()});
 try{if(typeof ZC!=='undefined'&&ZC&&typeof ZC.kill==='function'&&!ZC.__ltk){var _zk=ZC.kill;ZC.kill=function(e){try{if(e&&e.b>=2)earn(1)}catch(x){}return _zk.apply(this,arguments)};ZC.__ltk=1}}catch(e){}
 /* ===== TIÊU / ĐỌC SỐ DƯ LINH THẠCH (cho các hệ thống khác, vd. đột phá Linh Căn) ===== */
-async function spend(n,why){
-  n=n|0;if(n<=0)return{ok:true,lt:lt};
+/* spend(n,why,opt): mặc định trừ Linh Thạch KHOÁ trước rồi tới KHÔNG KHOÁ; opt.unlocked=true → chỉ trừ KHÔNG KHOÁ (vd. Thẻ Trưởng Thành).
+   Kết quả: lt = số dư dùng được theo chế độ đó (tổng, hoặc chỉ không khoá), un = không khoá, lk = khoá. */
+async function spend(n,why,opt){
+  n=n|0;var uo=!!(opt&&opt.unlocked),av=function(){return uo?lt:(lt||0)+lk_()};
+  if(n<=0)return{ok:true,lt:av(),un:lt,lk:lk_()};
   if(!logged())return{ok:false,err:'login'};
   try{
-    var r=await call('cho_spend',{p_n:n,p_why:why||''});
-    if(r&&r.status==='ok'){lt=+r.lt||0;if(open)draw();return{ok:true,lt:lt}}
-    if(r&&r.status==='poor'){if(r.lt!=null)lt=+r.lt||0;return{ok:false,err:'poor',lt:lt}}
+    var a={p_n:n,p_why:why||'',p_slot:cs()};if(uo)a.p_unlocked=true;
+    var r=await call('cho_spend',a);
+    if(r&&r.status==='ok'){lt=+r.lt||0;setLks(r);if(open)draw();return{ok:true,lt:av(),un:lt,lk:lk_()}}
+    if(r&&r.status==='poor'){if(r.lt!=null)lt=+r.lt||0;setLks(r);return{ok:false,err:'poor',lt:av(),un:lt,lk:lk_()}}
     return{ok:false,err:(r&&r.status)||'fail'};
   }catch(e){return{ok:false,err:'net',msg:nice(e)}}
 }
 async function sync(){
   if(!logged())return;
-  try{var r=await call('cho_bal');if(r&&r.status==='ok'){lt=+r.lt||0;if(r.earned!=null){earned=+r.earned||0;eDay=vnDay()}if(open)draw()}}catch(e){}
+  try{var r=await call('cho_bal');if(r&&r.status==='ok'){lt=+r.lt||0;setLks(r);if(r.earned!=null){earned=+r.earned||0;eDay=vnDay()}if(open)draw()}}catch(e){}
 }
 /* Linh Thạch từ boss Kiếm Thánh: KHÔNG giới hạn ngày (RPC cho_earn_ks, file cho_kiem_thanh.sql) */
-var ksQ=0,ksBusy=false,ksT=0;
+var ksQ=[0,0,0],ksBusy=false,ksT=0;
 async function flushKS(){
   clearTimeout(ksT);
-  if(ksBusy||ksQ<=0||!logged())return;
-  ksBusy=true;var n=Math.min(ksQ,20);ksQ-=n;
-  try{var r=await call('cho_earn_ks',{p_n:n});if(r&&r.status==='ok'&&r.lt!=null){lt=+r.lt;if(open)draw()}}
-  catch(e){ksQ=Math.min(ksQ+n,100)}
+  var kt=ksQ[0]+ksQ[1]+ksQ[2];
+  if(ksBusy||kt<=0||!logged())return;
+  var s=ksQ[cs()]>0?cs():(ksQ[0]>0?0:ksQ[1]>0?1:2);
+  ksBusy=true;var n=Math.min(ksQ[s],20);ksQ[s]-=n;
+  try{var r=await call('cho_earn_ks',{p_n:n,p_slot:s});if(r&&r.status==='ok'&&r.lt!=null){lt=+r.lt;setLks(r);if(open)draw()}}
+  catch(e){ksQ[s]=Math.min(ksQ[s]+n,100)}
   ksBusy=false;
-  if(ksQ>0)ksT=setTimeout(flushKS,3000);
+  if(ksQ[0]+ksQ[1]+ksQ[2]>0)ksT=setTimeout(flushKS,3000);
 }
 function earnKS(n){
   n=n|0;if(n<=0)return;
   if(!logged()){eSay('💎 Đăng nhập ☁ để nhận Linh Thạch từ Kiếm Thánh','#ffd98a');return}
-  ksQ+=n;eSay('💎 +'+n+' Linh Thạch (Kiếm Thánh)');flushKS();
+  ksQ[cs()]+=n;eSay('🔒 +'+n+' Linh Thạch khoá (Kiếm Thánh)');flushKS();
 }
-window.LT={earnKS:earnKS,get:function(){return lt==null?0:lt},refresh:load,open:function(){toggle(true)},close:function(){toggle(false)},earn:earn,today:function(){return earned},logged:logged,spend:spend,sync:sync};
+/* LT.get() = TỔNG dùng được để mua đồ trong game (khoá của NHÂN VẬT ĐANG CHƠI + không khoá chung); LT.unlocked() = chỉ không khoá (Chợ, Thẻ); LT.locked() = khoá của nhân vật đang chơi */
+window.LT={earnKS:earnKS,get:function(){return lt==null?0:lt+lk_()},unlocked:function(){return lt==null?0:lt},locked:function(){return lk_()},refresh:load,open:function(){toggle(true)},close:function(){toggle(false)},earn:earn,today:function(){return earned},logged:logged,spend:spend,sync:sync};
 })();

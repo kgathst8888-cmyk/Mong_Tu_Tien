@@ -26,3 +26,7 @@
 ## Lưu ý
 - Máy chủ cần chấp nhận khoá `ar` trong `p_data` của `push_save` (jsonb tự do thì không sao). Nếu có giới hạn tần suất, tăng `MINGAP`.
 - Mất mạng giữa chừng: game vẫn chạy, dữ liệu nằm trong RAM; **đóng tab khi chưa có mạng sẽ mất phần chưa đẩy lên**.
+
+## Cập nhật Fix156
+- Bỏ hẳn nút "💾 Lưu game" (menu chính + thanh menu trong game): game tự lưu lên mây, không còn khái niệm lưu thủ công/lưu trên máy.
+- Nhanh hơn: tự ghi trạng thái 1,5s/lần (`fr%90`); gom thay đổi 0,7s rồi đẩy mây, tối thiểu 1,5s giữa 2 lần (`DEB`,`MINGAP`); kiểm tra hàng đợi mỗi 0,25s; lỗi mạng thử lại 2s→4s→…→15s.
