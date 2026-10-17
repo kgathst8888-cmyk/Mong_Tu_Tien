@@ -29,7 +29,7 @@ function G(n){try{return(0,eval)('typeof '+n+'===\"function\"?'+n+':null')}catch
 var lt=null;function later(n,f){lt=lt||G('later');if(lt)lt(n,f);else setTimeout(f,n*16)}
 function say(t,c){try{DT.push({x:P.x,y:175,s:t,c:c||'#ffe27a',g:1,l:110})}catch(e){}}
 var dirty=0;
-function V(){var p=PS[cur];if(!p)return{id:'',u:{},mx:1};var v=p.vp;if(!v||typeof v!=='object'){v=p.vp={id:'',u:{},mx:1};try{var o=FM.get().sect;if(o&&SPEC[o])v.id=o}catch(e){}}if(!v.u)v.u={};if(!v.mx)v.mx=1;return v}
+function V(){var p=PS[cur];if(!p)return{id:'',u:{},mx:1};var v=p.vp;if(!v||typeof v!=='object'){v=p.vp={id:'',u:{},mx:1};try{var o=FM.get().sect,oth=0,qi;for(qi=0;qi<PS.length;qi++)if(PS[qi]&&PS[qi]!==p&&PS[qi].vp&&typeof PS[qi].vp==='object')oth=1;if(o&&SPEC[o]&&!oth)v.id=o}catch(e){}}if(!v.u)v.u={};   /* Fix206: FM.sect là dữ liệu dùng chung → chỉ chuyển đổi save cũ cho nhân vật đầu tiên; nhân vật khác bắt đầu chưa có môn phái (không bị nhiễm môn phái của nhân vật vừa chọn) */if(!v.mx)v.mx=1;return v}
 function sect(){var v=V();return SPEC[v.id]?v.id:''}
 function setSect(id){var v=V();if(id&&!SPEC[id])return false;v.id=id||'';cd=[0,0,0,0,0];try{FM.get().sect=v.id}catch(e){}if(id&&!v.u[id])v.u[id]=[0,0,0,0,0,0];dirty=1;try{sv()}catch(e){}return true}
 function U(id){var v=V();var a=v.u[id];if(!a||a.length<6){a=v.u[id]=[0,0,0,0,0,0].map(function(_,i){return a&&a[i]|0})}return a}

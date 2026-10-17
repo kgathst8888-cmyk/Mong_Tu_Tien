@@ -1,82 +1,70 @@
-/* ===== 🧭 MÔN PHÁI 8 HƯỚNG — 2.5D Tiên Giới (world/74-mon-phai-8-huong.js) — nạp sau world/73 + assets/mon-phai-sprites2.js =====
- * CHỈ khi đang ở Thành Tiên Giới (TG.on()): nhân vật của mình (đã chọn môn phái ở Vạn Pháp Tháp) vẽ theo HƯỚNG ĐI trên màn hình:
- *   xuống (S) = mặt trước · lên (N) = MẶT SAU · trái/phải (E/W) = tư thế CHẠY ngang (lật theo hướng) · 4 hướng chéo = mặt trước/sau xoay 3/4 + nghiêng người.
- *   Đứng yên giữ nguyên hướng cuối cùng. Đổi tư thế có hoà mờ ngắn; hướng được làm mượt + có độ trễ chống giật ở ranh giới.
- * Mọi bản đồ khác (Làng, Linh Giới, hang, phụ bản…) KHÔNG đổi: vẫn gọi hero() của world/73 như cũ.
- * Hướng đi lấy từ window.TGV = {sx,sy} (vector đi trên MÀN HÌNH) do world/61-tien-gioi-thanh.js ghi mỗi bước.
- * Góc hướng tính sau khi bù độ dẹt isometric 2:1 (sy×2) → đi dọc trục bản đồ = chéo 45° trên màn hình, đi thẳng lên/xuống/ngang = N/S/E/W.
- * Ảnh: MPS2[môn].bm/bf (mặt sau nam/nữ), .run (chạy ngang, dùng chung nam/nữ) — cắt từ ảnh mẫu. Mặt trước lấy từ MPS (world/73).
- * Chỉnh: VPG8_CF.enable=false để tắt; VPG8_CF.fade (số khung hoà mờ); VPG8_CF.runH (tỉ lệ chiều cao tư thế chạy so với VPG_CF.h). */
+/* ===== 🧭 MÔN PHÁI 8 HƯỚNG THẬT — 2.5D Tiên Giới (world/74-mon-phai-8-huong.js) — nạp sau world/73 + assets/mon-phai-8h.js =====
+ * Fix204: dùng 8 KHUNG ẢNH THẬT cho mỗi môn × nam/nữ (MP8, cắt từ ảnh mẫu "8 hướng"): Trước · Trước-Phải · Phải · Sau-Phải · Sau · Sau-Trái · Trái · Trước-Trái.
+ *   Không còn lật hình / dùng tư thế chạy chung: mỗi hướng nhìn là 1 tranh riêng, đúng trang phục, tóc, vạt áo của từng hướng.
+ * XOAY MƯỢT: hướng mục tiêu chọn theo vector đi trên màn hình (có độ trễ chống giật ở ranh giới); góc hiển thị ST.ang quay dần (tốc độ giới hạn, giảm tốc khi gần tới)
+ *   qua các hướng trung gian; hiển thị = hoà trộn 2 khung kề nhau theo góc thật (chỉ hoà trong khoảng giữa, đầu/cuối là khung nguyên) + thu hẹp nhẹ bề ngang khi đang xoay.
+ * BAY MƯỢT (Tiên Nhân, CTHE.on()): lơ lửng không bước chân; cất/hạ cánh êm (ST.hv, ST.fo), nhấp nhô 2 nhịp, tà áo/tóc lướt trễ pha ngược hướng bay, xoay chậm hơn khi bay, giữ đà 14 khung sau khi dừng.
+ * Chỉ khi ở Thành Tiên Giới (TG.on()); mọi bản đồ khác vẫn do world/73 vẽ. API giữ nguyên cho world/78,79,87,89,91: VPG8.state {ang, sec, hv, fo, k, ca, cf, ...}.
+ * Hướng đi lấy từ window.TGV = {sx,sy} (world/61). sec: 0=E 1=SE 2=S 3=SW 4=W 5=NW 6=N 7=NE (góc màn hình, y hướng xuống). Khung MP8 = (2-sec+8)%8.
+ * Chỉnh: VPG8_CF.enable=false tắt · .spin (rad/khung khi đi, mặc định .2) · .spinHover (rad/khung khi bay, .1) · .hover/.hoverH · .weapon=true bật lại lớp vũ khí cũ (đã lệch với tranh mới). */
 (function(){
 'use strict';
-if(typeof hero!=='function'||typeof PS==='undefined'||typeof CHR==='undefined'||!window.MPS||!window.MPS2||!window.VP||!window.VPG||!window.TG)return;
-var CF=window.VPG8_CF=window.VPG8_CF||{};if(CF.enable===undefined)CF.enable=true;if(!CF.fade)CF.fade=6;if(!CF.runH)CF.runH=.98;if(CF.hover===undefined)CF.hover=true;if(!CF.hoverH)CF.hoverH=22;
+if(typeof hero!=='function'||typeof PS==='undefined'||typeof CHR==='undefined'||!window.MP8||!window.VP||!window.VPG||!window.TG)return;
+var CF=window.VPG8_CF=window.VPG8_CF||{};if(CF.enable===undefined)CF.enable=true;if(!CF.spin)CF.spin=.2;if(!CF.spinHover)CF.spinHover=.1;if(CF.hover===undefined)CF.hover=true;if(!CF.hoverH)CF.hoverH=22;if(CF.weapon===undefined)CF.weapon=false;
 var COL={umt:'#c070ff',hbd:'#7fe4ff',ptc:'#ff9a4a',tkt:'#9fc8ff',vdm:'#7cf08a',ngc:'#ffd890'};
 var PI=Math.PI,IM={};
-function ld(key,d){if(!d)return null;if(IM[key])return IM[key];var im=new Image();im.src=d[0];return IM[key]={im:im,w:d[1],h:d[2]}}
-function front(id,g){return ld('f'+id+g,MPS[id]&&MPS[id][g])}
-function back(id,g){return ld('b'+id+g,MPS2[id]&&MPS2[id][g==='f'?'bf':'bm'])}
-function run(id){return ld('r'+id,MPS2[id]&&MPS2[id].run)}
+function fr8(id,gen,i){var k=id+gen+i;if(IM[k])return IM[k];var d=MP8[id]&&MP8[id][gen]&&MP8[id][gen][i];if(!d)return null;var im=new Image();im.src=d[0];return IM[k]={im:im,w:d[1],h:d[2]}}
 function ok(o){return o&&o.im.complete&&o.im.naturalWidth>0}
 function own(){return typeof P==='object'&&P&&!('maxMp' in P)&&!(P.hp===1&&P.mp===1&&P.atkT===1)}
 function ease2(x){x=Math.max(0,Math.min(1,x));return x*x*(3-2*x)}
 function wrap(a){while(a>PI)a-=2*PI;while(a<-PI)a+=2*PI;return a}
-/* ----- trạng thái hướng/nhịp (cập nhật 1 lần/khung) ----- */
-var ST={f:-1,ang:PI/2,tg:PI/2,sec:2,k:0,bp:0,wp:0,key:'',prev:null,fade:0,fl:1,hv:0,fo:0,mh:0,ln:0,s0:-99,pa:0,ca:0,cf:0};
-/* Fix178: Tiên Nhân (CTHE.on()) cả 6 môn phái BAY LƠ LỬNG ở Thành Tiên Giới: không bước chân/không tư thế chạy, người nhấp nhô nhẹ cách mặt đất CF.hoverH, nghiêng theo hướng bay, tà áo bay, vòng linh khí + hạt linh khí dưới chân. Tắt: VPG8_CF.hover=false */
+var ST={f:-1,ang:PI/2,tg:PI/2,sec:2,k:0,bp:0,wp:0,hv:0,fo:0,mh:0,ln:0,hx:0,tr:0,du:0,sd:1,s0:-99,pa:0,ca:0,cf:0,key:'',prev:null,fade:0,fl:1};
 function hovOn(){try{return !!(CF.hover&&window.CTHE&&CTHE.on&&CTHE.on())}catch(e){return false}}
 function tick(){
  if(ST.f===fr)return;ST.f=fr;
  var mv=P.mv?1:0,hn0=hovOn();
- /* Fix196: khi BAY — giữ đà 14 khung sau khi dừng (auto đi-dừng liên tục không làm người giật), tăng/giảm tốc chậm, xoay hướng mượt, ngưỡng đổi hướng rộng → lướt êm thay vì hất tới hất lui */
+ /* giữ đà 14 khung sau khi dừng khi bay (auto đi-dừng liên tục không làm người giật) */
  if(hn0){if(mv)ST.mh=14;else if(ST.mh>0){ST.mh--;mv=1}}else ST.mh=0;
  ST.k+=(mv-ST.k)*(mv?(hn0?.1:.22):(hn0?.06:.16));if(ST.k<.002)ST.k=0;
  var v=window.TGV;if(P.mv&&v&&(v.sx||v.sy))ST.tg=Math.atan2(v.sy*2,v.sx);
- /* Fix198: vừa tung chiêu (P.atk tăng) → bắt đầu nhịp vung vũ khí; trong 30 khung sau chiêu, người quay mượt về hướng chiêu (ST.ca) */
  if((P.atk|0)>ST.pa)ST.s0=fr;ST.pa=P.atk|0;
  var cst=ST.cf>fr;if(cst)ST.tg=ST.ca;
- ST.ang=wrap(ST.ang+wrap(ST.tg-ST.ang)*(hn0?(cst?.2:.12):.3));
- var raw=((Math.round(ST.ang/(PI/4))%8)+8)%8;
- if(raw!==ST.sec&&Math.abs(wrap(ST.ang-ST.sec*PI/4))>PI/8+(hn0?.3:.14))ST.sec=raw;
+ /* 1) chọn HƯỚNG MỤC TIÊU (8 hướng) có độ trễ */
+ var raw=((Math.round(ST.tg/(PI/4))%8)+8)%8;
+ if(raw!==ST.sec&&Math.abs(wrap(ST.tg-ST.sec*PI/4))>PI/8+(hn0?.3:.14))ST.sec=raw;
+ /* 2) XOAY dần góc hiển thị về hướng mục tiêu: tốc độ giới hạn + giảm tốc khi gần tới → đi qua các khung trung gian, không nhảy cóc */
+ var goal=ST.sec*PI/4,df=wrap(goal-ST.ang),cap=hn0?CF.spinHover:(cst?CF.spin*1.5:CF.spin),step=df*(hn0?.2:.3);
+ if(step>cap)step=cap;else if(step<-cap)step=-cap;
+ var a0=ST.ang;
+ if(Math.abs(df)<.006)ST.ang=wrap(goal);
+ else{if(Math.abs(step)<.014)step=.014*(df>0?1:-1);if(Math.abs(step)>Math.abs(df))step=df;ST.ang=wrap(ST.ang+step)}
+ var du=-wrap(ST.ang-a0)/(PI/4);ST.du+=(du-ST.du)*.35;if(Math.abs(ST.du)>.01)ST.sd=ST.du>0?1:-1;
+ ST.tr+=(Math.min(1,Math.abs(wrap(goal-ST.ang))/(PI/6))-ST.tr)*.3;
+ /* hướng ngang trên màn hình × độ chạy → làm tà áo trôi ngược chiều, mượt */
+ ST.hx+=(Math.cos(ST.ang)*ST.k-ST.hx)*.14;
  var fly=false;try{fly=!!(window.TGQ&&TGQ.flying&&TGQ.flying())}catch(e){}
- var hn=hovOn();ST.hv+=((hn?1:0)-ST.hv)*.08;if(ST.hv<.004)ST.hv=0;
- ST.fo+=((hn&&!fly?CF.hoverH:0)-ST.fo)*.12;if(ST.fo<.05)ST.fo=0;
- ST.bp+=.05;ST.wp+=.3*ST.k*(hn?.2:1);if(ST.fade>0)ST.fade-=1/(hn?(CF.turn||14):CF.fade);
+ var hn=hovOn();ST.hv+=((hn?1:0)-ST.hv)*.07;if(ST.hv<.004)ST.hv=0;if(ST.hv>.996)ST.hv=1;
+ ST.fo+=((hn&&!fly?CF.hoverH:0)-ST.fo)*.1;if(ST.fo<.05)ST.fo=0;
+ ST.bp+=.05;ST.wp+=.3*ST.k*(hn?.2:1);
 }
-/* sec: 0=E 1=SE 2=S 3=SW 4=W 5=NW 6=N 7=NE (góc màn hình, y hướng xuống) */
-var CX=[1,.7071,0,-.7071,-1,-.7071,0,.7071];
-function pick(sid,gen,sec,mv){
- var c=CX[sec],sg=c>.01?1:(c<-.01?-1:ST.fl),side=sec===0||sec===4,up=sec>=5,diag=sec===1||sec===3||sec===5||sec===7,HH=(window.VPG_CF&&VPG_CF.h)||76,o,sq=1,fw=0,fl=1,kind;
- if(c)ST.fl=sg;
- if(side&&mv&&ST.hv<.5){o=run(sid);kind='run';fl=sg;fw=1;HH*=CF.runH;if(!ok(o)){o=null}}
- if(!o){
-  if(side){o=front(sid,gen);kind='side';fl=sg;sq=.8}
-  else if(up){o=back(sid,gen);kind='back'+(diag?'d':'');fl=diag?sg:1;sq=diag?.9:1;fw=diag?.55:0}
-  else{o=front(sid,gen);kind='front'+(diag?'d':'');fl=diag?sg:1;sq=diag?.9:1;fw=diag?.55:0}
-  if(!ok(o)){o=front(sid,gen);kind='front';fl=1;sq=1;fw=0}
- }
- if(!ok(o))return null;
- return{o:o,fl:fl,sq:sq,fw:fw,HH:HH,c:c,run:kind==='run',kind:kind,key:kind+fl}
-}
-/* ----- vẽ 1 tư thế (dải ngang: đầu đứng yên, gấu áo/tóc bay) ----- */
-function drawPose(p,alpha,col,sid,ws,nw){
- var k=ST.k,wp=ST.wp,bp=ST.bp,HH=p.HH,o=p.o,im=o.im,w=HH*o.w/o.h*p.sq,
-  hv=ST.hv,bob=-(k*Math.abs(Math.sin(wp))*2.6*(1-hv))+Math.sin(bp)*.7,
-  rot0=p.c*k*(p.run?.015:.06)*(1+hv*1.3)+Math.sin(wp)*(p.run?.012:.028)*k*(1-hv)+hv*Math.sin(bp*.9)*.022,
-  rot=rot0*(1-hv),   /* Fix197: bay như pháp sư — thân đứng thẳng, không nghiêng/lắc; chỉ lơ lửng lên xuống nhẹ */
-  sy=1+Math.sin(bp)*.006+Math.cos(wp*2)*.014*k*(1-hv),sx=1/sy,
-  N=p.run?20:26,ih=im.naturalHeight,iw=im.naturalWidth,sh=ih/N,dh=HH/N;
+/* ----- vẽ 1 khung (dải ngang: đầu đứng yên, gấu áo/tóc trôi) ----- */
+function drawPose(o,alpha,ws,off,tw){off=off||0;tw=tw||0;
+ var k=ST.k,wp=ST.wp,bp=ST.bp,hv=ST.hv,hx=ST.hx,im=o.im,HH=(window.VPG_CF&&VPG_CF.h)||76,w=HH*o.w/o.h,
+  bob=-(k*Math.abs(Math.sin(wp))*2.6*(1-hv))+Math.sin(bp)*.7+hv*Math.sin(bp*2.1+.8)*.5,
+  rot=hx*(.05*(1-hv)+.012*hv)+Math.sin(wp)*.024*k*(1-hv)+hv*Math.sin(bp*.9)*.016,
+  sy=1+Math.sin(bp)*.006+Math.cos(wp*2)*.012*k*(1-hv),sx=1/sy,
+  N=26,ih=im.naturalHeight,iw=im.naturalWidth,sh=ih/N,dh=HH/N;
  g.save();
  try{
-  g.globalAlpha=alpha;g.scale(p.fl*(ws===undefined?1:ws),1);g.translate(0,bob);g.rotate(rot);g.scale(sx,sy);
-  var wk={kind:p.kind==='side'||p.kind==='run'||p.kind.indexOf('back')===0||p.kind.indexOf('front')===0?p.kind:'front',w:w,HH:HH,k:k,bp:bp,wp:wp,at:(function(){var e=(fr-ST.s0)/24;return e>=0&&e<1?e:-1})()};
-  if(alpha>.5&&!nw)try{if(window.VPW)VPW.draw(sid,'back',wk)}catch(e){}
-  if(k>.45&&p.fw>.3&&hv<.5){var ga=(k-.45)*.5*alpha*(1-.5*ST.hv);for(var q=2;q>=1;q--){g.globalAlpha=ga*(.5/q);g.drawImage(im,-w/2-q*9*k*p.fw,-HH,w,HH)}g.globalAlpha=alpha}
+  g.imageSmoothingEnabled=true;try{g.imageSmoothingQuality='high'}catch(e){}
+  g.globalAlpha=alpha;g.translate(off,0);g.scale(ws,1);g.translate(0,bob+HH*.012);g.rotate(rot);g.scale(sx,sy);
+  if(k>.45&&hv<.5&&alpha>.5){var ga=(k-.45)*.5*alpha*(1-.5*hv),sgn=hx>=0?-1:1;for(var q=2;q>=1;q--){g.globalAlpha=ga*(.5/q);g.drawImage(im,-w/2+sgn*q*8*Math.min(1,Math.abs(hx)*1.2),-HH,w,HH)}g.globalAlpha=alpha}
   for(var j=0;j<N;j++){
    var u=(j+.5)/N,uu=Math.pow(Math.max(0,u-.12)/.88,1.55),
-    dx=(1-hv)*uu*(Math.sin(bp*1.3-u*2.6)*1.5+hv*Math.sin(bp*1.6-u*3)*uu*2.2+k*(1+hv*.6)*(-5.2*p.fw+Math.sin(wp*2-u*3.4)*(2.6+1.4*(1-p.fw))*(1-.85*hv)))+Math.sin(wp+1.2)*k*u*u*1.6*(1-hv);
+    dx=uu*((1-hv)*Math.sin(bp*1.3-u*2.6)*1.5+hv*(Math.sin(bp*1.1-u*2.4)*2.1+Math.sin(bp*.7-u*3.1+1)*1.1)
+      -5.6*hx*(1+.45*hv)+k*Math.sin(wp*2-u*3.4)*3.2*(1-hv)+hv*k*Math.sin(bp*2.2-u*3)*1.6)
+      +Math.sin(wp+1.2)*k*u*u*1.6*(1-hv)+tw*(.5-u)*2;
    g.drawImage(im,0,j*sh,iw,sh+.5,-w/2+dx,-HH+j*dh,w,dh+.9)}
-  if(alpha>.5&&!nw)try{if(window.VPW)VPW.draw(sid,'front',wk)}catch(e){}
  }finally{g.restore()}
 }
 function hovFx(col,up,k,bp){
@@ -91,12 +79,15 @@ function hovFx(col,up,k,bp){
 }
 function draw8(sid){
  var gen=window.VPG.gender();tick();
- var p=pick(sid,gen,ST.sec,P.mv?1:0);if(!p)return false;
- if(p.key!==ST.key){if(ST.key&&ST.cur){ST.prev=ST.cur;ST.fade=1}ST.key=p.key}
- ST.cur=p;
+ /* vị trí khung liên tục: S=0 · SE=1 · E=2 · NE=3 · N=4 · NW=5 · W=6 · SW=7 */
+ var u=(PI/2-ST.ang)/(PI/4);u=((u%8)+8)%8;
+ var i0=Math.floor(u),t=u-i0,i1=(i0+1)%8,A=fr8(sid,gen,i0),B=fr8(sid,gen,i1);
+ if(!ok(A)&&!ok(B))return false;
+ if(!ok(A))A=B;if(!ok(B))B=A;
+ var wB=t<.35?0:(t>.65?1:ease2((t-.35)/.3)),ws=1-.16*Math.sin(PI*t)*ST.tr,sf=Math.sin(ST.ang)>=0?1:-1,HHd=(window.VPG_CF&&VPG_CF.h)||76,dl=HHd*.04*ST.tr,tw=sf*ST.sd*HHd*.03*ST.tr;
+ ST.key=i0+'';
  var col=COL[sid]||'#fff',k=ST.k,bp=ST.bp;
- ST.ln+=((hovOn()?Math.max(-1,Math.min(1,p.c))*k*.05:0)-ST.ln)*.07;
- var up=ST.fo+ST.hv*Math.sin(bp*1.25)*3.2;
+ var up=ST.fo+ST.hv*(Math.sin(bp*1.25)*3.2+Math.sin(bp*2.3+1.1)*.9);
  try{if(typeof drawWings==='function'){g.save();if(up)g.translate(0,-up*s);drawWings();g.restore()}}catch(e){}
  g.save();
  try{
@@ -105,13 +96,12 @@ function draw8(sid){
   g.save();g.translate(0,1);g.scale(1,.24);g.globalCompositeOperation='lighter';g.strokeStyle=col;g.globalAlpha=(.28+.1*Math.sin(bp*1.6)+.18*k)*(1-.65*ST.hv);g.lineWidth=2.2;g.beginPath();g.arc(0,0,23+2*Math.sin(bp*1.6),0,6.2832);g.stroke();g.restore();
   if(ST.hv>.02)hovFx(col,up,k,bp);
   g.save();if(up)g.translate(0,-up);
-  if(ST.hv>.3){ /* Fix202: XOAY 8 HƯỚNG LIÊN TỤC — góc nhìn ST.ang chạy liên tục; hiển thị = pha trộn 2 góc nhìn chính kề nhau (S↔E/W↔N) theo góc thật, KHÔNG lật hình/đổi tư thế đột ngột */
-   var gen2=window.VPG.gender(),sg=(ST.ang+PI)/(PI/2),i0=Math.floor(sg),tt=sg-i0;if(i0>3){i0=3;tt=1}if(i0<0){i0=0;tt=0}
-   var SECS=[4,6,0,2,4],pa=pick(sid,gen2,SECS[i0],false),pb=pick(sid,gen2,SECS[i0+1],false),te=ease2(tt),ws=1-.14*Math.sin(PI*te);
-   if(pa&&pb){drawPose(pa,1,col,sid,ws,te>=.5);if(te>.02)drawPose(pb,te,col,sid,ws,te<.5)}else drawPose(p,1,col,sid)}
-  else if(ST.fade>0&&ST.prev){drawPose(ST.prev,Math.max(0,ST.fade),col,sid);drawPose(p,1-Math.max(0,ST.fade)*.6,col,sid)}
-  else drawPose(p,1,col,sid);
+  /* XOAY 3D GIẢ: bề mặt thân trượt như hình trụ quanh trục dọc (khung cũ trôi theo chiều xoay, khung mới trượt vào), đầu quay trước – gấu áo trễ sau (tw), thu ngang khi nghiêng */
+  if(wB<=.002)drawPose(A,1,ws,sf*t*dl,tw);
+  else if(wB>=.998)drawPose(B,1,ws,-sf*(1-t)*dl,tw);
+  else{drawPose(A,1,ws,sf*t*dl,tw);drawPose(B,wB,ws,-sf*(1-t)*dl,tw)}
   g.restore();
+  if(CF.weapon){try{if(window.VPW){var HH=(window.VPG_CF&&VPG_CF.h)||76,wk={kind:'front',w:HH*A.w/A.h,HH:HH,k:k,bp:bp,wp:ST.wp,at:-1};VPW.draw(sid,'back',wk);VPW.draw(sid,'front',wk)}}catch(e){}}
  }finally{g.restore()}
  return true;
 }

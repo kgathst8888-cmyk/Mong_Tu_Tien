@@ -19,3 +19,15 @@
 - `ANCH` trong world/75 có 6 tư thế: front (S) · frontd (SE/SW) · side (E/W đứng) · run (E/W chạy) · back (N) · backd (NE/NW); hướng đối xứng lật theo thân.
 - Mỗi tư thế có vị trí tay, góc cầm và lớp vẽ riêng: tay gần người xem vẽ TRƯỚC thân, tay xa vẽ SAU thân (bị che bớt) → có chiều sâu khi nhìn nghiêng/quay lưng.
 - Tay thuận (main) luôn là tay gần người xem khi nhìn nghiêng. Pháp bảo lơ lửng đổi bên theo hướng (bay sau lưng khi đi).
+
+## Fix204 — Thay toàn bộ ảnh 6 môn phái bằng ảnh 8 hướng mới + quay/bay mượt (2026-10-17)
+- **Ảnh mới**: `assets/mon-phai-8h.js` (`MP8[môn][m|f]` = 8 khung webp trong suốt, cùng kích thước/neo chân) thay cho `assets/mon-phai-sprites.js` + `mon-phai-sprites2.js` (đã xoá). Thứ tự khung: 0 Trước(S) · 1 Trước-Phải(SE) · 2 Phải(E) · 3 Sau-Phải(NE) · 4 Sau(N) · 5 Sau-Trái(NW) · 6 Trái(W) · 7 Trước-Trái(SW). `MPS`/`MPS2` còn là bí danh tương thích (giao diện chọn môn phái vẫn đọc `VPG.preview`).
+- **world/74 (Tiên Giới)** viết lại: mỗi hướng là 1 tranh thật (không lật, không dùng tư thế chạy chung). Hướng mục tiêu có độ trễ chống giật → góc hiển thị `VPG8.state.ang` quay dần (tốc độ giới hạn `VPG8_CF.spin`=.2, bay `spinHover`=.1 rad/khung, giảm tốc khi gần tới) → hoà trộn 2 khung kề nhau chỉ ở khoảng giữa + thu nhẹ bề ngang khi xoay.
+- **Bay mượt**: cất/hạ cánh êm, nhấp nhô 2 nhịp, tà áo/tóc lướt trễ pha ngược hướng bay (trước đây khi bay vạt áo gần như đứng yên), xoay chậm hơn khi bay, giữ đà 14 khung sau khi dừng.
+- **world/73 (bản đồ 2D)**: dùng khung 3/4 Trước-Phải / Trước-Trái theo hướng đi; đổi hướng quay mượt qua khung Trước (~8 khung) thay vì lật ảnh.
+- **Lớp vũ khí cũ (world/75, assets/mon-phai-vukhi.js)** tắt mặc định (`VPG8_CF.weapon` / `VPG_CF.weapon` = true để bật lại) vì toạ độ bàn tay đã lệch với tranh mới; tranh mới đã có sẵn pháp bảo (vd. Ngự Cổ Thánh Điện).
+- API giữ nguyên cho world/78, 79, 87, 89, 91 (`VPG8.state.{ang,sec,hv,fo,k,ca,cf}`).
+
+## Fix205 — Xoay 3D giả (world/74)
+- Khi đổi hướng ở Tiên Giới: bề mặt thân trượt như hình trụ quanh trục dọc (khung cũ trôi đi, khung mới trượt vào), đầu quay trước – gấu áo trễ sau, thu ngang khi nghiêng, hoà khung hẹp (35%–65%) để không nhân đôi đầu.
+- Chỉnh độ sâu: hệ số `.04` (trượt) và `.03` (xoắn đầu–gấu) trong `draw8`; tăng để 3D rõ hơn nhưng dễ thấy bóng mờ.

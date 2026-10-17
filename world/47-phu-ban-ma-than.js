@@ -97,7 +97,7 @@ function back(w){lg=w.lg0|0;vil=w.v0?1:0;vt=null;vgo=-1;try{P.x=cl(P.x,40,vw()-4
 
 /* thắng: cộng nguyên liệu (boss chết → drop() bên dưới) rồi thoát sau ~5 giây */
 function win(){
- var d=D();d.k=(d.k|0)+1;try{sv()}catch(e){}
+ var d=D();d.k=(d.k|0)+1;try{QE('pbmt')}catch(e){}try{sv()}catch(e){}
  DT.push({x:P.x,y:220,s:'🏆 Hạ Ma Thần! (Phụ Bản)',c:'#8fe8ff',g:1,l:200})}
 
 /* ---------- móc vào engine / Ma Thần (cùng mẫu Phụ Bản Vàng; chỉ xử lý khi dg.pm, còn lại chuyển tiếp nguyên) ---------- */

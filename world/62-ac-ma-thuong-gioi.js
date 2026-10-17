@@ -179,7 +179,7 @@ function ask(){if(!started)return;if(!(window.HDAO&&HDAO.on())){say('☯ Chỉ n
  if(cdLeft()>0){say('⏳ Ác Ma Thượng Giới: vào lại sau '+cdFmt(cdLeft()),'#ffd98a',170);return}
  confirmBox('Tiến vào ÁC MA THƯỢNG GIỚI?\\nChỉ có 1 boss — Ác Ma Vương (Lv'+MT_LV+', mạnh gấp '+CF.mul+' lần Kiếm Thánh) bước ra từ cổng giữa bản đồ. Không có quái phụ.\\nMỗi giờ vào được 1 lần (tính từ lúc vào). Bạn có thể rời trận bất cứ lúc nào.','Tiến vào','Thôi',enter)}
 function exit(){mtExit();try{LCT.enter()}catch(e){}}
-function win(){try{QE('boss')}catch(e){}save();say('🏆 Hạ Ác Ma Vương!','#ffd070',230)}
+function win(){try{QE('boss');QE('acma')}catch(e){}save();say('🏆 Hạ Ác Ma Vương!','#ffd070',230)}
 /* ---------- cổng trong Thành Thị Linh Giới (bản Fix168): THÊM Ô CỔNG MỚI ----------
  * Ở Fix83 boss chiếm ô "Hư Không Truyền Tống" đang khoá; sang Fix168 ô đó đã thành "Tiên Giới Thiên Môn" (world/61), ô 5 là Bế Quan Đài (world/57),
  * cổng cuối là "Về Thôn Tân Thủ" (world/65) → không còn ô trống. Nên thêm 1 cổng riêng (cuối mảng LCT.gates), đặt giữa Hợp Đạo Đài và Kiếm Thánh Đài,

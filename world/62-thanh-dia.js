@@ -79,7 +79,7 @@ function spawnBoss(i){
 var _hurt=dgHurt;dgHurt=function(e,mu){return _hurt.call(this,e,e&&e.td?mu*TD.atk:mu)};
 
 /* ---------- vòng đời trận: Ma Thần → nghỉ → Kiếm Thánh → xong ---------- */
-function win(){try{QE('boss')}catch(e){}try{sv()}catch(e){}say('🏆 Hạ cả Ma Thần và Kiếm Thánh · Thánh Địa!','#fff0a0',220,230)}
+function win(){try{QE('boss');QE('td')}catch(e){}try{sv()}catch(e){}say('🏆 Hạ cả Ma Thần và Kiếm Thánh · Thánh Địa!','#fff0a0',220,230)}
 var _tick=dgTick;dgTick=function(){
  if(!dg||!dg.td)return _tick.apply(this,arguments);
  if(over||vil||!started)return;

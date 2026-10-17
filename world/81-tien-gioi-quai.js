@@ -143,7 +143,7 @@ function addXp(n){try{P.xp+=n;if(gP===P&&gC===cur)gB+=n}catch(e){}}
 function kill(m){
  var xp=m.xp||xpOf(m.lv);
  addXp(xp);
- try{ZC.kill(m)}catch(e){}try{petGain(m)}catch(e){}try{QE('kill')}catch(e){}
+ try{ZC.kill(m)}catch(e){}try{petGain(m)}catch(e){}try{QE('kill');QE('tgk')}catch(e){}
  kills++;ft(m,'+'+nf(xp)+' EXP','#8ff0ff',0,1);
  try{if(m.ax&&AX&&AX.killed)AX.killed(m,xp)}catch(e){}
  KF.push({wx:m.x,wy:m.y,z:m.z,t:0,l:26});

@@ -9,11 +9,16 @@
    =================================================================== */
 const FM=(()=>{
 const CFG={
+ wilt:7200000,   /* cây chín quá 2 giờ mà chưa thu → héo, mất nửa sản lượng */
+ dead:21600000,  /* quá 6 giờ → khô chết, mất trắng */
+ evPest:.10,evBoon:.07, /* khi thu hoạch: 10% sâu bệnh (−50%), 7% linh khí tràn đầy (+50%) */
+ brewBonus:.08,         /* 8% luyện ra thượng phẩm (+1 viên) */
+ scRealm:.02,scMin:.30, /* tỉ lệ luyện thành giảm 2%/cảnh giới, tối thiểu 30% */
  plots0:6,            /* số ô đất ban đầu */
  plotsMax:12,         /* số ô đất tối đa */
- plotCost:n=>4000*(n-5)*(n-5), /* vàng mở ô thứ (n+1), n = số ô hiện có */
- seedBack:.4,         /* xác suất nhận lại 1 hạt khi thu hoạch */
- gold:{tv1:150,tv2:450,pa:200,pd:200,ph:200,pm:200,pt:300,tt:300} /* vàng cơ bản mỗi viên, nhân (cảnh giới+2)² */
+ plotCost:n=>16000*(n-5)*(n-5), /* vàng mở ô thứ (n+1), n = số ô hiện có */
+ seedBack:.2,         /* xác suất nhận lại 1 hạt khi thu hoạch */
+ gold:{tv1:300,tv2:900,pa:400,pd:400,ph:400,pm:400,pt:600,tt:600} /* vàng cơ bản mỗi viên, nhân (cảnh giới+2)² */
 };
 /* Dược thảo / hạt giống.  d = tỉ lệ rơi hạt [Tinh Anh, Boss Thế Giới, Boss Sử Thi, Trùm Hầm Ngục, Ma Thần] */
 const HB=[
@@ -26,6 +31,7 @@ const HB=[
  {id:'truc',n:'Tị Lôi Trúc',   e:'🎋',c:'#c0a0ff',g:480,y:[2,4],d:[.05,.25,.18,.15,.40],u:'Tị Lôi Đan (giảm sát thương lôi kiếp)'},
  {id:'cot', n:'Cốt Linh Thảo', e:'🦴',c:'#e8d8a8',g:540,y:[2,4],d:[.06,.28,.20,.18,.42],u:'Tôi Thể Đan (chuyển cấp Phàm Nhân → Đạo Thể)'}
 ];
+HB.forEach(b=>{b.g=Math.round(b.g*2.5);if(b.y[1]>=4)b.y=[b.y[0]-1,b.y[1]-1];else b.y=[Math.max(1,b.y[0]-1),b.y[1]];b.d=b.d.map(v=>+(v*.6).toFixed(3))});
 const HM={};HB.forEach(b=>HM[b.id]=b);
 const BN=['Tinh Anh','Boss Thế Giới','Boss Sử Thi','Trùm Hầm Ngục','Ma Thần'];
 /* Đan dược. k: tv = tu vi · a/d/h/m = thuộc tính · td = giảm sát thương lôi kiếp */
@@ -40,6 +46,11 @@ const PL=[
  {id:'tt',n:'Tôi Thể Đan',  e:'⚪',k:'tt',sc:.85,rc:{cot:2,thao:1},d:'Dược liệu tôi luyện thân thể: <b>cần 100 viên</b> để chuyển cấp từ <b>Phàm Nhân lên Đạo Thể</b> (Hợp Đạo Đài). Không dùng trực tiếp.'}
 ];
 const PM={};PL.forEach(p=>PM[p.id]=p);
+PL.forEach(p=>{for(const h in p.rc)p.rc[h]=Math.ceil(p.rc[h]*1.7)});
+/* công thức chéo: mỗi đan thuộc tính cần thêm 1 loại thảo khác → phải trồng nhiều loại */
+PM.pa.rc.thao=2;PM.pd.rc.lien=2;PM.ph.rc.hoa=2;PM.pm.rc.dang=2;PM.pt.rc.sam=1;
+Object.entries({tv1:.75,tv2:.65,pa:.60,pd:.60,ph:.60,pm:.60,pt:.60,tt:.55}).forEach(([k,v])=>{PM[k].sc=v});
+const sce=p=>Math.max(CFG.scMin,p.sc-CFG.scRealm*Math.max(0,ZC.rI()));
 const KN={a:'Công',d:'Thủ',h:'HP',m:'MP'};
 const fresh=()=>({seeds:{},herbs:{},pills:{},np:CFG.plots0,plots:Array(CFG.plots0).fill(null),sel:'chi'});
 let S=fresh();
@@ -83,14 +94,21 @@ function plantAll(){
 }
 function harvOne(i,o){
  const p=S.plots[i];if(!p||Date.now()<grow(p))return 0;
- const b=HM[p.id],n=b.y[0]+Math.floor(R()*(b.y[1]-b.y[0]+1));
+ const b=HM[p.id],late=Date.now()-grow(p);let n=b.y[0]+Math.floor(R()*(b.y[1]-b.y[0]+1));
+ if(late>CFG.dead){S.plots[i]=null;o.d=(o.d|0)+1;return 1}
+ o.e=o.e||{};
+ if(late>CFG.wilt){n=Math.max(1,Math.floor(n/2));o.e['🥀héo']=(o.e['🥀héo']|0)+1}
+ const rv=R();
+ if(rv<CFG.evPest){n=Math.max(1,Math.floor(n/2));o.e['🐛sâu bệnh']=(o.e['🐛sâu bệnh']|0)+1}
+ else if(rv<CFG.evPest+CFG.evBoon){n=Math.ceil(n*1.5);o.e['✨linh khí']=(o.e['✨linh khí']|0)+1}
  S.herbs[b.id]=(S.herbs[b.id]|0)+n;o.h[b.id]=(o.h[b.id]|0)+n;
  if(R()<CFG.seedBack){S.seeds[b.id]=(S.seeds[b.id]|0)+1;o.s[b.id]=(o.s[b.id]|0)+1}
  S.plots[i]=null;try{window.YCTOC&&YCTOC.ngo(1)}catch(e){}return 1;
 }
 function harvTx(o){
  const a=Object.keys(o.h).map(k=>HM[k].e+HM[k].n+' ×'+o.h[k]).join(', '),b=Object.keys(o.s).map(k=>'🌱'+HM[k].n+' ×'+o.s[k]).join(', ');
- return '🌾 Thu hoạch: '+a+(b?' · nhận lại hạt: '+b:'');
+ const ev=o.e?Object.keys(o.e).map(k=>k+' ×'+o.e[k]).join(', '):'';
+ return '🌾 Thu hoạch: '+(a||'không được gì')+(b?' · nhận lại hạt: '+b:'')+(ev?' · '+ev:'')+(o.d?' · 💀 '+o.d+' cây khô chết':'');
 }
 function harv(i){if(noF())return;const o={h:{},s:{}};if(harvOne(i,o))fin(harvTx(o))}
 function harvAll(){if(noF())return;const o={h:{},s:{}};let c=0;for(let i=0;i<S.plots.length;i++)c+=harvOne(i,o);if(c)fin(harvTx(o));else{msg='Chưa có cây nào chín';ui()}}
@@ -104,13 +122,13 @@ const rdy=()=>S.plots.some(p=>p&&Date.now()>=grow(p));
 
 function farmFull(){
  const now=Date.now(),sb=HM[S.sel];
- let h='<div class="dt">🌱 <b>Linh Điền</b><br><small>Hạt giống rơi ngẫu nhiên từ <b>mọi Boss</b> (Tinh Anh, Thế Giới, Sử Thi, Trùm Hầm Ngục, Ma Thần), mỗi loại có tỉ lệ riêng. Cây lớn theo thời gian thật, cả khi bạn thoát game. Thu hoạch ra dược thảo để luyện đan ở tab ⚗ Đan.</small></div>';
+ let h='<div class="dt">🌱 <b>Linh Điền</b><br><small>Hạt giống rơi ngẫu nhiên từ <b>mọi Boss</b> (Tinh Anh, Thế Giới, Sử Thi, Trùm Hầm Ngục, Ma Thần), mỗi loại có tỉ lệ riêng. Cây lớn theo thời gian thật, cả khi bạn thoát game. Thu hoạch ra dược thảo để luyện đan ở tab ⚗ Đan.<br>⚠ Cây chín quá <b>2 giờ</b> sẽ héo (−50%), quá <b>6 giờ</b> khô chết. Khi thu hoạch có thể gặp <b>sâu bệnh</b> (−50%) hoặc <b>linh khí tràn đầy</b> (+50%). Mỗi đan cần phối nhiều loại thảo.</small></div>';
  h+='<div class="fm-g">'+HB.map(b=>`<button class="fmsel${S.sel==b.id?' on':''}" style="--c:${b.c}" onclick="FM.sel('${b.id}')"><span class="fe">${b.e}</span><b>${b.n}</b><small>Hạt <b>${S.seeds[b.id]|0}</b> · Thảo <b>${S.herbs[b.id]|0}</b></small><small>⏱ ${ft(b.g)} · ${b.y[0]}-${b.y[1]} thảo</small></button>`).join('')+'</div>';
  h+=`<div class="st" style="margin:2px 0 4px">Đang chọn gieo: <b style="color:${sb.c}">${sb.e} ${sb.n}</b> — dùng cho ${sb.u}</div>`;
  h+='<div class="fm-p">'+S.plots.map((p,i)=>{
   if(!p)return `<button class="fmp empty" onclick="FM.plant(${i})"><span class="fe">＋</span><small>Gieo ${sb.n}</small></button>`;
   const b=HM[p.id],rem=(grow(p)-now)/1000;
-  if(rem<=0)return `<button class="fmp ready" style="--c:${b.c}" onclick="FM.harv(${i})"><span class="fe">${b.e}</span><b>Chín rồi!</b><small>Chạm thu hoạch</small></button>`;
+  if(rem<=0){const lt=now-grow(p),w=lt>CFG.dead?'💀 Đã khô':lt>CFG.wilt?'🥀 Đang héo (-50%)':'Chạm thu hoạch';return `<button class="fmp ready" style="--c:${b.c}" onclick="FM.harv(${i})"><span class="fe">${b.e}</span><b>Chín rồi!</b><small>${w}</small></button>`}
   const pc=Math.min(100,100-rem/b.g*100);
   return `<div class="fmp grow" style="--c:${b.c}"><span class="fe">${b.e}</span><b>${b.n}</b><div class="fmbar"><i data-fmb="${i}" style="width:${pc}%"></i></div><small data-fmt="${i}">${ft(rem)}</small></div>`}).join('')+'</div>';
  h+='<div class="fmb"><button onclick="FM.harvAll()"'+(rdy()?'':' disabled')+'>🌾 Thu hoạch tất cả</button><button onclick="FM.plantAll()">🌱 Gieo đầy ô trống</button>';
@@ -150,12 +168,12 @@ function brew(id,n){
  const p=PM[id];if(!p)return;
  let m=maxBrew(p);if(n<=0||n>m)n=m;
  if(n<1){msg=gold<gc(p)?'Thiếu vàng: cần '+fmtN(gc(p))+'💰 mỗi viên':'Thiếu dược thảo để luyện '+p.n;ui();return}
- let ok=0;
+ let ok=0,top=0;
  for(let i=0;i<n;i++){
   Object.keys(p.rc).forEach(h=>S.herbs[h]-=p.rc[h]);gold-=gc(p);
-  if(R()<p.sc){ok++;S.pills[id]=(S.pills[id]|0)+1;try{window.YCTOC&&YCTOC.ngo(1)}catch(e){}}
+  if(R()<sce(p)){ok++;let g=1;if(R()<CFG.brewBonus){g=2;top++}ok+=g-1;S.pills[id]=(S.pills[id]|0)+g;try{window.YCTOC&&YCTOC.ngo(1)}catch(e){}}
  }
- fin(ok==n?'⚗ Luyện thành '+ok+' '+p.n+' ✨':'⚗ Luyện '+n+' lò: thành '+ok+' '+p.n+', hỏng '+(n-ok));
+ const tx=top?' · 🌟 '+top+' thượng phẩm (+1)':'';fin((ok-top==n?'⚗ Luyện thành '+ok+' '+p.n+' ✨':'⚗ Luyện '+n+' lò: ra '+ok+' '+p.n+', hỏng '+(n-(ok-top)))+tx);
 }
 function canUse(p){
  if(!(S.pills[p.id]>0))return 0;
@@ -203,7 +221,7 @@ function alchUI(){
   else if(p.k=='tt'){ex=`<div class="st">Đang có <b>${have}</b>/100 · dùng để chuyển cấp Phàm Nhân → Đạo Thể tại Hợp Đạo Đài (Thành Thị Linh Giới)</div>`}
   else if(p.k=='rl'){ex=`<div class="st">Đang có <b>${have}</b>/10 · ${p.ex||'tiêu hao khi đột phá cảnh giới'}</div>`}
    else{const u=ZC.pCnt(p.k),t=ZC.pTot(p.k);ex=`<div class="st">Cảnh giới này: <b>${u}/${ZC.PLIM}</b> · Tổng đã dùng ${t} → ${KN[p.k]} <b>+${(t*ZC.PEF[p.k]*100).toFixed(1)}%</b></div>`}
-  h+=`<div class="dt fmpl"><div class="fmh">${p.e} <b>${p.n}</b><span class="fmc">Có ${have}</span></div><div class="st">${p.d}</div><div class="st">Nguyên liệu: ${rcTx(p)} · ${fmtN(gc(p))}💰 · thành ${Math.round(p.sc*100)}%</div>${ex}<div class="fmb"><button ${mb<1?'disabled':''} onclick="FM.brew('${p.id}',1)">Luyện ×1</button><button ${mb<5?'disabled':''} onclick="FM.brew('${p.id}',5)">×5</button><button ${mb<1?'disabled':''} onclick="FM.brew('${p.id}',0)">Tối đa (${mb})</button><button ${canUse(p)?'':'disabled'} onclick="FM.use('${p.id}',1)">💊 Dùng</button>${p.k=='tv'?`<button ${canUse(p)?'':'disabled'} onclick="FM.useAllTv()">Dùng hết</button>`:''}</div></div>`;
+  h+=`<div class="dt fmpl"><div class="fmh">${p.e} <b>${p.n}</b><span class="fmc">Có ${have}</span></div><div class="st">${p.d}</div><div class="st">Nguyên liệu: ${rcTx(p)} · ${fmtN(gc(p))}💰 · thành ${Math.round(sce(p)*100)}%</div>${ex}<div class="fmb"><button ${mb<1?'disabled':''} onclick="FM.brew('${p.id}',1)">Luyện ×1</button><button ${mb<5?'disabled':''} onclick="FM.brew('${p.id}',5)">×5</button><button ${mb<1?'disabled':''} onclick="FM.brew('${p.id}',0)">Tối đa (${mb})</button><button ${canUse(p)?'':'disabled'} onclick="FM.use('${p.id}',1)">💊 Dùng</button>${p.k=='tv'?`<button ${canUse(p)?'':'disabled'} onclick="FM.useAllTv()">Dùng hết</button>`:''}</div></div>`;
  });
  return h;
 }
