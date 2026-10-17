@@ -9,3 +9,4 @@
 - Ngày/giờ lấy từ đồng hồ máy người chơi (không chống chỉnh giờ).
 - Cần chạy linh_thach_khoa.sql (xem LINH_THACH_KHOA_2026-10-17.md).
 - File đổi: ui/82-su-kien-nap-the.js (mới) · index.html (+1 thẻ script sau ui/70) · tài liệu này.
+- 📲 QR nạp tiền: ảnh QR nằm ở assets/qr-nap-tien.js (window.QR_NAP_TIEN, data URI PNG), hiện trong tab 💳 Bảng giá nạp, mục "Cách nạp". Đổi QR: thay chuỗi data URI (hoặc đặt CFG.pay.qr). index.html: +1 thẻ script assets/qr-nap-tien.js đứng trước ui/82.

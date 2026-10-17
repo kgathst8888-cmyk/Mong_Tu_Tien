@@ -279,8 +279,9 @@ function tabNap(){
     h+='<tr><td>'+(i+1)+'</td><td><b>'+nf(p.vnd)+'đ</b></td><td>💎 '+nf(p.lt)+'</td></tr>'});
   h+='</table><div class="en">Tỉ lệ cố định: 100đ = 1💎 (20.000đ = 200💎).</div>'
    +'<div class="nt">💎 <b>Không khoá</b> (nạp tiền, tiền bán đồ ở Chợ): dùng được ở <b>Chợ Online</b>, mua Thẻ Trưởng Thành và mọi Shop.<br>🔒 <b>Khoá</b> (kiếm từ đánh Boss): <b>riêng từng nhân vật</b> — nhân vật nào kiếm thì nhân vật đó dùng; chỉ mua đồ trong game (Shop, đột phá…), <b>không dùng ở Chợ Online</b>, không mua được Thẻ. Khi mua đồ, trừ Linh Thạch khoá của nhân vật đó trước.<br>💎 <b>Không khoá</b>: <b>dùng chung</b> cả 3 nhân vật của tài khoản.</div>';
-  var py=CFG.pay,has=py.bank||py.acc||py.contact;
+  var py=CFG.pay,qr=py.qr||window.QR_NAP_TIEN||'',has=py.bank||py.acc||py.contact||qr;
   h+='<div class="es">📝 Cách nạp</div><div class="nt">1) Chuyển khoản đúng số tiền của gói.<br>2) '+esc(py.note||'Ghi rõ email đăng nhập + tên nhân vật.')+'<br>3) Admin kiểm tra và cộng 💎 KHÔNG KHOÁ vào ví tài khoản ☁ (thường trong ít phút). Mở 🎉 hoặc 🛒 Shop để xem số dư.</div>';
+  if(qr)h+='<div class="nt" style="text-align:center"><b>📲 Quét mã QR để chuyển khoản</b><br><img src="'+qr+'" alt="QR nạp tiền" style="width:min(240px,70%);height:auto;background:#fff;border-radius:10px;margin:6px 0;image-rendering:pixelated"><br><small>Mở app ngân hàng / ví → Quét QR → nhập đúng số tiền của gói. Ghi rõ email + tên nhân vật ở nội dung.</small></div>';
   if(has){
     h+='<div class="nt">'+(py.bank?'🏦 <b>'+esc(py.bank)+'</b><br>':'')+(py.acc?'Số TK: <b>'+esc(py.acc)+'</b><br>':'')+(py.name?'Chủ TK: <b>'+esc(py.name)+'</b><br>':'')+(py.contact?'💬 Liên hệ: <b>'+esc(py.contact)+'</b>':'')+'</div>'}
   else h+='<div class="nt" style="border-color:#ff9a6a">⚠ Chưa cấu hình thông tin nhận tiền — hãy liên hệ Admin để nạp.</div>';
