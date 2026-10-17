@@ -7,7 +7,7 @@
  *   📢 Thông báo : đăng thông báo toàn game (hiện ở mục 📢 Thông báo của người chơi) + đặt hạn + xoá
  *   ✉️ Đã gửi    : danh sách thư đã gửi + 🗑 thu hồi thư CHƯA nhận
  *   📜 Nhật ký   : 40 thao tác admin gần nhất
- *   🧪 Test      : chỉnh nhân vật ĐANG CHƠI (cộng tu vi, đặt cảnh giới + tầng, ☯ Đạo Linh (EXP), cấp độ Đạo Thể, cấp độ Tiên Nhân, ♻ reset nhân vật) — chỉ trên máy, bỏ qua điều kiện đột phá
+ *   🧪 Test      : chỉnh nhân vật ĐANG CHƠI (cộng tu vi, đặt cảnh giới + tầng, ☯ Đạo Linh (EXP), cấp độ Phàm Thể, cấp độ Đạo Thể, cấp độ Tiên Nhân, ♻ reset nhân vật) — chỉ trên máy, bỏ qua điều kiện đột phá
  * Máy chủ: chạy admin.sql 1 lần trong Supabase → SQL Editor, rồi tự cấp quyền admin cho email của bạn (câu lệnh ở cuối đầu file admin.sql).
  * Không sửa module cũ; chỉ dùng KCL.rpc (systems/12-cloud-save.js). Quà trong thư dùng đúng định dạng của ui/69-thong-bao-thu.js. */
 (function(){
@@ -334,8 +334,8 @@ function vTest(){
   var H4='<h4 style="margin:12px 0 4px;font-size:13px;color:#ffd76a">',nxv=1;try{nxv=nx()}catch(e){}
   h+=H4+'☯ Đạo Linh (EXP) — '+nf(Math.floor(P.xp))+'/'+nf(nxv)+'</h4><div class="ar"><input id="adm-xp" type="number" inputmode="numeric" min="1" placeholder="Số Đạo Linh"><button class="bt gr" data-a="t_xpadd">➕ Cộng</button></div>';
   h+='<div class="ar"><button class="bt" data-a="t_xpp" data-v="0.1">+10%</button><button class="bt" data-a="t_xpp" data-v="0.5">+50%</button><button class="bt gr" data-a="t_xpp" data-v="1">⚡ Đầy (lên cấp)</button></div>';
-  h+=secLv('d','☯ Cấp độ Đạo Thể','adm-lvd')+secLv('t','✨ Cấp độ Tiên Nhân','adm-lvt');
-  h+=H4+'♻ Reset nhân vật</h4><div class="tq">Đưa nhân vật ĐANG CHƠI về như mới tạo (Lv1): xoá cấp, tu vi, điểm, trang bị đang mặc, túi đồ, thú, Hợp Đạo/Chuyển Thế và mọi dữ liệu hệ thống của riêng nhân vật. Giữ tên, lớp, kho Cash Shop, thư. Vàng và dữ liệu chung của tài khoản không đổi.</div>'
+  h+=secLv('p','🧑 Cấp độ Phàm Thể','adm-lvp')+secLv('d','☯ Cấp độ Đạo Thể','adm-lvd')+secLv('t','✨ Cấp độ Tiên Nhân','adm-lvt');
+  h+=H4+'♻ Reset nhân vật</h4><div class="tq">Đưa nhân vật ĐANG CHƠI về như mới tạo (Lv1): xoá cấp, tu vi, điểm, trang bị đang mặc, túi đồ, thú, Hợp Đạo/Chuyển Thế và mọi dữ liệu hệ thống của riêng nhân vật. Xoá TOÀN BỘ: Linh Căn, Tháp, Cash Shop, vàng (về 100), nhiệm vụ, Linh Điền, Mỏ, Huyền Tinh, thư đã nhận… Chỉ giữ tên và lớp. Linh Thạch trên máy chủ không đổi.</div>'
     +'<div class="ar"><button class="bt dg" data-a="t_reset">♻ Reset nhân vật</button></div>';
   return h;
 }
@@ -364,14 +364,44 @@ function addXp(n){
 /* reset RIÊNG nhân vật đang chơi (khác ng() của game: ng() xoá cả 3 nhân vật + vàng) */
 function resetChar(){
   var p=PS[cur];if(!p)return false;
-  var BASE={lv:1,xp:1,pts:1,tier:1,br:1,al:1,cv:1,pet:1,lc:1,wg:1,lg:1,nm:1,rc:1},KEEP={csh:1,td:1,mail:1,mailIds:1},nm=p.nm;
+  var BASE={lv:1,xp:1,pts:1,tier:1,br:1,al:1,cv:1,pet:1,lc:1,wg:1,lg:1,nm:1,rc:1},KEEP={},nm=p.nm; /* chỉ giữ sổ thư đã nhận (tránh nhận lại thư cũ); kho Cash Shop .csh và .td nay cũng bị xoá */
   Object.keys(p).forEach(function(k){if(!BASE[k]&&!KEEP[k])delete p[k]});
   p.lv=1;p.xp=0;p.pts=0;p.tier=0;p.br=-1;p.al=[0,0,0,0];p.cv={r:-1,s:0,q:0,f:0};p.pet=null;p.lc=null;p.wg=0;p.lg=0;p.nm=nm;p.rc=0;
+  /* Linh căn: gốc nằm ở Tháp Thí Luyện (PS.tw.root) + cấp kỹ năng (PS.lc) → đặt lại tường minh về chưa có linh căn */
+  p.tw={p:0,fg:0,fz:0,pill:0,root:-1};p.lc={root:-1,lv:[1,1,1,1,1]};
   EQS[cur]=Array(NS).fill(null);BAGS[cur]=[];
-  lg=0;rf();
+  lg=0;
+  /* biến toàn cục của riêng nhân vật mà ng() cũng dọn (nhiệm vụ chuyển chức, tự đánh, ô kỹ năng…) */
+  /* XOÁ TOÀN BỘ dữ liệu dùng chung tài khoản như ng(): vàng, mảnh, nhiệm vụ, Linh Điền, Mỏ, Huyền Tinh, Thánh, Vòng Quay, Hầm Ngục */
+  try{gold=100;frag=0;KT=0;hpP=3;mpP=3}catch(e){}
+  try{HL.reset()}catch(e){}
+  try{LW.reset()}catch(e){}
+  try{FM.reset()}catch(e){}
+  try{MN.reset()}catch(e){}
+  try{FSH.load(null)}catch(e){}
+  try{QS=qsNew();QS.dk=0;QS.wk=0;qsSave()}catch(e){}
+  try{dgU=-1;wfr=0;wf2=0;wf3=0;dgSave()}catch(e){}
+  try{if(window.LCT&&LCT.off)LCT.off()}catch(e){}
+  try{cq=null}catch(e){}
+  try{NK=0;pq=[0,0];fz=[]}catch(e){}
+  try{AUTOF={on:0,q:[0,0,0,0,0],a:{}}}catch(e){}
+  try{dg=null}catch(e){}
+  rf();
   P.lv=1;P.xp=0;
   try{init()}catch(e){}
   try{vil=1;cam=0;pp.x=0}catch(e){}
+  /* Lưu bản sạch rồi NẠP LẠI qua ld(): mọi module (trang phục Y Phục, Ý Cảnh, Thần Thông, Hợp Đạo…) đọc lại từ dữ liệu mới
+     và xoá bộ nhớ đệm cũ. Chỉ nạp lại khi bản lưu đã thật sự sạch (tránh nạp nhầm bản cũ nếu lưu bị chặn). */
+  try{
+    sv();
+    var d=JSON.parse(localStorage.getItem('kthm2')),q=d&&d.PS&&d.PS[cur];
+    if(q&&q.lv===1&&!q.fa&&!q.yc&&!q.tt&&!q.hd&&!q.ct&&!q.csh&&(!q.tw||q.tw.root<0)&&typeof ld==='function'){
+      ld();
+    }
+  }catch(e){}
+  try{if(window.TT&&TT.rebuild)TT.rebuild()}catch(e){}
+  try{if(window.RK&&RK.refresh)RK.refresh()}catch(e){}
+  try{setSK()}catch(e){}
   return true;
 }
 function testDone(msg){
@@ -393,7 +423,7 @@ function testAct(a){
     n=Math.floor(+val('adm-tv'));
     if(!(n>0)){S.note='⚠ Nhập số tu vi lớn hơn 0.';draw();return}
     ZC.gain(n);testDone('✅ Đã cộng '+nf(n)+' tu vi → '+ZC.nm());return}
-  var mL=/^t_lv([dt])_(.+)$/.exec(a);
+  var mL=/^t_lv([pdt])_(.+)$/.exec(a);
   if(a==='t_xpadd'||a==='t_xpp'){
     n=a==='t_xpadd'?Math.floor(+val('adm-xp')):Math.max(1,Math.ceil(nx()*(+S.tvf||0)));
     if(!(n>0)){S.note='⚠ Nhập số Đạo Linh lớn hơn 0.';draw();return}
@@ -402,13 +432,26 @@ function testAct(a){
     var md=mL[1],op=mL[2],L=P.lv;
     if(lvMode()!==md){S.note='⚠ Nhân vật đang chơi là '+lvName(lvMode())+', không phải '+lvName(md)+'.';draw();return}
     if(op==='up1')L+=1;else if(op==='up10')L+=10;else if(op==='dn1')L-=1;else if(op==='max')L=lvCap();
-    else if(op==='set')L=Math.floor(+val(md==='t'?'adm-lvt':'adm-lvd'));
+    else if(op==='set')L=Math.floor(+val('adm-lv'+md));
     if(!(L>=1)){S.note='⚠ Nhập cấp độ từ 1 trở lên.';draw();return}
     L=setLv(L,md);testDone('✅ '+lvName(md)+' đã đặt Lv '+L+(L>=lvCap()?' (tối đa)':''));return}
   if(a==='t_reset'){
-    if(!confirm('RESET nhân vật đang chơi ('+ZC.nm()+') về Lv1 như mới tạo?\nXoá cấp, tu vi, trang bị, túi đồ, thú, Hợp Đạo/Chuyển Thế…'))return;
+    if(!confirm('RESET nhân vật đang chơi ('+ZC.nm()+') về Lv1 như mới tạo?\nXoá cấp, tu vi, Linh Căn, trang bị, túi đồ, thú, kho Cash Shop, vàng, nhiệm vụ, Hợp Đạo/Chuyển Thế…'))return;
     if(!confirm('Chắc chắn? Thao tác này KHÔNG hoàn tác được.'))return;
-    resetChar();testDone('✅ Đã reset nhân vật về Lv1');return}
+    resetChar();testDone('✅ Đã reset nhân vật về Lv1');
+    /* Làm sạch hoàn toàn: đẩy bản sạch lên mây rồi TẢI LẠI trang để mọi module (trang phục, kỹ năng, hiệu ứng…) bỏ hết bộ nhớ cũ.
+       Chỉ tải lại khi đã đăng nhập mây VÀ đẩy xong (chế độ cloud-only: tải lại mà chưa đẩy sẽ mất dữ liệu). */
+    try{
+      if(window.KCL&&KCL.sess&&KCL.sess()&&window.KTHM_CLOUD){
+        S.note='⏳ Đang lưu bản sạch lên mây rồi tải lại game…';draw();
+        var tries=0;Promise.resolve(KTHM_CLOUD.saveNow()).catch(function(){}).then(function(){
+          var iv=setInterval(function(){
+            tries++;
+            if(!KTHM_CLOUD.dirty()&&KTHM_CLOUD.status()!=='err'){clearInterval(iv);try{sessionStorage.setItem('kthm_resume','1')}catch(e){}location.reload()}
+            else if(tries>30){clearInterval(iv);S.note='⚠ Đã reset nhưng chưa đẩy được lên mây — hãy thử lại nút reset hoặc tự tải lại trang sau khi trạng thái ☁ báo đã lưu.';draw()}
+          },300)})}
+    }catch(e){}
+    return}
   if(a==='t_tvp'){
     n=Math.max(1,Math.ceil(ZC.tvInfo().need*(+S.tvf||0)));
     ZC.gain(n);testDone('✅ Đã cộng '+nf(n)+' tu vi → '+ZC.nm());return}

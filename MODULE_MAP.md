@@ -124,10 +124,12 @@ Tạo tự động bởi `python3 tools/symbols.py`. Cột KB = dung lượng, "
 | 118 | `world/81-tien-gioi-quai.js` | 26 | 0 |  |
 | 119 | `world/82-tien-gioi-fx-pro.js` | 37 | 0 | ✨ NÂNG CẤP ĐỒ HOẠ KỸ NĂNG TIÊN GIỚI 2.5D (world/82-tien-gioi-fx-pro.js) — nạp sau world/81 ===== * Chỉ chạy khi đang ở Thành Tiên Giới (TG.on()). Khôn |
 | 120 | `world/83-map-treo-fx-pro.js` | 5 | 0 | ✨ HIỆU ỨNG KỸ NĂNG MỚI CHO MAP TREO (world/83-map-treo-fx-pro.js) — nạp sau world/82 ===== * Đưa bộ hiệu ứng nâng cấp của Tiên Giới (world/82: trận bá |
-| 121 | `systems/67-tang-quai-boss.js` | 3 | 0 | ⚔ TĂNG CHỈ SỐ BOSS (module riêng, nạp CUỐI) ===== * BOSSUP.hp = nhân MÁU boss (mọi loại boss: ngoài map b>=2, Hầm Ngục, Ma Thần, Kiếm Thánh, Tháp, Phụ |
-| 122 | `systems/68-ng-reset-du-lieu-module.js` | 1 | 0 | FIX: NHÂN VẬT MỚI TẠO (ng) BỊ GIỮ KỸ NĂNG CẤP CAO (systems/68-ng-reset-du-lieu-module.js) ===== * Lỗi: ng() (core/01s) chỉ reset các trường gốc của PS |
-| 123 | `ui/69-thong-bao-thu.js` | 21 | 0 |  |
-| 124 | `ui/70-admin-panel.js` | 36 | 0 | 🛡 TRANG ADMIN (ui/70-admin-panel.js, nạp sau ui/69) ===== * Nút tròn 🛡 Admin nằm cạnh ✉️ Thư (left:192px, top:132px). CHỈ HIỆN với tài khoản có trong  |
-| 125 | `ui/82-su-kien-nap-the.js` | 27 | 0 |  |
-| 126 | `systems/61-chong-dube-bao-mat.js` | 11 | 0 |  |
-| 127 | `world/80-map-treo.js` | 23 | 0 |  |
+| 121 | `assets/ac-ma-assets.js` | 272 | 0 | (dữ liệu ảnh/font base64 — KHÔNG đọc) |
+| 122 | `world/62-ac-ma-thuong-gioi.js` | 38 | 0 | 😈 ÁC MA THƯỢNG GIỚI (world/62-ac-ma-thuong-gioi.js) ===== * Cổng mới (cổng thứ 7, giữa Hợp Đạo Đài và Kiếm Thánh Đài) ở Thành Thị Linh Giới — Fix168:  |
+| 123 | `systems/67-tang-quai-boss.js` | 3 | 0 | ⚔ TĂNG CHỈ SỐ BOSS (module riêng, nạp CUỐI) ===== * BOSSUP.hp = nhân MÁU boss (mọi loại boss: ngoài map b>=2, Hầm Ngục, Ma Thần, Kiếm Thánh, Tháp, Phụ |
+| 124 | `systems/68-ng-reset-du-lieu-module.js` | 1 | 0 | FIX: NHÂN VẬT MỚI TẠO (ng) BỊ GIỮ KỸ NĂNG CẤP CAO (systems/68-ng-reset-du-lieu-module.js) ===== * Lỗi: ng() (core/01s) chỉ reset các trường gốc của PS |
+| 125 | `ui/69-thong-bao-thu.js` | 21 | 0 |  |
+| 126 | `ui/70-admin-panel.js` | 36 | 0 | 🛡 TRANG ADMIN (ui/70-admin-panel.js, nạp sau ui/69) ===== * Nút tròn 🛡 Admin nằm cạnh ✉️ Thư (left:192px, top:132px). CHỈ HIỆN với tài khoản có trong  |
+| 127 | `ui/82-su-kien-nap-the.js` | 27 | 0 |  |
+| 128 | `systems/61-chong-dube-bao-mat.js` | 11 | 0 |  |
+| 129 | `world/80-map-treo.js` | 23 | 0 |  |

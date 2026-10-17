@@ -18,3 +18,27 @@
 - Sửa lỗi cũ: Vé Tẩy Opt Chọn (tc) admin gửi được nhưng ui/69 lọc mất vì thiếu trong CSHK → đã thêm.
 - Muốn thêm vật phẩm nữa: thêm 1 dòng vào bảng ITM trong ui/69 (t = cách cộng, xem giveIt) — form admin tự hiện.
 - File đổi: ui/69-thong-bao-thu.js · ui/70-admin-panel.js · ADMIN_PANEL_2026-10-16.md · SYMBOL_INDEX.tsv, MODULE_MAP.md (tự sinh lại).
+
+## Fix169 — Test: cấp độ Phàm Thể (ui/70)
+- Tab 🧪 Test thêm mục 🧑 Cấp độ Phàm Thể (đặt cấp, +1, +10, −1, tối đa; +5 điểm tiềm năng/cấp, EXP về 0). Chỉ áp dụng khi nhân vật đang chơi là Phàm Thể (không Hợp Đạo/Chuyển Thế).
+- File đổi: ui/70-admin-panel.js · ADMIN_PANEL_2026-10-16.md
+
+## Fix170 — Reset nhân vật sạch trang phục + kỹ năng (ui/70)
+- Lỗi: ♻ Reset chỉ xoá trường trong PS[cur]; còn sót biến toàn cục (cq, NK, pq, fz, AUTOF, dg) và bộ nhớ đệm của module (tủ Y Phục, Ý Cảnh, Thần Thông…) nên vẫn thấy trang phục / kỹ năng cũ.
+- Sửa: resetChar dọn thêm cq/NK/pq/fz/AUTOF/dg, rf(), lưu sv(), kiểm bản lưu đã sạch rồi gọi ld() để mọi module nạp lại từ dữ liệu mới.
+- File đổi: ui/70-admin-panel.js · ADMIN_PANEL_2026-10-16.md
+
+## Fix171 — Reset sạch hoàn toàn (ui/70)
+- Sau ♻ Reset: lưu sạch → đẩy lên mây (KTHM_CLOUD.saveNow, chờ dirty()=false và không lỗi) → tự tải lại trang (kthm_resume) để mọi module bỏ bộ nhớ cũ (trang phục, kỹ năng, hiệu ứng).
+- Không đăng nhập mây hoặc đẩy lỗi → KHÔNG tải lại (tránh mất dữ liệu ở chế độ cloud-only), chỉ báo cảnh báo.
+- Vẫn giữ: tên, lớp, kho Cash Shop (.csh, đồ mua bằng Linh Thạch), .td, thư, vàng, dữ liệu chung tài khoản.
+
+## Fix172 — Reset như nhân vật mới hoàn toàn (ui/70)
+- Xoá cả Linh Căn: đặt lại tường minh PS.tw (Tháp Thí Luyện, nơi giữ gốc linh căn) và PS.lc về chưa có linh căn.
+- Không còn giữ kho Cash Shop (.csh) và .td; chỉ giữ tên, lớp, sổ thư đã nhận (.mail/.mailIds).
+- Không đụng dữ liệu dùng chung tài khoản: vàng, Linh Thạch (máy chủ), nhiệm vụ, Hợp Thể…
+
+## Fix173 — Reset xoá TOÀN BỘ (ui/70)
+- Xoá thêm dữ liệu dùng chung như ng(): vàng (về 100), mảnh, nhiệm vụ (QS mới), Linh Điền (FM), Mỏ (MN), Huyền Tinh (FSH), Thánh (HL), Vòng Quay (LW), Hầm Ngục, bình máu/mana, thư đã nhận.
+- Chỉ giữ tên + lớp. Linh Thạch trên máy chủ KHÔNG xoá được từ client.
+- Lưu ý: dữ liệu dùng chung nên ảnh hưởng cả 2 nhân vật còn lại (vàng/nhiệm vụ/Linh Điền/Mỏ).

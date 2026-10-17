@@ -81,7 +81,8 @@
       "world/80-map-treo.js",
       "world/81-tien-gioi-quai.js",
       "world/82-tien-gioi-fx-pro.js",
-      "world/83-map-treo-fx-pro.js"
+      "world/83-map-treo-fx-pro.js",
+      "world/62-ac-ma-thuong-gioi.js"
     ],
     "systems": [
       "systems/08-farming-alchemy.js",
@@ -138,7 +139,8 @@
     "world/58-linh-gioi-city-art.js",
     "phien_dang_nhap.sql",
     "chong_dube.sql",
-    "THAN_THU_CO_CHE_2026-10-14.md"
+    "THAN_THU_CO_CHE_2026-10-14.md",
+    "assets/ac-ma-assets.js"
   ],
   "principle": "All original files are retained unchanged; only workspace metadata is added."
 }
