@@ -1,5 +1,5 @@
 /* ===== ⏳ CỔNG TREO MÁY · MAP TREO OFFLINE (world/80-map-treo.js) =====
- * Thêm 1 cổng ở Thôn Tân Thủ (mép phải, sau toà Bản Đồ). Chạm cổng → đi tới → mở bảng "Cổng Treo Máy".
+ * Thêm 1 cổng ở Thôn Tân Thủ (thế chỗ cổng Bản Đồ cũ (Fix256)). Chạm cổng → đi tới → mở bảng "Cổng Treo Máy".
  *
  * MAP TREO
  *  - Chỉ rơi: EXP · Vàng · Nguyên liệu (mảnh chế tạo, Quặng Sắt, Huyền Kim, Đá Cường Hóa thường). KHÔNG rơi trang bị
@@ -257,12 +257,14 @@ function hud(a,now){
 function hudHide(){if(hudEl)hudEl.style.display='none'}
 
 /* ---------- cổng trong làng ---------- */
-function gx(){return vw()*CF.gateX}
+/* Fix256: cổng Treo Máy thay vào vị trí cổng Bản Đồ (toà số 4); cổng Bản Đồ trong làng bị gỡ, chỉ vào bản đồ qua nút 🗺 Bản đồ */
+function gx(){return bxx(4)}
+function gk(){return Math.max(.72,bww()/120*.8)}
 function plain(){try{return !window.VWD||(VWD.plain?VWD.plain():VWD.on())}catch(e){return true}}
 function drawGate(){
  if(!vil||!started||S.on||!plain())return;
  var t=fr,pu=.5+.5*Math.sin(t*.07),j;
- g.save();g.translate(gx()*s,GY);g.scale(s*CF.gateK,s*CF.gateK);
+ g.save();g.translate(gx()*s,GY);g.scale(s*gk(),s*gk());
  g.fillStyle='rgba(0,0,0,.3)';g.beginPath();g.ellipse(0,2,52,8,0,0,6.28);g.fill();
  /* hào quang */
  g.save();g.globalCompositeOperation='lighter';
@@ -290,12 +292,14 @@ function drawGate(){
  g.strokeText('⏳ Treo Máy',0,-172);g.fillText('⏳ Treo Máy',0,-172);
  g.fillStyle='#ffd54a';g.fillText('▼',0,-156+Math.sin(t*.12)*4);
  g.restore()}
-var _bld=bld;bld=function(i){var r=_bld.apply(this,arguments);if(i===4){try{drawGate()}catch(e){if(errN++<5)console.error('[map-treo] gate',e)}}return r};
+var _bld=bld;bld=function(i){if(i===4&&vil&&started&&!S.on&&plain()){try{drawGate();return}catch(e){if(errN++<5)console.error('[map-treo] gate',e)}}return _bld.apply(this,arguments)};
+/* Fix256: chạm toà Bản Đồ ở làng Tân Thủ không còn mở bản đồ nữa (Linh Giới giữ nguyên) */
+var _openB=openB;openB=function(i){if(i===4&&plain())return;return _openB.apply(this,arguments)};
 
 c.addEventListener('pointerdown',function(e){
  gateGo=0;if(!vil||bo||!started||S.on||!plain()||(ov&&ov.style.display!=='none'))return;
  var x=e.offsetX/s,y=e.offsetY;
- if(Math.abs(x-gx())<46*CF.gateK&&y>GY-185*s*CF.gateK&&y<GY+40*s){vt=cl(gx(),40,vw()-40);vgo=-1;gateGo=1}});
+ if(Math.abs(x-gx())<Math.max(46*gk(),bww()/2+12)&&y>GY-185*s*gk()&&y<GY+40*s){vt=cl(gx(),40,vw()-40);vgo=-1;gateGo=1}});
 var _vstep=vstep;vstep=function(){
  var r=_vstep.apply(this,arguments);
  if(gateGo){if(mvDir)gateGo=0;else if(vt==null){gateGo=0;if(Math.abs(P.x-cl(gx(),40,vw()-40))<16)openPanel()}}
@@ -380,6 +384,27 @@ function buy(h){
 function flush(){try{if(S.on){var a=A();if(a){a.on=1;a.ts=Date.now();sv()}}}catch(e){}}
 addEventListener('pagehide',flush);addEventListener('beforeunload',flush);
 document.addEventListener('visibilitychange',function(){if(document.hidden)flush()});
+
+/* Fix257: mỗi lần về làng Tân Thủ → mũi tên vàng chỉ vào nút Bản đồ, nhấp nháy 3 lần rồi mất */
+var wEl=null,wTm=0,wPrev=null;
+function warnShow(){
+ try{
+  var b=document.getElementById('mpb');if(!b)return;
+  var r=b.getBoundingClientRect();if(!r.width)return;
+  if(!document.getElementById('afkArrowCss')){var st=document.createElement('style');st.id='afkArrowCss';st.textContent='@keyframes afkArr{0%,100%{opacity:0;transform:translate(-50%,6px)}40%,60%{opacity:1;transform:translate(-50%,-6px)}}';document.head.appendChild(st)}
+  if(!wEl){wEl=document.createElement('div');wEl.textContent='\u25bc';wEl.style.cssText='position:fixed;z-index:99999;font-size:44px;line-height:1;color:#ffd54a;text-shadow:0 0 8px #ffb300,0 2px 0 #000,0 0 3px #000;pointer-events:none;display:none'}
+  if(!wEl.parentNode)document.body.appendChild(wEl);
+  wEl.style.left=(r.left+r.width/2)+'px';wEl.style.top=(r.top-50)+'px';
+  wEl.style.animation='none';void wEl.offsetWidth;wEl.style.animation='afkArr .8s ease-in-out 3';
+  wEl.style.display='block';clearTimeout(wTm);wTm=setTimeout(function(){wEl.style.display='none'},2500)
+ }catch(e){}}
+setInterval(function(){try{
+ if(!started){wPrev=null;return}
+ var v=!!vil&&plain();
+ if(wPrev===null){wPrev=v;return}
+ if(v&&!wPrev)warnShow();
+ if(!v&&wEl){wEl.style.display='none'}
+ wPrev=v}catch(e){}},250);
 
 window.AFKMAP={cfg:CF,open:openPanel,enter:enter,leave:function(){leave('',true)},on:function(){return !!S.on},
  left:function(){var a=A();return a?total(a):0},addHours:function(h){var a=A();if(a){a.b+=Math.max(0,+h||0)*3600;try{sv()}catch(e){}}}};
