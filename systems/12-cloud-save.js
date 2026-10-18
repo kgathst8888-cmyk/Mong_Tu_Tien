@@ -9,7 +9,7 @@ CFG.url=(CFG.url||'').replace(/\/+$/,'');
 const KS='kthm_cloud',KEYS=['kthm2','kthm_qs','kthm_dg','kthm2_arena_v3'],MAP=[['kthm2','k2'],['kthm_qs','qs'],['kthm_dg','dg'],['kthm2_arena_v3','ar']];
 const RN=['Luyện Khí','Trúc Cơ','Kim Đan','Nguyên Anh','Hoá Thần','Luyện Hư','Hợp Thể','Đại Thừa'];
 const _get=Storage.prototype.getItem,_set=Storage.prototype.setItem,_rem=Storage.prototype.removeItem;
-const S={dirty:false,dueAt:0,sess:null,meta:null,busy:false,block:false,conflict:null,cf:null,cloud:null,st:OK?'out':'off',err:'',fail:0,next:0,chk:false,vis:0,okAt:0,tab:'acc',view:'',msg:'',em:'',pw:'',lb:null,lbBusy:false,lbErr:'',lbAt:0,bk:false,openCf:false};
+const S={dirty:false,dueAt:0,sess:null,meta:null,busy:false,block:false,conflict:null,cf:null,cloud:null,st:OK?'out':'off',err:'',fail:0,next:0,chk:false,vis:0,okAt:0,tab:'acc',view:'',msg:'',em:'',pw:'',lb:null,lbBusy:false,lbErr:'',lbAt:0,bk:false,openCf:false,hist:null,histBusy:false,histErr:''};
 const ls=k=>{try{return _get.call(localStorage,k)}catch(e){return null}};
 const lsSet=(k,v)=>{try{v==null?_rem.call(localStorage,k):_set.call(localStorage,k,v);if(window.ANTIDUPE&&ANTIDUPE.resign)ANTIDUPE.resign(k)}catch(e){}};
 Storage.prototype.setItem=function(k,v){if(S.block&&this===localStorage&&KEYS.indexOf(k)>=0)return;return _set.call(this,k,v)};
@@ -79,7 +79,7 @@ async function doPush(base,force){
  if(r&&r.status==='ok'){S.bk=false;S.meta={uid:uid(),rev:r.rev,hash:h,at:Date.now()};persist();S.cloud=Object.assign(S.cloud||{},{rev:r.rev,at:new Date().toISOString()});return}
  return conflict()}
 async function conflict(){const full=await rpc('pull_save',{p_meta_only:false});if(!full.exists)return;
- S.conflict=true;S.cf={full,loc:pack().k2};S.view='cf';S.st='conf';
+ S.conflict=true;S.cf={full,loc:pack().k2,at:Date.now()};S.view='cf';S.st='conf';
  const mnEl=document.getElementById('mn'),inMenu=typeof started=='undefined'||!started||(mnEl&&mnEl.style.display!=='none');
  if(inMenu||S.openCf)open('acc');else toast('⚠ Bản lưu trên máy ≠ trên mây — mở ☁ trong menu để chọn');S.openCf=false}
 function applyData(full,msg){
@@ -91,7 +91,7 @@ function applyData(full,msg){
  toast(msg||'☁ Đã tải tiến trình từ mây');
  setTimeout(()=>location.reload(),900)}
 /* ---------- LƯU NHANH LÊN MÂY: gộp thay đổi, đẩy thẳng 1 yêu cầu (không hỏi meta trước), ~2-5s sau lần thay đổi cuối ---------- */
-const DEB=700,MINGAP=1500,FP={busy:false,last:0,fail:0};
+const DEB=3000,MINGAP=12000,FP={busy:false,last:0,fail:0};
 function markDirty(){if(!OK||S.block)return;if(!S.dirty){S.dirty=true;S.dueAt=Math.max(Date.now()+DEB,FP.last+MINGAP)}}
 function fastTick(){
  if(!S.dirty||!OK||!S.sess||S.block||S.conflict||FP.busy||S.busy||Date.now()<S.dueAt)return;
@@ -159,9 +159,20 @@ function viewAcc(){
  if(!S.sess)return'<div class="cl-note">Đăng nhập để chơi: tiến trình được lưu trên mây, chơi được trên nhiều thiết bị.</div><input id="cl-em" type="email" inputmode="email" autocomplete="username" placeholder="Email" value="'+esc(S.em)+'"><input id="cl-pw" type="password" autocomplete="current-password" placeholder="Mật khẩu (từ 6 ký tự)" value="'+esc(S.pw)+'">'+msgBox()+'<button data-a="in">Đăng nhập</button><button data-a="up">Đăng ký</button><button data-a="fg">Quên mật khẩu?</button>';
  let h='<div class="cl-msg"><span class="cl-dot" style="background:'+COL[S.st]+'"></span>'+esc(stText())+'</div><div class="cl-note">Tài khoản: <b>'+esc(S.sess.user.email)+'</b>'+'<br>UID: <b style="user-select:all;-webkit-user-select:all;word-break:break-all;font-size:11px">'+esc(S.sess.user.id||'—')+'</b> <span data-a="cpuid" style="cursor:pointer;text-decoration:underline;white-space:nowrap">📋 Sao chép</span>'+(S.cloud&&S.cloud.at?'<br>Bản trên mây: cập nhật '+esc(fmt(S.cloud.at)):'')+'</div>'+msgBox();
  if(S.conflict)h+='<button data-a="cf">⚠ Chọn bản lưu</button>';
- h+='<button data-a="sync">🔄 Đồng bộ ngay</button><button data-a="bk"'+(S.cloud&&S.cloud.bk?'':' disabled')+'>🕘 Khôi phục bản sao lưu</button><button data-a="out">Đăng xuất</button><div class="cl-note">Tiến trình chỉ lưu trên mây: tự đồng bộ vài giây sau mỗi thay đổi và khi bạn rời trang. Mất mạng game vẫn chạy, có mạng lại sẽ tự lưu.</div>';return h}
+ h+='<button data-a="sync">🔄 Đồng bộ ngay</button><button data-a="hist">🕰 Khôi phục theo thời điểm</button><button data-a="bk"'+(S.cloud&&S.cloud.bk?'':' disabled')+'>🕘 Khôi phục bản sao lưu</button><button data-a="out">Đăng xuất</button><div class="cl-note">Tiến trình chỉ lưu trên mây: tự đồng bộ vài giây sau mỗi thay đổi và khi bạn rời trang. Mất mạng game vẫn chạy, có mạng lại sẽ tự lưu.</div>';return h}
+function liveHtml(){try{const k=pack().k2;if(!k)return'';const i=k.cur|0,p=(k.PS&&k.PS[i])||{},cv=p.cv||{},cr=typeof cv.r=='number'?cv.r:-1;
+ return'🎮 <b>Đang chơi (cập nhật liên tục)</b><br><b>'+esc(p.nm||k.pn||'Đạo Hữu')+'</b> · '+esc(clsName({i:i,br:typeof p.br=='number'?p.br:-1}))+' · Lv '+((p.lv|0)||1)+'<br>'+esc(realm(cr,cv.s|0))+'<br>💰 '+(Number(k.gold)||0).toLocaleString('vi-VN')}catch(e){return''}}
 function viewCf(){const f=S.cf;if(!f)return viewAcc();const c=f.full;
- return'<div class="cl-msg">⚠ Tiến trình trên máy này và trên mây khác nhau. Chọn bản muốn giữ — bản còn lại sẽ bị thay thế (có bản sao lưu để khôi phục).</div><div class="cl-cmp"><div>📱 <b>Trên máy này</b><br>'+sumHtml(f.loc)+'</div><div>☁ <b>Trên mây</b><br>'+sumHtml(c.data&&c.data.k2,fmt(c.updated_at))+'</div></div><button data-a="useCloud">☁ Dùng bản trên mây</button><button data-a="useLocal">📱 Dùng bản trên máy này</button><button data-a="later">Để sau</button>'}
+ return'<div class="cl-msg">⚠ Tiến trình trên máy này và trên mây khác nhau. Chọn bản muốn giữ — bản còn lại sẽ bị thay thế (có bản sao lưu để khôi phục).</div><div class="cl-cmp"><div>📱 <b>Trên máy lúc phát hiện</b><br>'+sumHtml(f.loc,f.at?fmt(f.at):'')+'</div><div>☁ <b>Trên mây</b><br>'+sumHtml(c.data&&c.data.k2,fmt(c.updated_at))+'</div></div><div class="cl-msg" id="cl-live">'+liveHtml()+'</div><div class="cl-note">Hai ô trên là ảnh chụp lúc phát hiện xung đột. <b>Dùng bản trên máy này</b> sẽ lưu nhân vật ĐANG CHƠI (ô 🎮) lên mây; <b>Dùng bản trên mây</b> sẽ bỏ phần đang chơi và tải lại bản mây.</div><button data-a="useCloud">☁ Dùng bản trên mây</button><button data-a="useLocal">📱 Dùng bản đang chơi</button><button data-a="later">Để sau</button>'}
+function viewHist(){
+ const WHY={frequent:'10 phút',hourly:'mỗi giờ',force:'trước khi ghi đè',prerestore:'trước khi khôi phục'};
+ let h='<div class="cl-note">Chọn thời điểm muốn quay về. Bản hiện tại được giữ lại (xuất hiện trong danh sách, đổi lại được). Game sẽ tự tải lại.</div>';
+ if(S.histBusy&&!S.hist)h+='<div class="cl-msg">Đang tải…</div>';if(S.histErr)h+='<div class="cl-msg">⚠ '+esc(S.histErr)+'</div>';
+ const L=S.hist;if(L){h+=L.length?L.map(x=>'<button data-a="rs:'+(x.id|0)+'" style="display:block;width:100%;text-align:left;margin:4px 0">'+esc(fmt(x.at))+' · Lv '+(x.lv|0)+(x.tier?' · bậc '+(x.tier|0):'')+(x.gold!=null?' · 💰 '+(Number(x.gold)||0).toLocaleString('vi-VN'):'')+' <small style="opacity:.7">('+esc(WHY[x.why]||x.why||'')+')</small></button>').join(''):'<div class="cl-msg">Chưa có mốc nào (mốc đầu tiên xuất hiện sau ít phút chơi).</div>'}
+ return h+'<button data-a="later">← Quay lại</button><button data-a="hrf"'+(S.histBusy?' disabled':'')+'>🔄 Làm mới</button>'}
+async function loadHist(){S.histBusy=true;S.histErr='';render();try{S.hist=await rpc('list_snapshots',{})}catch(e){S.histErr=e.net?e.message:vi(e)}S.histBusy=false;render()}
+function restoreSnap(id){const x=(S.hist||[]).find(v=>(v.id|0)===id);if(!x||!confirm('Quay về mốc '+fmt(x.at)+' (Lv '+(x.lv|0)+')? Tiến trình hiện tại được giữ lại trong danh sách mốc, có thể đổi lại.'))return;
+ enq(()=>guard(async()=>{const r=await rpc('restore_snapshot',{p_id:id});if(!r||r.status!=='ok')throw new Error('Không tìm thấy mốc này');applyData({data:r.data,rev:r.rev},'☁ Đã quay về mốc '+fmt(x.at))}))}
 function row(r){const m=['🥇','🥈','🥉'][r.rank-1]||r.rank;return'<tr class="'+(r.me?'me':'')+'"><td class="r">'+m+'</td><td>'+esc(r.name)+'<br><small style="opacity:.75">'+esc(r.cls||'')+' · Lv '+(r.lv|0)+' · '+esc(realm(r.cult_r|0,r.cult_s|0))+'</small></td></tr>'}
 function viewLb(){if(!OK)return viewAcc();let h='<div class="cl-note">Xếp theo: bậc › cấp độ › cảnh giới tu luyện (nhân vật mạnh nhất của mỗi tài khoản).</div>';
  if(S.lbBusy&&!S.lb)h+='<div class="cl-msg">Đang tải…</div>';if(S.lbErr)h+='<div class="cl-msg">⚠ '+esc(S.lbErr)+'</div>';
@@ -169,8 +180,10 @@ function viewLb(){if(!OK)return viewAcc();let h='<div class="cl-note">Xếp theo
   if(L.me&&!top.some(r=>r.me))h+='<div class="cl-note">Hạng của bạn:</div><table class="cl-lb">'+row(Object.assign({me:true},L.me))+'</table>';
   h+='<div class="cl-note">Tổng '+(L.total|0)+' người chơi'+(S.sess?'':' · đăng nhập để có tên trên bảng')+'</div>'}
  return h+'<button data-a="lbr"'+(S.lbBusy?' disabled':'')+'>🔄 Làm mới</button>'}
-function render(){const b=ov&&ov.querySelector('.cl-bx');if(!b)return;
- b.innerHTML='<div class="cl-h"><span>☁ Tài khoản</span><button data-a="x">✕</button></div><div class="cl-tabs"><button data-a="tab:acc" class="'+(S.tab=='acc'?'on':'')+'">Tài khoản</button></div>'+(S.view=='cf'?viewCf():viewAcc())}
+let lvT=0;
+function render(){const b=ov&&ov.querySelector('.cl-bx');if(!b)return;clearInterval(lvT);
+ b.innerHTML='<div class="cl-h"><span>☁ Tài khoản</span><button data-a="x">✕</button></div><div class="cl-tabs"><button data-a="tab:acc" class="'+(S.tab=='acc'?'on':'')+'">Tài khoản</button></div>'+(S.view=='cf'?viewCf():S.view=='hist'?viewHist():viewAcc());
+ if(S.view=='cf')lvT=setInterval(()=>{const e=document.getElementById('cl-live');if(e)e.innerHTML=liveHtml();else clearInterval(lvT)},1000)}
 async function loadLb(){S.lbBusy=true;S.lbErr='';render();try{S.lb=S.sess?await rpc('get_leaderboard',{p_limit:50}):await http('/rest/v1/rpc/get_leaderboard',{method:'POST',body:{p_limit:50}});S.lbAt=Date.now()}catch(e){S.lbErr=e.net?e.message:vi(e)}S.lbBusy=false;render()}
 function afterLogin(){S.msg='';S.pw='';S.openCf=true;S.next=0;S.st='busy';ui(true);reconcile()}
 async function doAuth(kind){const em=(S.em||'').trim(),pw=S.pw||'';if(!em||pw.length<6){S.msg=!em?'Nhập email.':'Mật khẩu cần từ 6 ký tự.';render();return}
@@ -192,6 +205,7 @@ function act(a){
  if(a=='in'||a=='up')return doAuth(a);if(a=='fg')return doRecover();if(a=='setpw')return doSetPw();
  if(a=='sync')return manual();if(a=='out')return logout();if(a=='bk')return restoreBk();if(a=='lbr')return loadLb();
  if(a=='cf'){S.view='cf';return render()}
+ if(a=='hist'){S.view='hist';S.msg='';render();return loadHist()}if(a=='hrf')return loadHist();if(a.indexOf('rs:')==0)return restoreSnap(+a.slice(3));
  if(a=='later'){S.view='';return render()}
  if(a=='useCloud'){if(S.cf)applyData(S.cf.full);return}
  if(a=='useLocal'){if(!S.cf||!confirm('Ghi đè bản trên mây bằng bản trên máy này? (Bản mây hiện tại được giữ làm bản sao lưu)'))return;

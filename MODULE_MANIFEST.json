@@ -116,6 +116,7 @@
       "systems/08-farming-alchemy.js",
       "systems/09-input-guard.js",
       "systems/12-cloud-save.js",
+      "systems/12b-cloud-guard.js",
       "systems/18-linh-can.js",
       "systems/19-arena.js",
       "systems/20-quest-hud.js",
