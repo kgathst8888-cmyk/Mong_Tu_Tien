@@ -49,8 +49,10 @@ function bodyMax(d){return(d.b|0)>=CF.theMax}
 function save(){try{sv()}catch(e){}try{ui()}catch(e){}}
 function say(t,col){try{DT.push({x:P.x,y:200,s:t,c:col||'#ffe9a0',g:1,l:150})}catch(e){}}
 function choose(t){
-  if(D()||t<0||t>3)return false;
-  PS[cur].hpc={t:t,r:0,x:0,b:0,bag:0,m:0,v:0,ts:Date.now()};
+  if(chosen()||t<0||t>3)return false;
+  var o=D();
+  if(o){o.t=t;o.ts=Date.now()}   /* sau Vé Reset: giữ nguyên r/x/b/bag/m/v */
+  else PS[cur].hpc={t:t,r:0,x:0,b:0,bag:0,m:0,v:0,ts:Date.now()};
   save();say('🔮 Hồn phách '+SOULS[t].n+' đã nhập thể! Đến Bế Quan Đài để tu luyện','#d9b8ff');return true}
 function addXp(n){var d=chosen();if(!d||maxed(d))return false;d.x=(d.x|0)+Math.max(0,n|0);save();return true}
 function forge(n){var d=chosen();if(!d)return false;d.b=Math.min(CF.theMax,(d.b|0)+Math.max(0,(n===undefined?1:n)|0));save();return true}
@@ -74,12 +76,30 @@ function breakthrough(){
   d.x-=need(d.r);d.r++;save();
   say('✨ Hồn phách đột phá: '+REALMS[d.r]+' ('+(d.r+1)+'/9)'+(d.r===8?' — hiệu ứng hồn phách hiển lộ!':''),SOULS[d.t].c);return true}
 
+/* ---------- Vé Reset Hồn Phách (mua ở Shop Linh Thạch, CSH 'rh'): đặt lại lượt chọn, giữ nguyên tiến độ ---------- */
+function rhCnt(){try{return window.CSH&&CSH.count?CSH.count('rh')|0:0}catch(e){return 0}}
+function resetTk(){
+  var d=chosen();if(!d){say('Chưa chọn hồn phách','#ff9a9a');return false}
+  if(rhCnt()<1){say('Cần 1 Vé Reset Hồn Phách (mua ở 🛒 Shop)','#ff9a9a');return false}
+  var go=function(){
+    var c=chosen();if(!c||!(window.CSH&&CSH.use&&CSH.use('rh')))return;
+    c.t=-1;c.rs=(c.rs|0)+1;save();
+    say('🔮 Đã reset lượt chọn hồn phách — hãy chọn lại','#d9b8ff');
+    setTimeout(function(){try{pick()}catch(e){}},60)};
+  var msg='Dùng 1 Vé Reset Hồn Phách để chọn lại?\nCảnh giới, tu vi, thần thể giữ nguyên. Chọn lại xong KHÔNG thể đổi tiếp (trừ khi dùng thêm vé).';
+  if(typeof gcf==='function')gcf(msg,go);else if(confirm(msg))go();
+  return true}
+function resetBox(){var n=rhCnt();
+  return '<div style="margin-top:6px">'+(n>0
+    ?'<button onclick="HONP.resetTk()" style="width:100%;background:#3a2a5a;color:#fff;border:1px solid #b890ff;border-radius:8px;padding:7px;font-size:12.5px">🎫 Dùng Vé Reset Hồn Phách (có '+n+') — chọn lại</button>'
+    :'<div style="font-size:11.5px;opacity:.7">🎫 Muốn chọn lại hồn phách: mua <b>Vé Reset Hồn Phách</b> ở 🛒 Shop (Linh Thạch).</div>')+'</div>'}
+
 /* ---------- mục "Hồn Phách" trong tab Tu tiên (dưới Tu vi + Linh căn) ---------- */
 function bar(p,c){return '<div style="height:9px;border:1px solid #8a7440;border-radius:6px;overflow:hidden;background:#1d1510;margin:3px 0"><div style="height:100%;width:'+Math.max(0,Math.min(100,p))+'%;background:'+c+'"></div></div>'}
 function section(){
   var d=chosen(),h='<div style="border:1px solid #6a5a8a;border-radius:10px;padding:8px;margin:8px 0;background:#160f20"><div style="font-size:14px"><b>🔮 Hồn Phách</b></div>';
   if(!d){
-    h+='<div style="font-size:12.5px;margin:4px 0;opacity:.9">Chưa có hồn phách. Chọn <b>1 trong 4</b>: Phật Tôn · Yêu Hoàng · Tiên Đế · Minh Vương. <span style="color:#ff9a9a">Chọn xong không thể thay đổi.</span></div>'+
+    h+='<div style="font-size:12.5px;margin:4px 0;opacity:.9">'+(D()?'♻ Đã dùng Vé Reset — cảnh giới, tu vi, thần thể được giữ nguyên. ':'')+'Chưa có hồn phách. Chọn <b>1 trong 4</b>: Phật Tôn · Yêu Hoàng · Tiên Đế · Minh Vương. <span style="color:#ff9a9a">Chọn xong không thể thay đổi.</span></div>'+
        '<button onclick="HONP.pick()" style="width:100%;background:#5a3a8a;color:#fff;border:1px solid #b890ff;border-radius:8px;padding:8px">🔮 Chọn hồn phách</button>';
   }else{
     var S=SOULS[d.t],nd=need(d.r),pc=maxed(d)?100:nd?Math.floor((d.x|0)/nd*100):0;
@@ -87,13 +107,13 @@ function section(){
        bar(pc,'linear-gradient(90deg,#6a3fb0,'+S.c+')')+'<div style="font-size:12px">Tu vi hồn phách: '+(maxed(d)?'viên mãn':nf(d.x)+' / '+nf(nd))+' · Đã nhặt: <b>'+nf(d.bag|0)+'</b> 🔮 · Thần thể: <b>'+(d.b|0)+'/'+CF.theMax+'</b> <span style="opacity:.75">· 🧩 '+(d.m|0)+' mảnh · 💠 '+(d.v|0)+' viên</span></div><div style="font-size:12px;margin-top:2px;color:#9fe0a0">Chỉ số nhân vật: +'+statPct()+'% HP / sát thương / phòng thủ (mỗi cảnh giới +'+Math.round(CF.stat*100)+'%)</div>'+
        '<div style="font-size:11.5px;opacity:.75;margin-top:4px">Đến <b>🧘 Bế Quan Đài</b> (cổng 4 · Thành Thị Linh Giới), chạm vào hồn phách để tu luyện. '+(d.r>=8?'Hiệu ứng hồn phách đã hiển lộ.':'Đạt '+REALMS[8]+' sẽ hiện hiệu ứng phía sau.')+'</div>'+(window.HONSK?HONSK.line():'');
   }
-  return h+'</div>'}
+  return h+(d?resetBox():'')+'</div>'}
 if(typeof window.lcUI==='function'){var _l=window.lcUI;window.lcUI=function(){var h=_l.apply(this,arguments);return(typeof h==='string')?h+section():h}}
 
 /* ---------- bảng chọn hồn phách ---------- */
 var pickSel=-1;
 function pick(){
-  if(D()){say('Hồn phách đã chọn, không thể thay đổi','#ff9a9a');return}
+  if(chosen()){say('Hồn phách đã chọn, không thể thay đổi','#ff9a9a');return}
   pickSel=-1;var o=document.getElementById('hp-pick');if(!o){o=document.createElement('div');o.id='hp-pick';document.body.appendChild(stop(o))}
   renderPick(o);o.style.display='flex'}
 function stop(o){['pointerdown','touchstart','keydown','keyup','keypress'].forEach(function(t){o.addEventListener(t,function(e){e.stopPropagation()})});return o}
@@ -233,5 +253,5 @@ var G=LCT.gates[CF.gate];
 G.sn='Bế Quan';G.n='Bế Quan Đài';G.e='🧘';G.c='#9fe0c0';G.rgb='150,230,190';G.open=1;G.go=enter;
 Object.defineProperty(G,'sub',{configurable:true,enumerable:true,set:function(){},get:function(){try{var d=chosen();return d?SOULS[d.t].n+' · '+REALMS[d.r]+' · chạm để vào':'Chọn hồn phách trong Túi → Tu tiên'}catch(e){return'Hồn phách · chạm để vào'}}});
 
-window.HONP={shard:shard,craft:craft,anvil:anvil,sm:sm,statPct:statPct,collect:collect,deposit:deposit,cfg:CF,souls:SOULS,get:D,chosen:chosen,choose:choose,pick:pick,addXp:addXp,forge:forge,canBreak:canBreak,breakthrough:breakthrough,enter:enter,leave:leave,on:function(){return on},open:openPanel,realms:REALMS};
+window.HONP={resetTk:resetTk,shard:shard,craft:craft,anvil:anvil,sm:sm,statPct:statPct,collect:collect,deposit:deposit,cfg:CF,souls:SOULS,get:D,chosen:chosen,choose:choose,pick:pick,addXp:addXp,forge:forge,canBreak:canBreak,breakthrough:breakthrough,enter:enter,leave:leave,on:function(){return on},open:openPanel,realms:REALMS};
 })();
