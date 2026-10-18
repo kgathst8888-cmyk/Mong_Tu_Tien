@@ -77,7 +77,16 @@ async function doPush(base,force){
  const k=pack();if(!k.k2)return;const h=hashLocal(),st=stats(k.k2),bk=S.bk;
  const r=await rpc('push_save',{p_data:{v:1,t:Date.now(),h,k2:k.k2,qs:k.qs,dg:k.dg,ar:k.ar},p_base_rev:base,p_force:!!force,p_backup:!!bk,p_name:st.name,p_cls:st.cls,p_lv:st.lv,p_tier:st.tier,p_cr:st.cr,p_cs:st.cs});
  if(r&&r.status==='ok'){S.bk=false;S.meta={uid:uid(),rev:r.rev,hash:h,at:Date.now()};persist();S.cloud=Object.assign(S.cloud||{},{rev:r.rev,at:new Date().toISOString()});return}
+ if(r&&(r.status==='protected'||r.status==='regress'))return guardDeny(r);
  return conflict()}
+/* Fix298: máy chủ chặn bản lưu yếu hơn bản mây (tụt bậc/cấp) — tránh ghi đè mất nhân vật */
+let _gdAt=0;
+function guardDeny(r){
+ const lvTx='Mây: bậc '+(r.cloud_tier|0)+' · Lv '+(r.cloud_lv|0)+'  ←  Máy này: bậc '+(r.new_tier|0)+' · Lv '+(r.new_lv|0);
+ S.st='err';S.err='Đã chặn: bản trên máy yếu hơn bản mây ('+lvTx+')';
+ if(Date.now()-_gdAt<600000)return;_gdAt=Date.now();
+ let go=false;try{go=confirm('🛡 Máy chủ đã CHẶN lưu để bảo vệ nhân vật.\n\n'+lvTx+'\n\nOK = TẢI LẠI nhân vật từ mây (khuyên dùng)\nHuỷ = giữ nguyên, tạm không lưu (có thể vào ☁ Tài khoản → Khôi phục theo thời điểm → ⭐ đỉnh cao nhất)')}catch(e){}
+ if(go)rpc('pull_save',{p_meta_only:false}).then(full=>applyData(full,'☁ Đã tải lại nhân vật từ mây')).catch(()=>{})}
 async function conflict(){const full=await rpc('pull_save',{p_meta_only:false});if(!full.exists)return;
  S.conflict=true;S.cf={full,loc:pack().k2,at:Date.now()};S.view='cf';S.st='conf';
  const mnEl=document.getElementById('mn'),inMenu=typeof started=='undefined'||!started||(mnEl&&mnEl.style.display!=='none');
@@ -110,6 +119,7 @@ function fastPush(){
    const r=await rpc('push_save',{p_data:{v:1,t:Date.now(),h,k2:k.k2,qs:k.qs,dg:k.dg,ar:k.ar},p_base_rev:m.rev,p_force:false,p_backup:false,p_name:st.name,p_cls:st.cls,p_lv:st.lv,p_tier:st.tier,p_cr:st.cr,p_cs:st.cs});
    if(r&&r.status==='ok'){S.meta={uid:uid(),rev:r.rev,hash:h,at:Date.now()};persist();S.cloud=Object.assign(S.cloud||{},{rev:r.rev,at:new Date().toISOString()});FP.fail=0;FP.last=Date.now();S.err='';if(!S.conflict){S.st='ok';S.okAt=Date.now()}
     if(hashLocal()!==h)markDirty()}
+   else if(r&&(r.status==='protected'||r.status==='regress')){S.dirty=false;FP.last=Date.now();guardDeny(r)}
    else await conflict()}
   catch(e){FP.fail++;S.dirty=true;S.dueAt=Date.now()+Math.min(15000,1000*Math.pow(2,FP.fail));S.err=e.net?e.message:vi(e);if(S.sess)S.st='err'}
   finally{FP.busy=false;ui()}})}
@@ -165,7 +175,7 @@ function liveHtml(){try{const k=pack().k2;if(!k)return'';const i=k.cur|0,p=(k.PS
 function viewCf(){const f=S.cf;if(!f)return viewAcc();const c=f.full;
  return'<div class="cl-msg">⚠ Tiến trình trên máy này và trên mây khác nhau. Chọn bản muốn giữ — bản còn lại sẽ bị thay thế (có bản sao lưu để khôi phục).</div><div class="cl-cmp"><div>📱 <b>Trên máy lúc phát hiện</b><br>'+sumHtml(f.loc,f.at?fmt(f.at):'')+'</div><div>☁ <b>Trên mây</b><br>'+sumHtml(c.data&&c.data.k2,fmt(c.updated_at))+'</div></div><div class="cl-msg" id="cl-live">'+liveHtml()+'</div><div class="cl-note">Hai ô trên là ảnh chụp lúc phát hiện xung đột. <b>Dùng bản trên máy này</b> sẽ lưu nhân vật ĐANG CHƠI (ô 🎮) lên mây; <b>Dùng bản trên mây</b> sẽ bỏ phần đang chơi và tải lại bản mây.</div><button data-a="useCloud">☁ Dùng bản trên mây</button><button data-a="useLocal">📱 Dùng bản đang chơi</button><button data-a="later">Để sau</button>'}
 function viewHist(){
- const WHY={frequent:'10 phút',hourly:'mỗi giờ',force:'trước khi ghi đè',prerestore:'trước khi khôi phục'};
+ const WHY={frequent:'10 phút',hourly:'mỗi giờ',force:'trước khi ghi đè',prerestore:'trước khi khôi phục',daily:'mỗi ngày · giữ 14 ngày',drop:'trước khi tụt cấp · giữ lâu',peak:'⭐ đỉnh cao nhất từng đạt'};
  let h='<div class="cl-note">Chọn thời điểm muốn quay về. Bản hiện tại được giữ lại (xuất hiện trong danh sách, đổi lại được). Game sẽ tự tải lại.</div>';
  if(S.histBusy&&!S.hist)h+='<div class="cl-msg">Đang tải…</div>';if(S.histErr)h+='<div class="cl-msg">⚠ '+esc(S.histErr)+'</div>';
  const L=S.hist;if(L){h+=L.length?L.map(x=>'<button data-a="rs:'+(x.id|0)+'" style="display:block;width:100%;text-align:left;margin:4px 0">'+esc(fmt(x.at))+' · Lv '+(x.lv|0)+(x.tier?' · bậc '+(x.tier|0):'')+(x.gold!=null?' · 💰 '+(Number(x.gold)||0).toLocaleString('vi-VN'):'')+' <small style="opacity:.7">('+esc(WHY[x.why]||x.why||'')+')</small></button>').join(''):'<div class="cl-msg">Chưa có mốc nào (mốc đầu tiên xuất hiện sau ít phút chơi).</div>'}

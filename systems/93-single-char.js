@@ -18,15 +18,13 @@ function wipe(i){var p=PS[i];if(!p)return;
   Object.keys(p).forEach(function(k){if(!KEEP[k])delete p[k]});
   Object.assign(p,{lv:1,xp:0,pts:0,tier:0,br:-1,al:[0,0,0,0],cv:{r:-1,s:0,q:0,f:0},pet:null});
   EQS[i]=Array(NS).fill(null);BAGS[i]=[]}
+/* Fix299: BỎ cơ chế tự giữ nhân vật lực chiến cao nhất + xoá (wipe) các slot còn lại.
+   Lực chiến đổi theo trang bị đang mặc (tháo đồ → tụt lực chiến) nên có thể xoá nhầm nhân vật cấp cao.
+   Nay chỉ đánh dấu cờ one=1 cho nhân vật đang chơi, KHÔNG sw(), KHÔNG wipe() — mọi nhân vật được giữ nguyên. */
 function migrate(){
   if(typeof started==='undefined'||!started||!P||!PS[cur]||PS[cur].one)return;
-  var best=cur,bp=powOf(cur);
-  for(var i=0;i<CHR.length;i++){if(i===cur)continue;var w=powOf(i);if(w>bp){bp=w;best=i}}
-  if(best!==cur)sw(best);
-  for(var j=0;j<CHR.length;j++)if(j!==best)wipe(j);
-  PS[best].one=1;
-  try{sv()}catch(e){}
-  try{ui()}catch(e){}}
+  PS[cur].one=1;
+  try{sv()}catch(e){}}
 var _ld=ld;
 ld=function(){var r=_ld.apply(this,arguments);try{migrate()}catch(e){}return r};
 var _ng=ng;

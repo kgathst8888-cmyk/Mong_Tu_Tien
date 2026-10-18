@@ -6,7 +6,7 @@
 (function(){
 'use strict';
 if(typeof spawn!=='function'||typeof E==='undefined')return;
-const CFG=window.QNG_X3={mul:3,maps:[2,3,4]};
+const CFG=window.QNG_X3={mul:2.4,maps:[2,3,4]};
 const _spawn=spawn;
 spawn=function(i){
  const n0=E.length;_spawn.apply(this,arguments);

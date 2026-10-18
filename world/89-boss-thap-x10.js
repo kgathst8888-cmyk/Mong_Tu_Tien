@@ -4,7 +4,7 @@
 (function(){
 'use strict';
 if(typeof dgHurt!=='function')return;
-const CFG=window.BTHAP_X10={mul:8};
+const CFG=window.BTHAP_X10={mul:6.4};
 const _hurt=dgHurt;
 dgHurt=function(e,mu){return _hurt.call(this,e,e&&e.tw?mu*CFG.mul:mu)};
 })();

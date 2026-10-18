@@ -5,7 +5,7 @@
 (function(){
 'use strict';
 if(typeof dgSp!=='function'||typeof dgHurt!=='function'||typeof E==='undefined')return;
-const H=window.HNG_X8={mul:8},D=window.DLD_X3={mul:3};
+const H=window.HNG_X8={mul:6.4},D=window.DLD_X3={mul:3};
 const _sp=dgSp;
 dgSp=function(k){
  const n0=E.length;_sp.apply(this,arguments);
