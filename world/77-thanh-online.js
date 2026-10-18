@@ -1,5 +1,5 @@
 /* ===== 🏙 THÀNH THỊ ONLINE (world/77-thanh-online.js) =====
- * Gặp người chơi khác ở Thành Thị Linh Giới (LCT, đi ngang 1 chiều) và Thành Thị Tiên Giới (TG, 2.5D).
+ * Gặp người chơi khác ở Thành Thị Linh Giới (LCT, đi ngang 1 chiều), Thành Thị Tiên Giới (TG, 2.5D) và (Fix301) Thôn Tân Thủ (map 3).
  * Cần chạy thanh_online.sql 1 lần trong Supabase. Đăng nhập ☁ mới thấy / được thấy.
  *
  * Đồng bộ ngoại hình ĐẦY ĐỦ: lớp nhân vật, nhánh, cảnh giới, cánh, trang bị (vũ khí/giáp/cường hoá),
@@ -10,21 +10,22 @@
  * Cách móc:
  *   - Linh Giới: bọc nameTag() (LCT.draw gọi ngay sau hero() của mình) → vẽ người khác trong cùng khung.
  *   - Tiên Giới: world/61-tien-gioi-thanh.js gọi CITYOL.tgList()/tgDraw() để xếp chiều sâu cùng công trình; chạm → CITYOL.tap().
- *   - Làng thường vẫn do world/41-lang-online.js lo (41 đã tắt khi đang ở 2 thành thị này).
+ *   - Fix301 — Thôn Tân Thủ (map 3): dùng chung ngoại hình đầy đủ (áo theo cảnh giới, cánh cao nhất, hiệu ứng, thú, pháp bảo...). world/41 vẫn giữ móc vdraw/vị trí lớp vẽ và gọi CITYOL.vDraw();
+ *     41 tự tắt ping khi map 3 chạy. Máy chủ CHƯA chạy lại thanh_online.sql (cp_ping không trả 'map':3) → tự lùi về làng cũ của 41, không lẫn với Linh Giới.
  * Chỉnh: PING (nhịp hỏi máy chủ), MAXO (số người tối đa vẽ), EMO. Cần ở sau 61-tien-gioi-thanh.js và world/48 trong index.html. */
 (function(){
 'use strict';
 if(typeof LCT==='undefined'||typeof hero!=='function'||typeof nameTag!=='function'||typeof PS==='undefined'||typeof CHR==='undefined'||typeof EP==='undefined')return;
 var PING=2500,MAXO=20,EMO=['','👋','😄','🙏','⚔️'],FONT='KTH Serif,Songti SC,STKaiti,KaiTi,serif',
-    others={},cache={},fetching=0,total=0,map=0,lastMap=0,busy=false,nextAt=0,fail=0,errMsg='',myEmo=0,sentH=null,apAt=0,
+    vOK=null,others={},cache={},fetching=0,total=0,map=0,lastMap=0,busy=false,nextAt=0,fail=0,errMsg='',myEmo=0,sentH=null,apAt=0,
     bar,cnt,card,cardT=0;
 
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function clamp(v,a,b){return v<a?a:v>b?b:v}
 function logged(){return !!(window.KCL&&KCL.OK&&KCL.sess&&KCL.sess())}
 function myName(){try{return (PS[cur]&&PS[cur].nm)||(typeof pn!='undefined'&&pn)||'Đạo Hữu'}catch(e){return 'Đạo Hữu'}}
-function mapId(){try{if(!started||!vil||bo)return 0;if(window.TG&&TG.on&&TG.on())return 2;if(LCT.on&&LCT.on())return 1}catch(e){}return 0}
-function WW(){try{return Math.max(300,(window.LGART&&LGART.ww)?LGART.ww():vw())}catch(e){return 1000}}
+function mapId(){try{if(!started||!vil||bo)return 0;if(window.TG&&TG.on&&TG.on())return 2;if(LCT.on&&LCT.on())return 1;if(vOK!==false)return 3}catch(e){}return 0}
+function WW(){try{if(map===3)return Math.max(300,vw());return Math.max(300,(window.LGART&&LGART.ww)?LGART.ww():vw())}catch(e){return 1000}}
 function hash(str){var h=5381,i;for(i=0;i<str.length;i++)h=((h<<5)+h+str.charCodeAt(i))|0;return h}
 function hid(id){var h=0,i;for(i=0;i<id.length;i++)h=(h*31+id.charCodeAt(i))|0;return Math.abs(h)}
 
@@ -60,6 +61,7 @@ async function ping(){
     if(useTT){try{args.p_tt=window.PFD?PFD.eq('t')|0:0}catch(e){args.p_tt=0}}
     try{r=await KCL.rpc('cp_ping',args)}
     catch(e0){if(useTT&&!(e0&&e0.net)){useTT=false;delete args.p_tt;r=await KCL.rpc('cp_ping',args)}else throw e0}
+    if(r&&r.status==='ok'&&m===3){if(r.map===3)vOK=true;else{vOK=false;others={};total=0;sentH=null;leave();busy=false;return}}   /* Fix301: máy chủ cũ không biết map 3 */
     if(r&&r.status==='ok'){fail=0;errMsg='';if(send){sentH=h;apAt=now}if(myEmo===emo)myEmo=0;if(m===map)apply(r.list||[],r.n|0)}
     else if(r&&r.status==='auth')errMsg='Hết phiên đăng nhập ☁';
   }catch(e){
@@ -169,6 +171,8 @@ function drawLinh(){
     for(i=0;i<3;i++){if(l>edge[i]+4){t=i;break}if(edge[i]<edge[m])m=i}if(t<0)t=m;e.ly=t*step;edge[t]=e.lx+wd/2});
   g.restore();
   list.forEach(function(e){var X=(e.lx-cam)*s;if(X<-140||X>W+140){e._hit=null;return}paint(e,1)})}
+/* Fix301: Thôn Tân Thủ — world/41 gọi hàm này trong vdraw (đã dịch toạ độ dọc dy); cộng dy vào vùng chạm */
+function vDraw(dy){drawLinh();if(dy)for(var k in others){var h=others[k]._hit;if(h){h.t+=dy;h.b+=dy}}}
 var _nt=nameTag;
 nameTag=function(){_nt.apply(this,arguments);if(map===1&&!(window.TG&&TG.on&&TG.on())){try{drawLinh()}catch(e){try{console.warn('[Thành thị online]',e)}catch(x){}}}};
 
@@ -219,7 +223,7 @@ function showCard(e){
   card.style.display='block';cardT=Date.now()+3500}
 function hook(){
   c.addEventListener('pointerdown',function(ev){
-    if(map!==1||bo)return;
+    if((map!==1&&map!==3)||bo)return;
     if(tap(ev.offsetX,ev.offsetY))ev.stopImmediatePropagation()},true)}
 function boot(){
   try{build();hook()}catch(e){try{console.warn('[Thành thị online] boot',e)}catch(x){}return}
@@ -227,5 +231,5 @@ function boot(){
   document.addEventListener('visibilitychange',function(){if(document.hidden&&lastMap){lastMap=0;map=0;others={};sentH=null;leave()}});
   window.addEventListener('pagehide',function(){if(lastMap){lastMap=0;leave()}})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
-window.CITYOL={on:function(){return map>0},map:function(){return map},tgList:tgList,tgDraw:tgDraw,tap:tap,others:function(){return others},count:function(){return Object.keys(others).length}};
+window.CITYOL={on:function(){return map>0},vOn:function(){return map===3},vDraw:vDraw,map:function(){return map},tgList:tgList,tgDraw:tgDraw,tap:tap,others:function(){return others},count:function(){return Object.keys(others).length}};
 })();

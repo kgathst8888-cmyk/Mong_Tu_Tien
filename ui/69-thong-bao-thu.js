@@ -80,7 +80,10 @@ var ITM={
   bkbl:{t:'bk',e:'📖',n:'Bí Kíp: Bách Luyện Kỳ Kinh',max:10},   /* Fix248: bí kíp luyện thể (ui/96) — khoá bk+id sách */
   bktn:{t:'bk',e:'📖',n:'Bí Kíp: Thiết Ngưu Hộ Thể Công',max:10},
   bkkc:{t:'bk',e:'📖',n:'Bí Kíp: Kim Cang Bất Hoại Thân',max:10},
-  bkhm:{t:'bk',e:'📖',n:'Bí Kíp: Hỗn Mang Bách Diệt Kinh',max:10}
+  bkhm:{t:'bk',e:'📖',n:'Bí Kíp: Hỗn Mang Bách Diệt Kinh',max:10},
+  wf1:{t:'wf',w:0,e:'🪽',n:'Mảnh Cánh Cấp 1',max:1000},   /* Fix300: admin tặng mảnh cánh — cộng vào kho mảnh cánh (WFA, core/01u) */
+  wf2:{t:'wf',w:1,e:'🪽',n:'Mảnh Cánh Cấp 2',max:1000},
+  wf3:{t:'wf',w:2,e:'🪽',n:'Mảnh Cánh Cấp 3',max:1000}
 };
 function normQ(q){
   if(!q||typeof q!=='object')return null;
@@ -132,6 +135,7 @@ function itErr(it){
     if((d.t==='nt'||d.t==='sh')&&!(typeof HL!=='undefined'&&HL.addNT&&HL.addSH))return'Chưa có kho '+d.n+'.';
     if((d.t==='pill'||d.t==='herb')&&!(typeof FM!=='undefined'&&FM.get))return'Chưa có Linh Điền / Luyện Đan để nhận '+d.n+'.';
     if(d.t==='bk'){if(!(window.BK&&BK.give))return'Chưa có Bí Kíp Luyện Thể để nhận '+d.n+'.';if(BK.space&&BK.space()<it[ks[i]])return'📖 Túi bí kíp không đủ chỗ — dọn bớt rồi nhận lại.'}
+    if(d.t==='wf'&&typeof WFA!=='function')return'Chưa có kho mảnh cánh để nhận '+d.n+'.';
     if(d.t==='hp'&&!(window.HONP&&HONP.chosen&&HONP.chosen()))return'🔮 Hãy chọn Hồn Phách (tab 🧘 Tu tiên trong túi) rồi nhận lại thư.';
   }
   return'';
@@ -149,6 +153,7 @@ function giveIt(k,n){
   else if(d.t==='pill'){s=FM.get();if(!s.pills)s.pills={};s.pills[k]=(s.pills[k]|0)+n}
   else if(d.t==='herb'){s=FM.get();if(!s.herbs)s.herbs={};s.herbs[k]=(s.herbs[k]|0)+n}
   else if(d.t==='bk'){for(var i=0;i<n;i++)BK.give(k.slice(2),'Nhận thư')}
+  else if(d.t==='wf'){WFA(d.w,n);try{dgSave()}catch(e){}}
 }
 /* trả về chuỗi lỗi nếu chưa nhận được, '' nếu thành công */
 function claimOne(m){
