@@ -41,7 +41,7 @@ function place(){
  let show=false;try{show=!!started&&document.getElementById('mn').style.display==='none'}catch(e){}
  if(!show){if(btn.style.display!=='none')btn.style.display='none';const ab0=document.getElementById('arena-btn');if(ab0&&ab0.style.display!=='none')ab0.style.display='none';return}
  let x,y;
- if(W<640){const t=E.some(e=>e.b==2)?'🐲 Boss Thế Giới!':'🐲 00:00',n='⭐ 29/30 · 👑 99/100';g.save();g.font='bold 12px KTH Serif,Songti SC,STKaiti,KaiTi,serif';const tw=Math.max(g.measureText(t).width,g.measureText(n).width);g.restore();x=W-8-tw-8-34;y=103-17}
+ if(W<640){const t=E.some(e=>e.b==2)?'🐲 Boss Thế Giới!':'🐲 00:00',n='⭐ 29/30 · 👑 99/100';g.save();g.font='bold 12px KTH Serif,Songti SC,STKaiti,KaiTi,serif';const tw=Math.max(g.measureText(t).width,g.measureText(n).width);g.restore();x=W-8-34;y=68}
  else{const hs=cl(Math.min(H/540,W/420),.6,1.1);x=W-210*hs-6-34;y=(12+76)*hs-5*hs-17}
  const k=Math.round(x)+','+Math.round(y);
  if(k!==lastPos){lastPos=k;btn.style.left=Math.round(x)+'px';btn.style.top=Math.round(y)+'px'}

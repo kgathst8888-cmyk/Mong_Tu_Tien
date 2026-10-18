@@ -7,7 +7,7 @@
  * Nút chỉ hiện khi có ít nhất 1 cột kỹ năng đang hiển thị. Trạng thái gọn/mở được nhớ bằng localStorage. */
 (function(){
 'use strict';
-var KEY='mtt_skill_fold',IDS=['sk-side','tt-bar','tg8-sk'];
+var KEY='mtt_skill_fold',IDS=['sk-side','tt-bar','tg8-sk','zk','sk'];
 var btn=null,off=false;
 try{off=localStorage.getItem(KEY)==='1'}catch(e){}
 function css(){

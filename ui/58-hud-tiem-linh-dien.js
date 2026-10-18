@@ -27,7 +27,7 @@ function place(){
   if(k===last)return;last=k;
   [bm,bs,bf,bc,bt].forEach(function(b){if(on.indexOf(b)<0&&b.style.display!=='none')b.style.display='none'});
   if(!on.length)return;
-  var x0=parseFloat(rk.style.left)||0,y0=parseFloat(rk.style.top)||0,base=x0-96,n=on.length,left=base-16-(n-1)*PITCH-SZ,row2=left<190;
+  var x0=parseFloat(rk.style.left)||0,y0=parseFloat(rk.style.top)||0,base=x0-96,n=on.length,left=base-16-(n-1)*PITCH-SZ,row2=left<150;
   on.forEach(function(b,i){var x=row2?x0+4-i*PITCH:base-16-SZ-i*PITCH,y=row2?y0+34+12:y0+4;b.style.left=Math.round(x)+'px';b.style.top=Math.round(y)+'px';b.style.display='block'})}
 setInterval(function(){try{place()}catch(e){}},150);
 })();
