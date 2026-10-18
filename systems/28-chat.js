@@ -4,7 +4,7 @@
  */
 (function(){
 'use strict';
-var MAXLEN=120,GAP=2000,POLL_OPEN=3000,POLL_BG=5000,KEEP=80;
+var MAXLEN=110,GAP=2000,POLL_OPEN=3000,POLL_BG=5000,KEEP=80;
 var BAD=['địt','lồn','cặc','đcm','dcm','vcl','đụ má','đéo'];
 var lastId=0,unread=0,open=false,busy=false,lastSend=0,seen={},timer=0,errMsg='';
 var btn,pn,list,inp,badge,note,peek,peekT=0;
@@ -27,6 +27,7 @@ function build(){
   '#chat-list{flex:1;overflow-y:auto;padding:8px 12px;font-size:14px;line-height:1.4;-webkit-overflow-scrolling:touch}'+
   '#chat-list div{margin:3px 0;word-break:break-word}#chat-list b{color:#ffd76a}#chat-list .me b{color:#7be07a}#chat-list small{opacity:.5;margin-left:4px}'+
   '#chat-list a{color:#c66;text-decoration:none;margin-left:6px;font-size:12px;opacity:.55}'+
+  '#chat-list .pfrow{display:flex;gap:8px;align-items:flex-start}#chat-list .pfbd{flex:1;min-width:0}#chat-list .pfhd{display:block;font-size:13px}#chat-list .pfmsg{display:block}#chat-pf{margin-right:4px}#chat-peek .pfa{margin-right:5px}'+
   '#chat-note{padding:4px 12px;font-size:12px;color:#ff9a8a;display:none}'+
   '#chat-pn .cf{display:flex;gap:6px;padding:8px 10px;border-top:1px solid #4a3a2a}'+
   '#chat-pn input{flex:1;min-width:0;background:#1d1510;border:1px solid #6a5434;border-radius:8px;color:#fff;padding:9px;font-size:15px}'+
@@ -39,30 +40,34 @@ function build(){
   peek.onpointerdown=function(e){e.stopPropagation();hidePeek();toggle(true)};
   document.body.appendChild(peek);
   pn=document.createElement('div');pn.id='chat-pn';
-  pn.innerHTML='<div class="ch"><span>💬 Chat Thế Giới</span><button id="chat-x">✕</button></div><div id="chat-list"></div><div id="chat-note"></div>'+
+  pn.innerHTML='<div class="ch"><span>💬 Chat Thế Giới</span><button id="chat-pf" title="Avatar, khung, danh hiệu">🎭</button><button id="chat-x">✕</button></div><div id="chat-list"></div><div id="chat-note"></div>'+
     '<div class="cf"><input id="chat-in" maxlength="'+MAXLEN+'" placeholder="Nhập tin nhắn…" autocomplete="off"><button id="chat-go">Gửi</button></div>';
   document.body.appendChild(pn);
   list=pn.querySelector('#chat-list');inp=pn.querySelector('#chat-in');note=pn.querySelector('#chat-note');
   pn.querySelector('#chat-x').onclick=function(){toggle(false)};
+  pn.querySelector('#chat-pf').onclick=function(){if(window.PFD)PFD.open('a')};
   pn.querySelector('#chat-go').onclick=send;
   ['keydown','keyup','keypress'].forEach(function(t){inp.addEventListener(t,function(e){e.stopPropagation();if(t=='keydown'&&e.key=='Enter')send()})});
   ['pointerdown','touchstart'].forEach(function(t){pn.addEventListener(t,function(e){e.stopPropagation()})});
 }
+function prep(m){if(m._p)return m;m._p=1;var q=window.PFD?PFD.parse(m.msg):{msg:String(m.msg||''),av:0,fr:0,tt:0};m.msg=q.msg;m.av=q.av;m.fr=q.fr;m.tt=q.tt;return m}
 function hidePeek(){clearTimeout(peekT);if(peek)peek.style.display='none'}
 function showPeek(m){
   if(open||!peek)return;
-  peek.innerHTML='<b>'+esc(m.name)+'</b>: <span>'+esc(m.msg)+'</span>';
+  prep(m);peek.innerHTML=(window.PFD?PFD.avHTML(m.av,m.fr,20,m.name):'')+'<b>'+esc(m.name)+'</b>: <span>'+esc(m.msg)+'</span>';
   peek.style.display='block';clearTimeout(peekT);peekT=setTimeout(hidePeek,6000);
 }
 function setNote(t){errMsg=t||'';note.style.display=t?'block':'none';note.textContent=t||''}
 function sys(t){var d=document.createElement('div');d.style.opacity='.6';d.textContent=t;list.appendChild(d)}
 
 function add(m){
-  if(seen[m.id])return;seen[m.id]=1;if(m.id>lastId)lastId=m.id;
+  if(seen[m.id])return;seen[m.id]=1;prep(m);if(m.id>lastId)lastId=m.id;
   var near=list.scrollHeight-list.scrollTop-list.clientHeight<60;
   var d=document.createElement('div');if(m.me)d.className='me';
   var t=new Date(m.ts*1000),hm=('0'+t.getHours()).slice(-2)+':'+('0'+t.getMinutes()).slice(-2);
-  d.innerHTML='<b>'+esc(m.name)+'</b>: '+esc(m.msg)+'<small>'+hm+'</small>'+(m.me?'':'<a href="#" data-id="'+m.id+'" title="Báo cáo">⚑</a>');
+  var A=window.PFD,rp=m.me?'':'<a href="#" data-id="'+m.id+'" title="Báo cáo">⚑</a>';
+  if(A){d.className=(m.me?'me ':'')+'pfrow';d.innerHTML=A.avHTML(m.av,m.fr,34,m.name)+'<span class="pfbd"><span class="pfhd">'+A.ttHTML(m.tt)+'<b>'+esc(m.name)+'</b><small>'+hm+'</small>'+rp+'</span><span class="pfmsg">'+esc(m.msg)+'</span></span>'}
+  else d.innerHTML='<b>'+esc(m.name)+'</b>: '+esc(m.msg)+'<small>'+hm+'</small>'+rp;
   list.appendChild(d);
   while(list.children.length>KEEP)list.removeChild(list.firstChild);
   if(open&&near)list.scrollTop=list.scrollHeight;
@@ -89,7 +94,7 @@ async function send(){
   if(Date.now()-lastSend<GAP){setNote('Gửi chậm lại một chút…');return}
   lastSend=Date.now();inp.value='';
   try{
-    var r=await KCL.rpc('chat_send',{p_name:myName(),p_text:clean(raw).slice(0,MAXLEN)});
+    var r=await KCL.rpc('chat_send',{p_name:myName(),p_text:(window.PFD?PFD.meta():'')+clean(raw).slice(0,MAXLEN)});
     if(r&&r.status==='ok')setNote('');
     else setNote(r&&r.status=='slow'?'Gửi chậm lại một chút…':r&&r.status=='banned'?'Bạn đã bị cấm chat.':'Không gửi được.');
     poll();

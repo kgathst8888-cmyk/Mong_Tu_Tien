@@ -29,7 +29,7 @@ function spawn(name,col,ic,sp,ma,tg){
  var mk=R[name];if(!mk||FX.length>CF.maxFx)return;
  var dd=P.d||1,A=dd>0?0:PI,F={f:{A:A,c:Math.cos(A),sn:Math.sin(A)},col:col,ic:ic||'✨',sp:sp||{},ma:!!ma},rec;
  try{rec=mk(F)}catch(e){return}
- var an=(name==='ycS'&&!ma)?0:AN[name],dx=(an&&tg&&typeof tg.x==='number')?(tg.x-P.x)-an*dd:0,
+ var an=(name==='ycS'&&!ma)?0:(AN[name]||(window.MPTT_AN&&MPTT_AN[name])),dx=(an&&tg&&typeof tg.x==='number')?(tg.x-P.x)-an*dd:0,
   dly=0,L=rec.life,m=L,fol=!!FOLLOW[name];
  FX.push({x:P.x,l:m,m:m,fn:function(f,p,X,gy){
   var pp=p;if(pp>=1)return;var hx=fol?(P.x-cam)*s:X;

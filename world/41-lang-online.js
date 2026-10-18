@@ -23,8 +23,12 @@ async function ping(){
   if(busyP)return;busyP=true;
   try{
     var ps=PS[cur]||{},emo=myEmo;
-    var r=await KCL.rpc('vp_ping',{p_name:myName(),p_ci:cur|0,p_br:((ps.br==null?-1:ps.br)|0),p_tier:(ps.tier|0),
-      p_lv:((P&&P.lv)|0)||1,p_x:clamp(P.x/vw(),0,1),p_emo:emo});
+    var args={p_name:myName(),p_ci:cur|0,p_br:((ps.br==null?-1:ps.br)|0),p_tier:(ps.tier|0),
+      p_lv:((P&&P.lv)|0)||1,p_x:clamp(P.x/vw(),0,1),p_emo:emo},r;
+    /* Fix268: gửi kèm danh hiệu. Máy chủ chưa chạy lại village_presence.sql → tự lùi về bản cũ (không gửi p_tt) */
+    if(useTT){try{args.p_tt=window.PFD?PFD.eq('t')|0:0}catch(e){args.p_tt=0}}
+    try{r=await KCL.rpc('vp_ping',args)}
+    catch(e0){if(useTT&&!(e0&&e0.net)){useTT=false;delete args.p_tt;r=await KCL.rpc('vp_ping',args)}else throw e0}
     if(r&&r.status==='ok'){fail=0;errMsg='';if(myEmo===emo)myEmo=0;apply(r.list||[],r.n|0)}
     else if(r&&r.status==='auth'){errMsg='Hết phiên đăng nhập ☁'}
   }catch(e){
@@ -34,6 +38,7 @@ async function ping(){
   nextAt=Date.now()+PING*(1+Math.min(fail,6)*(/chưa cài/.test(errMsg)?4:1));
   busyP=false;
 }
+var useTT=true;
 function leave(){try{if(logged())KCL.rpc('vp_leave',{}).catch(function(){})}catch(e){}}
 
 function apply(list,n){
@@ -41,7 +46,7 @@ function apply(list,n){
   list.forEach(function(o){
     var e=others[o.id];seen[o.id]=1;
     if(!e){e=others[o.id]={id:o.id,lx:o.x*w,d:1,mv:0,em:0,emT:0,emS:0}}
-    e.name=String(o.name||'Đạo Hữu');e.ci=o.ci|0;e.br=o.br|0;e.tier=o.tier|0;e.lv=o.lv|0;e.fx=clamp(+o.x||0,0,1);
+    e.name=String(o.name||'Đạo Hữu');e.ci=o.ci|0;e.br=o.br|0;e.tier=o.tier|0;e.lv=o.lv|0;e.tt=o.tt|0;e.fx=clamp(+o.x||0,0,1);
     if(o.emo>0){if(e.emS!==o.emo||now>e.emT+1000){e.em=o.emo;e.emT=now+4000}}
     e.emS=o.emo|0;
   });
@@ -100,8 +105,11 @@ function drawOne(e){
   var T=CHR[ci].t,ty=GY-(T=='m'?205:178)*s-(e.ly||0)*s,fs=Math.max(10,12*s),tx='Lv.'+e.lv+' '+e.name;
   g.save();g.globalAlpha=1;g.font='bold '+fs+'px '+FONT;g.textAlign='center';g.textBaseline='alphabetic';
   g.lineWidth=3;g.strokeStyle='rgba(0,0,0,.85)';g.strokeText(tx,X,ty);g.fillStyle='#bfe6ff';g.fillText(tx,X,ty);
+  var hasT=false;
+  if(e.tt&&window.PFD&&PFD.drawTT){try{hasT=PFD.drawTT(e.tt,X,ty-fs*1.3,fs)}catch(x){}}   /* danh hiệu phía trên tên */
+  g.font='bold '+fs+'px '+FONT;g.textAlign='center';g.textBaseline='alphabetic';
   if(e.emT>Date.now()){
-    var bs=Math.max(24,28*s),by=ty-bs*.75;
+    var bs=Math.max(24,28*s),by=ty-(hasT?fs*1.3:0)-bs*.75;
     g.fillStyle='rgba(14,10,8,.85)';g.strokeStyle='#b8964e';g.lineWidth=1.5;
     g.beginPath();g.arc(X,by,bs*.62,0,6.283);g.fill();g.stroke();
     g.font=Math.round(bs*.8)+'px sans-serif';g.textBaseline='middle';g.fillStyle='#fff';g.fillText(EMO[e.em]||'',X,by+1);
@@ -110,11 +118,13 @@ function drawOne(e){
 }
 /* xếp nhãn tên vào 3 tầng độ cao sao cho nhãn không chạm nhau */
 function stagger(list){
-  var fs=Math.max(10,12*s),edge=[-1e9,-1e9,-1e9];g.save();g.font='bold '+fs+'px '+FONT;
+  var fs=Math.max(10,12*s),edge=[-1e9,-1e9,-1e9],step=list.some(function(e){return e.tt})?28:16;g.save();g.font='bold '+fs+'px '+FONT;
   list.forEach(function(e){
-    var wd=g.measureText('Lv.'+e.lv+' '+e.name).width/s,l=e.lx-wd/2,t=-1,i,m=0;
+    var wd=g.measureText('Lv.'+e.lv+' '+e.name).width/s,l,t=-1,i,m=0;
+    if(e.tt&&window.PFD&&PFD.ttWidth){var tw=PFD.ttWidth(e.tt,fs)/s;if(tw>wd)wd=tw;g.font='bold '+fs+'px '+FONT}   /* nhãn rộng bằng dòng rộng nhất */
+    l=e.lx-wd/2;
     for(i=0;i<3;i++){if(l>edge[i]+4){t=i;break}if(edge[i]<edge[m])m=i}
-    if(t<0)t=m;e.ly=t*16;edge[t]=e.lx+wd/2;
+    if(t<0)t=m;e.ly=t*step;edge[t]=e.lx+wd/2;
   });
   g.restore();
 }

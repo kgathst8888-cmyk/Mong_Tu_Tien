@@ -167,6 +167,20 @@ function doSect(it,cx){
  try{var id=VPD.sect(),idx=[0,1,2,3,5][+it.k.slice(1)],inf=VPD.info(id,idx);m0=(sp.mul||1)*(1+((VPD.cfg&&VPD.cfg.lvScale)||.1)*((inf.lv||1)-1))}catch(e){}
  var sl=!!(sp.st&&sp.st.sl);
  function H(m,mu){hitMon(m,mu,{skill:1,sl:sl})}
+ /* Fix238: kỹ năng có cơ chế riêng (mk:1) chạy qua world/99-mon-phai-co-che-rieng.js với adapter 2.5D */
+ if(sp.mk&&window.MPK&&MPK.has(sp)){var lvK=m0/(sp.mul||1),sid='';try{sid=VPD.sect()}catch(e){}
+  var AD={k:sid,s:sp,B:1,now:function(){return fr},
+   tgt:function(){var a=pick(cx,function(D,L){return Math.hypot(D,L)<420})[0];return a&&a.m},
+   list:function(sh){return(sh.k==='line'?pick(cx,function(D,L2){return D>-20&&D<sh.len&&Math.abs(L2)<(sh.w||60)+RM}):sh.k==='cone'?pick(cx,function(D,L2){return Math.hypot(D,L2)<sh.r+RM&&Math.abs(Math.atan2(L2,D))<(sh.half||1.15)}):pick(cx,function(D,L2){return Math.hypot(D,L2)<sh.r+RM})).map(function(o){return o.m})},
+   cen:function(at,D){if(at==='self'){var h=TG.hero();return[h[0],h[1]]}if(at==='tgt'){var a=pick(cx,function(D2,L2){return Math.hypot(D2,L2)<420})[0];if(a)return[a.m.x,a.m.y]}return wc(cx,D||(at==='tgt'?170:190),0)},
+   here:function(){var h=TG.hero();return[h[0],h[1]]},ctr:function(m){return[m.x,m.y]},
+   listAt:function(c,r){return circW(c[0],c[1],r).sort(function(a,b){return Math.hypot(a.x-c[0],a.y-c[1])-Math.hypot(b.x-c[0],b.y-c[1])})},
+   hit:function(m,mu,o){hitMon(m,mu*lvK,{skill:1})},
+   status:function(m,st){if(st.sl)m.sl=Math.max(m.sl||0,st.sl);if(st.stn||st.frz)m.tqSt=Math.max(m.tqSt||0,st.stn||90)},
+   later:later,heal:function(f){try{P.hp=Math.min(mx(),P.hp+mx()*f)}catch(e){}},shield:function(f,d){try{SH.v=mx()*f;SH.u=fr+Math.round(d*60)}catch(e){}},dodge:function(){},dash:function(){},
+   say:function(t,c){ftHero(t,c)},grp:function(){},ur:function(r){return Math.max(190,Math.min(r*.55,300))},
+   info:function(m){return{hp:m.hp,max:m.max||m.hp,boss:!!(m.b||m.boss||m.elite)}},tag:function(m){return m.mpk||(m.mpk={})}};
+  try{MPK.run(AD,sp)}catch(e){}return}
  function circ(D,L,r,mu,fn){circW.apply(null,wc(cx,D,L).concat([r])).forEach(function(m){H(m,fn?fn(m):mu)})}
  if(t==='proj'){var a=pick(cx,function(D,L){return D>-20&&D<460&&Math.abs(L)<60+RM});if(a[0])H(a[0].m,m0)}
  else if(t==='multi'){var n=Math.min(6,sp.h||3);for(var i=0;i<n;i++){var rA=A+(i-(n-1)/2)*.26,b=pick(cx,function(D,L){return D>-20&&D<400&&Math.abs(L)<46+RM},rA);if(b[0])H(b[0].m,m0)}}

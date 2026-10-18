@@ -12,7 +12,9 @@
 if(typeof epstep!=='function'||typeof pet!=='function'||typeof EP==='undefined'||typeof PK==='undefined')return;
 var CF={altMin:46,altMax:170,near:.3,pauseMin:40,pauseMax:120,wanderMin:260,wanderMax:520,far:300};
 var S={wx:null,wy:70,wt:0,pz:0,r:1.1,ch:false,last:0};
-function on(){try{return !!pet()&&PS[cur].thb!==0}catch(e){return false}}
+/* Fix270: CHỈ Chu Tước (k=1) và Thanh Long (k=2) bay. Bạch Hổ (k=0) và Huyền Vũ (k=3) chỉ đi trên mặt đất, luôn chạy theo chủ như cũ. */
+function canFly(p){return !!p&&(p.k===1||p.k===2)}
+function on(){try{var p=pet();return canFly(p)&&PS[cur].thb!==0}catch(e){return false}}
 function rnd(a,b){return a+Math.random()*(b-a)}
 function lim(v,a,b){return Math.max(a,Math.min(b,v))}
 function ymax(){try{return Math.max(CF.altMin+20,Math.min(CF.altMax,GY/s-120))}catch(e){return CF.altMax}}
@@ -43,7 +45,7 @@ function tx(tx0,e,k){
 function run(r0){return S.r||r0}
 /* Giữ độ cao bay (không áp dụng khi đang tung đòn: engine tự điều khiển y lúc tấn công) */
 function hover(){
-  var p=pet();if(!p||EP.at>0||p.k===0)return;
+  var p=pet();if(!p||EP.at>0||!canFly(p))return;
   var ty=(S.wy||70)+Math.sin(EP.t*.045)*7+Math.sin(EP.t*.017)*4+p.ev*4;
   EP.y+=(ty-EP.y)*.06;
   if(p.k!==1&&Math.abs(EP.vx)>1.2&&EP.t%6===0&&PT.length<120){      /* vệt gió cho thú không có cánh */
@@ -70,9 +72,26 @@ epstep=function(){
   return r;
 };
 /* Bản đồ không có vòng lặp thú của engine (Làng, Thành Thị, Mỏ, Linh Điền): tự lượn */
+/* Thú đi bộ (Bạch Hổ, Huyền Vũ) ở bản đồ không có vòng lặp thú của engine: vstep đã kéo thú theo chủ; ở đây chỉ hạ về mặt đất + cho chân chạy theo quãng đường thực */
+function idleGround(p){
+  var k=p.k,K=PK[k];
+  if(EP.t===undefined)Object.assign(EP,{t:0,y:0,vx:0,d:1,at:0,atT:1,ox:EP.x,tgx:EP.x,tg:null,kind:0,sk:180,ph:0,hit:0,ps:-1});
+  if(EP.ps!==k){EP.ps=k;EP.y=0;EP.vx=0;EP.sk=180}
+  if((k===1||k===0)&&EP.fp===undefined)Object.assign(EP,{fp:0,fa:.6,gl:0,ly:EP.y||0,mt:0,na:0,si:0,bn:[],rb:EP.rb||0,q:[],sw:.4,skn:0,evo:0});
+  EP.at=0;EP.t++;
+  var px=(EP._gx===undefined||!isFinite(EP._gx))?EP.x:EP._gx,mv=EP.x-px;EP._gx=EP.x;
+  EP.vx+=(Math.max(-K.sp,Math.min(K.sp,mv))-EP.vx)*.35;
+  if(Math.abs(EP.vx)>.35)EP.d=Math.sign(EP.vx);else EP.d=P.d||EP.d||1;
+  var mvf=Math.min(1,Math.abs(EP.vx)/2.4);
+  EP.ph+=mvf*.3+.05;
+  EP.ly=EP.y;EP.y+=(0-EP.y)*.3;if(EP.y<.05)EP.y=0
+}
 function idle(){
-  if(typeof started==='undefined'||!started||!on())return;
+  if(typeof started==='undefined'||!started)return;
   if(performance.now()-S.last<90)return;           /* đang ở bản đồ chiến đấu: engine lo */
+  var p0=pet();if(!p0)return;
+  if(!canFly(p0)){idleGround(p0);return}
+  if(!on())return;
   var p=pet(),k=p.k,K=PK[k];
   if(EP.t===undefined)Object.assign(EP,{t:0,y:K.al,vx:0,d:1,at:0,atT:1,ox:EP.x,tgx:EP.x,tg:null,kind:0,sk:180,ph:0,hit:0,ps:-1});
   if(EP.ps!==k){EP.ps=k;EP.y=K.al;EP.vx=0;EP.sk=180}
@@ -98,8 +117,9 @@ if(typeof petUI==='function'){
   petUI=function(){
     var h=_ui.apply(this,arguments);
     if(typeof h!=='string'||!pet())return h;
-    return h+'<div class="dt"><button onclick="PFLY.tg()" style="'+(on()?'background:#8a6420':'')+'">🕊 Bay tự do: '+(on()?'BẬT':'TẮT')+'</button><br><small>Thần thú bay lượn khắp bản đồ (kể cả Làng, Linh Giới) và lao tới địch ở bất cứ đâu. Tắt để thú chỉ đi quanh nhân vật như cũ.</small></div>';
+    if(!canFly(pet()))return h+'<div class="dt"><small>🐾 '+(pet().k===0?'Bạch Hổ':'Huyền Vũ')+' chỉ đi trên mặt đất. Chỉ <b>Chu Tước</b> và <b>Thanh Long</b> mới bay lượn tự do.</small></div>';
+    return h+'<div class="dt"><button onclick="PFLY.tg()" style="'+(on()?'background:#8a6420':'')+'">🕊 Bay tự do: '+(on()?'BẬT':'TẮT')+'</button><br><small>Chu Tước và Thanh Long bay lượn khắp bản đồ (kể cả Làng, Linh Giới) và lao tới địch ở bất cứ đâu. Tắt để thú chỉ đi quanh nhân vật như cũ. (Bạch Hổ và Huyền Vũ luôn đi trên mặt đất.)</small></div>';
   };
 }
-window.PFLY={on:on,tx:tx,run:run,tg:tg,idle:idle,cfg:CF};
+window.PFLY={canFly:canFly,on:on,tx:tx,run:run,tg:tg,idle:idle,cfg:CF};
 })();

@@ -15,12 +15,13 @@ var SLOT=[0,1,2,3,5];
 function A(i,t,o){o=o||{};o.i=i;o.t=t;return o}
 var PAS={p:1,i:'🔰'};
 var SPEC={
-umt:[A('🗡️','multi',{h:3,mul:1.8,cd:4}),A('💨','dash',{mul:1.2,cd:8,dodge:120}),A('🩸','mark',{dur:5,mul:1.0,cd:12}),A('🌙','exec',{mul:2.8,cd:18}),PAS,A('👥','dot',{dur:5,every:15,mul:8.5,cap:12,r:520,where:'self',cd:60,ult:1})],
-hbd:[A('❄️','proj',{mul:1.3,cd:3,st:{sl:120}}),A('🧊','aoe',{mul:2.0,r:150,cd:8}),A('🥶','freeze',{mul:.3,cd:14}),A('🐲','sweep',{mul:3.0,r:560,cd:18,st:{sl:150}}),PAS,A('🌨️','dot',{dur:6,every:30,mul:7.5,r:440,where:'self',cd:60,ult:1,st:{sl:150}})],
-ptc:[A('🔥','proj',{mul:1.4,cd:3,st:{brn:1}}),A('💥','aoe',{mul:2.2,r:150,cd:8,st:{brn:1}}),A('🔴','dot',{dur:5,every:60,mul:3.0,r:130,where:'tgt',cd:12,st:{brn:1}}),A('🦅','sweep',{mul:3.2,r:560,cd:20,st:{brn:1}}),PAS,A('☄️','dot',{dur:6,every:20,mul:9.0,cap:14,r:520,where:'self',cd:60,ult:1,st:{brn:1}})],
-tkt:[A('🌙','proj',{mul:1.5,cd:3}),A('🗡️','multi',{h:5,mul:2.75,cd:8}),A('⚡','dash',{mul:1.8,cd:10,dodge:120}),A('🌠','charge',{mul:4.0,r:130,cd:18,wait:40}),PAS,A('⚔️','dot',{dur:5,every:15,mul:8.0,cap:12,r:480,where:'self',cd:60,ult:1})],
-vdm:[A('🪡','proj',{mul:1.3,cd:3,st:{psn:1}}),A('🟢','dot',{dur:5,every:60,mul:4.0,r:160,where:'tgt',cd:10,st:{psn:1}}),A('🧪','burst',{mul:1.8,cd:8,st:{psn:1}}),A('🐍','dot',{dur:6,every:30,mul:4.5,r:110,where:'tgt',cd:18,st:{psn:1}}),PAS,A('☠️','dot',{dur:6,every:20,mul:8.0,cap:14,r:480,where:'self',cd:60,ult:1,st:{psn:1}})],
-ngc:[A('🐛','multi',{h:4,mul:1.5,cd:5,bug:1}),A('🛡️','shield',{pct:.12,dur:6,cd:12}),A('🪲','dot',{dur:5,every:60,mul:2.5,r:130,where:'tgt',cd:10,st:{prc:.1,psn:1}}),A('🦂','dot',{dur:8,every:30,mul:6.0,r:440,where:'self',cd:20,summon:1}),PAS,A('🦗','dot',{dur:6,every:20,mul:7.5,cap:14,r:560,where:'self',cd:60,ult:1,summon:1})]};
+/* Fix238: mỗi môn có BỘ CƠ CHẾ RIÊNG (mk:1 → world/99-mon-phai-co-che-rieng.js, MPK.run). Giữ nguyên Huyết Ảnh Truy Hồn (mark) · Ma Liêm Đoạt Mệnh (exec) · Kim Giáp Cổ (shield) vốn đã độc nhất. */
+umt:[A('🗡️','umt1',{mk:1,mul:1.8,cd:4}),A('💨','umt2',{mk:1,mul:1.2,cd:8,dodge:120}),A('🩸','mark',{dur:5,mul:1.0,cd:12}),A('🌙','exec',{mul:2.8,cd:18}),PAS,A('👥','umt5',{mk:1,dur:5,every:15,mul:8.5,r:520,where:'self',cd:60,ult:1})],
+hbd:[A('❄️','hbd1',{mk:1,mul:1.3,cd:3,sl:120}),A('🧊','hbd2',{mk:1,mul:2.0,r:150,cd:8}),A('🥶','hbd3',{mk:1,mul:1.5,cd:14}),A('🐲','hbd4',{mk:1,mul:3.0,cd:18}),PAS,A('🌨️','hbd5',{mk:1,dur:6,every:30,mul:7.5,r:440,where:'self',cd:60,ult:1})],
+ptc:[A('🔥','ptc1',{mk:1,mul:1.4,cd:3}),A('💥','ptc2',{mk:1,mul:2.2,r:150,cd:8}),A('🔴','ptc3',{mk:1,dur:5,every:60,mul:3.0,r:130,where:'tgt',cd:12}),A('🦅','ptc4',{mk:1,mul:3.2,cd:20}),PAS,A('☄️','ptc5',{mk:1,dur:6,every:20,mul:9.0,cap:14,r:520,where:'self',cd:60,ult:1})],
+tkt:[A('🌙','tkt1',{mk:1,mul:1.5,cd:3}),A('🗡️','tkt2',{mk:1,mul:2.75,cd:8}),A('⚡','tkt3',{mk:1,mul:1.8,cd:10,dodge:120}),A('🌠','tkt4',{mk:1,mul:4.0,r:130,cd:18,wait:40}),PAS,A('⚔️','tkt5',{mk:1,dur:5,every:15,mul:8.0,r:480,where:'self',cd:60,ult:1})],
+vdm:[A('🪡','vdm1',{mk:1,mul:1.3,cd:3}),A('🟢','vdm2',{mk:1,dur:5,every:60,mul:4.0,r:160,where:'tgt',cd:10}),A('🧪','vdm3',{mk:1,mul:1.8,cd:8}),A('🐍','vdm4',{mk:1,dur:6,mul:4.5,r:110,where:'tgt',cd:18}),PAS,A('☠️','vdm5',{mk:1,dur:6,every:20,mul:8.0,r:480,where:'self',cd:60,ult:1})],
+ngc:[A('🐛','ngc1',{mk:1,mul:1.5,cd:5,bug:1}),A('🛡️','shield',{pct:.12,dur:6,cd:12}),A('🪲','ngc3',{mk:1,mul:2.5,cd:10}),A('🦂','ngc4',{mk:1,dur:8,mul:6.0,r:440,where:'self',cd:20,summon:1}),PAS,A('🦗','ngc5',{mk:1,dur:6,every:60,mul:7.5,r:560,where:'self',cd:60,ult:1,summon:1})]};
 var COL={umt:['#c070ff','#ff2a6a'],hbd:['#bff4ff','#4ab8ff'],ptc:['#ffd070','#ff5a1a'],tkt:['#fff3b0','#ffd84a'],vdm:['#9aff7a','#2aa84a'],ngc:['#ffc8ff','#c050d0']};
 var SECT_N={umt:'U Minh Ma Tông',hbd:'Huyền Băng Điện',ptc:'Phần Thiên Cốc',tkt:'Thiên Kiếm Tông',vdm:'Vạn Độc Môn',ngc:'Ngự Cổ Thánh Điện'};
 
@@ -83,11 +84,24 @@ if(typeof step==='function'){var _st=step;step=function(){hp0=P.hp;var r=_st.app
   if(lost>0&&SH.a>0&&SH.u>fr){var ab=Math.min(lost,SH.a);SH.a-=ab;P.hp=Math.min(mxh(),P.hp+ab)}}}catch(e){}return r}}
 
 /* ---------- thi triển ---------- */
+/* Fix238: adapter 1 chiều (trục x) cho world/99-mon-phai-co-che-rieng.js */
+function mkAD(id,idx,s){var px=P.x,dd=P.d||1;
+ function dist(a,b){return Math.abs(a.x-px)-Math.abs(b.x-px)}
+ return{k:id,s:s,B:1,now:function(){return fr},tgt:function(){return nearE()[0]},
+  list:function(sh){var L=alive();if(sh.k==='line')L=L.filter(function(e){var d=(e.x-px)*dd;return d>-40&&d<sh.len});else if(sh.k==='cone')L=L.filter(function(e){return(e.x-px)*dd>-40&&Math.abs(e.x-px)<sh.r});else L=L.filter(function(e){return Math.abs(e.x-px)<sh.r});return L.sort(dist)},
+  cen:function(at,D){if(at==='self')return px;if(at==='tgt'){var t=nearE()[0];return t?t.x:px+dd*(D||140)}return px+dd*(D||140)},
+  here:function(){return px},ctr:function(e){return e.x},
+  listAt:function(c,r){return alive().filter(function(e){return Math.abs(e.x-c)<r}).sort(function(a,b){return Math.abs(a.x-c)-Math.abs(b.x-c)})},
+  hit:function(e,m,o){hit(e,m,idx,!!(o&&o.summon))},status:function(e,st){stat(e,st)},later:later,
+  heal:function(f){P.hp=Math.min(mxh(),P.hp+mxh()*f)},shield:function(f,d){SH.a=mxh()*f;SH.u=fr+d*60},dodge:function(n){DOD=Math.max(DOD,fr+n)},
+  dash:function(e){P.x=Math.max(40,e.x-dd*60);px=P.x},say:function(t,c){say(t,c||COL[id][0])},grp:function(sm){newGrp(!!sm)},ur:function(r){return r},
+  info:function(e){return{hp:e.hp,max:e.max||e.hp,boss:e.b>=2||e.k==='boss'}},tag:function(e){return e.mpk||(e.mpk={})}}}
 function fire(b,id,idx,s){
   try{if(window.TGFX2&&TGFX2.cast)TGFX2.cast('s',{id:id,s:s,tg:nearE()[0]})}catch(z){}
   try{window.STLAST=[SECT_N[id]+':'+idx,fr]}catch(e){}
   var c=COL[id],px=P.x,dd=P.d||1,lg=light(),tg=nearE()[0],t=s.t;
   newGrp(!!s.summon);
+  if(s.mk&&window.MPK&&MPK.has(s)){try{MPK.run(mkAD(id,idx,s),s)}catch(e){}if(tg)beam(px,tg.x,14,c[1]);ring(s.where==='self'?px:tg?tg.x:px+dd*140,s.r||110,s.ult?40:22,c[1],'rgba(255,255,255,.07)');return}
   function fxHit(e){sparks(e.x,id,2);slash(e.x,12,c[0])}
   if(t==='multi'){for(var q=0;q<s.h;q++)(function(q){later(q*6,function(){var e=nearE()[0];if(!e)return;hit(e,s.mul/s.h,idx);if(s.bug)sparks(e.x,id,3);if(!lg||q%2===0)slash(e.x,10,c[0]);if(q===s.h-1)st_.grpS=0})})(q)}
   else if(t==='proj'){if(tg){beam(px,tg.x,14,c[1]);hit(tg,s.mul,idx);stat(tg,s.st);fxHit(tg)}}

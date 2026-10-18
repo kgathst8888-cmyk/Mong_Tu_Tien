@@ -25,20 +25,24 @@ create table if not exists public.city_presence(
   emo_ts timestamptz,
   ts     timestamptz not null default now()
 );
+-- Fix269: danh hiệu đang đeo (id trong world/51b) để người chơi khác thấy ở thành
+alter table public.city_presence add column if not exists tt smallint not null default 0;
 create index if not exists city_presence_map_ts on public.city_presence(map, ts desc);
 
 alter table public.city_presence enable row level security;
 revoke all on public.city_presence from anon, authenticated;
 
 -- Báo vị trí + nhận danh sách người cùng bản đồ (1 lượt gọi cho cả hai)
+-- Fix269: thêm p_tt (danh hiệu). Xoá bản 11 tham số cũ để không trùng tên hàm.
+drop function if exists public.cp_ping(int,text,int,int,real,real,int,int,int,jsonb,int);
 create or replace function public.cp_ping(
   p_map int, p_name text, p_ci int, p_lv int, p_x real, p_y real,
-  p_d int, p_mv int, p_apv int, p_ap jsonb default null, p_emo int default 0
+  p_d int, p_mv int, p_apv int, p_ap jsonb default null, p_emo int default 0, p_tt int default 0
 ) returns json
 language plpgsql security definer set search_path = public as $$
 declare
   v_u uuid := auth.uid();
-  v_map int; v_n text; v_ci int; v_lv int; v_x real; v_y real; v_d int; v_mv int;
+  v_map int; v_n text; v_ci int; v_lv int; v_x real; v_y real; v_d int; v_mv int; v_tt int;
   v_et timestamptz; v_set boolean; v_ap jsonb; v_list json; v_cnt int;
 begin
   if v_u is null then return json_build_object('status','auth'); end if;
@@ -52,6 +56,7 @@ begin
   v_y   := greatest(-100, least(coalesce(p_y,0), 300));
   v_d   := case when coalesce(p_d,1) < 0 then -1 else 1 end;
   v_mv  := case when coalesce(p_mv,0) > 0 then 1 else 0 end;
+  v_tt  := greatest(0, least(coalesce(p_tt,0), 99));
 
   v_ap := null;
   if p_ap is not null and jsonb_typeof(p_ap) = 'object' and octet_length(p_ap::text) <= 8000 then
@@ -61,15 +66,15 @@ begin
   select emo_ts into v_et from public.city_presence where uid = v_u;
   v_set := coalesce(p_emo,0) between 1 and 4 and (v_et is null or v_et < now() - interval '3 seconds');
 
-  insert into public.city_presence(uid,map,name,ci,lv,x,y,d,mv,apv,ap,emo,emo_ts,ts)
-  values (v_u, v_map, v_n, v_ci, v_lv, v_x, v_y, v_d, v_mv, coalesce(p_apv,0), v_ap,
+  insert into public.city_presence(uid,map,name,ci,lv,x,y,d,mv,apv,ap,tt,emo,emo_ts,ts)
+  values (v_u, v_map, v_n, v_ci, v_lv, v_x, v_y, v_d, v_mv, coalesce(p_apv,0), v_ap, v_tt,
           case when v_set then p_emo else 0 end,
           case when v_set then now() else null end,
           now())
   on conflict (uid) do update set
     map = excluded.map, name = excluded.name, ci = excluded.ci, lv = excluded.lv,
     x = excluded.x, y = excluded.y, d = excluded.d, mv = excluded.mv,
-    apv = excluded.apv,
+    apv = excluded.apv, tt = excluded.tt,
     ap  = coalesce(excluded.ap, public.city_presence.ap),
     ts  = now(),
     emo    = case when v_set then p_emo else public.city_presence.emo end,
@@ -83,7 +88,7 @@ begin
    where uid <> v_u and map = v_map and ts > now() - interval '12 seconds';
 
   select coalesce(json_agg(t), '[]'::json) into v_list from (
-    select substr(md5(uid::text), 1, 10) as id, name, ci, lv, x, y, d, mv, apv,
+    select substr(md5(uid::text), 1, 10) as id, name, ci, lv, x, y, d, mv, apv, tt,
            case when emo_ts > now() - interval '5 seconds' then emo else 0 end as emo
       from public.city_presence
      where uid <> v_u and map = v_map and ts > now() - interval '12 seconds'
@@ -116,7 +121,7 @@ begin
   return json_build_object('status','ok');
 end $$;
 
-revoke all on function public.cp_ping(int,text,int,int,real,real,int,int,int,jsonb,int),
+revoke all on function public.cp_ping(int,text,int,int,real,real,int,int,int,jsonb,int,int),
                        public.cp_ap(text,int), public.cp_leave() from public, anon;
-grant execute on function public.cp_ping(int,text,int,int,real,real,int,int,int,jsonb,int),
+grant execute on function public.cp_ping(int,text,int,int,real,real,int,int,int,jsonb,int,int),
                           public.cp_ap(text,int), public.cp_leave() to authenticated;

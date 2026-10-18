@@ -20,19 +20,23 @@ create table if not exists public.village_presence(
   emo_ts timestamptz,
   ts     timestamptz not null default now()
 );
+-- Fix268: danh hiệu đang đeo (id trong world/51b) để người chơi khác thấy ở làng
+alter table public.village_presence add column if not exists tt smallint not null default 0;
 create index if not exists village_presence_ts on public.village_presence(ts desc);
 
 alter table public.village_presence enable row level security;
 revoke all on public.village_presence from anon, authenticated;
 
 -- Báo vị trí của mình + nhận danh sách người khác (1 lượt gọi cho cả hai)
+-- Fix268: thêm p_tt (danh hiệu). Xoá bản 7 tham số cũ để không trùng tên hàm.
+drop function if exists public.vp_ping(text,int,int,int,int,real,int);
 create or replace function public.vp_ping(
-  p_name text, p_ci int, p_br int, p_tier int, p_lv int, p_x real, p_emo int default 0
+  p_name text, p_ci int, p_br int, p_tier int, p_lv int, p_x real, p_emo int default 0, p_tt int default 0
 ) returns json
 language plpgsql security definer set search_path = public as $$
 declare
   v_u uuid := auth.uid();
-  v_n text; v_ci int; v_br int; v_tier int; v_lv int; v_x real;
+  v_n text; v_ci int; v_br int; v_tier int; v_lv int; v_x real; v_tt int;
   v_et timestamptz; v_set boolean; v_list json; v_cnt int;
 begin
   if v_u is null then return json_build_object('status','auth'); end if;
@@ -44,18 +48,19 @@ begin
   v_tier := greatest(0,  least(coalesce(p_tier,0), 6));
   v_lv   := greatest(1,  least(coalesce(p_lv,1), 999));
   v_x    := greatest(0,  least(coalesce(p_x,.5), 1));
+  v_tt   := greatest(0,  least(coalesce(p_tt,0), 99));
 
   select emo_ts into v_et from public.village_presence where uid = v_u;
   v_set := coalesce(p_emo,0) between 1 and 4 and (v_et is null or v_et < now() - interval '3 seconds');
 
-  insert into public.village_presence(uid,name,ci,br,tier,lv,x,emo,emo_ts,ts)
-  values (v_u, v_n, v_ci, v_br, v_tier, v_lv, v_x,
+  insert into public.village_presence(uid,name,ci,br,tier,lv,x,tt,emo,emo_ts,ts)
+  values (v_u, v_n, v_ci, v_br, v_tier, v_lv, v_x, v_tt,
           case when v_set then p_emo else 0 end,
           case when v_set then now() else null end,
           now())
   on conflict (uid) do update set
     name = excluded.name, ci = excluded.ci, br = excluded.br, tier = excluded.tier,
-    lv = excluded.lv, x = excluded.x, ts = now(),
+    lv = excluded.lv, x = excluded.x, tt = excluded.tt, ts = now(),
     emo    = case when v_set then p_emo else public.village_presence.emo end,
     emo_ts = case when v_set then now()  else public.village_presence.emo_ts end;
 
@@ -67,7 +72,7 @@ begin
    where uid <> v_u and ts > now() - interval '12 seconds';
 
   select coalesce(json_agg(t), '[]'::json) into v_list from (
-    select substr(md5(uid::text), 1, 10) as id, name, ci, br, tier, lv, x,
+    select substr(md5(uid::text), 1, 10) as id, name, ci, br, tier, lv, x, tt,
            case when emo_ts > now() - interval '5 seconds' then emo else 0 end as emo
       from public.village_presence
      where uid <> v_u and ts > now() - interval '12 seconds'
@@ -86,5 +91,5 @@ begin
   return json_build_object('status','ok');
 end $$;
 
-revoke all on function public.vp_ping(text,int,int,int,int,real,int), public.vp_leave() from public, anon;
-grant execute on function public.vp_ping(text,int,int,int,int,real,int), public.vp_leave() to authenticated;
+revoke all on function public.vp_ping(text,int,int,int,int,real,int,int), public.vp_leave() from public, anon;
+grant execute on function public.vp_ping(text,int,int,int,int,real,int,int), public.vp_leave() to authenticated;

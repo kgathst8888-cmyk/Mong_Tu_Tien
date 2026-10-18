@@ -142,7 +142,7 @@ function step(p,T,K,M,e){
  for(let i=EP.q.length-1;i>=0;i--){const q=EP.q[i];if(--q.t<=0){EP.q.splice(i,1);try{q.f()}catch(x){}}}
  for(let i=EP.bn.length-1;i>=0;i--){const b=EP.bn[i];if(b.e.hp<=0||!E.includes(b.e)||--b.t<=0){EP.bn.splice(i,1);continue}
   if(b.t%22==0)bleedHit(b.e,b.m)}
- const base=ev>=3?16+Math.sin(EP.t*.05)*4:0;
+ const base=0;   /* Fix270: Bạch Hổ chỉ đi trên mặt đất (trước đây cấp 4 lơ lửng 16) */
  EP.ly=EP.y;
  /* ---- đang tấn công ---- */
  if(EP.at>0){

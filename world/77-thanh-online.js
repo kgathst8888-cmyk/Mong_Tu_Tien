@@ -49,12 +49,17 @@ function myPos(){
   return[clamp(P.x/WW(),0,1),0]}
 
 /* ---------- mạng ---------- */
+var useTT=true,TTSTEP=16;
 async function ping(){
   if(busy)return;busy=true;var m=map;
   try{
     var ap=mkAp(),js=JSON.stringify(ap),h=hash(js),now=Date.now(),send=(h!==sentH||now>apAt+30000)?ap:null,pos=myPos(),emo=myEmo;
-    var r=await KCL.rpc('cp_ping',{p_map:m,p_name:myName(),p_ci:cur|0,p_lv:((P&&P.lv)|0)||1,p_x:pos[0],p_y:pos[1],
-      p_d:(P.d<0?-1:1),p_mv:P.mv?1:0,p_apv:h,p_ap:send,p_emo:emo});
+    var args={p_map:m,p_name:myName(),p_ci:cur|0,p_lv:((P&&P.lv)|0)||1,p_x:pos[0],p_y:pos[1],
+      p_d:(P.d<0?-1:1),p_mv:P.mv?1:0,p_apv:h,p_ap:send,p_emo:emo},r;
+    /* Fix269: gửi kèm danh hiệu; máy chủ chưa chạy lại thanh_online.sql → tự lùi về bản cũ (không gửi p_tt) */
+    if(useTT){try{args.p_tt=window.PFD?PFD.eq('t')|0:0}catch(e){args.p_tt=0}}
+    try{r=await KCL.rpc('cp_ping',args)}
+    catch(e0){if(useTT&&!(e0&&e0.net)){useTT=false;delete args.p_tt;r=await KCL.rpc('cp_ping',args)}else throw e0}
     if(r&&r.status==='ok'){fail=0;errMsg='';if(send){sentH=h;apAt=now}if(myEmo===emo)myEmo=0;if(m===map)apply(r.list||[],r.n|0)}
     else if(r&&r.status==='auth')errMsg='Hết phiên đăng nhập ☁';
   }catch(e){
@@ -75,7 +80,7 @@ function apply(list,n){
   list.slice(0,MAXO).forEach(function(o){
     var e=others[o.id],ww=WW();seen[o.id]=1;
     if(!e){e=others[o.id]={id:o.id,P:newP(),h:hid(o.id),emT:0,emS:0,em:0,ar:{x:0,y:0,vx:0,vy:0,rot:0,vr:0,sp:0,init:0,h:[]}};e.init=0}
-    e.name=String(o.name||'Đạo Hữu');e.ci=o.ci|0;e.lv=o.lv|0;e.apv=o.apv|0;e.dir=o.d<0?-1:1;e.mv=o.mv?1:0;
+    e.name=String(o.name||'Đạo Hữu');e.ci=o.ci|0;e.lv=o.lv|0;e.tt=o.tt|0;e.apv=o.apv|0;e.dir=o.d<0?-1:1;e.mv=o.mv?1:0;
     if(map===2){e.tx=+o.x||0;e.ty=+o.y||0;if(!e.init){e.gx=e.tx;e.gy=e.ty;e.init=1}}
     else{e.tx=clamp((+o.x||0)*ww+((e.h%5)-2)*12,40,ww-40);if(!e.init){e.lx=e.tx;e.init=1}}
     var c=cache[o.id];
@@ -141,11 +146,13 @@ function paint(e,mode,sx,sy,K){
 function label(e,ci,mode,sx,sy,K){
   var k=mode===2?s*K:s,X=mode===2?sx:(e.lx-cam)*s,Y=mode===2?sy:GY,T=CHR[ci].t,ty=Y-(T=='m'?205:178)*k-(e.ly||0)*s,
       fs=Math.max(10,12*s),tx='Lv.'+e.lv+' '+e.name;
-  e._hit={x:X,t:ty-14*s,b:Y+10*k,w:Math.max(30*k,30)};
+  var hasT=!!(e.tt&&window.PFD&&PFD.drawTT&&PFD.ttWidth(e.tt,fs)>0),up=hasT?fs*1.3:0;
+  e._hit={x:X,t:ty-14*s-up,b:Y+10*k,w:Math.max(30*k,30)};
   g.save();g.globalAlpha=1;g.font='bold '+fs+'px '+FONT;g.textAlign='center';g.textBaseline='alphabetic';
   g.lineWidth=3;g.strokeStyle='rgba(0,0,0,.85)';g.strokeText(tx,X,ty);g.fillStyle='#bfe6ff';g.fillText(tx,X,ty);
+  if(hasT){try{PFD.drawTT(e.tt,X,ty-up,fs)}catch(x){}}   /* danh hiệu phía trên tên */
   if(e.emT>Date.now()){
-    var bs=Math.max(24,28*s),by=ty-bs*.75;
+    var bs=Math.max(24,28*s),by=ty-up-bs*.75;
     g.fillStyle='rgba(14,10,8,.85)';g.strokeStyle='#b8964e';g.lineWidth=1.5;
     g.beginPath();g.arc(X,by,bs*.62,0,6.283);g.fill();g.stroke();
     g.font=Math.round(bs*.8)+'px sans-serif';g.textBaseline='middle';g.fillStyle='#fff';g.fillText(EMO[e.em]||'',X,by+1)}
@@ -155,8 +162,11 @@ function drawLinh(){
   var list=Object.keys(others).map(function(k){return others[k]}).filter(function(e){stepE(e);return e.lx!=null}).sort(function(a,b){return a.lx-b.lx}),
       edge=[-1e9,-1e9,-1e9];
   g.save();g.font='bold '+Math.max(10,12*s)+'px '+FONT;
-  list.forEach(function(e){var wd=g.measureText('Lv.'+e.lv+' '+e.name).width/s,l=e.lx-wd/2,t=-1,i,m=0;
-    for(i=0;i<3;i++){if(l>edge[i]+4){t=i;break}if(edge[i]<edge[m])m=i}if(t<0)t=m;e.ly=t*16;edge[t]=e.lx+wd/2});
+  var step=list.some(function(e){return e.tt})?28:16;TTSTEP=step;
+  list.forEach(function(e){var wd=g.measureText('Lv.'+e.lv+' '+e.name).width/s,l,t=-1,i,m=0;
+    if(e.tt&&window.PFD&&PFD.ttWidth){var tw=PFD.ttWidth(e.tt,Math.max(10,12*s))/s;if(tw>wd)wd=tw;g.font='bold '+Math.max(10,12*s)+'px '+FONT}   /* nhãn rộng bằng dòng rộng nhất */
+    l=e.lx-wd/2;
+    for(i=0;i<3;i++){if(l>edge[i]+4){t=i;break}if(edge[i]<edge[m])m=i}if(t<0)t=m;e.ly=t*step;edge[t]=e.lx+wd/2});
   g.restore();
   list.forEach(function(e){var X=(e.lx-cam)*s;if(X<-140||X>W+140){e._hit=null;return}paint(e,1)})}
 var _nt=nameTag;
@@ -170,7 +180,7 @@ function tgList(){
 function tgDraw(e,S2,sc,K){
   var a=S2(e.gx,e.gy);if(a[0]<-90||a[0]>W+90||a[1]<-60||a[1]>H+260){e._hit=null;return}
   g.save();g.fillStyle='rgba(0,0,30,.4)';g.beginPath();g.ellipse(a[0],a[1],22*sc*K,9*sc*K,0,0,6.283);g.fill();g.restore();
-  e.ly=(hid(e.id)%3)*16;paint(e,2,a[0],a[1],K)}
+  e.ly=(hid(e.id)%3)*(e.tt?28:16);paint(e,2,a[0],a[1],K)}
 /* chạm vào người khác (px,py theo toạ độ canvas) → thẻ hồ sơ */
 function tap(px,py){
   if(!map)return false;var best=null,bd=1e9;

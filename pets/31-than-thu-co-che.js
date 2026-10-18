@@ -101,7 +101,8 @@ function make(c){
   if(EP.fp===undefined||EP.kk!==c.k)Object.assign(EP,{fp:0,fa:.6,gl:0,ly:EP.y||0,mt:0,na:0,si:0,rb:EP.rb||0,q:[],sw:.4,skn:0,kk:c.k});
   if(EP.rb>0)EP.rb--;
   for(let i=EP.q.length-1;i>=0;i--){const q=EP.q[i];if(--q.t<=0){EP.q.splice(i,1);try{q.f()}catch(x){}}}
-  const base0=AL[ev]+Math.sin(EP.t*.03)*7+Math.sin(EP.t*.011+1)*(5+ev*2);
+  const gnd=!!c.ground,   /* Fix270: thú đi bộ (Huyền Vũ) — không lơ lửng, không nhấp nhô */
+   base0=gnd?0:AL[ev]+Math.sin(EP.t*.03)*7+Math.sin(EP.t*.011+1)*(5+ev*2);
   EP.ly=EP.y;
   if(EP.at>0){
    const u=1-EP.at/EP.atT,tg=EP.tg;if(tg&&E.includes(tg))EP.tgx=tg.x;
@@ -109,11 +110,11 @@ function make(c){
    if(Math.abs(EP.tgx-EP.ox)>1)EP.d=Math.sign(EP.tgx-EP.ox);
    if(EP.mt==1){
     const w=Math.sin(Math.min(1,u)*3.1416),gx=EP.tgx+side*28,ant=u<.2?Math.sin(u/.2*3.1416)*10:0;
-    EP.x=EP.ox+(gx-EP.ox)*w*.95;EP.y=base0+8+ant-w*(base0-4);
+    EP.x=EP.ox+(gx-EP.ox)*w*.95;EP.y=gnd?w*10:base0+8+ant-w*(base0-4);
     EP.gl+=(.9-EP.gl)*.2;EP.fa+=(.15-EP.fa)*.2;if(u>.5){EP.gl+=(0-EP.gl)*.3;EP.fa+=(1.1-EP.fa)*.25}
     if(u>=.5&&!EP.hit){EP.hit=1;if(tg&&E.includes(tg)){dm(tg,M*1.5);c.onHit(tg,ev,M,2);try{c.hit(ev,tg.x)}catch(x){}try{c.dive(ev,tg.x)}catch(x){}}}
    }else if(EP.mt==2){
-    const w=Math.sin(Math.min(1,u)*3.1416);EP.y=base0+w*28;EP.gl+=(0-EP.gl)*.2;EP.fa+=(1.15-EP.fa)*.2;
+    const w=Math.sin(Math.min(1,u)*3.1416);EP.y=gnd?0:base0+w*28;EP.gl+=(0-EP.gl)*.2;EP.fa+=(1.15-EP.fa)*.2;
     if(u>=.45&&!EP.hit){EP.hit=1;try{c.skill(ev,EP.x,M,p,EP.skn)}catch(x){console.error('[thần thú] skill',x)}}
    }else{
     const w=Math.sin(Math.min(1,u)*3.1416);EP.y=base0+w*6;EP.gl+=(0-EP.gl)*.2;EP.fa+=(1.0-EP.fa)*.2;
@@ -131,8 +132,8 @@ function make(c){
   EP.vx+=(des-EP.vx)*.12;if(Math.abs(dx)<4&&Math.abs(EP.vx)<.3)EP.vx*=.5;EP.x+=EP.vx;
   if(Math.abs(EP.vx)>.35)EP.d=Math.sign(EP.vx);else if(e)EP.d=Math.sign(e.x-EP.x)||EP.d;else EP.d=P.d;
   const mvf=Math.min(1,Math.abs(EP.vx)/2.4);EP.ph+=mvf*.3+.05;
-  const base=base0+(e?8:0)+mvf*Math.sin(EP.ph*2)*3;
-  EP.y+=(base-EP.y)*.07;
+  const base=gnd?Math.abs(Math.sin(EP.ph*1.1))*2.2*mvf:base0+(e?8:0)+mvf*Math.sin(EP.ph*2)*3;
+  EP.y+=(base-EP.y)*(gnd?.4:.07);
   const climb=EP.y-EP.ly>.22;
   const glT=(mvf>.5&&!climb&&Math.sin(EP.t*.021)>.15)?1:0;EP.gl+=(glT-EP.gl)*.05;
   EP.fp+=(.2+mvf*.1+(climb?.12:0)+(far?.06:0))*(1-.8*EP.gl);
@@ -237,7 +238,7 @@ window.PETX[2]=TL;
 const HV_C1=['#9fe0ff','#6fe0c8','#59a0ff','#ffd36a'],HV_C2=['#e6f7ff','#d8fff4','#cfe4ff','#fff0b8'];
 const HV_RATE=[{slow:1},{frz:.18},{frz:.2,stn:.1},{frz:.24,stn:.14}];
 const HV=make({
- k:3,title:'Huyền Vũ',ic:'💧',hi:'#bfeeff',
+ k:3,title:'Huyền Vũ',ic:'💧',hi:'#bfeeff',ground:1,
  HH:HVH.map(v=>v*1.25),AL:[44,50,56,62],COL:HV_C1,COL2:HV_C2,
  EVO:[{g:8000,  hb:{lien:12,chi:6},                    r:1,rn:'Trúc Cơ'},
       {g:60000, hb:{lien:36,sam:10,chi:20},            r:2,rn:'Kim Đan'},
