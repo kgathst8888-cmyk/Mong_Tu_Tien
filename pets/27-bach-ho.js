@@ -11,7 +11,7 @@ const PTG=(()=>{
 const U=window.PTG_URIS||[];
 const IM=U.map(u=>{const i=new Image();i.src=u;return i});
 const GXN=15,GRY=15,PI=Math.PI;
-const HH=[64,86,106,120];                      /* chiều cao hiển thị theo cấp */
+const HH=[48,86,106,120];                      /* chiều cao hiển thị theo cấp */
 const FL=[0,0,1,0];                            /* 1 = hình gốc quay sang trái */
 const TL=[{u:.3,a:.45,b:.95},{u:.3,a:.45,b:.95},{u:.2,a:.5,b:.95},{u:.26,a:.5,b:.92}];   /* vùng đuôi trên ảnh */
 const COL=['#cfeaff','#a8dcff','#8fd0ff','#ffe9a0'],COL2=['#ffffff','#f0f9ff','#d8efff','#fff6d0'];
