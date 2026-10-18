@@ -205,10 +205,13 @@ function drawAll(){
   g.save();g.textAlign='center';g.font='bold '+Math.max(12,13*s)+'px KTH Serif,Songti SC,STKaiti,KaiTi,serif';
   g.fillStyle='#000a';var tw=g.measureText('🎃 Sứ Giả Halloween').width;g.fillRect(nx-tw/2-8,y-170*nk-22*s,tw+16,20*Math.max(.8,s));
   g.fillStyle='#ffb347';g.fillText('🎃 Sứ Giả Halloween',nx,y-170*nk-7*s);g.restore()}
-var _vd=vdraw;vdraw=function(){_vd.apply(this,arguments);try{if(!on&&inVillage())drawAll()}catch(e){}};
+/* vẽ NGAY TRƯỚC nhân vật (drawEP chạy trước hero() trong vdraw) để bí ngô/xương/NPC nằm SAU nhân vật, không che hình */
+var inVd=0,_vd=vdraw;vdraw=function(){inVd=1;try{return _vd.apply(this,arguments)}finally{inVd=0}};
+var _dep=(typeof drawEP==='function')?drawEP:null;
+if(_dep)drawEP=function(){try{if(inVd&&!on&&inVillage())drawAll()}catch(e){}return _dep.apply(this,arguments)};
 var _vs=vstep;vstep=function(){_vs.apply(this,arguments);try{if(go){if(mvDir)go=0;else if(vt==null){go=0;if(Math.abs(P.x-cl(npcX(),40,vw()-40))<14)open()}}}catch(e){}};
 c.addEventListener('pointerdown',function(e){
-  go=0;if(on||!inVillage()||(window.HUDX&&HUDX.on))return;
+  go=0;if(on||!inVillage())return;
   var px=e.offsetX,py=e.offsetY,u=s,nx=npcX()*s;
   if(Math.abs(px-nx)<32*u&&py>GY-130*u&&py<GY+36*u){vt=cl(npcX(),40,vw()-40);vgo=-1;go=1;try{gateGo=0;twGoF=0}catch(x){}}});
 var _st=step;step=function(){if(on&&(!active()||!vil))close();_st()};
