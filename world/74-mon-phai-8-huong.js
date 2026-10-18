@@ -63,13 +63,15 @@ function drawPose(o,alpha,ws,off,tw){off=off||0;tw=tw||0;
   /* Fix238: thân bản xoá tay khi tung chiêu (hoà dần) + tay nhấc cầm vũ khí (world/93) */
   var sim=null,msa=0;if(MP){try{sim=MP.img(o);msa=MP.sa()}catch(e){sim=null}}
   var LST=sim?(msa>.99?[[sim,alpha]]:[[im,alpha*(1-msa)],[sim,alpha*msa]]):[[im,alpha]];
-  for(var li=0;li<LST.length;li++){var im2=LST[li][0],ih2=im2.naturalHeight||im2.height,iw2=im2.naturalWidth||im2.width,sh2=ih2/N;g.globalAlpha=LST[li][1];
-  for(var j=0;j<N;j++){
+  var DS=function(im2){var ih2=im2.naturalHeight||im2.height,iw2=im2.naturalWidth||im2.width,sh2=ih2/N;
+   for(var j=0;j<N;j++){
    var u=(j+.5)/N,uu=Math.pow(Math.max(0,u-.12)/.88,1.55),
     dx=uu*((1-hv)*Math.sin(bp*1.3-u*2.6)*1.5+hv*(Math.sin(bp*1.1-u*2.4)*2.1+Math.sin(bp*.7-u*3.1+1)*1.1)
       -5.6*hx*(1+.45*hv)+k*Math.sin(wp*2-u*3.4)*3.2*(1-hv)+hv*k*Math.sin(bp*2.2-u*3)*1.6)
       +Math.sin(wp+1.2)*k*u*u*1.6*(1-hv)+tw*(.5-u)*2;
-   g.drawImage(im2,0,j*sh2,iw2,sh2+.5,-w/2+dx,-HH+j*dh,w,dh+.9)}}
+   g.drawImage(im2,0,j*sh2,iw2,sh2+.5,-w/2+dx,-HH+j*dh,w,dh+.9)}};
+  for(var li=0;li<LST.length;li++){g.globalAlpha=LST[li][1];var pr=null;if(MP){try{pr=MP.parts(o,LST[li][0])}catch(e){pr=null}}
+   if(pr)MP.eachPart(g,HH,pr,DS);else DS(LST[li][0])}
   if(MP){try{g.globalAlpha=alpha;MP.draw(g,o,alpha,HH,alpha>.5)}catch(e){}}
  }finally{g.restore()}
 }

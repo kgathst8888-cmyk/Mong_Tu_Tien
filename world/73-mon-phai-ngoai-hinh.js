@@ -74,14 +74,16 @@ function drawSect(o,sid){
   for(var pi=0;pi<pass.length;pi++){
    var o2=pass[pi][0],al=pass[pi][1],im=o2.im,w=HH*o2.w/o2.h,N=CF.strips,ih=im.naturalHeight,iw=im.naturalWidth,sh=ih/N,dh=HH/N;
    var sim=null,msa=0;if(MP){try{sim=MP.img(o2);msa=MP.sa()}catch(e){sim=null}}
-   if(sim){im=sim;ih=im.height;iw=im.width;sh=ih/N;if(msa<.99){g.globalAlpha=al*(1-msa);for(var j0=0;j0<N;j0++)g.drawImage(o2.im,0,j0*(o2.im.naturalHeight/N),o2.im.naturalWidth,o2.im.naturalHeight/N+.6,-w/2,-HH+j0*dh,w,dh+.6);al=al*msa}}
-   g.globalAlpha=al;
-   if(k>.45&&hv<.5&&al>.5){var ga=(k-.45)*.55*(1-.5*hv);for(var q=2;q>=1;q--){g.globalAlpha=ga*(.55/q);g.drawImage(im,-w/2-d*q*9*k,-HH,w,HH)}g.globalAlpha=al}
-   for(var j=0;j<N;j++){
+   var DS=function(im){var ih=im.naturalHeight||im.height,iw=im.naturalWidth||im.width,sh=ih/N;
+    for(var j=0;j<N;j++){
     var u=(j+.5)/N,uu=Math.pow(Math.max(0,u-.12)/.88,1.55),
      dx=(1-hv)*uu*(Math.sin(bp*1.3-u*2.6)*1.5+hv*Math.sin(bp*1.6-u*3)*uu*2.2+k*(1+hv*.6)*(-5.2+Math.sin(wp*2-u*3.4)*2.6))+Math.sin(wp+1.2)*k*u*u*1.8,
      dxs=hv*uu*(Math.sin(bp*1.1-u*2.4)*2.1+Math.sin(bp*.7-u*3.1+1)*1.1-d*2.8*k);
-    g.drawImage(im,0,j*sh,iw,sh+.6,-w/2+dx*d+dxs,-HH+j*dh,w,dh+.6)}
+    g.drawImage(im,0,j*sh,iw,sh+.6,-w/2+dx*d+dxs,-HH+j*dh,w,dh+.6)}};
+   var LST=sim?(msa>.99?[[sim,al]]:[[o2.im,al*(1-msa)],[sim,al*msa]]):[[im,al]];
+   if(k>.45&&hv<.5&&al>.5){var ga=(k-.45)*.55*(1-.5*hv);for(var q=2;q>=1;q--){g.globalAlpha=ga*(.55/q);g.drawImage(o2.im,-w/2-d*q*9*k,-HH,w,HH)}}
+   for(var li=0;li<LST.length;li++){g.globalAlpha=LST[li][1];var pr=null;if(MP){try{pr=MP.parts(o2,LST[li][0])}catch(e){pr=null}}
+    if(pr)MP.eachPart(g,HH,pr,DS);else DS(LST[li][0])}
    if(MP){try{g.globalAlpha=pass[pi][1];MP.draw(g,o2,pass[pi][1],HH,pass[pi][1]>.5)}catch(e){}}
   }
   g.globalAlpha=1;
