@@ -156,6 +156,7 @@ function offline(sec,kind){
  use(a,t);
  var L=Math.max(1,P.lv|0),n=Math.floor(t/CF.spk*CF.offEff);
  if(n<=0)return;
+ try{if(window.LCS&&LCS.off)LCS.off(n)}catch(e){}/* Fix253: hấp thụ nguyên tố dị linh căn khi treo offline */
  var tvG=0,xp=xpPer(L)*n;if(window.TGQ&&TGQ.addXp)TGQ.addXp(xp);else P.xp+=xp;
  try{tvG=tvOff(L,n,t);if(tvG>0)ZC.gain(tvG)}catch(e){tvG=0}
  try{var pt=pet();if(pt&&pt.lv<pcap(pt)){pt.xp+=n*(1+L/10);pcheck(pt)}}catch(e){}

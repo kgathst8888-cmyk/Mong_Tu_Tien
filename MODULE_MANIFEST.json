@@ -99,7 +99,8 @@
       "world/96-thu-cuoi.js",
       "world/97-drop-than-thoai-thien-than.js",
       "world/98-tiem-nang-chay.js",
-      "ui/95-trang-suc-mon-phai.js"
+      "ui/95-trang-suc-mon-phai.js",
+      "ui/97-o-linh-can.js"
     ],
     "systems": [
       "systems/08-farming-alchemy.js",
