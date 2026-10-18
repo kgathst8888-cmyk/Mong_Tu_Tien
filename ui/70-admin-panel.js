@@ -19,7 +19,7 @@ function itl(){var m=itM(),o=[];Object.keys(m).forEach(function(k){o.push([k,m[k
 var CSHL=[['b10','📜 Bùa Cường Hóa +10%'],['b15','📜 Bùa Cường Hóa +15%'],['b20','📜 Bùa Cường Hóa +20%'],['ham','🔨 Búa Đục Lỗ'],
   ['g10','📜 Bùa Ghép Ngọc +10%'],['dh','🔮 Ngọc Định Hồn'],['vx','📈 Vé Tăng 20% EXP'],['vt','🧘 Vé Tăng 20% Tu Vi'],['tc','🎯 Vé Tẩy Opt Chọn'],['x5','📈 Bùa EXP +50%'],['x7','📈 Bùa EXP +70%']];
 var DUR=[[1,'1 giờ'],[24,'1 ngày'],[72,'3 ngày'],[168,'7 ngày'],[720,'30 ngày'],[876000,'Vĩnh viễn']];
-var ACTL={lt:'💎 Linh Thạch',mail:'🎁 Gửi thư',mail_del:'🗑 Thu hồi thư',kick:'⏏ Đá khỏi game',notice:'📢 Đăng thông báo',notice_del:'🗑 Xoá thông báo',ban:'🔒 Khoá tài khoản',unban:'🔓 Mở khoá',chat_ban:'🤐 Cấm chat',chat_unban:'🔊 Gỡ cấm chat'};
+var ACTL={gc_new:'🎟 Tạo mã quà',gc_set:'🎟 Bật/tắt mã quà',gc_del:'🗑 Xoá mã quà',lt:'💎 Linh Thạch',mail:'🎁 Gửi thư',mail_del:'🗑 Thu hồi thư',kick:'⏏ Đá khỏi game',notice:'📢 Đăng thông báo',notice_del:'🗑 Xoá thông báo',ban:'🔒 Khoá tài khoản',unban:'🔓 Mở khoá',chat_ban:'🤐 Cấm chat',chat_unban:'🔊 Gỡ cấm chat'};
 
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function nf(n){return (Number(n)||0).toLocaleString('vi-VN')}
@@ -37,14 +37,21 @@ function errMsg(e){
   if(m.indexOf('CANNOT_TARGET_ADMIN')>=0)return'Không thể khoá tài khoản admin.';
   if(m.indexOf('NO_TITLE')>=0)return'Thiếu tiêu đề thư.';
   if(m.indexOf('SESSION_INVALID')>=0)return'Phiên đăng nhập không còn hiệu lực, hãy đăng nhập lại.';
+  if(m.indexOf('CODE_EXISTS')>=0)return'Mã này đã tồn tại, hãy chọn mã khác.';
+  if(m.indexOf('BAD_CODE')>=0)return'Mã không hợp lệ (3–40 ký tự: chữ A–Z, số, gạch ngang/gạch dưới).';
+  if(m.indexOf('NO_REWARD')>=0)return'Mã phải có ít nhất một phần quà hoặc Linh Thạch.';
+  if(m.indexOf('BAD_QUA')>=0)return'Dữ liệu quà không hợp lệ.';
+  if(m.indexOf('GEN_FAIL')>=0)return'Không sinh được mã ngẫu nhiên, thử lại.';
+  if((c==='PGRST202'||(e&&e.status===404))&&m.indexOf('admin_gc')>=0)return'Máy chủ chưa có hàm Mã Quà — hãy chạy ma_qua.sql trong Supabase SQL Editor.';
   if(c==='PGRST202'||(e&&e.status===404))return'Máy chủ chưa có hàm admin — hãy chạy admin.sql trong Supabase SQL Editor.';
   return m||'Lỗi không xác định';
 }
 
 /* ---------- trạng thái ---------- */
 var isAdmin=false,checkedFor='',checking=false,el=null,btn=null,open=false;
+function defG(){return{code:'',title:'Quà Mã Quà Tặng',lt:'',max:'',days:'30',count:'1',note:''}}
 function defF(){return{title:'Quà từ Hệ Thống',body:'',gold:'',fe:'',hk:'',eqr:'3',eqn:'',days:'14',c:{},it:{}}}
-var S={notes:null,nf:{title:'',body:'',days:'7'},tab:'acc',q:'',lastQ:'',list:null,sel:'',selU:null,busy:false,note:'',mails:null,logs:null,to:'all',f:defF(),reset:0};
+var S={notes:null,nf:{title:'',body:'',days:'7'},tab:'acc',q:'',lastQ:'',list:null,sel:'',selU:null,busy:false,note:'',mails:null,logs:null,to:'all',f:defF(),reset:0,g:defG(),gq:defF(),gcl:null,gcnew:null};
 
 function val(id){var n=document.getElementById(id);return n?n.value:''}
 function isBanned(u){return !!(u&&u.banned_until&&Date.parse(u.banned_until)>Date.now())}
@@ -74,6 +81,11 @@ function buildQ(f){
 }
 function saveForm(){
   if(el&&S.tab==='note'){Array.prototype.forEach.call(el.querySelectorAll('[data-n]'),function(n){S.nf[n.getAttribute('data-n')]=n.value});return}
+  if(el&&S.tab==='gc'){
+    Array.prototype.forEach.call(el.querySelectorAll('[data-gm]'),function(n){S.g[n.getAttribute('data-gm')]=n.value});
+    Array.prototype.forEach.call(el.querySelectorAll('[data-gq]'),function(n){var k=n.getAttribute('data-gq'),f=S.gq;
+      if(k.indexOf('c_')===0){f.c=f.c||{};f.c[k.slice(2)]=n.value}else if(k.indexOf('i_')===0){f.it=f.it||{};f.it[k.slice(2)]=n.value}else f[k]=n.value});
+    return}
   if(!el||S.tab!=='gift')return;
   var f=S.f;
   Array.prototype.forEach.call(el.querySelectorAll('[data-f]'),function(n){
@@ -136,9 +148,9 @@ function draw(){
   try{el.className=PORT?'pt':'ls'}catch(e){el.className='pt'}
   var l0=el.querySelector('.al'),keep=(l0&&!S.reset)?l0.scrollTop:0;S.reset=0;
   var h='<div class="ah"><span>🛡 Quản trị <small style="opacity:.6;font-weight:normal">· bản Fix174</small></span><button data-a="x">✕</button></div>';
-  h+='<div class="at">'+tabBtn('acc','👤 Tài khoản')+tabBtn('gift','🎁 Gửi quà')+tabBtn('note','📢 Thông báo')+tabBtn('mail','✉️ Đã gửi')+tabBtn('log','📜 Nhật ký')+tabBtn('test','🧪 Test')+'</div>';
+  h+='<div class="at">'+tabBtn('acc','👤 Tài khoản')+tabBtn('gift','🎁 Gửi quà')+tabBtn('gc','🎟 Mã quà')+tabBtn('note','📢 Thông báo')+tabBtn('mail','✉️ Đã gửi')+tabBtn('log','📜 Nhật ký')+tabBtn('test','🧪 Test')+'</div>';
   if(S.note)h+='<div class="an">'+esc(S.note)+'</div>';
-  h+='<div class="al">'+(S.tab==='acc'?vAcc():S.tab==='gift'?vGift():S.tab==='note'?vNote():S.tab==='mail'?vMail():S.tab==='test'?vTest():vLog())+'</div>';
+  h+='<div class="al">'+(S.tab==='acc'?vAcc():S.tab==='gift'?vGift():S.tab==='gc'?vGc():S.tab==='note'?vNote():S.tab==='mail'?vMail():S.tab==='test'?vTest():vLog())+'</div>';
   el.innerHTML=h;
   var l1=el.querySelector('.al');if(l1)l1.scrollTop=keep;
 }
@@ -195,6 +207,70 @@ function vGift(){
   h+='<div class="tq">Giới hạn mỗi thư: vàng ≤ 2 tỉ · mỗi loại vật phẩm Cash Shop ≤ 1000 · quặng ≤ 1 triệu · rương ≤ 20 · vật phẩm mới có mức tối đa ghi ở ô nhập (tuỳ loại). Hồn Phách chỉ nhận được khi người chơi đã chọn hồn phách. Linh Thạch gửi ở tab 👤 Tài khoản (không đi qua thư).</div>';
   h+='<div class="ar"><button class="bt gr" data-a="send">📨 Gửi thư</button><button class="bt" data-a="clear">Xoá form</button></div>';
   return h;
+}
+
+/* ---------- 🎟 Mã quà (ma_qua.sql · người chơi nhập ở nút 🎟 — ui/99-ma-qua.js) ---------- */
+function giftFields(f,at){
+  var h='<div class="gr2"><span>💰 Vàng</span><input data-'+at+'="gold" type="number" inputmode="numeric" min="0" value="'+esc(f.gold)+'">'
+    +'<span>⛏ Quặng sắt</span><input data-'+at+'="fe" type="number" inputmode="numeric" min="0" value="'+esc(f.fe)+'">'
+    +'<span>⛏ Quặng huyền kim</span><input data-'+at+'="hk" type="number" inputmode="numeric" min="0" value="'+esc(f.hk)+'"></div>';
+  h+='<div class="gr2">';
+  CSHL.forEach(function(x){h+='<span>'+x[1]+'</span><input data-'+at+'="c_'+x[0]+'" type="number" inputmode="numeric" min="0" max="1000" value="'+esc((f.c||{})[x[0]]||'')+'">'});
+  h+='</div><h4 style="margin:10px 0 2px;font-size:13px;color:#ffd76a">🆕 Vật phẩm mới</h4><div class="gr2">';
+  itl().forEach(function(x){h+='<span>'+x[1]+'</span><input data-'+at+'="i_'+x[0]+'" type="number" inputmode="numeric" min="0" max="'+x[2]+'" value="'+esc((f.it||{})[x[0]]||'')+'">'});
+  h+='</div><div class="ar"><span>🎁 Rương trang bị</span><select data-'+at+'="eqr">'+RN.map(function(n,i){return'<option value="'+i+'"'+(String(f.eqr)===String(i)?' selected':'')+'>'+n+'</option>'}).join('')+'</select>'
+    +'<input data-'+at+'="eqn" type="number" inputmode="numeric" min="0" max="20" placeholder="SL" value="'+esc(f.eqn)+'" style="max-width:70px"></div>';
+  return h;
+}
+function vGc(){
+  var g=S.g,h='';
+  h+='<div class="tq">Tạo mã để người chơi tự nhập ở nút 🎟 <b>Mã quà</b>. Mỗi <b>tài khoản</b> dùng mỗi mã 1 lần. Linh Thạch cộng thẳng vào ví KHÔNG KHOÁ (= tiền nạp), phần còn lại gửi vào ✉️ Hòm Thư của nhân vật đang chơi. Cần chạy <b>ma_qua.sql</b> trong Supabase 1 lần.</div>';
+  h+='<div class="ar"><input data-gm="code" type="text" maxlength="40" placeholder="Mã (để trống = tự sinh ngẫu nhiên)" value="'+esc(g.code)+'" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" style="text-transform:uppercase"></div>';
+  h+='<div class="ar"><input data-gm="title" type="text" maxlength="80" placeholder="Tiêu đề thư quà" value="'+esc(g.title)+'"></div>';
+  h+='<div class="gr2"><span>💎 Linh Thạch</span><input data-gm="lt" type="number" inputmode="numeric" min="0" max="100000000" value="'+esc(g.lt)+'">'
+    +'<span>🔢 Số lượt dùng (trống = vô hạn)</span><input data-gm="max" type="number" inputmode="numeric" min="0" value="'+esc(g.max)+'">'
+    +'<span>⏳ Hạn dùng (ngày, 0 = vô hạn)</span><input data-gm="days" type="number" inputmode="numeric" min="0" max="3650" value="'+esc(g.days)+'">'
+    +'<span>📦 Số mã tạo (≥2 = mã ngẫu nhiên, mỗi mã 1 lượt)</span><input data-gm="count" type="number" inputmode="numeric" min="1" max="200" value="'+esc(g.count)+'"></div>';
+  h+=giftFields(S.gq,'gq');
+  h+='<div class="ar"><input data-gm="note" type="text" maxlength="200" placeholder="Ghi chú nội bộ (tuỳ chọn)" value="'+esc(g.note)+'"></div>';
+  h+='<div class="ar"><button class="bt gr" data-a="gcmake">🎟 Tạo mã</button><button class="bt" data-a="gcclear">Xoá form</button></div>';
+  if(S.gcnew&&S.gcnew.length)h+='<h4 style="margin:10px 0 4px;font-size:13px;color:#ffd76a">✅ Mã vừa tạo ('+S.gcnew.length+') — chạm để chọn, sao chép gửi người chơi</h4><textarea readonly onclick="this.select()" style="min-height:'+Math.min(160,40+S.gcnew.length*18)+'px">'+esc(S.gcnew.join('\n'))+'</textarea>';
+  h+='<h4 style="margin:12px 0 6px;font-size:13px;color:#ffd76a">Danh sách mã <button class="bt" data-a="gcreload" style="margin-left:6px">⟳</button></h4>';
+  if(S.gcl===null)return h+'<div class="ae">Đang tải…</div>';
+  if(!S.gcl.length)return h+'<div class="ae">Chưa có mã nào.</div>';
+  S.gcl.forEach(function(c){
+    var tg='',reward=[];
+    if(!c.active)tg+='<span class="tg bn">TẮT</span>';
+    else if(c.expired)tg+='<span class="tg cb">HẾT HẠN</span>';
+    else if(c.max_uses!=null&&c.used>=c.max_uses)tg+='<span class="tg cb">HẾT LƯỢT</span>';
+    else tg+='<span class="tg on">ĐANG MỞ</span>';
+    if(c.lt>0)reward.push('💎 '+nf(c.lt)+' LT');
+    if(c.qua)reward.push(qs(c.qua));
+    h+='<div class="ai"><div class="ar2"><div class="tc"><b>'+esc(c.code)+'</b>'
+      +'<small>'+esc(c.tieu_de)+' · đã dùng '+nf(c.used)+(c.max_uses!=null?'/'+nf(c.max_uses):'')+' · '+(c.het_han?'hạn '+fmtT(c.het_han):'không hết hạn')+'</small>'
+      +'<small>'+esc(reward.join(' · ')||'(không có quà)')+'</small>'+(c.note?'<small>📝 '+esc(c.note)+'</small>':'')+'</div>'+tg
+      +'<button class="bt" data-a="gctog" data-id="'+esc(c.code)+'" data-v="'+(c.active?'0':'1')+'">'+(c.active?'⏸ Tắt':'▶ Bật')+'</button>'
+      +'<button class="bt dg" data-a="gcdel" data-id="'+esc(c.code)+'">🗑</button></div></div>';
+  });
+  return h;
+}
+function loadGc(){S.gcl=null;run('Đang tải mã quà…',function(){return call('admin_gc_list').then(function(r){S.gcl=parse(r)||[]})})}
+function makeGc(){
+  saveForm();
+  var g=S.g,Q=buildQ(S.gq),lt=Math.floor(+g.lt)||0,max=Math.floor(+g.max)||0,days=Math.floor(+g.days)||0,
+      cnt=Math.max(1,Math.min(200,Math.floor(+g.count)||1)),code=String(g.code||'').replace(/\s+/g,'').toUpperCase();
+  function bad(t){S.note='⚠ '+t;draw()}
+  if(lt<0||lt>1e8)return bad('Linh Thạch tối đa 100.000.000 mỗi mã.');
+  if(!Q.qua&&!(lt>0))return bad('Hãy nhập ít nhất một phần quà hoặc Linh Thạch.');
+  if(cnt>1&&code)return bad('Tạo nhiều mã thì để trống ô Mã (hệ thống tự sinh).');
+  if(code&&!/^[A-Z0-9_-]{3,40}$/.test(code))return bad('Mã chỉ gồm chữ A–Z, số, gạch ngang/gạch dưới (3–40 ký tự).');
+  var desc=[];if(lt>0)desc.push('💎 '+nf(lt)+' Linh Thạch');if(Q.txt)desc.push(Q.txt);
+  if(!confirm('Tạo '+(cnt>1?cnt+' mã ngẫu nhiên (mỗi mã dùng 1 lần)':'mã '+(code||'(tự sinh)'))+'?\n'+desc.join('\n')+'\nLượt dùng: '+(cnt>1?'1/mã':(max>0?max:'không giới hạn'))+' · Hạn: '+(days>0?days+' ngày':'không hết hạn')))return;
+  run('Đang tạo mã…',function(){
+    return call('admin_gc_create',{p_code:code||null,p_title:String(g.title||'').trim()||'Quà Mã Quà Tặng',p_qua:Q.qua,p_lt:lt,p_max:max>0?max:null,p_days:days>0?days:null,p_note:String(g.note||'').trim()||null,p_count:cnt})
+      .then(function(r){var a=parse(r)||[];S.gcnew=a;S.note='✅ Đã tạo '+a.length+' mã';S.g=defG();S.gq=defF();return call('admin_gc_list')})
+      .then(function(r){S.gcl=parse(r)||[]});
+  });
 }
 
 function vNote(){
@@ -272,7 +348,7 @@ function onClick(e){
   var a=t.getAttribute('data-a'),id=t.getAttribute('data-id'),u;
   if(a==='x'){saveForm();close();return}
   if(a==='tab'){saveForm();S.tab=t.getAttribute('data-v');S.note='';S.reset=1;
-    if(S.tab==='mail')loadMails();else if(S.tab==='log')loadLogs();else if(S.tab==='note')loadNotes();else draw();return}
+    if(S.tab==='mail')loadMails();else if(S.tab==='log')loadLogs();else if(S.tab==='note')loadNotes();else if(S.tab==='gc')loadGc();else draw();return}
   if(a.indexOf('t_')===0){S.tvf=t.getAttribute('data-v');testAct(a);return}
   if(S.busy)return;
   if(a==='find'){doFind(val('adm-q').trim());return}
@@ -293,6 +369,13 @@ function onClick(e){
     run('Đang xoá…',function(){return call('admin_del_notice',{p_id:Number(id)}).then(function(r){S.note=r?'✅ Đã xoá thông báo #'+id:'⚠ Thông báo không còn tồn tại';return call('admin_list_notice')}).then(function(r){S.notes=parse(r)||[]})});
     return}
   if(a==='reload'){if(S.tab==='mail')loadMails();else if(S.tab==='note')loadNotes();else loadLogs();return}
+  if(a==='gcreload'){saveForm();loadGc();return}
+  if(a==='gcclear'){S.g=defG();S.gq=defF();S.gcnew=null;draw();return}
+  if(a==='gcmake'){makeGc();return}
+  if(a==='gctog'){saveForm();var on=t.getAttribute('data-v')==='1';
+    run('Đang cập nhật…',function(){return call('admin_gc_set',{p_code:id,p_active:on}).then(function(){S.note=(on?'✅ Đã bật mã ':'✅ Đã tắt mã ')+id;return call('admin_gc_list')}).then(function(r){S.gcl=parse(r)||[]})});return}
+  if(a==='gcdel'){saveForm();if(!confirm('Xoá mã '+id+'? Người đã nhận rồi vẫn giữ quà; lịch sử dùng mã cũng bị xoá và mã không còn nhập được.'))return;
+    run('Đang xoá…',function(){return call('admin_gc_del',{p_code:id}).then(function(r){S.note=r?'✅ Đã xoá mã '+id:'⚠ Mã không còn tồn tại';return call('admin_gc_list')}).then(function(r){S.gcl=parse(r)||[]})});return}
   if(a==='send'){sendGift();return}
   if(a==='delmail'){
     if(!confirm('Thu hồi (xoá) thư #'+id+'? Người chưa nhận sẽ không còn thấy thư này.'))return;
