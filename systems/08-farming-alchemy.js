@@ -57,19 +57,19 @@ Object.entries({tv1:.75,tv2:.65,pa:.60,pd:.60,ph:.60,pm:.60,pt:.60,tt:.55}).forE
 ['pa','pd','ph','pm'].forEach(k=>{PM[k].sc=2;PM[k].mn=.80});
 /* Fix310: Tị Lôi Đan luôn thành 80%, không giảm theo cảnh giới */
 PM.pt.sc=2;PM.pt.mn=.80;
-const sce=p=>Math.min(1,Math.max(p.mn||CFG.scMin,p.sc*CFG.scMul-CFG.scRealm*Math.max(0,ZC.rI()))+(p.k=='rl'?CFG.rlBonus:0));
+const sce=p=>Math.min(1,Math.max(p.mn||CFG.scMin,p.sc*CFG.scMul-CFG.scRealm*Math.max(0,ZC.rI()))+(p.k=='rl'?CFG.rlBonus:0)+(window.NGH?NGH.ldSc():0));
 const KN={a:'Công',d:'Thủ',h:'HP',m:'MP'};
 const fresh=()=>({seeds:{},herbs:{},pills:{},np:CFG.plots0,plots:Array(CFG.plots0).fill(null),sel:'chi',na:{until:0,on:0,last:0,pm:{}}});
 let S=fresh();
 const ft=s=>{s=Math.max(0,Math.ceil(s));const m=Math.floor(s/60),x=s%60;return m+':'+String(x).padStart(2,'0')};
-const gc=p=>Math.round((CFG.gold[p.id]||p.g0||0)*Math.pow(ZC.rI()+2,2));
+const gc=p=>Math.round((CFG.gold[p.id]||p.g0||0)*Math.pow(ZC.rI()+2,2)*(window.NGH?NGH.ldGold():1));
 const rcTx=p=>Object.keys(p.rc).map(h=>HM[h].e+' '+HM[h].n+' ×'+p.rc[h]+' <span style="opacity:.7">('+(S.herbs[h]|0)+')</span>').join(' + ');
 const save=()=>{try{if(typeof started!='undefined'&&started)sv()}catch(e){}};
 let on=false,NT={s:'',c:'#ffe9a0',t:0};
 const note=(s,c)=>{NT={s:String(s).replace(/<[^>]+>/g,''),c:c||'#ffe9a0',t:170}};
 const noF=()=>0;   /* trồng/thu hoạch được ngay trong túi, không cần vào bản đồ Linh Điền */
 const fin=m=>{msg=m;if(on)note(m);save();ui()};
-const grow=p=>p.t0+HM[p.id].g*1000;
+const grow=p=>p.t0+HM[p.id].g*1000*(window.NGH?NGH.grow():1);
 
 /* ---------- Rơi hạt giống từ Boss ---------- */
 function seedDrop(e){
@@ -105,12 +105,12 @@ function harvOne(i,o,T){/*T: mốc thời gian giả lập (Nguyên Anh thu ho�
  if(late>CFG.dead){S.plots[i]=null;o.d=(o.d|0)+1;return 1}
  o.e=o.e||{};
  if(late>CFG.wilt){n=Math.max(1,Math.floor(n/2));o.e['🥀héo']=(o.e['🥀héo']|0)+1}
- const rv=R();
- if(rv<CFG.evPest){n=Math.max(1,Math.floor(n/2));o.e['🐛sâu bệnh']=(o.e['🐛sâu bệnh']|0)+1}
- else if(rv<CFG.evPest+CFG.evBoon){n=Math.ceil(n*1.5);o.e['✨linh khí']=(o.e['✨linh khí']|0)+1}
+ n=Math.ceil(n*(window.NGH?NGH.yld():1));const rv=R();
+ if(rv<CFG.evPest*(window.NGH?NGH.pest():1)){n=Math.max(1,Math.floor(n/2));o.e['🐛sâu bệnh']=(o.e['🐛sâu bệnh']|0)+1}
+ else if(rv>=CFG.evPest&&rv<CFG.evPest+CFG.evBoon){n=Math.ceil(n*1.5);o.e['✨linh khí']=(o.e['✨linh khí']|0)+1}
  S.herbs[b.id]=(S.herbs[b.id]|0)+n;o.h[b.id]=(o.h[b.id]|0)+n;
  if(R()<CFG.seedBack){S.seeds[b.id]=(S.seeds[b.id]|0)+1;o.s[b.id]=(o.s[b.id]|0)+1}
- S.plots[i]=null;try{window.YCTOC&&YCTOC.ngo(1)}catch(e){}return 1;
+ S.plots[i]=null;try{window.YCTOC&&YCTOC.ngo(1)}catch(e){}try{window.NGH&&NGH.xp('ln',6)}catch(e){}return 1;
 }
 function harvTx(o){
  const a=Object.keys(o.h).map(k=>HM[k].e+HM[k].n+' ×'+o.h[k]).join(', '),b=Object.keys(o.s).map(k=>'🌱'+HM[k].n+' ×'+o.s[k]).join(', ');
@@ -178,9 +178,9 @@ function brew(id,n){
  let ok=0,top=0;
  for(let i=0;i<n;i++){
   Object.keys(p.rc).forEach(h=>S.herbs[h]-=p.rc[h]);gold-=gc(p);
-  if(R()<sce(p)){ok++;let g=1;if(R()<CFG.brewBonus){g=2;top++}ok+=g-1;S.pills[id]=(S.pills[id]|0)+g;try{window.YCTOC&&YCTOC.ngo(1)}catch(e){}}
+  if(R()<sce(p)){ok++;let g=1;if(R()<CFG.brewBonus+(window.NGH?NGH.ldTop():0)){g=2;top++}ok+=g-1;S.pills[id]=(S.pills[id]|0)+g;try{window.YCTOC&&YCTOC.ngo(1)}catch(e){}}
  }
- const tx=top?' · 🌟 '+top+' thượng phẩm (+1)':'';fin((ok-top==n?'⚗ Luyện thành '+ok+' '+p.n+' ✨':'⚗ Luyện '+n+' lò: ra '+ok+' '+p.n+', hỏng '+(n-(ok-top)))+tx);
+ try{window.NGH&&NGH.xp('ld',4*n)}catch(e){}const tx=top?' · 🌟 '+top+' thượng phẩm (+1)':'';fin((ok-top==n?'⚗ Luyện thành '+ok+' '+p.n+' ✨':'⚗ Luyện '+n+' lò: ra '+ok+' '+p.n+', hỏng '+(n-(ok-top)))+tx);
 }
 function canUse(p){
  if(!(S.pills[p.id]>0))return 0;

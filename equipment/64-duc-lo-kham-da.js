@@ -175,7 +175,7 @@ function unsocket(i){
 function grind(all){
   var who=PS[cur],S=store(who),raw=S.filter(function(g){return g.raw});
   if(busy||!raw.length)return;
-  var n=all?raw.length:1,cost=n*CF.grind;
+  var n=all?raw.length:1,cost=Math.max(1,Math.round(n*CF.grind*(window.NGH?NGH.gbCost():1)));
   if(!ltOk()){note='☁ Cần đăng nhập tài khoản để dùng Linh Thạch';render();return}
   busy=1;note='⏳ Đang mài...';render();
   spend(cost,'mai_da').then(function(r){
@@ -185,7 +185,7 @@ function grind(all){
       for(var i=0;i<S.length&&done<n;i++){var g=S[i];if(!g.raw)continue;
         delete g.raw;g.lv=Math.max(1,Math.min(CF.maxLv,g.lv|0||1));g.k=ks[Math.floor(rnd()*ks.length)];g.v=valOf(g.k,g.lv);done++;got.push(g)}
       var sm={};got.forEach(function(g){var t='C'+g.lv+' '+(AXN[g.k]||g.k);sm[t]=(sm[t]|0)+1});
-      note='✅ Mài '+done+' đá (−'+cost+'💎): '+Object.keys(sm).map(function(t){return t+(sm[t]>1?' ×'+sm[t]:'')}).join(', ');save()}
+      note='✅ Mài '+done+' đá (−'+cost+'💎): '+Object.keys(sm).map(function(t){return t+(sm[t]>1?' ×'+sm[t]:'')}).join(', ');try{window.NGH&&NGH.xp('gb',3*done)}catch(e){}save()}
     else note=spErr(r);
     render()})}
 
@@ -201,24 +201,25 @@ function tog(id){
     else if(pick.length<CF.merge.need)pick.push(id);
     else note='Đã chọn đủ '+CF.merge.need+' viên — bỏ chọn bớt để đổi viên khác'}
   render()}
-function chance(lv){var b=CF.merge.rate[lv-1]||0;return Math.min(100,b+(useTal&&csh(CF.merge.tal)>0?CF.merge.talBonus:0))}
+function chance(lv){var b=(CF.merge.rate[lv-1]||0)+(window.NGH?NGH.gbRate():0);return Math.min(100,b+(useTal&&csh(CF.merge.tal)>0?CF.merge.talBonus:0))}
 function merge(){
   var who=PS[cur],S=store(who),sel3=pick.map(function(id){return find(S,id)}).filter(function(g){return g&&!g.raw});
   if(busy||sel3.length!==CF.merge.need)return;
   var lv=sel3[0].lv;
   if(sel3.some(function(g){return g.lv!==lv})||lv>=CF.maxLv){note='Cần 3 đá cùng cấp (dưới cấp '+CF.maxLv+')';render();return}
-  var cost=CF.merge.cost[lv-1];
+  var cost=Math.max(1,Math.round(CF.merge.cost[lv-1]*(window.NGH?NGH.gbCost():1)));
   if(!ltOk()){note='☁ Cần đăng nhập tài khoản để dùng Linh Thạch';render();return}
   var ids=sel3.map(function(g){return g.id});
   busy=1;note='⏳ Đang ghép...';render();
   spend(cost,'ghep_da').then(function(r){
     busy=0;
     if(!(r&&r.ok)){note=spErr(r);render();return}
+    try{window.NGH&&NGH.xp('gb',12)}catch(e){}
     var all=ids.map(function(id){return find(S,id)});
     if(all.some(function(g){return !g})){note='Đá nguyên liệu đã thay đổi — ghép bị hủy (đã trừ '+cost+'💎)';pick=[];render();return}
     var rate=CF.merge.rate[lv-1],tal=false;
     if(useTal&&csh(CF.merge.tal)>0){try{tal=CSH.use(CF.merge.tal)}catch(e){}}
-    var pc=Math.min(100,rate+(tal?CF.merge.talBonus:0)),ok=rnd()*100<pc,first=all[0];
+    var pc=Math.min(100,rate+(window.NGH?NGH.gbRate():0)+(tal?CF.merge.talBonus:0)),ok=rnd()*100<pc,first=all[0];
     if(ok){
       S=who.gm=S.filter(function(g){return ids.indexOf(g.id)<0});
       var ng={id:nid(who),lv:lv+1,raw:1};S.push(ng);          /* đá mới CHƯA MÀI: phải mài lại để ra opt ngẫu nhiên */

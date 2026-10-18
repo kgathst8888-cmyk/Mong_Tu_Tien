@@ -30,7 +30,7 @@ const dur={au:VN.au.hits,fe:VN.fe.hits,hk:VN.hk.hits},until={au:0,fe:0,hk:0},PR=
 const tier=()=>{try{return ZC.rI()+1}catch(e){return 0}};
 const canAuto=()=>{try{return ZC.rI()>=3}catch(e){return false}};
 const rk=()=>Math.max(1,ZC.rI()-2);
-const rtOf=k=>CFG.rate[k]*rk()*(k=='au'?(1+Math.min((typeof P!='undefined'&&P?P.lv:1),100)/CFG.auLv)*(typeof gP=='function'?gP(1):1)*mulAu():1)+(k=='au'?0:addOf(k));
+const rtOf=k=>(window.NGH?NGH.mm():1)*CFG.rate[k]*rk()*(k=='au'?(1+Math.min((typeof P!='undefined'&&P?P.lv:1),100)/CFG.auLv)*(typeof gP=='function'?gP(1):1)*mulAu():1)+(k=='au'?0:addOf(k));
 const note=(m,c)=>{NT={s:String(m).replace(/<[^>]+>/g,''),c:c||'#ffe9a0',t:170}};
 const rt=x=>x<10?String(+x.toFixed(1)).replace('.',','):fmtN(x);
 const give=(k,n)=>{if(k=='au'){gold+=n;S.gm+=n}else S[k]+=n};
@@ -180,10 +180,10 @@ function burst(x,y,k,n){const c={au:['#ffd24a','#fff0a0','#b8860b'],fe:['#cfc4b8
 function popup(m,x,y,c){PU.push({m,x,y,l:70,c})}
 function hit(k){
  const i=ORD.indexOf(k),X=VX(i)*s,Y=GY-RV()*.7,t=tier();let m='';
- burst(X,Y,k,10);
- if(k=='au'){const n=Math.round((6+R()*5)*CFG.goldMul*(1+.5*t)*(1+Math.min(P.lv,100)/40))*mulAu();give('au',n);m='+'+n+' 🪙'}
- else if(k=='fe'){const n=1+(R()<.4?1:0)+(t>=3?1:0)+addOf('fe');S.fe+=n;m='+'+n+' 🔩'}
- else{if(R()<.45){const n=1+(R()<.2?1:0)+addOf('hk');S.hk+=n;m='+'+n+' 🌑'}}
+ burst(X,Y,k,10);try{window.NGH&&NGH.xp('kk',1)}catch(e){}
+ if(k=='au'){const n=Math.round(Math.round((6+R()*5)*CFG.goldMul*(1+.5*t)*(1+Math.min(P.lv,100)/40))*mulAu()*(window.NGH?NGH.mm():1));give('au',n);m='+'+n+' 🪙'}
+ else if(k=='fe'){const n=1+(R()<.4?1:0)+(t>=3?1:0)+addOf('fe')+(window.NGH?NGH.ex():0);S.fe+=n;m='+'+n+' 🔩'}
+ else{if(R()<.45+(window.NGH?NGH.hkp():0)){const n=1+(R()<.2?1:0)+addOf('hk')+(window.NGH?NGH.ex():0);S.hk+=n;m='+'+n+' 🌑'}}
  if(m)popup(m,X+(R()-.5)*30*s,Y-RV()*.6,VN[k].c);
  if(--dur[k]<=0){dur[k]=VN[k].hits;/* khai thác vô hạn: hết chu kỳ thì thưởng thêm, mạch không cạn */
   if(k=='hk'){S.hk+=2;popup('+2 🌑 (thưởng chu kỳ)',X,Y-RV()*.9,VN[k].c)}

@@ -14,20 +14,20 @@ function say(t,c){try{DT.push({x:P.x,y:170,s:t,c:c||'#ffe9a0',g:1,l:110})}catch(
 function give(k,n){n=Math.floor(n);if(n<=0)return;D()[k]+=n;say('+'+n+' '+NAME[k],k==='b'?'#c8a0ff':'#cfe8ff')}
 function f(n){try{return fmtN(n)}catch(e){return String(n)}}
 function doEn(it,asyn){
-  if(!it||it.u>=10)return;var hi=it.u>=7,k=hi?'b':'a',c=cost(it),d=D(),nd=hi?HI:1;
+  if(!it||it.u>=10)return;var hi=it.u>=7,k=hi?'b':'a',c=Math.round(cost(it)*(window.NGH?NGH.rdGold():1)),d=D(),nd=hi?HI:1;
   if(gold<c){msg='Không đủ vàng!';ui();return}
   if(d[k]<nd){msg='Thiếu '+NAME[k]+(hi?' (cần '+nd+', có '+d[k]+'; rơi từ Boss, hoặc mua ở Thợ Rèn)':'');ui();return}
-  gold-=c;d[k]-=nd;
-  if(Math.random()*100<RT[it.u]){it.u++;try{QE('enhok')}catch(e){}msg='✅ Cường hóa thành công! +'+it.u;if(asyn&&(it.u===7||it.u===10)&&window.UFX)UFX.burst(it.u,it)}
+  gold-=c;d[k]-=nd;try{window.NGH&&NGH.xp('rd',8)}catch(e){}
+  if(Math.random()*100<RT[it.u]+(window.NGH?NGH.rdRate():0)){it.u++;try{QE('enhok')}catch(e){}msg='✅ Cường hóa thành công! +'+it.u;if(asyn&&(it.u===7||it.u===10)&&window.UFX)UFX.burst(it.u,it)}
   else if(hi){if(it.dh){it.u=7;msg='💥 Thất bại! 🔮 Định Hồn giữ trang bị ở +7'}else{it.u=0;msg='💥 Thất bại! Trang bị rơi về +0'}}
   else{var dn=it.u>=5;if(dn)it.u--;msg='❌ Thất bại'+(dn?', tụt về +'+it.u:'')}
   P.hp=Math.min(P.hp,mx());ui()}
 en1=function(){
   if(!vil){msg='Cần đến Thợ Rèn trong làng 🏘';ui();return}
   var it=cur_();if(!it)return;
-  if(it.u>=7&&it.u<10&&D().b>=HI&&gold>=cost(it)){
+  if(it.u>=7&&it.u<10&&D().b>=HI&&gold>=Math.round(cost(it)*(window.NGH?NGH.rdGold():1))){
     var ask=typeof gcf==='function'?gcf:function(t,fn){if(confirm(t))fn()};
-    ask('Cường hóa +'+(it.u+1)+' bằng Đá Cao Cấp ('+RT[it.u]+'%).\n'+(it.dh?'🔮 Định Hồn: thất bại về +7.':'⚠ THẤT BẠI SẼ VỀ +0!')+'\nTiếp tục?',function(){doEn(it,true)});return}
+    ask('Cường hóa +'+(it.u+1)+' bằng Đá Cao Cấp ('+(RT[it.u]+(window.NGH?NGH.rdRate():0))+'%).\n'+(it.dh?'🔮 Định Hồn: thất bại về +7.':'⚠ THẤT BẠI SẼ VỀ +0!')+'\nTiếp tục?',function(){doEn(it,true)});return}
   doEn(it,false)};
 /* rơi đá từ quái: Boss/Ma Thần/Kiếm Thánh rơi đá cao cấp */
 function roll(e){var b=e.b|0,a=0,h=0,r=Math.random;
