@@ -12,7 +12,7 @@ const RMN=['Phàm Thể','Đạo Thể','Tiên Nhân'];
 const realm=(cr,cs)=>cr<0?'Sơ Khai':(RNm[cr]||'?')+' tầng '+cs;
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const nf=n=>(Number(n)||0).toLocaleString('vi-VN');
-const S={on:false,mode:'rank',tab:'lv',busy:false,err:'',legacy:false,data:{},at:{},ni:0,nmsg:''};
+const S={on:false,mode:'rank',tab:'lv',busy:false,err:'',legacy:false,data:{},at:{},ni:0,nmsg:'',tk:0};
 /* ---------- CSS + DOM ---------- */
 const st=document.createElement('style');st.textContent=`
 #rkb{position:fixed;z-index:2;width:34px;height:34px;box-sizing:border-box;border-radius:50%;border:2px solid #c9a24f;background:radial-gradient(circle at 50% 30%,#4b3a2c,#120b08 78%);box-shadow:0 3px 8px #000b,inset 0 0 8px #000;color:#ffe27a;font-size:16px;line-height:28px;text-align:center;padding:0;display:none;cursor:pointer}
@@ -81,7 +81,7 @@ async function load(force){
  S.busy=false;render()}
 /* ---------- giao diện ---------- */
 function open(tab){if(tab)S.tab=tab;S.mode='rank';S.on=true;ov.classList.add('on');render();load(false)}
-function close(){S.on=false;ov.classList.remove('on')}
+function close(){S.on=false;S.tk=0;ov.classList.remove('on')}
 const medal=r=>['🥇','🥈','🥉'][r-1]||r;
 function val(x){return S.tab=='pow'?'\u2694 '+nf(x.pw):esc(RMN[x.rm|0]||RMN[0])+' Lv '+(x.lv|0)}
 function sub(x){return esc((x.cn||'')+' \u00b7 '+(S.tab=='pow'?(RMN[x.rm|0]||RMN[0])+' Lv '+(x.lv|0):realm(x.cr|0,x.cs|0)))}
@@ -108,8 +108,9 @@ function viewRank(){
 function nameLeft(i){const p=PS[i];return p.nm?Math.max(0,C.maxRename-(p.rc|0)):C.maxRename}
 function viewName(){const i=S.ni,p=PS[i],first=!p.nm,left=nameLeft(i);
  let h='<div class="rk-n">Nhân vật: <b>'+esc(CHR[i].n)+'</b> · '+esc(CL[CHR[i].t])+'<br>Tên hiện tại: <b>'+esc(CN(i))+'</b></div>';
- if(!first&&left<1)return h+'<div class="rk-m">🔒 Nhân vật này đã dùng hết lượt đổi tên.</div><button data-a="x">Đóng</button>';
- h+='<div class="rk-m">'+(first?'Đặt tên lần đầu <b>miễn phí</b>. Sau đó còn được đổi lại <b>'+C.maxRename+' lần</b>.':'Đây là lượt đổi tên <b>cuối cùng</b> (còn '+left+' lần). Sau khi đổi sẽ không đổi lại được.')+'</div>';
+ const tn=(window.CSH&&CSH.count)?CSH.count('rn'):0;
+ if(!S.tk&&!first&&left<1)return h+'<div class="rk-m">🔒 Nhân vật này đã dùng hết lượt đổi tên.</div>'+(tn>0?'<button data-a="tk">🎫 Dùng Vé Đổi Tên (×'+tn+')</button>':'<div class="rk-n">Mua 🎫 Vé Đổi Tên ở 🛒 Shop Linh Thạch (100💎) để đổi thêm.</div>')+'<button data-a="x">Đóng</button>';
+ h+='<div class="rk-m">'+(S.tk?'🎫 Dùng <b>1 Vé Đổi Tên</b> (không tính vào lượt đổi tên thường). Vé chỉ bị trừ khi đổi tên thành công.':first?'Đặt tên lần đầu <b>miễn phí</b>. Sau đó còn được đổi lại <b>'+C.maxRename+' lần</b>.':'Đây là lượt đổi tên <b>cuối cùng</b> (còn '+left+' lần). Sau khi đổi sẽ không đổi lại được.')+'</div>';
  h+='<input id="rk-nm" maxlength="12" placeholder="Tên mới (2–12 ký tự)" value="'+esc(p.nm||'')+'" autocomplete="off">';
  h+='<div class="rk-n">Tên của 3 nhân vật phải khác nhau. Chỉ dùng chữ, số, khoảng trắng, dấu . _ -</div>';
  if(S.nmsg)h+='<div class="rk-m">'+esc(S.nmsg)+'</div>';
@@ -122,12 +123,13 @@ function render(){const b=ov.querySelector('.rk-bx');if(!b)return;
 const clean=v=>String(v||'').normalize('NFC').replace(/\s+/g,' ').trim();
 function saveName(){
  const i=S.ni,p=PS[i],first=!p.nm,e=document.getElementById('rk-nm'),v=clean(e&&e.value);
- if(!first&&nameLeft(i)<1){S.nmsg='Đã hết lượt đổi tên.';render();return}
+ if(!S.tk&&!first&&nameLeft(i)<1){S.nmsg='Đã hết lượt đổi tên.';render();return}
+ if(S.tk&&!(window.CSH&&CSH.count&&CSH.count('rn')>0)){S.nmsg='Không còn Vé Đổi Tên.';render();return}
  if(v.length<2||v.length>12){S.nmsg='Tên cần từ 2 đến 12 ký tự.';render();return}
  if(!/^[\p{L}\p{N} ._-]+$/u.test(v)){S.nmsg='Tên chứa ký tự không hợp lệ.';render();return}
  for(let j=0;j<CHR.length;j++)if(j!==i&&CN(j).toLowerCase()===v.toLowerCase()){S.nmsg='Tên này đã dùng cho nhân vật khác của bạn.';render();return}
  if(!first&&v===p.nm){S.nmsg='Tên mới trùng tên cũ. Hãy nhập tên khác.';render();return}
- p.nm=v;if(!first)p.rc=(p.rc|0)+1;
+ if(S.tk){if(!CSH.use('rn')){S.nmsg='Không còn Vé Đổi Tên.';render();return}p.nm=v}else{p.nm=v;if(!first)p.rc=(p.rc|0)+1}
  try{sv()}catch(x){}
  S.nmsg='';close();try{ui()}catch(x){}
  push(true);S.data={};S.at={}}
@@ -135,6 +137,7 @@ function act(a){
  if(a=='x')return close();
  if(a=='ref')return load(true);
  if(a=='save')return saveName();
+  if(a=='tk'){S.tk=1;S.nmsg='';return render()}
  if(a.indexOf('tab:')==0){S.tab=a.slice(4);render();load(false);return}}
-window.RK={open,close,push,chars,pows,name:i=>{S.mode='name';S.ni=i|0;S.nmsg='';S.on=true;ov.classList.add('on');render()},nameLeft,realm};
+window.RK={open,close,push,chars,pows,nameTk:i=>{i=i|0;S.tk=PS[i]&&PS[i].nm?1:0;S.mode='name';S.ni=i;S.nmsg='';S.on=true;ov.classList.add('on');render()},name:i=>{S.tk=0;S.mode='name';S.ni=i|0;S.nmsg='';S.on=true;ov.classList.add('on');render()},nameLeft,realm};
 })();

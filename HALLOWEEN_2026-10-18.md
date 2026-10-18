@@ -7,3 +7,4 @@
 - Mảnh Cánh Cấp 4: chỉ cộng bộ đếm PS[cur].hw.wf4 (chờ hệ thống cánh cấp 4). "Ngọc" = Đá Khảm chưa mài (GEMX.add).
 - Dữ liệu: PS[cur].hw. Tỉ lệ phần thưởng chưa nêu (vàng các mức, trang bị): xem RW_SWEET/RW_CHEW/RW_ROT/RW_GHOST/EQ_W.
 - Fix289: sửa không chạm được Sứ Giả (HUDX.on luôn bật nên chặn; đã bỏ điều kiện) và vẽ bí ngô/xương/NPC TRƯỚC nhân vật (bọc drawEP trong vdraw) để không che nhân vật.
+- Fix290: làm lại hiệu ứng: bầu trời đêm tím (sao, trăng, dơi, quầng cam chân trời), bí ngô phát sáng, bộ xương, bia mộ, ma bay, sương, đom đóm, NPC vẽ lại (sprite độ phân giải x2).

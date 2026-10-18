@@ -28,7 +28,8 @@ var CFG={
     {k:'vt',e:'🧘',n:'Vé Tăng 20% Tu Vi',p:100,d:'Dùng: +20% Tu Vi nhận được trong 2 giờ (dùng khi đang có hiệu lực = cộng dồn thêm 2 giờ)'},
     {k:'tc',e:'🎯',n:'Vé Tẩy Opt Chọn',p:1000,d:'Đồ Thánh: tự chọn 1 opt đang có và đổi sang 1 opt khác tuỳ ý (mức tối đa). Mỗi món Thánh chỉ được đổi DUY NHẤT 1 opt, 1 lần.'},
     {k:'x5',e:'📈',n:'Bùa EXP +50%',p:200,d:'Dùng: +50% EXP nhận được trong 2 giờ (dùng thêm = cộng dồn 2 giờ). Không cộng dồn % với Vé/Bùa EXP khác: tính mức cao nhất đang chạy'},
-    {k:'x7',e:'📈',n:'Bùa EXP +70%',p:300,d:'Dùng: +70% EXP nhận được trong 2 giờ (dùng thêm = cộng dồn 2 giờ). Không cộng dồn % với Vé/Bùa EXP khác: tính mức cao nhất đang chạy'}],
+    {k:'x7',e:'📈',n:'Bùa EXP +70%',p:300,d:'Dùng: +70% EXP nhận được trong 2 giờ (dùng thêm = cộng dồn 2 giờ). Không cộng dồn % với Vé/Bùa EXP khác: tính mức cao nhất đang chạy'},
+    {k:'rn',e:'🎫',n:'Vé Đổi Tên Nhân Vật',p:100,d:'Đổi tên nhân vật đang chơi thêm 1 lần (không tính vào lượt đổi tên miễn phí). Dùng ở tab 🎒 Kho; vé chỉ mất khi đổi tên thành công.'}],
   tkMs:2*3600e3,                   /* thời hạn mỗi vé = 2 giờ (thời gian thật, tính cả lúc offline) */
   tkPct:.2,
   xp:{vx:.2,x5:.5,x7:.7},          /* % EXP của từng loại vé/bùa EXP (lấy mức CAO NHẤT đang còn hạn) */
@@ -40,7 +41,7 @@ var TK={vx:'xe',vt:'te',x5:'e5',x7:'e7'}; /* vé → khoá hạn trong PS[cur].c
 var BON={};CFG.lt.forEach(function(o){if(o.bon)BON[o.k]=o.bon});
 var NAMES={};CFG.lt.forEach(function(o){NAMES[o.k]=o.e+' '+o.n});
 
-function D(){var p=PS[cur];if(!p)return{b10:0,b15:0,b20:0,ham:0,g10:0,dh:0,tc:0};if(!p.csh)p.csh={b10:0,b15:0,b20:0,ham:0,g10:0,dh:0,tc:0};if(p.csh.tc==null)p.csh.tc=0;return p.csh}
+function D(){var p=PS[cur];if(!p)return{b10:0,b15:0,b20:0,ham:0,g10:0,dh:0,tc:0};if(!p.csh)p.csh={b10:0,b15:0,b20:0,ham:0,g10:0,dh:0,tc:0};if(p.csh.tc==null)p.csh.tc=0;if(p.csh.rn==null)p.csh.rn=0;return p.csh}
 function cnt(k){return D()[k]|0}
 function nf(n){try{return fmtN(n)}catch(e){return String(n)}}
 function say(t,c){try{DT.push({x:P.x,y:200,s:t,c:c||'#ffe9a0',g:1,l:110})}catch(e){}}
@@ -202,7 +203,7 @@ function render(){
     var any=0;
     h+='<div class="cn">Kho riêng của Cash Shop — không chiếm ô túi đồ / ô trang bị. Mỗi lần cường hóa chỉ dùng được 1 loại bùa. 🔮 Ngọc Định Hồn dùng ở bảng món đồ trong túi.</div>';
     CFG.lt.forEach(function(o){var n=cnt(o.k);if(n<1)return;any=1;
-      var b=TK[o.k]?'<button onclick="CSH.ticket(\''+o.k+'\')">Dùng</button>':(o.k==='dh'||o.k==='tc')?'<span style="opacity:.7;font-size:11px">dùng trong túi</span>':BON[o.k]?'<button onclick="CSH.arm(\''+o.k+'\');CSH.tab(\'kho\')"'+(armed===o.k?' style="border-color:#7affb0"':'')+'>'+(armed===o.k?'✔ Đang chọn':'Chọn dùng')+'</button>':'<span style="opacity:.7;font-size:11px">dùng ở túi đồ → 💎 Đá Khảm</span>';
+      var b=TK[o.k]?'<button onclick="CSH.ticket(\''+o.k+'\')">Dùng</button>':o.k==='rn'?'<button onclick=\"CSH.renameTk()\">Dùng</button>':(o.k==='dh'||o.k==='tc')?'<span style="opacity:.7;font-size:11px">dùng trong túi</span>':BON[o.k]?'<button onclick="CSH.arm(\''+o.k+'\');CSH.tab(\'kho\')"'+(armed===o.k?' style="border-color:#7affb0"':'')+'>'+(armed===o.k?'✔ Đang chọn':'Chọn dùng')+'</button>':'<span style="opacity:.7;font-size:11px">dùng ở túi đồ → 💎 Đá Khảm</span>';
       h+=row({e:o.e,n:o.n,d:o.d,own:n},b)});
     if(!any)h+='<div class="cn">Kho trống. Mua vật phẩm ở tab 💎 Linh Thạch.</div>';
   }else if(tab==='lt'){
@@ -264,5 +265,6 @@ setInterval(function(){try{if(!open)return;var need=false;[].forEach.call(el.que
 window.CSH={useChoose:useChoose,pickFrom:pickFrom,pickTo:pickTo,pickOk:pickOk,pickClose:pickClose,holyBtn:holyBtn,ticket:useTicket,left:left,soul:soul,show:show,close:close,tab:setTab,buy:buy,chest:chest,arm:arm,cfg:CFG,
   count:cnt,
   use:function(k){if(cnt(k)<1)return false;D()[k]--;save();return true},
-  give:function(k,n){n=n|0;if(n>0&&k in D()){D()[k]+=n;save()}}};
+  give:function(k,n){n=n|0;if(n>0&&k in D()){D()[k]+=n;save()}},
+   renameTk:function(){if(cnt('rn')<1)return;if(!(window.RK&&RK.nameTk)){note='Chưa có chức năng đổi tên.';render();return}close();RK.nameTk(cur)}};
 })();
