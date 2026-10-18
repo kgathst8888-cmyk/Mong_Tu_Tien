@@ -1,6 +1,6 @@
 -- =====================================================================
 -- THÀNH THỊ ONLINE (Supabase) - gặp người chơi khác ở Thành Thị Linh Giới (map 1)
--- và Thành Thị Tiên Giới (map 2), Thôn Tân Thủ (map 3, Fix301), kèm ngoại hình đầy đủ (cánh, trang bị, pháp bảo, thú nuôi...).
+-- và Thành Thị Tiên Giới (map 2), Thôn Tân Thủ (map 3, Fix301), Làng Tân Thủ 2 (map 4, Fix303), kèm ngoại hình đầy đủ (cánh, trang bị, pháp bảo, thú nuôi...).
 -- Chạy 1 lần: Supabase → SQL Editor → New query → dán toàn bộ → Run. An toàn khi chạy lại.
 --   * Chỉ người đã đăng nhập ☁ mới thấy / được thấy.
 --   * Bảng không cho đọc/ghi trực tiếp; mọi thao tác đi qua hàm bên dưới.
@@ -47,7 +47,7 @@ declare
 begin
   if v_u is null then return json_build_object('status','auth'); end if;
 
-  v_map := case when p_map = 2 then 2 when p_map = 3 then 3 else 1 end;   -- Fix301: map 3 = Thôn Tân Thủ
+  v_map := case when p_map = 2 then 2 when p_map = 3 then 3 when p_map = 4 then 4 else 1 end;   -- Fix301: map 3 = Thôn Tân Thủ · Fix303: map 4 = Làng Tân Thủ 2
   v_n   := left(btrim(regexp_replace(coalesce(nullif(p_name,''),'Đạo Hữu'), '[[:cntrl:]]+', ' ', 'g')), 16);
   if char_length(v_n) < 1 then v_n := 'Đạo Hữu'; end if;
   v_ci  := greatest(0, least(coalesce(p_ci,0), 9));
@@ -106,7 +106,7 @@ begin
   if auth.uid() is null then return json_build_object('status','auth'); end if;
   select ap into v_ap from public.city_presence
    where substr(md5(uid::text), 1, 10) = left(coalesce(p_id,''), 10)
-     and map = case when p_map = 2 then 2 when p_map = 3 then 3 else 1 end
+     and map = case when p_map = 2 then 2 when p_map = 3 then 3 when p_map = 4 then 4 else 1 end
      and ts > now() - interval '30 seconds'
    limit 1;
   return json_build_object('status','ok','ap',v_ap);

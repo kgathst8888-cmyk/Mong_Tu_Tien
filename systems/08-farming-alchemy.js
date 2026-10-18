@@ -15,6 +15,7 @@ const CFG={
  brewBonus:.08,         /* 8% luyện ra thượng phẩm (+1 viên) */
  growMul:1.4,         /* Fix281: thời gian trồng cây +40% (1 = như cũ) */
   scMul:.4,            /* Fix281: tỉ lệ luyện đan thành công nhân 0.8 (1 = như cũ), vẫn không dưới scMin */
+ rlBonus:.20,        /* Fix308: đan đột phá cảnh giới (Trúc Cơ→Luyện Hư) +20% tỉ lệ thành (cộng thẳng, tối đa 100%) */
  scRealm:.02,scMin:.30, /* tỉ lệ luyện thành giảm 2%/cảnh giới, tối thiểu 30% */
  plots0:6,            /* số ô đất ban đầu */
  plotsMax:12,         /* số ô đất tối đa */
@@ -54,7 +55,9 @@ PM.pa.rc.thao=2;PM.pd.rc.lien=2;PM.ph.rc.hoa=2;PM.pm.rc.dang=2;PM.pt.rc.sam=1;
 Object.entries({tv1:.75,tv2:.65,pa:.60,pd:.60,ph:.60,pm:.60,pt:.60,tt:.55}).forEach(([k,v])=>{PM[k].sc=v});
 /* Fix296: 4 đan thuộc tính (Công/Thủ/HP/MP) luôn thành 80%, không giảm theo cảnh giới */
 ['pa','pd','ph','pm'].forEach(k=>{PM[k].sc=2;PM[k].mn=.80});
-const sce=p=>Math.max(p.mn||CFG.scMin,p.sc*CFG.scMul-CFG.scRealm*Math.max(0,ZC.rI()));
+/* Fix310: Tị Lôi Đan luôn thành 80%, không giảm theo cảnh giới */
+PM.pt.sc=2;PM.pt.mn=.80;
+const sce=p=>Math.min(1,Math.max(p.mn||CFG.scMin,p.sc*CFG.scMul-CFG.scRealm*Math.max(0,ZC.rI()))+(p.k=='rl'?CFG.rlBonus:0));
 const KN={a:'Công',d:'Thủ',h:'HP',m:'MP'};
 const fresh=()=>({seeds:{},herbs:{},pills:{},np:CFG.plots0,plots:Array(CFG.plots0).fill(null),sel:'chi',na:{until:0,on:0,last:0,pm:{}}});
 let S=fresh();

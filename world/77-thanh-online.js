@@ -17,15 +17,15 @@
 'use strict';
 if(typeof LCT==='undefined'||typeof hero!=='function'||typeof nameTag!=='function'||typeof PS==='undefined'||typeof CHR==='undefined'||typeof EP==='undefined')return;
 var PING=2500,MAXO=20,EMO=['','👋','😄','🙏','⚔️'],FONT='KTH Serif,Songti SC,STKaiti,KaiTi,serif',
-    vOK=null,others={},cache={},fetching=0,total=0,map=0,lastMap=0,busy=false,nextAt=0,fail=0,errMsg='',myEmo=0,sentH=null,apAt=0,
+    vOK=null,v2OK=null,others={},cache={},fetching=0,total=0,map=0,lastMap=0,busy=false,nextAt=0,fail=0,errMsg='',myEmo=0,sentH=null,apAt=0,
     bar,cnt,card,cardT=0;
 
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function clamp(v,a,b){return v<a?a:v>b?b:v}
 function logged(){return !!(window.KCL&&KCL.OK&&KCL.sess&&KCL.sess())}
 function myName(){try{return (PS[cur]&&PS[cur].nm)||(typeof pn!='undefined'&&pn)||'Đạo Hữu'}catch(e){return 'Đạo Hữu'}}
-function mapId(){try{if(!started||!vil||bo)return 0;if(window.TG&&TG.on&&TG.on())return 2;if(LCT.on&&LCT.on())return 1;if(vOK!==false)return 3}catch(e){}return 0}
-function WW(){try{if(map===3)return Math.max(300,vw());return Math.max(300,(window.LGART&&LGART.ww)?LGART.ww():vw())}catch(e){return 1000}}
+function mapId(){try{if(!started||!vil||bo)return 0;if(window.TT3&&TT3.on())return 0;if(window.TT2&&TT2.on())return v2OK!==false?4:0;if(window.TG&&TG.on&&TG.on())return 2;if(LCT.on&&LCT.on())return 1;if(vOK!==false)return 3}catch(e){}return 0}
+function WW(){try{if(map===3||map===4)return Math.max(300,vw());return Math.max(300,(window.LGART&&LGART.ww)?LGART.ww():vw())}catch(e){return 1000}}
 function hash(str){var h=5381,i;for(i=0;i<str.length;i++)h=((h<<5)+h+str.charCodeAt(i))|0;return h}
 function hid(id){var h=0,i;for(i=0;i<id.length;i++)h=(h*31+id.charCodeAt(i))|0;return Math.abs(h)}
 
@@ -61,7 +61,7 @@ async function ping(){
     if(useTT){try{args.p_tt=window.PFD?PFD.eq('t')|0:0}catch(e){args.p_tt=0}}
     try{r=await KCL.rpc('cp_ping',args)}
     catch(e0){if(useTT&&!(e0&&e0.net)){useTT=false;delete args.p_tt;r=await KCL.rpc('cp_ping',args)}else throw e0}
-    if(r&&r.status==='ok'&&m===3){if(r.map===3)vOK=true;else{vOK=false;others={};total=0;sentH=null;leave();busy=false;return}}   /* Fix301: máy chủ cũ không biết map 3 */
+    if(r&&r.status==='ok'&&(m===3||m===4)){if(r.map===m){if(m===3)vOK=true;else v2OK=true}else{if(m===3)vOK=false;else v2OK=false;others={};total=0;sentH=null;leave();busy=false;return}}   /* Fix301/303: máy chủ cũ không biết map 3 / map 4 (Làng Tân Thủ 2) */
     if(r&&r.status==='ok'){fail=0;errMsg='';if(send){sentH=h;apAt=now}if(myEmo===emo)myEmo=0;if(m===map)apply(r.list||[],r.n|0)}
     else if(r&&r.status==='auth')errMsg='Hết phiên đăng nhập ☁';
   }catch(e){
@@ -223,7 +223,7 @@ function showCard(e){
   card.style.display='block';cardT=Date.now()+3500}
 function hook(){
   c.addEventListener('pointerdown',function(ev){
-    if((map!==1&&map!==3)||bo)return;
+    if((map!==1&&map!==3&&map!==4)||bo)return;
     if(tap(ev.offsetX,ev.offsetY))ev.stopImmediatePropagation()},true)}
 function boot(){
   try{build();hook()}catch(e){try{console.warn('[Thành thị online] boot',e)}catch(x){}return}
@@ -231,5 +231,5 @@ function boot(){
   document.addEventListener('visibilitychange',function(){if(document.hidden&&lastMap){lastMap=0;map=0;others={};sentH=null;leave()}});
   window.addEventListener('pagehide',function(){if(lastMap){lastMap=0;leave()}})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
-window.CITYOL={on:function(){return map>0},vOn:function(){return map===3},vDraw:vDraw,map:function(){return map},tgList:tgList,tgDraw:tgDraw,tap:tap,others:function(){return others},count:function(){return Object.keys(others).length}};
+window.CITYOL={on:function(){return map>0},vOn:function(){return map===3||map===4},v2ok:function(){return v2OK},err:function(){return errMsg},n:function(){return total},vDraw:vDraw,map:function(){return map},tgList:tgList,tgDraw:tgDraw,tap:tap,others:function(){return others},count:function(){return Object.keys(others).length}};
 })();

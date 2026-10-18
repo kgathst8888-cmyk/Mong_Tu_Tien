@@ -16,7 +16,7 @@ var PING=2500,EMO=['','👋','😄','🙏','⚔️'],others={},total=0,inV=false
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function logged(){return !!(window.KCL&&KCL.OK&&KCL.sess&&KCL.sess())}
 function myName(){try{return (PS[cur]&&PS[cur].nm)||(typeof pn!='undefined'&&pn)||'Đạo Hữu'}catch(e){return 'Đạo Hữu'}}
-function inVillage(){try{return !!(vil&&started)&&!(window.CITYOL&&CITYOL.on())}catch(e){return false}}
+function inVillage(){try{return !!(vil&&started)&&!(window.CITYOL&&CITYOL.on())&&!(window.TT2&&TT2.on())&&!(window.TT3&&TT3.on())}catch(e){return false}}
 function clamp(v,a,b){return v<a?a:v>b?b:v}
 
 /* ---------- mạng ---------- */

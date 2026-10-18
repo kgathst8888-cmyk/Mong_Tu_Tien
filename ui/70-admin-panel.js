@@ -32,9 +32,13 @@ function parse(r){if(typeof r==='string'){try{return JSON.parse(r)}catch(e){}}re
 function errMsg(e){
   var m=String((e&&(e.message||e.msg||e.error_description))||e||''),c=String((e&&e.code)||'');
   if(m.indexOf('NOT_ADMIN')>=0)return'Tài khoản này không có quyền admin.';
+  if(m.indexOf('CANNOT_TARGET_ADMIN')>=0)return'Không thao tác được trên tài khoản admin.';
+  if(m.indexOf('NO_BACKUP')>=0)return'Không có bản sao nào để khôi phục.';
+  if(m.indexOf('HAS_NEW_DATA')>=0)return'Tài khoản đã tạo dữ liệu mới, không khôi phục được.';
+  if(m.indexOf('admin_reset')>=0&&(m.indexOf('Could not find')>=0||m.indexOf('does not exist')>=0))return'Chưa chạy admin_reset_tk.sql trên Supabase.';
   if(m.indexOf('NO_USER')>=0)return'Không tìm thấy tài khoản.';
   if(m.indexOf('AMOUNT_TOO_BIG')>=0)return'Số lượng quá lớn (tối đa 100.000.000).';
-  if(m.indexOf('CANNOT_TARGET_ADMIN')>=0)return'Không thể khoá tài khoản admin.';
+  if(m.indexOf('CANNOT_TARGET_ADMIN')>=0)return'Không thao tác được trên tài khoản admin.';
   if(m.indexOf('NO_TITLE')>=0)return'Thiếu tiêu đề thư.';
   if(m.indexOf('SESSION_INVALID')>=0)return'Phiên đăng nhập không còn hiệu lực, hãy đăng nhập lại.';
   if(m.indexOf('CODE_EXISTS')>=0)return'Mã này đã tồn tại, hãy chọn mã khác.';
@@ -147,7 +151,7 @@ function draw(){
   if(!el||!open)return;
   try{el.className=PORT?'pt':'ls'}catch(e){el.className='pt'}
   var l0=el.querySelector('.al'),keep=(l0&&!S.reset)?l0.scrollTop:0;S.reset=0;
-  var h='<div class="ah"><span>🛡 Quản trị <small style="opacity:.6;font-weight:normal">· bản Fix174</small></span><button data-a="x">✕</button></div>';
+  var h='<div class="ah"><span>🛡 Quản trị <small style="opacity:.6;font-weight:normal">· bản Fix307</small></span><button data-a="x">✕</button></div>';
   h+='<div class="at">'+tabBtn('acc','👤 Tài khoản')+tabBtn('gift','🎁 Gửi quà')+tabBtn('gc','🎟 Mã quà')+tabBtn('note','📢 Thông báo')+tabBtn('mail','✉️ Đã gửi')+tabBtn('log','📜 Nhật ký')+tabBtn('test','🧪 Test')+'</div>';
   if(S.note)h+='<div class="an">'+esc(S.note)+'</div>';
   h+='<div class="al">'+(S.tab==='acc'?vAcc():S.tab==='gift'?vGift():S.tab==='gc'?vGc():S.tab==='note'?vNote():S.tab==='mail'?vMail():S.tab==='test'?vTest():vLog())+'</div>';
@@ -156,12 +160,16 @@ function draw(){
 }
 
 function vAcc(){
-  var h='<div class="ar"><input id="adm-q" type="text" placeholder="Email hoặc UUID…" value="'+esc(S.q)+'" autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false"><button class="bt" data-a="find">🔍 Tìm</button></div>';
+  var h='<div class="ar"><input id="adm-q" type="text" placeholder="Email, UUID hoặc tên nhân vật…" value="'+esc(S.q)+'" autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false"><button class="bt" data-a="find">🔍 Tìm</button></div>';
   h+='<div class="ar"><button class="bt" data-a="online">🟢 Đang online</button><button class="bt" data-a="recent">🕒 Mới đăng nhập</button></div>';
-  if(S.list===null)h+='<div class="ae">Nhập email rồi bấm Tìm, hoặc xem danh sách đang online.</div>';
+  if(S.list===null)h+='<div class="ae">Nhập email / tên nhân vật rồi bấm Tìm, hoặc xem danh sách đang online.</div>';
   else if(!S.list.length)h+='<div class="ae">Không có tài khoản nào khớp.</div>';
   else S.list.forEach(function(u){h+=vUser(u)});
   return h;
+}
+function charsTxt(u){
+  var c=parse(u.chars);if(!c||!c.length)return'<i style="opacity:.7">chưa có nhân vật</i>';
+  return c.map(function(x){return'<b style="color:#ffd76a">'+esc(x.nm)+'</b>'+(x.lv?' (Lv '+x.lv+')':'')}).join(' · ');
 }
 function vUser(u){
   var sel=S.sel===u.id,b='';
@@ -170,7 +178,7 @@ function vUser(u){
   if(isBanned(u))b+='<span class="tg bn">KHOÁ</span>';
   if(u.chat_ban)b+='<span class="tg cb">CẤM CHAT</span>';
   var h='<div class="ai'+(sel?' sl':'')+'"><div class="ar2" data-a="pick" data-id="'+esc(u.id)+'"><div class="tc"><b>'+esc(u.email||'(không có email)')+'</b>'
-    +'<small>💎 '+nf(u.lt)+' LT'+(u.lk?' · 🔒 '+(u.lks||[]).map(nf).join('/'):'')+' · đăng nhập gần nhất: '+(u.last_sign_in_at?fmtT(u.last_sign_in_at):'—')+'</small></div>'+b+'<span>'+(sel?'▴':'▾')+'</span></div>';
+    +'<small>🧙 '+charsTxt(u)+'</small><small>💎 '+nf(u.lt)+' LT'+(u.lk?' · 🔒 '+(u.lks||[]).map(nf).join('/'):'')+' · đăng nhập gần nhất: '+(u.last_sign_in_at?fmtT(u.last_sign_in_at):'—')+'</small></div>'+b+'<span>'+(sel?'▴':'▾')+'</span></div>';
   if(sel){
     h+='<div class="ac"><small>UUID: '+esc(u.id)+'</small>';
     if(isBanned(u))h+='<small>Khoá đến: '+fmtT(u.banned_until)+'</small>';
@@ -179,6 +187,7 @@ function vUser(u){
     h+='<h4>🎁 Quà</h4><div class="ar"><button class="bt" data-a="giftto">Gửi thư quà cho người này</button></div>';
     h+='<h4>🔒 Khoá đăng nhập</h4><div class="ar">'+durSel('adm-bh',24)+'<button class="bt dg" data-a="ban">Khoá</button><button class="bt gr" data-a="unban">Mở khoá</button></div>';
     h+='<h4>🤐 Cấm chat</h4><div class="ar">'+durSel('adm-ch',24)+'<button class="bt dg" data-a="cban">Cấm</button><button class="bt gr" data-a="cunban">Gỡ cấm</button></div>';
+    if(!u.is_admin)h+='<h4>♻ Reset tài khoản</h4><div class="ar"><label style="font-size:12px"><input type="checkbox" id="adm-rslt"> xoá cả Linh Thạch</label></div><div class="ar"><button class="bt dg" data-a="rsacc">♻ Reset tài khoản</button><button class="bt" data-a="rsundo">↩ Khôi phục bản trước reset</button></div><small>Xoá toàn bộ nhân vật + dữ liệu mây của người này, đá khỏi game. Mặc định GIỮ Linh Thạch.</small>';
     h+='<h4>⏏ Phiên chơi</h4><div class="ar"><button class="bt dg" data-a="kick">Đá khỏi game</button></div>';
     h+='</div>';
   }
@@ -224,7 +233,7 @@ function giftFields(f,at){
 }
 function vGc(){
   var g=S.g,h='';
-  h+='<div class="tq">Tạo mã để người chơi tự nhập ở nút 🎟 <b>Mã quà</b>. Mỗi <b>tài khoản</b> dùng mỗi mã 1 lần. Linh Thạch cộng thẳng vào ví KHÔNG KHOÁ (= tiền nạp), phần còn lại gửi vào ✉️ Hòm Thư của nhân vật đang chơi. Cần chạy <b>ma_qua.sql</b> trong Supabase 1 lần.</div>';
+  h+='<div class="tq">Tạo mã để người chơi tự nhập ở nút 🎟 <b>Mã quà</b>. Mỗi <b>tài khoản</b> dùng mỗi mã 1 lần. Linh Thạch cộng thẳng vào ví KHÔNG KHOÁ (= tiền nạp), phần còn lại gửi vào ✉️ Hòm Thư của nhân vật đang chơi. Cần chạy <b>ma_qua.sql</b> trong Supabase 1 lần.<br>🌐 <b>Mã chung cho toàn game</b>: nhập Mã (vd NOEL2026) + quà, để trống ô <i>Số lượt dùng</i>, Số mã tạo = 1 → ai cũng nhập được, mỗi tài khoản 1 lần. Muốn giới hạn người đầu tiên thì điền số lượt.</div>';
   h+='<div class="ar"><input data-gm="code" type="text" maxlength="40" placeholder="Mã (để trống = tự sinh ngẫu nhiên)" value="'+esc(g.code)+'" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" style="text-transform:uppercase"></div>';
   h+='<div class="ar"><input data-gm="title" type="text" maxlength="80" placeholder="Tiêu đề thư quà" value="'+esc(g.title)+'"></div>';
   h+='<div class="gr2"><span>💎 Linh Thạch</span><input data-gm="lt" type="number" inputmode="numeric" min="0" max="100000000" value="'+esc(g.lt)+'">'
@@ -389,6 +398,15 @@ function onClick(e){
     var sg=a==='ltadd'?1:-1;
     if(!confirm((sg>0?'CỘNG ':'TRỪ ')+nf(n)+' Linh Thạch '+(sg>0?'cho ':'của ')+em+'?'))return;
     run('Đang xử lý…',function(){return call('admin_grant_lt',{p_uid:u.id,p_amt:sg*n}).then(function(r){S.note='✅ '+em+' còn '+nf(r)+' Linh Thạch';return query()})});return}
+  if(a==='rsacc'){
+    if(u.is_admin){S.note='⚠ Không reset được tài khoản admin.';draw();return}
+    var lt=!!(document.getElementById('adm-rslt')||{}).checked,nm=(parse(u.chars)||[]).map(function(x){return x.nm}).join(', ')||'(chưa có nhân vật)';
+    if(!confirm('♻ RESET TÀI KHOẢN '+em+'\nNhân vật: '+nm+'\n\nXoá toàn bộ nhân vật, xếp hạng, đồ đang bán'+(lt?', VÀ LINH THẠCH':' (giữ Linh Thạch)')+'. Họ bị đá khỏi game.'))return;
+    if(!confirm('Xác nhận lần 2: reset '+em+' thật sự?'))return;
+    run('Đang reset…',function(){return call('admin_reset_account',{p_uid:u.id,p_lt:lt}).then(function(r){r=parse(r)||{};S.note='✅ Đã reset '+em+(r.backup?' (có bản sao, dùng ↩ Khôi phục nếu nhầm)':'')+(lt?' · đã xoá Linh Thạch':'');return query()})});return}
+  if(a==='rsundo'){
+    if(!confirm('Khôi phục bản lưu trước lần reset của '+em+'? (chỉ được khi họ chưa tạo dữ liệu mới)'))return;
+    run('Đang khôi phục…',function(){return call('admin_reset_undo',{p_uid:u.id}).then(function(){S.note='✅ Đã khôi phục dữ liệu của '+em;return query()})});return}
   if(a==='kick'){
     if(!confirm('Đá '+em+' khỏi game? (họ phải đăng nhập lại)'))return;
     run('Đang xử lý…',function(){return call('admin_kick',{p_uid:u.id}).then(function(r){S.note=r?'✅ Đã đá '+em+' khỏi game':'ℹ Người này không có phiên đang chơi';return query()})});return}

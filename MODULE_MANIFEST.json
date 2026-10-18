@@ -110,7 +110,10 @@
       "ui/95-trang-suc-mon-phai.js",
       "ui/97-o-linh-can.js",
       "world/99-mon-phai-co-che-rieng.js",
-      "world/99-mon-phai-than-thong.js"
+      "world/99-mon-phai-than-thong.js",
+      "world/100-lang-tan-thu-2.js",
+      "world/101-ban-do-dich-chuyen.js",
+      "world/102-lang-tan-thu-3.js"
     ],
     "systems": [
       "systems/08-farming-alchemy.js",
