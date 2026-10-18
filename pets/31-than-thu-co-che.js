@@ -77,7 +77,8 @@ function make(c){
   const vy=EP.y-(EP.ly||EP.y);let rot=-vy*.05+Math.sin(t*.03)*.025,sx=1,sy=1;
   if(atk){if(EP.mt==1){rot=.5*Math.sin(at*6.2832);sx=1+.06*sn}else if(EP.mt==2){rot=-.1*sn;sx=1+.12*sn;sy=1+.05*sn}else{rot=-.14*sn;sx=1+.05*sn}}
   const eu=EP.evT!==undefined?fr-EP.evT:999,pop=eu>=0&&eu<60?1+.2*Math.sin(eu/60*3.1416):1;
-  g.translate(cx,by);g.scale(EP.d,1);g.rotate(rot);g.scale(sx*pop,sy*pop);
+  const gnd=!!c.ground;let fl=EP.d;if(gnd){if(EP.dd===undefined)EP.dd=EP.d;EP.dd+=(EP.d-EP.dd)*.24;if(Math.abs(EP.d-EP.dd)<.03)EP.dd=EP.d;fl=Math.abs(EP.dd)<.1?(EP.dd<0?-.1:.1):EP.dd;rot=0;sx=1;sy=1}
+  g.translate(cx,by);g.scale(fl,1);g.rotate(rot);g.scale(sx*pop,sy*pop);
   c.body(ev,ww,hh,mvf,atk,at,t);
   g.restore();
   const every=Math.max(2,7-ev*2);
@@ -117,7 +118,7 @@ function make(c){
     const w=Math.sin(Math.min(1,u)*3.1416);EP.y=gnd?0:base0+w*28;EP.gl+=(0-EP.gl)*.2;EP.fa+=(1.15-EP.fa)*.2;
     if(u>=.45&&!EP.hit){EP.hit=1;try{c.skill(ev,EP.x,M,p,EP.skn)}catch(x){console.error('[thần thú] skill',x)}}
    }else{
-    const w=Math.sin(Math.min(1,u)*3.1416);EP.y=base0+w*6;EP.gl+=(0-EP.gl)*.2;EP.fa+=(1.0-EP.fa)*.2;
+    const w=Math.sin(Math.min(1,u)*3.1416);EP.y=gnd?0:base0+w*6;EP.gl+=(0-EP.gl)*.2;EP.fa+=(1.0-EP.fa)*.2;
     EP.x-=side*.35*w;
    }
    EP.fp+=EP.mt==1&&u<.5?.05:.34;EP.sw+=(1-EP.sw)*.1;
@@ -132,7 +133,7 @@ function make(c){
   EP.vx+=(des-EP.vx)*.12;if(Math.abs(dx)<4&&Math.abs(EP.vx)<.3)EP.vx*=.5;EP.x+=EP.vx;
   if(Math.abs(EP.vx)>.35)EP.d=Math.sign(EP.vx);else if(e)EP.d=Math.sign(e.x-EP.x)||EP.d;else EP.d=P.d;
   const mvf=Math.min(1,Math.abs(EP.vx)/2.4);EP.ph+=mvf*.3+.05;
-  const base=gnd?Math.abs(Math.sin(EP.ph*1.1))*2.2*mvf:base0+(e?8:0)+mvf*Math.sin(EP.ph*2)*3;
+  const base=gnd?0:base0+(e?8:0)+mvf*Math.sin(EP.ph*2)*3;
   EP.y+=(base-EP.y)*(gnd?.4:.07);
   const climb=EP.y-EP.ly>.22;
   const glT=(mvf>.5&&!climb&&Math.sin(EP.t*.021)>.15)?1:0;EP.gl+=(glT-EP.gl)*.05;
@@ -252,7 +253,7 @@ const HV=make({
  heal:[0,2],reb:{cd:7200,hp:.4,txt:'💧 Huyền Vũ Bất Diệt!',short:'Huyền Vũ Bất Diệt'},
  size:ev=>({w:HVZ[ev][0],h:HVZ[ev][1]}),icon:ev=>HVU[ev],
  body:(ev,ww,hh,mvf,atk,at,t)=>hvDraw(HVI[ev],ww,hh,ev,at,atk,EP.kind,mvf,t),
- shoot:(ev,x0,x1,y0)=>bolt(x0+EP.d*(HVH[ev]*.45),x1,y0,'water',HV_C1[ev],HV_C2[ev]),
+ shoot:(ev,x0,x1,y0)=>{const HH=HVH[ev]*1.25,W=HH*HVZ[ev][0]/HVZ[ev][1],xm=x0+EP.d*((HVM[ev][0]-.5)*W+HH*.05),ym=EP.y+HH*(1-HVM[ev][1]);bolt(xm,x1,ym,'water',HV_C1[ev],HV_C2[ev]);try{window.PFH.flare(xm,ym,HV_C2[ev],30+ev*7,7)}catch(e){}},
  hit:(ev,x)=>{const c1=HV_C1[ev],c2=HV_C2[ev],h=window.PFH;h.flare(x,52,c1,90+ev*18,16);h.rg(x,70+ev*8,c1,16);h.bst(x,46,12+ev*3,c2,5,18,3,{k:'s'});if(ev>=2)h.gwave(x,c1,50+ev*12,22)},
  dive:(ev,x)=>{const h=window.PFH,c1=HV_C1[ev];for(let i=0;i<3;i++)h.later(i*3,()=>h.fx({t:'claw',x:x+(i-1)*22,c:c1,l:14}));h.gwave(x,c1,100+ev*14,24);h.shake(3+ev)},
  onHit:(e,ev,M,m)=>{const r=HV_RATE[ev],f=m==2?1.8:1;if(r.slow)e.sl=Math.max(e.sl||0,90);if(r.frz)stat(e,'frz',r.frz*f);if(r.stn)stat(e,'stn',r.stn*f)},

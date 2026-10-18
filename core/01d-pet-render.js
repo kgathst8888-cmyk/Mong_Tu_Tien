@@ -8,13 +8,53 @@ function pm(p){return PT4[p.k].m*(1+.06*(p.lv-1))*(1+.35*p.ev)}
 const sm3=x=>x*x*(3-2*x);
 function hvW(u,kind){if(kind)return 0;if(u<.3)return -.22*Math.sin(u/.3*1.5708);if(u<.5)return -.22+1.22*sm3((u-.3)/.2);return 1-sm3((u-.5)/.5)}
 function hvY(u,kind){if(kind)return u<.5?Math.sin(u/.5*1.5708)*10:Math.cos((u-.5)/.5*1.5708)*10;const v=(u-.28)/.34;return v>0&&v<1?Math.sin(v*3.1416)*8:0}
-function hvDraw(im,ww,hh,ev,at,atk,kind,mvf,t){const N=28,iw=im.naturalWidth,ih=im.naturalHeight,amp=(1.1+ev*.55+mvf*1.6)*s,w0=atk&&!kind?hvW(at,0):0,sa=atk&&kind?Math.sin(at*3.14):0;
- for(let i=0;i<N;i++){const v=1-(i+.5)/N,up=Math.max(0,(v-.3)/.7),up2=up*up;let off=0;
-  if(ev>=1)off+=Math.sin(t*.075-v*4.2+EP.ph*.6)*amp*up2*1.6;
-  off+=Math.sin(t*.11+v*2)*.55*s*up;
-  off+=w0*(6+ev*2.5)*s*v*v*1.3;
-  if(sa)off+=Math.sin(t*.35+v*5)*1.6*s*up2*sa;
-  const y0=Math.floor(i*ih/N);g.drawImage(im,0,y0,iw,Math.min(Math.ceil(ih/N)+1,ih-y0),-ww/2+off,-hh+i*hh/N,ww,hh/N+.9)}}
+/* Fix286 — hoạt ảnh Huyền Vũ: lưới 14×14 mảnh, mỗi mảnh dịch theo bước chân / đầu gật / rắn đung đưa / tư thế đánh.
+   Ảnh luôn quay mặt sang PHẢI (+x). Gốc toạ độ = giữa đáy chân. at = tiến độ đòn 0..1; EP.mt: 0 bắn · 1 bổ nhào · 2 kỹ năng. */
+const HV_HEAD=[[.62,.78,.35,.62],[.60,.76,.42,.66],[.66,.80,.50,.72],[.70,.84,.55,.78]];
+function hvOcc(im,C,R){if(im.__occ)return im.__occ;const iw=im.naturalWidth,ih=im.naturalHeight,o=new Uint8Array(C*R).fill(1);
+ try{const cv=document.createElement('canvas');cv.width=iw;cv.height=ih;const x=cv.getContext('2d');x.drawImage(im,0,0);const d=x.getImageData(0,0,iw,ih).data;
+  for(let j=0;j<R;j++)for(let i=0;i<C;i++){let a=0;const x0=Math.floor(i*iw/C),x1=Math.floor((i+1)*iw/C),y0=Math.floor(j*ih/R),y1=Math.floor((j+1)*ih/R);
+   for(let yy=y0;yy<y1&&!a;yy+=2)for(let xx=x0;xx<x1;xx+=2)if(d[(yy*iw+xx)*4+3]>8){a=1;break}o[j*C+i]=a}}catch(e){}
+ return im.__occ=o}
+function hvDust(u,ww,n,big){const H=window.PFH;if(!H||!H.fp)return;const d=EP.d||1;
+ for(let i=0;i<n;i++)H.fp(EP.x+(u-.5)*ww/s*d+(Math.random()-.5)*6,1+Math.random()*2,{c:'rgba(214,230,238,.75)',r:(big?3:2)+Math.random()*2,l:(big?22:15)+(Math.random()*8|0),vx:-d*(.2+Math.random()*.35)*(big?2:1)+(Math.random()-.5)*.5,vy:.25+Math.random()*(big?.7:.35),f:.93})}
+function hvDraw(im,ww,hh,ev,at,atk,kind,mvf,t){
+ const iw=im.naturalWidth,ih=im.naturalHeight;if(!iw||!ih)return;
+ const C=20,R=16,PI=Math.PI,ss=(a,b,x)=>{const q=Math.max(0,Math.min(1,(x-a)/(b-a)));return q*q*(3-2*q)},bp=(c,w)=>{const q=(at-c)/w;return Math.exp(-q*q)};
+ const mt=atk?(EP.mt!==undefined?EP.mt:(kind?2:0)):-1,ph=(EP.ph||0)*1.1,mv=Math.min(1,mvf||0),fv=(EP.vx||0)*(EP.d||1),n=1+(ev>=2?1:0)+(ev>=3?1:0);
+ let rt=0,lg=0,cr=0,jp=0,ip=0,rs=0,sl=0;
+ if(mt==0){rt=bp(.05,.06);for(let i=0;i<n;i++)lg+=bp(.15+i*.2,.055)}
+ else if(mt==1){cr=ss(0,.16,at)*(1-ss(.18,.36,at));jp=bp(.34,.09);lg=bp(.45,.08);ip=bp(.53,.05)}
+ else if(mt==2){rs=ss(0,.38,at)*(1-ss(.46,.58,at));sl=bp(.55,.05)}
+ /* bụi theo bước chân / va đất */
+ if(mv>.45){const k0=Math.floor((ph-PI/2)/(2*PI)),k1=Math.floor((ph+PI/2)/(2*PI));
+  if(EP.hvK0!==undefined){if(k0!==EP.hvK0)hvDust(.72,ww,2);if(k1!==EP.hvK1)hvDust(.28,ww,2)}EP.hvK0=k0;EP.hvK1=k1}else EP.hvK0=undefined;
+ if(mt==1||mt==2){if(at>=(mt==1?.5:.52)&&!EP.hvI){EP.hvI=1;hvDust(.7,ww,mt==1?5:8,1);hvDust(.3,ww,3,1)}}if(!atk||at<.2)EP.hvI=0;
+ /* tư thế toàn thân (xoay/co giãn quanh giữa đáy chân) */
+ const br=Math.sin(t*.05)*(1-mv);
+ let rot=Math.sin(ph)*.032*mv+Math.sin(t*.03)*.008*(1-mv)-.05*rt+.025*lg-.05*cr+.1*lg*(mt==1?1:0)-.17*rs+.07*sl,
+     sy=1+.009*br-.045*rt+.02*lg*(mt==0?1:0)-.09*cr+.05*jp-.07*ip-.07*sl+.03*rs,
+     sx=1-.004*br+.045*lg*(mt==0?1:0)-.02*rt+.07*cr-.03*jp+.07*ip+.06*sl-.02*rs,
+     tx=Math.sin(ph)*hh*.012*mv-lg*hh*.012*(mt==0?1:0),ty=-Math.cos(ph*2)*hh*.007*mv;
+ const kx=ww/iw,ky=hh/ih,stride=hh*.05,lift=hh*.04,amp=(1.1+ev*.55+mv*1.6)*s,HD=HV_HEAD[ev]||HV_HEAD[0],occ=hvOcc(im,C,R);
+ const pass=(al,comp)=>{g.save();if(comp)g.globalCompositeOperation=comp;if(al<1)g.globalAlpha=al;
+  for(let j=0;j<R;j++){const y0=Math.floor(j*ih/R),y1=j==R-1?ih:Math.min(ih,Math.floor((j+1)*ih/R)+1),v=(y0+y1)/2/ih,vh=1-v,lw=ss(.58,.92,v),
+    up=ev>=1?ss(0,1,Math.max(0,(.5-v)/.5)):0,up2=up*up,hv=1-ss(HD[2],HD[3],v);
+   for(let i=0;i<C;i++){if(!occ[j*C+i])continue;const x0=Math.floor(i*iw/C),x1=i==C-1?iw:Math.min(iw,Math.floor((i+1)*iw/C)+1),u=(x0+x1)/2/iw;let dx=0,dy=0;
+    if(lw>0){const fG=ss(.34,.5,u),sw=Math.sin(ph+PI)*(1-fG)+Math.sin(ph)*fG,lf=Math.max(0,Math.cos(ph+PI))*(1-fG)+Math.max(0,Math.cos(ph))*fG;
+     dx+=sw*stride*lw*mv;dy-=lf*lift*lw*mv;
+     dy-=lw*fG*hh*(.05*jp+.075*rs);dy-=lw*(1-fG)*hh*.02*jp}
+    const hw=ss(HD[0]-.1,HD[1]+.08,u)*hv;
+    if(hw>0){dy+=Math.sin(ph*2+1.1)*hh*.012*mv*hw+Math.sin(t*.04)*hh*.006*(1-mv)*hw;dx+=Math.sin(ph)*hh*.018*mv*hw+hh*(.09*lg-.05*rt)*hw*(mt==1?1.3:1);dy+=hh*(.02*rt-.03*lg*(mt==0?1:0)-.05*rs+.03*cr)*hw}
+    if(up2>0){dx+=Math.sin(t*.075-vh*4.2+ph*.6)*amp*up2*1.6+Math.sin(t*.11+vh*2)*.55*s*up-fv*.9*s*up2;
+     dx+=hh*up2*(.1*lg-.06*rt+.03*rs);dy-=hh*up2*.05*rs}
+    if(ev>=1&&u<.3&&v>.6)dy+=Math.sin(t*.09+ph)*hh*.006*(1-u/.3);
+    g.drawImage(im,x0,y0,x1-x0,y1-y0,-ww/2+x0*kx+dx,-hh+y0*ky+dy,(x1-x0)*kx+1,(y1-y0)*ky+1)}}
+  g.restore()};
+ g.save();g.translate(tx,ty);g.rotate(rot);g.scale(sx,sy);
+ pass(1);
+ const gl=.3*(rs+sl*1.4)+.18*ip;if(gl>.02){g.save();g.globalCompositeOperation='lighter';g.globalAlpha=Math.min(.5,gl);g.drawImage(im,-ww/2,-hh,ww,hh);g.restore()}
+ g.restore()}
 function hvFx(cx,by,hh,ww,col,bc,k,atk,at,t){
  if(k==3&&atk&&EP.kind){g.save();g.globalCompositeOperation='lighter';g.fillStyle=bc;for(let i=0;i<14;i++){const a=t*.22+i*.45,u2=((i/14)+at*1.2)%1,r=ww*(.75-.45*u2);g.globalAlpha=.7*Math.sin(u2*3.14);g.beginPath();g.arc(cx+Math.cos(a)*r,by-u2*hh*1.1,(1.6+(i%3))*s,0,6.2832);g.fill()}g.restore()}
  if(EP.evT!==undefined&&fr-EP.evT<130&&fr-EP.evT>=0){const u=(fr-EP.evT)/130;g.save();g.globalCompositeOperation='lighter';

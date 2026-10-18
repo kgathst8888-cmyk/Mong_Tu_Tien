@@ -4,7 +4,7 @@
  *     - 📅 Điểm Danh 7 Ngày: mỗi ngày (giờ VN) nhận 1 phần, đủ 7 ngày thì quay lại ngày 1. CFG.ck.
  *     - ⏱ Quà Online: cộng dồn phút online trong ngày (reset 0h VN), đạt mốc nào nhận mốc đó. CFG.ol.
  *     - Sự kiện giới hạn thời gian: thêm 1 dòng vào CFG.events (from/to = ngày VN, mỗi nhân vật nhận 1 lần). Hết hạn tự khoá.
- *  🎁 GÓI QUÀ: CFG.gq (Tân Thủ 200💎 · Ưu Đãi 1 500💎 · Ưu Đãi 2 1.000💎, đều 💎 KHÔNG KHOÁ, mỗi nhân vật 1 lần/gói; PS[cur].evt.pk). it:[{s,r,l,u,o,n}] = trang bị mẫu (+u, o opt ngẫu nhiên).
+ *  🎁 GÓI QUÀ: CFG.gq (Tân Thủ 200💎 · Ưu Đãi 1 500💎 · Ưu Đãi 2 1.000💎 · Đột Phá 500💎 · Thần Cánh 1 200💎, đều 💎 KHÔNG KHOÁ, mỗi nhân vật 1 lần/gói; PS[cur].evt.pk). it:[{s,r,l,u,o,n}] = trang bị mẫu (+u, o opt ngẫu nhiên).
  *  💳 BẢNG GIÁ NẠP: 20.000đ = 200💎 KHÔNG KHOÁ, tuyến tính (100đ = 1💎, không tặng thêm) đến 1.000.000đ = 10.000💎; hướng dẫn nạp + bảng "💎 mua được gì" lấy từ Cash Shop.
  *     💎 KHÔNG KHOÁ (nạp) dùng được ở Chợ Online; 🔒 Linh Thạch KHOÁ (kiếm từ đánh Boss) thì không (xem linh_thach_khoa.sql).
  *     Game KHÔNG có cổng thanh toán: người chơi chuyển khoản → admin cộng 💎 bằng 🛡 Admin → 👤 Tài khoản → Cộng Linh Thạch (= không khoá).
@@ -54,7 +54,12 @@ var CFG={
     {id:'gq_uu_dai_1',ico:'🎁',n:'Gói Ưu Đãi 1',price:500,d:'Trọn bộ vé tăng EXP để cày cấp.',
      q:{csh:{vx:2,x5:2,x7:1}}},
     {id:'gq_uu_dai_2',ico:'👑',n:'Gói Ưu Đãi 2',price:1000,d:'Gói lớn: vàng, bùa EXP và trang sức Thần Thoại.',
-     q:{gold:10000000,csh:{x7:5},it:[{s:4,r:4,l:21,u:7,o:6,n:2},{s:5,r:4,l:21,u:7,o:6,n:1}]}}],
+     q:{gold:10000000,csh:{x7:5},it:[{s:4,r:4,l:21,u:7,o:6,n:2},{s:5,r:4,l:21,u:7,o:6,n:1}]}},
+    /* pl = đan (vào Linh Điền: dtc Trúc Cơ · dkd Kim Đan · dna Nguyên Anh) · wf = mảnh cánh {0:cấp 1, 1:cấp 2, 2:cấp 3} */
+    {id:'gq_dot_pha',ico:'💊',n:'Gói Đột Phá',price:500,d:'Đủ đan đột phá Trúc Cơ → Nguyên Anh, kèm vé tăng EXP.',
+     q:{pl:{dtc:10,dkd:10,dna:10},csh:{x5:2}}},
+    {id:'gq_than_canh_1',ico:'🪽',n:'Gói Thần Cánh 1',price:200,d:'Mảnh cánh để hợp thành cánh cấp 1 và góp cho cấp 2.',
+     q:{wf:{0:3,1:1}}}],
   /* 💳 Bảng giá nạp: vnd = số tiền · lt = 💎 KHÔNG KHOÁ nhận được. Tỉ lệ 20.000đ = 200💎 (100đ = 1💎), nhân lên đến 1.000.000đ. */
   pk:[
     {vnd:20000,lt:200},
@@ -112,6 +117,8 @@ function desc(q){
   var a=[];
   if(q.gold)a.push('💰 '+nf(q.gold));
   if(q.csh)Object.keys(q.csh).forEach(function(k){a.push(nm(k)+' ×'+q.csh[k])});
+  if(q.pl)Object.keys(q.pl).forEach(function(k){a.push(({dtc:'🟡 Trúc Cơ Đan',dkd:'🟠 Kim Đan Đan',dna:'🟣 Nguyên Anh Đan'}[k]||k)+' ×'+q.pl[k])});
+  if(q.wf)Object.keys(q.wf).forEach(function(l){a.push('🪽 Mảnh Cánh Cấp '+(+l+1)+' ×'+q.wf[l])});
   if(q.fe)a.push('🔩 Quặng Sắt ×'+q.fe);
   if(q.hk)a.push('🌑 Huyền Kim ×'+q.hk);
   if(q.gm)Object.keys(q.gm).forEach(function(l){a.push('🪨 Đá Khảm cấp '+l+' chưa mài ×'+q.gm[l])});
@@ -119,11 +126,13 @@ function desc(q){
   if(q.eq){var r=q.eq.r|0,c='#ffe9a0',n='';try{c=RC[r];n=RN[r]}catch(e){}a.push('🎁 Trang bị <span style="color:'+c+'">'+esc(n)+'</span> ×'+q.eq.n)}
   return a.join(' · ')}
 function merge(list){
-  var o={gold:0,csh:{},fe:0,hk:0,eq:{},gm:{},it:[]};
+  var o={gold:0,csh:{},fe:0,hk:0,eq:{},gm:{},it:[],pl:{},wf:{}};
   list.forEach(function(q){
     o.gold+=q.gold|0;o.fe+=q.fe|0;o.hk+=q.hk|0;
     if(q.csh)Object.keys(q.csh).forEach(function(k){o.csh[k]=(o.csh[k]|0)+q.csh[k]});
     if(q.gm)Object.keys(q.gm).forEach(function(l){o.gm[l]=(o.gm[l]|0)+q.gm[l]});
+    if(q.pl)Object.keys(q.pl).forEach(function(k){o.pl[k]=(o.pl[k]|0)+q.pl[k]});
+    if(q.wf)Object.keys(q.wf).forEach(function(l){o.wf[l]=(o.wf[l]|0)+q.wf[l]});
     if(q.it)q.it.forEach(function(t){o.it.push(t)});
     if(q.eq){var r=q.eq.r|0;o.eq[r]=(o.eq[r]|0)+q.eq.n}});
   return o}
@@ -142,6 +151,8 @@ function grant(list){
   if(Object.keys(m.csh).length&&!window.CSH)return'Chưa có Cash Shop để nhận vật phẩm.';
   if((m.fe||m.hk)&&!(typeof MN!=='undefined'&&MN.get))return'Chưa có kho quặng để nhận quặng.';
   if(Object.keys(m.gm).length&&!(window.GEMX&&GEMX.add))return'Chưa có kho Đá Khảm để nhận đá.';
+  if(Object.keys(m.pl).length&&!(typeof FM!=='undefined'&&FM.get))return'Chưa có Linh Điền để nhận đan.';
+  if(Object.keys(m.wf).length&&typeof WFA!=='function')return'Chưa có kho mảnh cánh để nhận mảnh.';
   if(eqN){
     var cap=90;try{cap=capN()}catch(e){}
     if(BAG.length+eqN>cap)return'🎒 Túi không đủ chỗ cho '+eqN+' trang bị — dọn túi rồi nhận lại.'}
@@ -151,6 +162,8 @@ function grant(list){
     if(m.fe)MN.get().fe+=m.fe;
     if(m.hk)MN.get().hk+=m.hk;
     Object.keys(m.gm).forEach(function(l){GEMX.add(m.gm[l],+l)});
+    if(Object.keys(m.pl).length){var fs=FM.get();if(!fs.pills)fs.pills={};Object.keys(m.pl).forEach(function(k){fs.pills[k]=(fs.pills[k]|0)+m.pl[k]})}
+    if(Object.keys(m.wf).length){Object.keys(m.wf).forEach(function(l){WFA(+l,m.wf[l])});try{dgSave()}catch(x){}}
     Object.keys(m.eq).forEach(function(r){for(var i=0;i<m.eq[r];i++)BAG.push(gen(lv(),+r))});
     m.it.forEach(function(t){for(var i=0;i<t.n;i++)BAG.push(mkIt(t))})
   }catch(e){return'Lỗi khi nhận quà, thử lại.'}
