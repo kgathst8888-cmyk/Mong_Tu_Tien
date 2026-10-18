@@ -9,6 +9,7 @@
       "core/00-error-handler.js",
       "systems/10-alpha-epoch.js",
       "systems/11-cloud-only.js",
+      "systems/10b-alpha-epoch-live.js",
       "core/01a-base-data.js",
       "core/01b-items-sets-wheel.js",
       "core/01c-affix-petdata-skills.js",

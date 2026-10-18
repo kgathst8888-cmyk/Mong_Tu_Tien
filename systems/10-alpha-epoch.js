@@ -7,12 +7,22 @@ var URL_='https://fdaoswcyhbkzzuwlbrdp.supabase.co',KEY='sb_publishable_QJOcJQ3W
 var EK='kthm_alpha_epoch';
 var WIPE=['kthm2','kthm_qs','kthm_dg','kthm2_arena_v3','kthm_sig_kthm2','kthm_localbak','kthm_cloud'];
 try{
-  var x=new XMLHttpRequest();
-  x.open('POST',URL_+'/rest/v1/rpc/alpha_epoch_get',false);
-  x.timeout=4000;
-  x.setRequestHeader('apikey',KEY);x.setRequestHeader('Content-Type','application/json');
-  x.send('{}');
-  if(x.status!==200)return;
+  /* FIX272b: thử tối đa 3 lần (trước đây lỗi mạng 1 lần là bỏ qua → máy giữ bản cũ và đẩy ngược lên mây → tài khoản không bị reset).
+   * Máy offline thì bỏ qua ngay; phần còn lại do systems/10b-alpha-epoch-live.js kiểm tra lại liên tục. */
+  var x=null;
+  if(navigator.onLine===false)return;
+  for(var t=0;t<3;t++){
+    try{
+      x=new XMLHttpRequest();
+      x.open('POST',URL_+'/rest/v1/rpc/alpha_epoch_get',false);
+      x.timeout=4000;
+      x.setRequestHeader('apikey',KEY);x.setRequestHeader('Content-Type','application/json');
+      x.send('{}');
+      if(x.status===200)break;
+    }catch(e){x=null}
+    x=null;
+  }
+  if(!x||x.status!==200)return;
   var srv=JSON.parse(x.responseText),se=srv&&(srv.epoch|0);
   if(!se)return;
   var mine=localStorage.getItem(EK);
