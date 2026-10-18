@@ -52,7 +52,9 @@ PL.forEach(p=>{for(const h in p.rc)p.rc[h]=Math.ceil(p.rc[h]*1.7)});
 /* công thức chéo: mỗi đan thuộc tính cần thêm 1 loại thảo khác → phải trồng nhiều loại */
 PM.pa.rc.thao=2;PM.pd.rc.lien=2;PM.ph.rc.hoa=2;PM.pm.rc.dang=2;PM.pt.rc.sam=1;
 Object.entries({tv1:.75,tv2:.65,pa:.60,pd:.60,ph:.60,pm:.60,pt:.60,tt:.55}).forEach(([k,v])=>{PM[k].sc=v});
-const sce=p=>Math.max(CFG.scMin,p.sc*CFG.scMul-CFG.scRealm*Math.max(0,ZC.rI()));
+/* Fix296: 4 đan thuộc tính (Công/Thủ/HP/MP) luôn thành 80%, không giảm theo cảnh giới */
+['pa','pd','ph','pm'].forEach(k=>{PM[k].sc=2;PM[k].mn=.80});
+const sce=p=>Math.max(p.mn||CFG.scMin,p.sc*CFG.scMul-CFG.scRealm*Math.max(0,ZC.rI()));
 const KN={a:'Công',d:'Thủ',h:'HP',m:'MP'};
 const fresh=()=>({seeds:{},herbs:{},pills:{},np:CFG.plots0,plots:Array(CFG.plots0).fill(null),sel:'chi',na:{until:0,on:0,last:0,pm:{}}});
 let S=fresh();
