@@ -337,7 +337,7 @@ function gateSpr(st,u){var key=st+'|'+u.toFixed(3)+'|'+DPR,hit=GC[key];if(hit)re
   if(st<2){var a2=st?-2.9:-.2,a3=-.25;q.lineCap='round';q.strokeStyle='#a38a58';q.lineWidth=3.4*u;q.beginPath();for(i=0;i<=40;i++){var ar=-3.05+i/40*(st?1.0:2.9),pr=pt(ar,ro*.5);i?q.lineTo(pr[0],pr[1]):q.moveTo(pr[0],pr[1])}q.stroke();
     q.strokeStyle='rgba(60,44,22,.7)';q.lineWidth=3.4*u;q.setLineDash([2.2*u,2.8*u]);q.stroke();q.setLineDash([])}
   var o2={c:o.c,w:w,h:h};GC[key]=o2;return o2}
-function drawGate(){var ready=lgReq(),done=lgDone(),x=gateX()*s,y=gateY(),t=fr,u=s,R=54*u,RX=R*.62,st=done?2:ready?1:0,pu=.5+.5*Math.sin(t*.08),sp=gateSpr(st,u),i,m,a;
+function drawGate(){var ready=lgReq(),done=lgDone(),x=gateX()*s,y=gateY(),t=fr,u=s*(2/3),R=54*u,RX=R*.62,st=done?2:ready?1:0,pu=.5+.5*Math.sin(t*.08),sp=gateSpr(st,u),i,m,a;
   g.save();g.globalCompositeOperation='lighter';var gc=['120,100,170','255,70,90','110,230,235'][st],ga=[.13,.2+.12*pu,.3][st];g.fillStyle=rg(g,x,y,R*.3,R*2.1,[0,'rgba('+gc+','+ga+')',1,'rgba('+gc+',0)']);g.beginPath();g.arc(x,y,R*2.1,0,TAU);g.fill();g.restore();
   g.drawImage(sp.c,x-sp.w/2,y-sp.h/2,sp.w,sp.h);
   g.save();g.beginPath();g.ellipse(x,y,RX,R,0,0,TAU);g.clip();g.translate(x,y);g.scale(.62,1);

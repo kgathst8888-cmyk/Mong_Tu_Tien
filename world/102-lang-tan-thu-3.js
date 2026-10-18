@@ -30,7 +30,7 @@ function eligible(){return ((P&&P.lv)|0)>=REQ_LV}
 
 /* ---------- vị trí ---------- */
 var bx=function(i){return vw()*(.12+.19*i)};
-var GATE_X=function(){return vw()*.5},GATE_Y=function(){return GY-(PORT?300:235)*s},GATE_R=function(){return 34*s};
+var GATE_X=function(){return Math.min(vw()-42,vw()*.86+Math.min(130,vw()*.16)*.85)},GATE_Y=function(){return GY-(PORT?300:235)*s},GATE_R=function(){return 34*s};
 var BACK_X=function(){return vw()*.5},BACK_Y=function(){return GY-(PORT?300:235)*s};
 function plainVillage(){
   try{
@@ -202,15 +202,16 @@ function portal(x,y,rgb,core,t,locked){
   if(!locked&&!lite()){g.globalCompositeOperation='lighter';
     for(j=0;j<12;j++){var u=((t*.012)+j*.083)%1,a=j*2.4+u*5,rr=(1-u)*r*1.6;g.fillStyle='rgba(255,236,170,'+(.8*Math.sin(u*3.1416))+')';g.beginPath();g.arc(Math.cos(a)*rr*.62,Math.sin(a)*rr,(1.1+(j%3)*.5)*s,0,PI2);g.fill()}}
   g.restore()}
+var PK=1;/* Fix316: hệ số thu nhỏ tên cổng (chỉ gateDraw đặt <1) */
 function plate(x,y,a,b,colA,colB){
-  if(window.GTK){GTK.plate(x,y-Math.max(11,12*s)*.2,s,a,b,colA,colB,PLRGB);return}
-  var fs=Math.max(11,13*s);g.save();g.textAlign='center';g.lineWidth=4;g.strokeStyle='rgba(0,0,0,.8)';
+  if(window.GTK){GTK.plate(x,y-Math.max(11,12*s)*.2,s*PK,a,b,colA,colB,PLRGB);return}
+  var fs=Math.max(9,13*s*PK);g.save();g.textAlign='center';g.lineWidth=4;g.strokeStyle='rgba(0,0,0,.8)';
   g.font='bold '+fs+'px '+FONT;g.strokeText(a,x,y);g.fillStyle=colA;g.fillText(a,x,y);
-  g.font=Math.max(10,11.5*s)+'px '+FONT;g.strokeText(b,x,y+fs*1.25);g.fillStyle=colB;g.fillText(b,x,y+fs*1.25);g.restore()}
+  g.font=Math.max(8,11.5*s*PK)+'px '+FONT;g.strokeText(b,x,y+fs*1.25);g.fillStyle=colB;g.fillText(b,x,y+fs*1.25);g.restore()}
 function gateDraw(t){
   var ok=eligible(),x=GATE_X()*s,y=GATE_Y(),r=GATE_R();
   portal(x,y,ok?'140,200,255':'150,140,170',ok?['#f2fbff','#5aa8e8','#0a1a3a']:['#201a2e','#3a3052','#120e1c'],t,!ok);
-  plate(x,y-r-14*s+Math.sin(t*.1)*2,'❄ Làng Tân Thủ 3',ok?'chạm để bước vào':'🔒 Cần Lv'+REQ_LV,ok?'#d6ecff':'#cdbfe8',ok?'#eaf6ff':'#ff9a8a')}
+  PK=.7;plate(x,y-r-10*s+Math.sin(t*.1)*2,'❄ Làng Tân Thủ 3',ok?'chạm để bước vào':'🔒 Cần Lv'+REQ_LV,ok?'#d6ecff':'#cdbfe8',ok?'#eaf6ff':'#ff9a8a');PK=1}
 function backDraw(t){
   var x=BACK_X()*s,y=BACK_Y(),r=GATE_R();
   portal(x,y,'110,235,170',['#f2fff8','#45c98c','#0b3a2a'],t,false);

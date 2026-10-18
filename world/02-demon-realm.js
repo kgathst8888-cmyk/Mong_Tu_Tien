@@ -16,7 +16,7 @@ function lgUI(){const p=PS[cur];if(lgDone())return'<div class="st" style="margin
 
 // Cổng / Phong ấn trong làng
 const gateX=()=>vw()*(PORT?.705:.69),gateY=()=>GY-(PORT?330:300)*s;
-function gateDraw(){const ready=lgReq(),done=lgDone(),x=gateX()*s,y=gateY(),t=fr,r=54*s,st=done?2:ready?1:0;
+function gateDraw(){const ready=lgReq(),done=lgDone(),x=gateX()*s,y=gateY(),t=fr,r=54*s*(2/3),st=done?2:ready?1:0;
  const C=[{ed:'#8a78b0',rgb:'130,110,180',core:['#1a1030','#2e2250','#0e0818']},{ed:'#ff6ad0',rgb:'255,80,200',core:['#fff2fb','#d02aa8','#2a0630']},{ed:'#7af0ff',rgb:'120,240,255',core:['#e8ffff','#3ab8e8','#0a3a6a']}][st],pu=.5+.5*Math.sin(t*.08),rx=r*.62;
  g.save();g.globalCompositeOperation='lighter';
  let q=g.createRadialGradient(x,y,r*.2,x,y,r*(st==1?2.6:2.1));q.addColorStop(0,'rgba('+C.rgb+','+(st==0?.28:st==1?.35+.2*pu:.5)+')');q.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=q;g.beginPath();g.arc(x,y,r*(st==1?2.6:2.1),0,6.283);g.fill();
@@ -40,7 +40,7 @@ function gateDraw(){const ready=lgReq(),done=lgDone(),x=gateX()*s,y=gateY(),t=fr
  g.font=Math.max(10,12*s)+'px KTH Serif,Songti SC,STKaiti,KaiTi,serif';g.strokeText(b,x,by);g.fillStyle=done?'#bff4ff':ready?'#ffc0ec':'#a898c4';g.fillText(b,x,by);g.restore()}
 const _vdraw=vdraw;vdraw=function(){_vdraw();gateDraw()};
 let gateGo=0;
-c.addEventListener('pointerdown',e=>{gateGo=0;if(!vil||bo||!started)return;const x=e.offsetX/s,y=e.offsetY;if(Math.abs(x-gateX())<56&&Math.abs(y-gateY())<85*s){vt=cl(gateX(),40,vw()-40);vgo=-1;gateGo=1}});
+c.addEventListener('pointerdown',e=>{gateGo=0;if(!vil||bo||!started)return;const x=e.offsetX/s,y=e.offsetY;if(Math.abs(x-gateX())<38&&Math.abs(y-gateY())<57*s){vt=cl(gateX(),40,vw()-40);vgo=-1;gateGo=1}});
 function gateAct(){if(lgDone())lgEnter();else if(!lgReq()){DT.push({x:P.x,y:200,s:'🔒 Cần Hoá Thần tầng 9 + chuyển chức 3 để khiêu chiến Ma Thần',c:'#e0b0ff',g:1,l:170})}else mtAsk()}
 const _vstep=vstep;vstep=function(){_vstep();if(gateGo){if(mvDir)gateGo=0;else if(vt==null){gateGo=0;if(Math.abs(P.x-cl(gateX(),40,vw()-40))<10)gateAct()}}};
 
