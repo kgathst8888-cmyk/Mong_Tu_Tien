@@ -6,7 +6,7 @@
  *   Kim Cang Bất Hoại Thân(Thượng) : 2% rơi Boss Kiếm Thánh        · +50 tiềm năng, HP/Công/Thủ/MP +5%
  *   Hỗn Mang Bách Diệt Kinh(Đỉnh)  : 1% rơi Ác Ma Thượng Giới      · +100 tiềm năng, HP/Công/Thủ/MP +10%
  * Phẩm: Thiên ×1 · Địa ×1.2 · Huyền ×1.5 · Hoàng ×2 (nhân toàn bộ chỉ số của bí kíp).
- * Nội tại 🛡 Bất Diệt Thân: luôn có khiên = 30% HP tối đa; khiên vỡ → hồi chiêu 15s, hết hồi chiêu tự có khiên lại. Mở khi đang mang 1 bí kíp ĐÃ luyện thành (CF.skillFrom).
+ * Nội tại 🛡 Bất Diệt Thân: luôn có khiên = 30% HP tối đa; khiên vỡ → hồi chiêu 15s, hết hồi chiêu tự có khiên lại. Là kỹ năng của Hỗn Mang Bách Diệt Kinh: luyện thành là có (không cần mang vào ô 📖, mọi bản đồ).
  * Lưu: PS[cur].bk = {inv:[{u,k,s,p,q}], eq, col, n}  (theo từng nhân vật; ng() xoá).
  * Móc vào hệ cũ (không sửa core): PS[i].al[0..5] (cộng điểm tiềm năng, bọc getter của equipment/64) · ZC.ph/pa/pd/pm (nhân %) ·
  *   ZC.kill (điểm tu luyện) · drop (rơi bí kíp) · P.hp setter (khiên hấp thụ sát thương) · TSM (ô 📖 ui/95) · ui() (mục bán ở Tạp Hóa).
@@ -21,7 +21,6 @@ var CF={
   qm:[1,1.2,1.5,2],
   boss:{tn:.03,kc:.02,hm:.01},  /* tỉ lệ rơi: tn mọi Boss · kc Kiếm Thánh · hm Ác Ma Thượng Giới */
   shield:{pct:.3,cd:15000},
-  skillFrom:'done',             /* 'done' = cần bí kíp đã luyện thành · 'any' = chỉ cần đang mang bí kíp */
   invMax:60
 };
 var QN=['Thiên','Địa','Huyền','Hoàng'],QC=['#7fd8ff','#e8c878','#c58bff','#ff9d2e'];
@@ -117,7 +116,7 @@ function buy(k){
   if(gold<CF.price){say('💰 Không đủ vàng ('+fmt(CF.price)+')','#ff8a8a');return}
   if(!addBook('bl','Mua'))return;gold-=CF.price;sav();refresh()}
 /* ---------- Bất Diệt Thân ---------- */
-function unlocked(){var bk=eqBook();return !!bk&&(CF.skillFrom==='any'||bk.s===1)}
+function unlocked(){var b=D();if(!b)return false;for(var i=0;i<b.inv.length;i++)if(b.inv[i].k==='hm'&&b.inv[i].s===1)return true;return false}
 function cast(){
   try{
     if(!started||!unlocked()||SH.amt>0||Date.now()<SH.cd)return;
@@ -182,7 +181,7 @@ function render(){
     rest.forEach(function(bk){var d=DEF[bk.k];
       h+='<div class="bk-card"><img src="'+icon(bk.k)+'"><div class="tx"><b>'+d.n+' <small style="opacity:.7">('+d.t+')</small></b><em>'+status(bk)+'</em></div><button class="bt" onclick="BK.eq('+bk.u+')">Mang</button></div>'});
     h+='<div class="bk-sh"><b>🛡 Bất Diệt Thân (nội tại)</b> — luôn có khiên bằng '+Math.round(CF.shield.pct*100)+'% HP tối đa; khiên vỡ thì hồi chiêu '+CF.shield.cd/1000+'s rồi tự có lại.<br>'
-      +(unlocked()?'<span style="color:#9fffb0">Đã mở · tự động có khiên, mọi bản đồ (kể cả Tiên Giới).</span>':'<span style="opacity:.8">Cần mang 1 bí kíp '+(CF.skillFrom==='any'?'':'đã luyện thành ')+'để mở.</span>')+'</div>';
+      +(unlocked()?'<span style="color:#9fffb0">Đã học · tự động có khiên, mọi bản đồ (kể cả Tiên Giới).</span>':'<span style="opacity:.8">Kỹ năng của Hỗn Mang Bách Diệt Kinh — luyện thành là học được.</span>')+'</div>';
     h+='<div class="bk-note">Luyện: '+Math.round(CF.roll.fail/(CF.roll.fail+CF.roll.t+CF.roll.d+CF.roll.h+CF.roll.v)*100)+'% thất bại · phẩm Thiên ×1, Địa ×1.2, Huyền ×1.5, Hoàng ×2.</div>'}
   h+='<button class="bt" style="display:block;margin:10px 0 0 auto" onclick="BK.close()">Đóng</button>';
   o.firstChild.innerHTML=h}
