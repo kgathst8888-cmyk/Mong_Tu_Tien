@@ -5,6 +5,7 @@
   "source": "Mong_Tu_Tien_Modular_v2_Fix37_LangOnline.zip",
   "modules": {
     "core": [
+      "core/00-khoa-zoom-mobile.js",
       "core/00-error-handler.js",
       "systems/10-alpha-epoch.js",
       "systems/11-cloud-only.js",
