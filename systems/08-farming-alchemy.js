@@ -13,6 +13,8 @@ const CFG={
  dead:21600000,  /* quá 6 giờ → khô chết, mất trắng */
  evPest:.10,evBoon:.07, /* khi thu hoạch: 10% sâu bệnh (−50%), 7% linh khí tràn đầy (+50%) */
  brewBonus:.08,         /* 8% luyện ra thượng phẩm (+1 viên) */
+ growMul:1.4,         /* Fix281: thời gian trồng cây +40% (1 = như cũ) */
+  scMul:.4,            /* Fix281: tỉ lệ luyện đan thành công nhân 0.8 (1 = như cũ), vẫn không dưới scMin */
  scRealm:.02,scMin:.30, /* tỉ lệ luyện thành giảm 2%/cảnh giới, tối thiểu 30% */
  plots0:6,            /* số ô đất ban đầu */
  plotsMax:12,         /* số ô đất tối đa */
@@ -31,7 +33,7 @@ const HB=[
  {id:'truc',n:'Tị Lôi Trúc',   e:'🎋',c:'#c0a0ff',g:480,y:[2,4],d:[.05,.25,.18,.15,.40],u:'Tị Lôi Đan (giảm sát thương lôi kiếp)'},
  {id:'cot', n:'Cốt Linh Thảo', e:'🦴',c:'#e8d8a8',g:540,y:[2,4],d:[.06,.28,.20,.18,.42],u:'Tôi Thể Đan (chuyển cấp Phàm Nhân → Đạo Thể)'}
 ];
-HB.forEach(b=>{b.g=Math.round(b.g*2.5);if(b.y[1]>=4)b.y=[b.y[0]-1,b.y[1]-1];else b.y=[Math.max(1,b.y[0]-1),b.y[1]];b.d=b.d.map(v=>+(v*.6).toFixed(3))});
+HB.forEach(b=>{b.g=Math.round(b.g*2.5*CFG.growMul);if(b.y[1]>=4)b.y=[b.y[0]-1,b.y[1]-1];else b.y=[Math.max(1,b.y[0]-1),b.y[1]];b.d=b.d.map(v=>+(v*.6).toFixed(3))});
 const HM={};HB.forEach(b=>HM[b.id]=b);
 const BN=['Tinh Anh','Boss Thế Giới','Boss Sử Thi','Trùm Hầm Ngục','Ma Thần'];
 /* Đan dược. k: tv = tu vi · a/d/h/m = thuộc tính · td = giảm sát thương lôi kiếp */
@@ -50,7 +52,7 @@ PL.forEach(p=>{for(const h in p.rc)p.rc[h]=Math.ceil(p.rc[h]*1.7)});
 /* công thức chéo: mỗi đan thuộc tính cần thêm 1 loại thảo khác → phải trồng nhiều loại */
 PM.pa.rc.thao=2;PM.pd.rc.lien=2;PM.ph.rc.hoa=2;PM.pm.rc.dang=2;PM.pt.rc.sam=1;
 Object.entries({tv1:.75,tv2:.65,pa:.60,pd:.60,ph:.60,pm:.60,pt:.60,tt:.55}).forEach(([k,v])=>{PM[k].sc=v});
-const sce=p=>Math.max(CFG.scMin,p.sc-CFG.scRealm*Math.max(0,ZC.rI()));
+const sce=p=>Math.max(CFG.scMin,p.sc*CFG.scMul-CFG.scRealm*Math.max(0,ZC.rI()));
 const KN={a:'Công',d:'Thủ',h:'HP',m:'MP'};
 const fresh=()=>({seeds:{},herbs:{},pills:{},np:CFG.plots0,plots:Array(CFG.plots0).fill(null),sel:'chi',na:{until:0,on:0,last:0,pm:{}}});
 let S=fresh();
