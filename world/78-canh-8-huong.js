@@ -54,7 +54,10 @@ drawWings=function(){
 var _h=hero;
 hero=function(){
  _h.apply(this,arguments);
- if(act()&&upSec()&&!cosmetic()){try{draw8()}catch(e){}}
+ if(act()&&upSec()&&!cosmetic()){
+  /* Fix333: hướng lên vẽ cánh SAU khi vẽ người nhưng world/74 đã nâng người theo độ bay (fo + nhấp nhô) → nâng cánh đúng bằng đó (trước đây cánh tụt xuống ngang mông) */
+  var ST=window.VPG8.state,bp=ST.bp||0,up=(ST.fo||0)+(ST.hv||0)*(Math.sin(bp*1.25)*3.2+Math.sin(bp*2.3+1.1)*.9);
+  try{g.save();if(up)g.translate(0,-up*s);draw8()}catch(e){}finally{g.restore()}}
 };
 window.WG8={draw:draw8};
 })();

@@ -35,7 +35,9 @@ ZC.pm=function(){var v=_pm.apply(this,arguments);if(!on())return v;try{return v*
 ZC.pd=function(){var v=_pd.apply(this,arguments);if(!on())return v;try{return v*bonus(50,P.lv*30+20+sm('d')+alD())}catch(e){return v}};
 
 /* Chỉ mặc được trang bị Thánh (mọi cấp). Đồ khác bị chặn; đồ đang mặc được tháo về túi */
-function holy(it){return !!it&&(it.r|0)>=CF.holyR}
+/* Fix332: tài khoản admin (ADMIN.isAdmin) mặc được mọi trang bị để test (bảng admin chỉ tạo đồ tới phẩm 5, không tạo được đồ Thánh) */
+function admOk(){try{return !!(window.ADMIN&&ADMIN.isAdmin&&ADMIN.isAdmin())}catch(e){return false}}
+function holy(it){return !!it&&(admOk()||(it.r|0)>=CF.holyR)}
 var _eqp=eqp;
 eqp=function(it){if(on()&&it&&!holy(it)){msg='⛔ Tiên Nhân chỉ mặc được trang bị Thánh';try{ui()}catch(e){}return}return _eqp.apply(this,arguments)};
 function strip(){
@@ -156,5 +158,5 @@ function sync(){
   })}catch(e){}
 }
 sync();
-window.CTHE={on:on,open:open,close:close,cfg:CF,rate:rate,pts:function(){return on()?CF.pts:0}};
+window.CTHE={on:on,open:open,close:close,cfg:CF,canWear:function(it){return !on()||holy(it)},rate:rate,pts:function(){return on()?CF.pts:0}};
 })();
