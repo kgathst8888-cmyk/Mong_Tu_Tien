@@ -329,11 +329,12 @@ function drawAll(){
   for(i=0;i<3;i++){x=(ww*(.18+i*.3)+Math.sin(t*.012+i*2)*70)*s;a=y-(300+i*26)*s+Math.sin(t*.03+i*1.3)*14*s;g.globalAlpha=.5;g.drawImage(SP.gh,x-26*s,a-32*s,52*s,63*s);g.globalAlpha=1}
   for(i=0;i<18;i++){x=(ww*((i*.1371+.03)%1)+Math.sin(t*.011+i)*24)*s;a=y-(26+(i*47)%150)*s+Math.sin(t*.021+i*2)*10*s;g.globalAlpha=.45+.45*Math.sin(t*.06+i*1.9)*Math.sin(t*.06+i*1.9);g.drawImage(SP.fg,x-9*s,a-9*s,18*s,18*s)}
   g.globalAlpha=1}
-var inVd=0,_vd=vdraw;vdraw=function(){inVd=1;try{return _vd.apply(this,arguments)}finally{inVd=0}};
+/* Fix334: world/77 vẽ NGƯỜI CHƠI KHÁC bằng cách gọi drawEP() cho từng người → drawAll() bị gọi lặp (N+1 lần/khung) làm bí ngô/bộ xương/Sứ Giả xếp chồng. Chỉ vẽ 1 lần/khung, và chỉ ở lượt của nhân vật mình. */
+var inVd=0,drew=0,ownP=null,_vd=vdraw;vdraw=function(){inVd=1;drew=0;ownP=(typeof P!=='undefined')?P:null;try{return _vd.apply(this,arguments)}finally{inVd=0}};
 var _xb=(typeof xbg==='function')?xbg:null;
 if(_xb)xbg=function(gy,m){var r=_xb.apply(this,arguments);try{if(m===-1&&inVd&&inVillage())sky(gy)}catch(e){}return r};
 var _dep=(typeof drawEP==='function')?drawEP:null;
-if(_dep)drawEP=function(){try{if(inVd&&inVillage())drawAll()}catch(e){}return _dep.apply(this,arguments)};
+if(_dep)drawEP=function(){try{if(inVd&&!drew&&inVillage()&&(ownP===null||P===ownP)){drew=1;drawAll()}}catch(e){}return _dep.apply(this,arguments)};
 var _vs=vstep;vstep=function(){_vs.apply(this,arguments);try{if(go){if(mvDir)go=0;else if(vt==null){go=0;if(Math.abs(P.x-cl(npcX(),40,vw()-40))<14)open()}}}catch(e){}};
 c.addEventListener('pointerdown',function(e){
   go=0;if(on||!inVillage())return;
