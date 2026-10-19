@@ -42,7 +42,7 @@ var MATS=[{k:'sg',n:'Đường',e:'🍚'},{k:'fl',n:'Bột Mì',e:'🌾'},{k:'ml
 function active(){var t=Date.now();return t>=CF.start&&t<CF.end}
 function H(){var p=PS[cur];if(!p)return{sg:0,fl:0,ml:0,pk:0,gp:0,c1:0,c2:0,c3:0,wf4:0,u1:0,u2:0,u3:0,upk:0,cl:{}};
   if(!p.hw)p.hw={sg:0,fl:0,ml:0,pk:0,gp:0,c1:0,c2:0,c3:0,wf4:0,u1:0,u2:0,u3:0,upk:0,cl:{}};
-  ['sg','fl','ml','pk','gp','c1','c2','c3','wf4','u1','u2','u3','upk'].forEach(function(k){if(p.hw[k]==null)p.hw[k]=0});if(!p.hw.cl||typeof p.hw.cl!=='object')p.hw.cl={};return p.hw}
+  ['sg','fl','ml','pk','gp','c1','c2','c3','wf4','u1','u2','u3','upk'].forEach(function(k){if(p.hw[k]==null)p.hw[k]=0});if(!p.hw.cl||typeof p.hw.cl!=='object')p.hw.cl={};if(p.hw.wf4>0&&typeof WFA==='function'){WFA(3,p.hw.wf4);p.hw.wf4=0;try{dgSave()}catch(e){}}return p.hw}
 function nf(n){try{return fmtN(n)}catch(e){return String(n)}}
 function save(){try{if(typeof sv==='function')sv()}catch(e){}}
 function say(t,c){try{DT.push({x:P.x,y:200,s:t,c:c||'#ffb347',g:1,l:130})}catch(e){}}
@@ -78,7 +78,7 @@ function applyR(it){
     case'eq':return giveEq();
     case'ham':CSH.give('ham',v);return'🔨 Búa Đục Lỗ ×'+v;
     case'dh':CSH.give('dh',v);return'🔮 Ngọc Định Hồn ×'+v;
-    case'wf4':H().wf4+=v;return'🪽 Mảnh Cánh Cấp 4 ×'+v+' (chờ cập nhật)'}
+    case'wf4':if(typeof WFA==='function'){WFA(3,v);try{dgSave()}catch(e){}}else H().wf4+=v;return'🪽 Mảnh Cánh Cấp 4 ×'+v}
   return''}
 function needLogin(){if(!logged()||!window.LT||!LT.spend){msg('☁ Cần đăng nhập để dùng chức năng có Linh Thạch.');return true}return false}
 

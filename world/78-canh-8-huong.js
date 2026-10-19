@@ -20,10 +20,10 @@ var _dw=drawWings;
 function draw8(){
  var l=wl();if(!l)return;var Wg=WGA[l-1];if(!Wg.im.naturalWidth)return;
  var ST=window.VPG8.state,c=Math.cos(ST.ang),ac=Math.abs(c),
-  aa=P.atk>0,mv=!!P.mv&&!aa,k=WGH[l-1]/Wg.h,t=fr,col=WGK[l-1];
- if(WS.lf!==fr){WS.lf=fr;WS.sp+=((aa?.3:mv?.2:.075)-WS.sp)*.08;WS.am+=((aa?.4:mv?.28:.13)-WS.am)*.08;WS.ph+=WS.sp}
+  aa=P.atk>0,mv=!!P.mv&&!aa,k=WGH[l-1]/Wg.h,t=fr,col=WGK[l-1],l4=l==4;WS.s4=l4?1:0;
+ if(WS.lf!==fr){WS.lf=fr;WS.sp+=((aa?.3:mv?.2:.075)*(l4?.7:1)-WS.sp)*(l4?.05:.08);WS.am+=((aa?.4:mv?.28:.13)*(l4?.9:1)-WS.am)*(l4?.05:.08);WS.ph+=WS.sp}
  var f=wgWv(WS.ph),th0=WGB[l-1]+(mv?.05:0)-CF.spread*(1-ac),
-  by=mv?-Math.abs(Math.sin(t*.3))*2.2:Math.sin(t*.08)*.7,
+  by=mv?-Math.abs(Math.sin(t*.3))*2.2:Math.sin(t*(l4?.05:.08))*(l4?1.1:.7),
   sx=1-.1*Math.max(0,-f)*(WS.am/.3+.4),
   /* e = hướng cánh: +1 chìa sang TRÁI màn hình, -1 sang PHẢI; qua 0 là nhìn nghiêng mép */
   eL=c>=0?1:1+2*c, eR=c<=0?-1:-1+2*c,
@@ -39,8 +39,8 @@ function draw8(){
   for(var i=0;i<2;i++){
    var w=wings[i],near=i===1,kk=k*(near?1:.88),th=th0*(near?1:.9),am=WS.am*(near?1:.92);
    g.save();g.translate(w.ox,0);
-   if(pass===0)wgSide(Wg,w.e,kk,th,am,w.ph,near?1:.9,'source-over',sx,8);
-   else wgSide(Wg,w.e,kk,th,am,w.ph,pul*(near?1:.8),'lighter',sx,4);
+   if(pass===0)wgSide(Wg,w.e,kk,th,am,w.ph,near?1:.9,'source-over',sx,l4?12:8);
+   else wgSide(Wg,w.e,kk,th,am,w.ph,pul*(near?1:.8),'lighter',sx,l4?6:4);
    g.restore();
   }
  }

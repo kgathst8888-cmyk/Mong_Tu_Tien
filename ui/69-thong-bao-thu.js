@@ -83,7 +83,8 @@ var ITM={
   bkhm:{t:'bk',e:'📖',n:'Bí Kíp: Hỗn Mang Bách Diệt Kinh',max:10},
   wf1:{t:'wf',w:0,e:'🪽',n:'Mảnh Cánh Cấp 1',max:1000},   /* Fix300: admin tặng mảnh cánh — cộng vào kho mảnh cánh (WFA, core/01u) */
   wf2:{t:'wf',w:1,e:'🪽',n:'Mảnh Cánh Cấp 2',max:1000},
-  wf3:{t:'wf',w:2,e:'🪽',n:'Mảnh Cánh Cấp 3',max:1000}
+  wf3:{t:'wf',w:2,e:'🪽',n:'Mảnh Cánh Cấp 3',max:1000},
+  wg4:{t:'wg',e:'🪽',n:'Cánh Cấp 4 (Long Vũ Thiên Thần Dực)',max:1}   /* Fix343: admin tặng thẳng Cánh Cấp 4 */
 };
 function normQ(q){
   if(!q||typeof q!=='object')return null;
@@ -154,6 +155,7 @@ function giveIt(k,n){
   else if(d.t==='herb'){s=FM.get();if(!s.herbs)s.herbs={};s.herbs[k]=(s.herbs[k]|0)+n}
   else if(d.t==='bk'){for(var i=0;i<n;i++)BK.give(k.slice(2),'Nhận thư')}
   else if(d.t==='wf'){WFA(d.w,n);try{dgSave()}catch(e){}}
+  else if(d.t==='wg'){if((p.wg|0)<4)p.wg=4}
 }
 /* trả về chuỗi lỗi nếu chưa nhận được, '' nếu thành công */
 function claimOne(m){

@@ -2,9 +2,10 @@
    (tách từ core/01-engine.js; thứ tự nạp giữ nguyên, xem index.html) */
 /*==== HẦM NGỤC + CÁNH ====*/
 const DGI={};{const S={boss:ASSET_PAYLOAD("p001"),impA:ASSET_PAYLOAD("p002"),impB:ASSET_PAYLOAD("p003")};for(const k in S){const i=new Image();i.src='data:image/webp;base64,'+S[k];DGI[k]=i}}
-let dg=null,dgU=-1,wfr=0,wf2=0,wf3=0,dgFl=0;
-try{const d=JSON.parse(localStorage.getItem('kthm_dg'));if(d){dgU=d.u;wfr=d.w|0;wf2=d.w2|0;wf3=d.w3|0}}catch(e){}
-const dgSave=()=>{try{localStorage.setItem('kthm_dg',JSON.stringify({u:dgU,w:wfr,w2:wf2,w3:wf3}))}catch(e){}},SLOT=3e5,dgSlot=()=>Math.floor(Date.now()/SLOT),dgOpen=()=>dgSlot()!==dgU,
+let dg=null,dgU=-1,wfr=0,wf2=0,wf3=0,wf4=0,lvu=0,dgFl=0;
+const LVU={need:100,rate:.05,n:1}; /* Fix342: Mảnh Long Vũ Thiên Thần — cần 100 để hợp Cánh Cấp 4; rơi từ Kiếm Thánh: tỉ lệ rate, mỗi lần n mảnh */
+try{const d=JSON.parse(localStorage.getItem('kthm_dg'));if(d){dgU=d.u;wfr=d.w|0;wf2=d.w2|0;wf3=d.w3|0;wf4=d.w4|0;lvu=d.lv|0}}catch(e){}
+const dgSave=()=>{try{localStorage.setItem('kthm_dg',JSON.stringify({u:dgU,w:wfr,w2:wf2,w3:wf3,w4:wf4,lv:lvu}))}catch(e){}},SLOT=3e5,dgSlot=()=>Math.floor(Date.now()/SLOT),dgOpen=()=>dgSlot()!==dgU,
 WGR=.1,BOSSMY=.3,dgM=()=>Math.min(4,Math.floor((P.lv-1)/20)),
 wl=()=>PS[cur].tier>=2?(PS[cur].wg|0):0,WB=k=>wl()*({dmgp:8,hpp:8,dodge:4}[k]||0);
 const dgh=document.getElementById('dgh'),dgb=document.getElementById('dgb');
@@ -50,7 +51,7 @@ const _drop=drop;drop=function(e){if(!e.dg)return _drop(e);const L=e.lv;if(e.k!=
 gold+=gP(400*L);const f=FB(8+Math.floor(R()*6));frag+=f;DT.push({x:e.x,y:120,s:'🔹 +'+f+' mảnh chế tạo',c:'#6ff',l:120});
 for(let i=0;i<3;i++){const x=R();if(R()>=EQD.boss)continue;give(gen(L,x<.15?3:x<.6?2:1),e.x+(i-1)*40,150+i*34)}
 if(R()<BOSSMY*EQD.rare){DT.push({x:e.x,y:260,s:'✨ Trang bị Thần Thoại!',c:RC[4],l:150,g:1});give(gen(L,4),e.x,230)}
-{const wv=wl(),nl=Math.min(2,wv);if(wv<3&&R()<WGD[nl]){WFA(nl,1);dgSave();DT.push({x:e.x,y:300,s:'🪽 +1 Mảnh Cánh Cấp '+(nl+1),c:['#fff3c0','#8fdcff','#ffc070'][nl],l:170,g:1})}}}
+{const wv=wl(),nl=Math.min(3,wv);if(wv<4&&R()<WGD[nl]){WFA(nl,1);dgSave();DT.push({x:e.x,y:300,s:'🪽 +1 Mảnh Cánh Cấp '+(nl+1),c:['#fff3c0','#8fdcff','#ffc070','#c9a8ff'][nl],l:170,g:1})}}}
 const _fire=fire;fire=function(i){const n0=PJ.length;SKF=1;try{_fire(i)}finally{SKF=0}for(let j=n0;j<PJ.length;j++)PJ[j].sk=1};
 const _foe=foe;foe=function(e){e.dg?dgFoe(e):_foe(e)};
 const _stp=step;step=function(){if(started&&fr%30==0)dgBtn();if(fr%6==0)dgHud();dgTick();_stp()};

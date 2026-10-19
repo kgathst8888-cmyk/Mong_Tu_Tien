@@ -495,7 +495,7 @@ function resetChar(){
   try{MN.reset()}catch(e){}
   try{FSH.load(null)}catch(e){}
   try{QS=qsNew();QS.dk=0;QS.wk=0;qsSave()}catch(e){}
-  try{dgU=-1;wfr=0;wf2=0;wf3=0;dgSave()}catch(e){}
+  try{dgU=-1;wfr=0;wf2=0;wf3=0;wf4=0;lvu=0;dgSave()}catch(e){}
   try{if(window.LCT&&LCT.off)LCT.off()}catch(e){}
   try{cq=null}catch(e){}
   try{NK=0;pq=[0,0];fz=[]}catch(e){}
