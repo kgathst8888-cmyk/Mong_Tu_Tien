@@ -96,6 +96,8 @@
       "world/82-tien-gioi-fx-pro.js",
       "world/83-map-treo-fx-pro.js",
       "world/88-skill-fx-ultra.js",
+      "world/105-pham-the-fx-pro.js",
+      "world/105b-pham-the-fx-recipes.js",
       "world/89-tien-gioi-nhan-vat-fx.js",
       "world/62-ac-ma-thuong-gioi.js",
       "world/85-skill-fold.js",
@@ -116,7 +118,8 @@
       "world/101-ban-do-dich-chuyen.js",
       "world/102-lang-tan-thu-3.js",
       "world/103-nghe-nghiep.js",
-      "world/104-chien-truong-tien-ma.js"
+      "world/104-chien-truong-tien-ma.js",
+      "world/106-tong-mon.js"
     ],
     "systems": [
       "systems/08-farming-alchemy.js",
