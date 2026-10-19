@@ -23,6 +23,8 @@ if(typeof PS==='undefined'||typeof BAG==='undefined'||typeof gen!=='function')re
 var FONT='KTH Serif,Songti SC,STKaiti,KaiTi,serif';
 
 /* ====================== CẤU HÌNH (chỉnh ở đây) ====================== */
+/* Fix341: bộ 10 món đủ 10 ô trang bị (0 Binh Khí · 1 Khiên · 2 Hộ Tâm Kính · 3 Mũ · 4 Găng · 5 Quần · 6 Giày · 7-8 Nhẫn · 9 Dây Chuyền), Thiên Thần +7, 6 opt ngẫu nhiên */
+function vipSet(l,mp){var a=[];for(var s=0;s<10;s++)a.push({s:s,r:5,l:l,u:7,o:6,n:1,mp:mp});return a}
 var CFG={
   /* 📅 Điểm danh: 7 phần quà theo thứ tự ngày 1..7 */
   ck:[
@@ -59,7 +61,12 @@ var CFG={
     {id:'gq_dot_pha',ico:'💊',n:'Gói Đột Phá',price:500,d:'Đủ đan đột phá Trúc Cơ → Nguyên Anh, kèm vé tăng EXP.',
      q:{pl:{dtc:10,dkd:10,dna:10},csh:{x5:2}}},
     {id:'gq_than_canh_1',ico:'🪽',n:'Gói Thần Cánh 1',price:200,d:'Mảnh cánh để hợp thành cánh cấp 1 và góp cho cấp 2.',
-     q:{wf:{0:3,1:1}}}],
+     q:{wf:{0:3,1:1}}},
+    /* Fix341 — Gói Trang Bị VIP: trọn bộ 10 món cho đủ 10 ô (s=0..9), Thiên Thần (r=5) +7, đúng 6 opt ngẫu nhiên. mp = bản đồ gốc cố định (3 U Minh Lv60-80 · 4 Hư Không Lv80+) */
+    {id:'gq_vip_1',ico:'🛡️',n:'Gói Trang Bị VIP 1',price:2000,d:'Trọn bộ 10 món Thiên Thần Lv60 +7 cho đủ 10 ô trang bị.',
+     q:{it:vipSet(60,3)}},
+    {id:'gq_vip_2',ico:'⚜️',n:'Gói Trang Bị VIP 2',price:3000,d:'Trọn bộ 10 món Thiên Thần Lv80 +7 cho đủ 10 ô trang bị.',
+     q:{it:vipSet(80,4)}}],
   /* 💳 Bảng giá nạp: vnd = số tiền · lt = 💎 KHÔNG KHOÁ nhận được. Tỉ lệ 20.000đ = 200💎 (100đ = 1💎), nhân lên đến 1.000.000đ. */
   pk:[
     {vnd:20000,lt:200},
@@ -122,7 +129,10 @@ function desc(q){
   if(q.fe)a.push('🔩 Quặng Sắt ×'+q.fe);
   if(q.hk)a.push('🌑 Huyền Kim ×'+q.hk);
   if(q.gm)Object.keys(q.gm).forEach(function(l){a.push('🪨 Đá Khảm cấp '+l+' chưa mài ×'+q.gm[l])});
-  if(q.it)q.it.forEach(function(t){var c='#ffe9a0',n='';try{c=RC[t.r];n=RN[t.r]}catch(e){}a.push('🎁 '+({0:'Vũ khí',4:'Nhẫn',5:'Dây chuyền'}[t.s]||'Trang bị')+' <span style="color:'+c+'">'+esc(n)+'</span> Lv'+t.l+(t.u?' +'+t.u:'')+(t.o?' ('+t.o+' opt ngẫu nhiên)':'')+' ×'+t.n)});
+  if(q.it&&q.it.length>=10&&q.it.every(function(t){return t.r===q.it[0].r&&t.l===q.it[0].l&&t.u===q.it[0].u&&t.o===q.it[0].o})){
+    var f=q.it[0],fc='#ffe9a0',fn='';try{fc=RC[f.r];fn=RN[f.r]}catch(e){}
+    a.push('🎁 Trọn bộ '+q.it.length+' món (đủ '+q.it.length+' ô trang bị) <span style="color:'+fc+'">'+esc(fn)+'</span> Lv'+f.l+' +'+f.u+' ('+f.o+' opt ngẫu nhiên)')}
+  else if(q.it)q.it.forEach(function(t){var c='#ffe9a0',n='';try{c=RC[t.r];n=RN[t.r]}catch(e){}a.push('🎁 '+({0:'Vũ khí',4:'Nhẫn',5:'Dây chuyền'}[t.s]||'Trang bị')+' <span style="color:'+c+'">'+esc(n)+'</span> Lv'+t.l+(t.u?' +'+t.u:'')+(t.o?' ('+t.o+' opt ngẫu nhiên)':'')+' ×'+t.n)});
   if(q.eq){var r=q.eq.r|0,c='#ffe9a0',n='';try{c=RC[r];n=RN[r]}catch(e){}a.push('🎁 Trang bị <span style="color:'+c+'">'+esc(n)+'</span> ×'+q.eq.n)}
   return a.join(' · ')}
 function merge(list){
@@ -139,7 +149,7 @@ function merge(list){
 /* tạo trang bị theo mẫu: đúng ô/phẩm/cấp, đúng t.o opt ngẫu nhiên, cường hoá +t.u */
 function mkIt(t){
   var it=null,k;
-  for(k=0;k<120;k++){it=gen(t.l,t.r,t.s);if(it&&it.x&&Object.keys(it.x).length===t.o)break}
+  for(k=0;k<120;k++){it=gen(t.l,t.r,t.s,t.mp);if(it&&it.x&&Object.keys(it.x).length===t.o)break}
   if(it&&t.u)it.u=t.u;
   return it}
 /* cộng quà (đã gộp) — trả '' nếu OK, hoặc câu báo lỗi (chưa cộng gì) */
@@ -345,7 +355,7 @@ function tabNap(){
   h+='<div class="en">Linh Thạch gắn với tài khoản ☁, không chuyển nhượng ngoài game. Nạp xong không hoàn lại.</div>';
   return h}
 function tabGq(){
-  var e=E(),h='<div class="en">Mua bằng 💎 <b>KHÔNG KHOÁ</b> (bạn có '+nf(ltLogged()?unl():0)+'💎). Mỗi nhân vật mua 1 lần/gói. Trang bị trong gói là Thần Thoại, mặc định 6 opt ngẫu nhiên, cần chỗ trống trong túi.</div>';
+  var e=E(),h='<div class="en">Mua bằng 💎 <b>KHÔNG KHOÁ</b> (bạn có '+nf(ltLogged()?unl():0)+'💎). Mỗi nhân vật mua 1 lần/gói. Trang bị trong gói có 6 opt ngẫu nhiên, cần chỗ trống trong túi (gói trang bị VIP cần trống 10 ô).</div>';
   CFG.gq.forEach(function(g){
     var got=!!e.pk[g.id],can=!got&&!busy&&ltLogged()&&unl()>=g.price;
     h+='<div class="er'+(got?' dn':'')+'"><div class="ei">'+g.ico+'</div><div class="ex"><b>'+esc(g.n)+'</b><small>'+esc(g.d)+'<br>'+desc(g.q)+'</small></div>'

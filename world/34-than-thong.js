@@ -165,7 +165,7 @@ function mkTake(it){if(!it||!it.ts)return 0;return take(it.h|0,it.e|0,it.q|0)}  
 function mkBack(it){if(!it||!it.ts)return false;var h=it.h|0,e=it.e|0,q=Math.floor(Number(it.q));if(!(q>0&&q<=1e6)||!(h>=0&&h<=5)||!(e>=0&&e<=4))return false;add(h,e,q);save();render();return true}
 function mkTxt(it){return 'Mảnh Sách Thần Thông '+EL[it.e|0]+' · '+HN[it.h|0]+' ×'+(it.q|0)+'. Mua về vào kho mảnh riêng (không chiếm túi), dùng để học thần thông ô 2–5 của hệ '+HN[it.h|0]+'.'}
 function mkCol(it){return ELC[it.e|0]||'#ffd76a'}
-setInterval(migrate,700);migrate();
+setInterval(function(){if(!document.hidden)migrate()},1500);migrate();
 window.TTHONG={cdReset:function(){for(var i=0;i<cd.length;i++)cd[i]=0},drop:drop,give:give,open:open,close:close,on:on,hid:hid,cnt:cnt,cfg:SC,data:K,
   list:mkList,peek:mkPeek,take:mkTake,back:mkBack,txt:mkTxt,col:mkCol,lab:mkLab,migrate:migrate};
 })();

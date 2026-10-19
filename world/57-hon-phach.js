@@ -35,7 +35,7 @@ var FONT='KTH Serif,Songti SC,STKaiti,KaiTi,serif';
 
 /* ---------- ảnh ---------- */
 var IM={bg:new Image(),fx:[],fig:[],card:[]};
-IM.bg.src=HPA.bg;
+if(!window.BQART)IM.bg.src=HPA.bg;   /* Fix326: có world/57a vẽ bản đồ bằng code → khỏi giải mã ảnh nền cũ (chỉ nạp khi dự phòng) */
 for(var i=0;i<4;i++){var a=new Image(),b=new Image(),d=new Image();a.src=HPA.fx[i];b.src=HPA.fig[i];d.src=HPA.card[i];IM.fx.push(a);IM.fig.push(b);IM.card.push(d)}
 function ok(im){return im&&im.complete&&im.naturalWidth>0}
 
@@ -174,16 +174,22 @@ function drawSoul(t){
   g.fillStyle=S.c;g.fillText(nm,x,ly+fs*.22);
   if(Math.abs(P.x-soulWX())<260){g.font=Math.max(10,10.5*s)+'px '+FONT;g.fillStyle='rgba(255,255,255,.9)';g.globalAlpha=.65+.3*Math.sin(t*.08);g.fillText('▾ chạm để tu luyện',x,ly+th*.95)}
   g.restore()}
-function draw(){
-  var t=fr,gy=GY,gm=geom();
+function drawOld(t,gy){   /* DỰ PHÒNG: ảnh nền cũ (HPA.bg) nếu BQART lỗi/thiếu */
+  if(!IM.bg.src)IM.bg.src=HPA.bg;
+  var gm=geom();
   if(gm)g.drawImage(IM.bg,gm.ox,gm.oy,gm.iw,gm.ih);else{g.fillStyle='#9fb9c8';g.fillRect(0,0,W,H)}
-  /* mây trôi nhẹ */
-  g.save();for(var i=0;i<6;i++){var x=((i*181+t*(.12+(i%3)*.06))%(W+280))-140,y=gy+(40+(i%3)*16)*s+(H-gy)*.1*(i%2),w=(130+(i%4)*40)*s;g.fillStyle='rgba(255,255,255,'+(.35+.1*(i%3))+')';g.beginPath();g.ellipse(x,y,w*.5,15*s,0,0,6.283);g.ellipse(x-w*.28,y+4*s,w*.3,11*s,0,0,6.283);g.ellipse(x+w*.3,y+5*s,w*.32,10*s,0,0,6.283);g.fill()}g.restore();
+  g.save();for(var i=0;i<6;i++){var x=((i*181+t*(.12+(i%3)*.06))%(W+280))-140,y=gy+(40+(i%3)*16)*s+(H-gy)*.1*(i%2),w=(130+(i%4)*40)*s;g.fillStyle='rgba(255,255,255,'+(.35+.1*(i%3))+')';g.beginPath();g.ellipse(x,y,w*.5,15*s,0,0,6.283);g.ellipse(x-w*.28,y+4*s,w*.3,11*s,0,0,6.283);g.ellipse(x+w*.3,y+5*s,w*.32,10*s,0,0,6.283);g.fill()}g.restore()}
+function draw(){
+  var t=fr,gy=GY,d=chosen(),art=false;
+  try{art=!!(window.BQART&&BQART.paint(g,W,H,s,gy,t,{sel:d?d.t:-1,col:d?SOULS[d.t].c:'#9fe0c0',r:d?d.r:0}))}catch(e){art=false}
+  if(!art)drawOld(t,gy);
   drawSoul(t);
   if(vt!=null){var a=(t%40)/40;g.strokeStyle='rgba(255,230,140,'+(1-a)+')';g.lineWidth=3;g.beginPath();g.ellipse(vt*s,gy+12*s,(10+a*22)*s,(4+a*8)*s,0,0,6.28);g.stroke()}
   try{drawEP();hero();nameTag()}catch(e){}
   var tx=PORT?'Chạm hồn phách để tu luyện':'Chạm hồn phách để tu luyện · nút 🏘 để về Thành Thị',ty=gy+(H-gy)*.55;
-  g.save();g.font='bold '+Math.max(12,14*s)+'px '+FONT;g.textAlign='center';var tw=g.measureText(tx).width;g.fillStyle='#000b';g.fillRect(W/2-tw/2-12,ty-18*Math.max(.8,s),tw+24,28*Math.max(.8,s));g.fillStyle='#ffe9a0';g.fillText(tx,W/2,ty);g.restore()}
+  g.save();g.font='bold '+Math.max(12,14*s)+'px '+FONT;g.textAlign='center';var tw=g.measureText(tx).width+30,th=Math.max(26,28*s),px0=W/2-tw/2,py0=ty-th*.68;
+  g.fillStyle='rgba(14,8,34,.72)';g.strokeStyle='rgba(159,224,192,.6)';g.lineWidth=1.2;g.beginPath();if(g.roundRect)g.roundRect(px0,py0,tw,th,th/2);else g.rect(px0,py0,tw,th);g.fill();g.stroke();
+  g.fillStyle='#d8ffee';g.fillText(tx,W/2,ty+th*.04);g.restore()}
 
 function enter(){
   if(!started||!vil)return;

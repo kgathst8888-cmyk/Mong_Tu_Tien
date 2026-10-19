@@ -35,19 +35,22 @@ const say=t=>{msg=t;ui()};
 function forge(k){const m=mat();k=Math.min(k|0,Math.floor((m.fe|0)/C.fe),Math.floor((m.hk|0)/C.hk),Math.floor(S.nt/C.nt));
  if(k<1){say('Thiếu nguyên liệu: cần '+C.fe+' Quặng Sắt, '+C.hk+' Huyền Kim, '+C.nt+' Mảnh Nguyệt Thạch cho mỗi Mảnh Thánh');return}
  m.fe-=C.fe*k;m.hk-=C.hk*k;S.nt-=C.nt*k;S.sh+=k;try{sv()}catch(e){}say('💠 Luyện thành '+k+' Mảnh Thánh (hiện có '+S.sh+')')}
-let cbBusy=false;
+let cbBusy=false,cbArm=0;
 function combine(){if(cbBusy)return;if(S.sh<C.shNeed){say('Cần '+C.shNeed+' Mảnh Thánh');return}
  if(BAG.length>=capN()){say('Túi đầy, hãy dọn chỗ trước khi kết hợp');return}
  const L=window.LT;if(!(L&&L.logged&&L.logged()&&L.spend)){say('☁ Cần đăng nhập tài khoản để trả phí kết hợp '+C.shFee+'💎');return}
- if(!confirm('Chi phí mỗi lần kết hợp: '+C.shNeed+' Mảnh Thánh + '+C.shFee+'💎 Linh Thạch.\n(Linh Thạch trừ cả khi thất bại; thất bại mất thêm mảnh theo luật cũ.)\nTỉ lệ thành công '+Math.round(C.shRate*100)+'%.\nThất bại sẽ mất '+C.shLose+' Mảnh Thánh.'))return;
+ if(!(cbArm&&Date.now()-cbArm<8000)){cbArm=Date.now();say('⚠ Kết hợp: '+C.shNeed+' Mảnh Thánh + '+C.shFee+'💎, tỉ lệ '+Math.round(C.shRate*100)+'%. Thất bại mất '+C.shLose+' Mảnh Thánh (💎 vẫn trừ). Bấm ✨ Kết hợp LẦN NỮA trong 8 giây để xác nhận.');return}
+ cbArm=0;
  cbBusy=true;say('Đang trừ phí '+C.shFee+'💎…');
+ let paid=false;
  L.spend(C.shFee,'ghep_thanh').then(r=>{cbBusy=false;
   if(!r||!r.ok){say(r&&r.err==='poor'?'Không đủ Linh Thạch: cần '+C.shFee+'💎, bạn có '+(r.lt|0)+'💎 (chưa mất mảnh nào)':'Không trừ được Linh Thạch ('+((r&&(r.msg||r.err))||'lỗi')+') — chưa mất mảnh nào');return}
+  paid=true;
   if(S.sh<C.shNeed){say('Không đủ Mảnh Thánh');return}
   S.tr++;
   if(R()<C.shRate){S.sh-=C.shNeed;S.ok++;const it=gen(PIECES[Math.floor(R()*PIECES.length)]);BAG.push(it);tab=0;sel={k:'b',i:BAG.length-1};try{sv()}catch(e){}msg='🌟 Kết hợp thành công! Nhận '+it.n+' (cần Lv'+it.l+' để mặc) · −'+C.shFee+'💎';ui()}
   else{S.sh-=Math.min(S.sh,C.shLose);try{sv()}catch(e){}say('💥 Kết hợp thất bại'+(C.shLose?', mất '+C.shLose+' Mảnh Thánh':'')+' · −'+C.shFee+'💎.')}
- }).catch(()=>{cbBusy=false;say('Không trừ được Linh Thạch (lỗi mạng) — chưa mất mảnh nào')})}
+ }).catch(e=>{cbBusy=false;say(paid?'⚠ Đã trừ '+C.shFee+'💎 nhưng lỗi khi tạo đồ: '+((e&&e.message)||'không rõ')+' — hãy báo admin':'Không trừ được Linh Thạch (lỗi mạng) — chưa mất mảnh nào')})}
 function addNT(k){S.nt+=k|0}
 function addSH(k){S.sh+=k|0}
 function chD(){const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()}

@@ -42,10 +42,10 @@ function rspr(c){var o=RS[c];if(o)return o;var S=256,h=S/2,i,a;o=document.create
  for(i=0;i<8;i++){q.save();q.rotate(i*PI/4);q.translate(0,-(h-44));q.fillText(G.charAt(i),0,0);q.restore()}
  return RS[c]=o}
 /* ---------- hình vẽ cơ bản (g ở toạ độ chân nhân vật, y xuống) ---------- */
-function glow(x,y,r,c,al){if(r<1||al<=.01)return;var o=g.globalCompositeOperation,a=g.globalAlpha;g.globalCompositeOperation='lighter';g.globalAlpha=al>1?1:al;g.drawImage(gspr(c),x-r,y-r,r*2,r*2);g.globalCompositeOperation=o;g.globalAlpha=a}
+function glow(x,y,r,c,al){if(r<1||al<=.035)return;var o=g.globalCompositeOperation,a=g.globalAlpha;g.globalCompositeOperation='lighter';g.globalAlpha=al>1?1:al;g.drawImage(gspr(c),x-r,y-r,r*2,r*2);g.globalCompositeOperation=o;g.globalAlpha=a}
 function rune(x,y,Rr,c,al,rt){if(Rr<4||al<=.01)return;g.save();g.translate(x,y);g.scale(1,.5);g.rotate(rt||0);g.globalCompositeOperation='lighter';g.globalAlpha=al>1?1:al;g.drawImage(rspr(c),-Rr,-Rr,Rr*2,Rr*2);g.restore()}
 function rg(x,y,rx,c,al,lw,dash){if(rx<1||al<=.01)return;lw=lw||3;g.save();g.globalCompositeOperation='lighter';if(dash)g.setLineDash(dash);g.beginPath();g.ellipse(x,y,rx,rx*.5,0,0,TAU);
- g.strokeStyle=c;g.globalAlpha=Math.min(1,al*.3);g.lineWidth=lw*3;g.stroke();g.globalAlpha=Math.min(1,al);g.lineWidth=lw;g.stroke();g.strokeStyle='#ffffff';g.globalAlpha=Math.min(1,al*.55);g.lineWidth=Math.max(1,lw*.35);g.stroke();g.restore()}
+ g.strokeStyle=c;if(!window.FXSLOW){g.globalAlpha=Math.min(1,al*.3);g.lineWidth=lw*3;g.stroke()}g.globalAlpha=Math.min(1,al);g.lineWidth=lw;g.stroke();g.strokeStyle='#ffffff';g.globalAlpha=Math.min(1,al*.55);g.lineWidth=Math.max(1,lw*.35);g.stroke();g.restore()}
 function disc(x,y,rx,c,al){if(rx<1||al<=.01)return;g.save();g.globalAlpha=Math.min(1,al);g.fillStyle=c;g.beginPath();g.ellipse(x,y,rx,rx*.5,0,0,TAU);g.fill();g.restore()}
 function line(x1,y1,x2,y2,c,w,al,add){g.save();if(add)g.globalCompositeOperation='lighter';g.globalAlpha=Math.min(1,al);g.strokeStyle=c;g.lineWidth=w;g.lineCap='round';g.beginPath();g.moveTo(x1,y1);g.lineTo(x2,y2);g.stroke();g.restore()}
 function ico(x,y,sz,ch,al,rt,c){if(al<=.01)return;if(c)glow(x,y,sz*.95,c,al*.55);g.save();g.globalAlpha=Math.min(1,al);g.translate(x,y);if(rt)g.rotate(rt);g.font=Math.round(sz)+'px serif';g.textAlign='center';g.textBaseline='middle';g.fillText(ch,0,0);g.restore()}

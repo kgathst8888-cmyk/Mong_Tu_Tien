@@ -40,7 +40,7 @@ const p=card.querySelector('#tut-p');if(p)p.textContent=s.prog?s.prog(B):'';
 const T=target(s),e=find(T.sel),h=card.querySelector('#tut-h');if(h)h.textContent=T.m?'👉 '+T.m:'';
 if(e){const r=e.getBoundingClientRect();ring.style.cssText='display:block;left:'+(r.left-4)+'px;top:'+(r.top-4)+'px;width:'+(r.width+2)+'px;height:'+(r.height+2)+'px';
 const up=r.top<110;arr.textContent=up?'👆':'👇';arr.style.cssText='display:block;left:'+(r.left+r.width/2-14)+'px;top:'+(up?r.bottom+4:r.top-36)+'px'}else{ring.style.display=arr.style.display='none'}}
-setInterval(tick,250);
+setInterval(function(){if(!document.hidden)tick()},500);
 window.TUT={start(){st={s:0,d:0};wr();en=-1;try{if(typeof cm=='function')cm()}catch(e){}},active:()=>!!st&&!st.d};
 setTimeout(()=>{if(!st&&ST()&&P.lv<=5)TUT.start()},2500);
 /* nút bật lại */

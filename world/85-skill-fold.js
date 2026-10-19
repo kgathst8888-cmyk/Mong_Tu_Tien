@@ -40,7 +40,7 @@ function build(){
   try{localStorage.setItem(KEY,off?'1':'0')}catch(er){}
   paint()});
  document.body.appendChild(btn);paint();refresh();
- setInterval(refresh,600)}
+ setInterval(function(){if(!document.hidden)refresh()},1000)}
 function start(){build()}
 if(document.body)start();else document.addEventListener('DOMContentLoaded',start);
 window.SKFOLD={toggle:function(){if(btn)btn.click()},isOff:function(){return off}};

@@ -85,7 +85,7 @@ function hookAl(i){
     Object.defineProperty(a,'__gm',{value:1,enumerable:false,configurable:true})
   }catch(e){}}
 function hookAll(){try{for(var i=0;i<PS.length;i++)hookAl(i)}catch(e){}}
-setInterval(hookAll,300);hookAll();
+setInterval(function(){if(!document.hidden)hookAll()},1000);hookAll();
 
 /* ---------- rơi đá ở Thánh Địa ---------- */
 var _drop=drop;
@@ -325,7 +325,7 @@ function mkTxt(it){
 function mkCol(it){try{return RC[Math.min(6,(it.lv|0))]}catch(e){return '#9fd8ff'}}
 function scanBag(){                        /* phòng hờ: đá lọt vào túi (hòm nhận chợ...) → chuyển về kho đá */
   try{for(var i=BAG.length-1;i>=0;i--){var it=BAG[i];if(it&&it.gm){BAG.splice(i,1);mkBack(it)}}}catch(e){}}
-setInterval(scanBag,700);
+setInterval(function(){if(!document.hidden)scanBag()},1400);
 
 window.GEMX={cfg:CF,open:openMain,close:close,pick:pickSlot,cancelPick:cancelPick,socket:socket,drill:drill,grind:grind,unsocket:unsocket,tog:tog,merge:merge,
   tal:function(){useTal=!useTal;render()},clr:function(){pick=[];render()},

@@ -163,13 +163,13 @@ function ult(sp,F,p,o,st){
 function wrap(name){var orig=R[name],sp=SP[name];if(!orig||!sp||orig.__u)return;
  var nf=function(F){var rec=orig(F);if(!CF.enable)return rec;
   var o=theme(name,F),st={f:0,seed:(Math.random()*997)|0},m0=rec.main||rec.draw,d0=rec.draw||rec.main;
-  function ov(p){st.__f=fr;if(!slot(LOV,st,CF.maxOv))return;try{ult(sp,F,p,o,st)}catch(e){}}
+  function ov(p){st.__f=fr;if(!slot(LOV,st,window.FXSLOW?1:CF.maxOv))return;try{ult(sp,F,p,o,st)}catch(e){}}
   return{life:rec.life,aura:rec.aura,main:function(p){m0(p);ov(p)},draw:function(p){d0(p);ov(p)}}};
  nf.__u=1;R[name]=nf}
 Object.keys(SP).forEach(wrap);
 /* ---------- nâng cấp hiệu ứng TRÚNG ĐÒN (bọc TGFX.hitFx; 82 vẽ qua window.TGFX.hitFx, 83 qua TGX.hitFx) ---------- */
 var HC2={fire:'#ffd76a',ice:'#e8fbff',leaf:'#b6ff9a',blade:'#fff4c0',wisp:'#d9a0ff',spark:'#ffffff'};
-function hitUlt(it,p){if(!CF.enable||p>=1)return;it.__f=fr;if(!slot(LHT,it,CF.maxHit))return;
+function hitUlt(it,p){if(!CF.enable||p>=1)return;it.__f=fr;if(!slot(LHT,it,window.FXSLOW?1:CF.maxHit))return;
  var E=it.E||{k:'spark'},k=E.k,gy=(it.h||60)*.5,cr=!!it.crit,o={c:it.c,c2:HC2[k]||'#ffffff',rs:cr?.75:.5,lite:1},a=1-p,e=ea(p);
  dring(0,gy,(30+120*e)*(cr?1.4:1),it.c,a*.8,3);
  (ER[k]||ER.spark)(0,gy,p,o);

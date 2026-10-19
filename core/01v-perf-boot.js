@@ -2,7 +2,7 @@
    (tách từ core/01-engine.js; thứ tự nạp giữ nguyên, xem index.html) */
 /* ===== HIỆU NĂNG (giảm giật/nóng máy): QL 0 Cao 60fps · 1 Cân bằng 30fps · 2 Tiết kiệm. Mặc định Tự động (điện thoại = Cân bằng, PC = Cao); máy yếu tự hạ ===== */
 (function(){
- const QC=[2,1.5,1],NM=['Cao','Cân bằng','Tiết kiệm'],root=document.documentElement;
+ const QC=[2,1.25,1],NM=['Cao','Cân bằng','Tiết kiệm'],root=document.documentElement;
  let pref='a',ql=0;try{pref=localStorage.getItem('kthm_ql')||'a'}catch(e){}
  if(!/^[a012]$/.test(pref))pref='a';
  const coarse=(()=>{try{return matchMedia('(pointer:coarse)').matches||/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)}catch(e){return false}})();
@@ -26,7 +26,7 @@ try{
  Object.defineProperty(g,'shadowBlur',{configurable:true,get(){return d.get.call(this)},set(v){const q=window.QL;d.set.call(this,q>=2?0:q==1?v*.5:v)}});
 }catch(e){try{console.warn('[Mong Tu Tien] shadowBlur optimization skipped',e)}catch(x){}}
 })();
-(function(){const STEP=1000/60;let last=performance.now(),acc=0,lastDraw=0,ema=16.7,cnt=0,t0=last,wk=6,wn=0,fchk=0,foc=1,arH=0,arEl=null;
+(function(){const STEP=1000/60;let last=performance.now(),acc=0,lastDraw=0,ema=16.7,cnt=0,t0=last,wk=6,wn=0,fchk=0,foc=1,arH=0,arEl=null,bgEl=null,bgO=0;
 window.PFRESET=()=>{ema=16.7;cnt=0;wk=6;wn=0;t0=performance.now()};
 document.addEventListener('visibilitychange',()=>{last=performance.now();acc=0});
 function loop(now){requestAnimationFrame(loop);
@@ -34,8 +34,8 @@ if(document.hidden){last=now;acc=0;return}   /* tab ẩn/thu nhỏ: rAF bị tr�
 let dt=now-last;last=now;if(dt>250)dt=250;acc+=dt;let n=0;const ta=performance.now();
 while(acc>=STEP&&n<3){step();acc-=STEP;n++}if(n==3)acc=0;
 if(n>0){
- if(--fchk<=0){fchk=30;try{foc=document.hasFocus()?1:0}catch(e){foc=1}arEl=arEl||document.getElementById('arena-scene');arH=arEl&&arEl.classList.contains('on')&&!arEl.classList.contains('battle')?1:0}
- const q=window.QL,gap=!foc?95:q>=1?30:0;
+ if(--fchk<=0){fchk=12;try{foc=document.hasFocus()?1:0}catch(e){foc=1}arEl=arEl||document.getElementById('arena-scene');arH=arEl&&arEl.classList.contains('on')&&!arEl.classList.contains('battle')?1:0;bgEl=bgEl||document.getElementById('bag');bgO=bgEl&&bgEl.style.display==='flex'?1:0}
+ const q=window.QL,gap=!foc?95:bgO?(q>=1?66:33):q>=1?30:0;   /* Fix336: túi đồ/bảng đang mở (nền đen mờ che game) → vẽ chậm lại 15fps, đỡ nóng máy */
  if(!arH&&now-lastDraw>=gap){lastDraw=now;draw();
   const w=performance.now()-ta;
   if(foc&&dt<100&&now-t0>4000){ema=ema*.93+dt*.07;wk+=(w-wk)*.04;

@@ -162,7 +162,7 @@ function paint(){
     var b=cs[i].querySelector('b');if(b)b.innerHTML=x?'<img src="'+ic(SL[i].k)+'">':SL[i].e}}
 var _ui=window.ui;
 window.ui=function(){var a=_ui.apply(this,arguments);try{paint()}catch(e){}return a};
-var sig='';setInterval(function(){try{var h=D(),s=cur+':'+(h?JSON.stringify(h.s):'');if(s!==sig){sig=s;paint()}}catch(e){}},1200);
+var sig='';setInterval(function(){if(document.hidden)return;try{var h=D(),s=cur+':'+(h?JSON.stringify(h.s):'');if(s!==sig){sig=s;paint()}}catch(e){}},2000);
 /* ---------- gắn vào nhà Trang Sức (world/100) ---------- */
 function hook(){try{if(window.TT2&&TT2.houses&&TT2.houses[1]){TT2.houses[1].open=function(){openCraft()};return true}}catch(e){}return false}
 if(!hook()){var n=0,iv=setInterval(function(){if(hook()||++n>40)clearInterval(iv)},500)}
