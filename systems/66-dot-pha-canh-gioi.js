@@ -25,8 +25,8 @@ var CF={
  forgeNeed:10,                    /* số Nguyên Liệu Đúc Nguyên Anh khi đột phá Nguyên Anh */
  matPer:2,                        /* nguyên liệu đan cần cho 1 viên đan */
  brewOk:.9,                       /* tỉ lệ luyện đan thành công */
- drop:[.15,.25,.30,.25,.40],      /* tỉ lệ rơi 1 nguyên liệu đan / mỗi loại: [Tinh Anh, Boss Thế Giới, Boss Sử Thi, Trùm Hầm Ngục, Ma Thần] */
- forgeDrop:.10                    /* tỉ lệ rơi 1 Nguyên Liệu Đúc Nguyên Anh ở MỌI loại Boss */
+ drop:[.15,.40,.45,.40,.55],      /* tỉ lệ rơi 1 nguyên liệu đan / mỗi loại: [Tinh Anh, Boss Thế Giới, Boss Sử Thi, Trùm Hầm Ngục, Ma Thần] */
+ forgeDrop:.20                    /* tỉ lệ rơi 1 Nguyên Liệu Đúc Nguyên Anh ở MỌI loại Boss */
 };
 /* k = cảnh giới đích. pill/mat = id đan & nguyên liệu; g0 = vàng cơ bản mỗi viên (nhân (cảnh giới+2)² như các đan khác) */
 var RL={

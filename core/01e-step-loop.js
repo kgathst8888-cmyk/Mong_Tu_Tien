@@ -1,5 +1,22 @@
 /* core/01e-step-loop.js — pstep, cbar, step (vòng cập nhật chính)
    (tách từ core/01-engine.js; thứ tự nạp giữ nguyên, xem index.html) */
+/* Fix325: auto triệu hồi — chỉ bỏ qua khi thú CÙNG LOẠI còn sống và còn lâu mới hết hạn; thú khác loại vẫn được triệu hồi (trước đây có >=2 thú là chặn hết, nên Triệu Linh Lang/Mộc Linh/Cự Thạch không bao giờ dùng đủ) */
+function autoSumSkip(kk){const p=PETS.find(q=>q.k==kk[6]);return !!p&&p.l>360}
+/* Fix327: AUTO an toàn — mỗi kỹ năng được bọc riêng; một chiêu/hiệu ứng lỗi KHÔNG làm đứng vòng step() (trước đây ném lỗi là cả game treo ở chế độ auto).
+   Thứ tự ưu tiên giữ nguyên (4→0, rồi chiêu 5, rồi tiên thuật/ý cảnh/môn phái qua ZC.zauto). Ngừng gọi tiếp ngay khi đã có 1 chiêu đang tung (P.pe/P.act). Lỗi chỉ ghi console, tối đa 1 lần/10 giây. */
+let AUTO_ERRT=-1e9;
+function autoLogErr(e){if(typeof fr!='undefined'&&fr-AUTO_ERRT>600){AUTO_ERRT=fr;try{console.error('[AUTO]',e)}catch(x){}}}
+function autoRun(){
+  for(const i of[4,3,2,1,0]){
+    if(P.pe||P.act)break;
+    try{
+      const kk=SK[i];if(!kk)continue;
+      if((kk[4]==3&&P.hp>mx()*.5)||(kk[4]==10&&P.hp>mx()*.7))continue;
+      if(kk[4]==6&&autoSumSkip(kk))continue;
+      cast(i)
+    }catch(e){autoLogErr(e)}}
+  try{if(!P.pe&&!P.act&&SK[5]&&(E.length>=3||E.some(e=>e.b)))cast(5)}catch(e){autoLogErr(e)}
+  try{ZC.zauto()}catch(e){autoLogErr(e)}}
 function pstep(){epstep();PETS=PETS.filter(p=>--p.l>0);PETS.forEach((p,i)=>{let e=null;E.forEach(q=>{if(q.in<=0&&Math.abs(q.x-p.x)<300&&(!e||Math.abs(q.x-p.x)<Math.abs(e.x-p.x)))e=q});const tx=e?e.x-(p.x<e.x?55:-55):P.x-60-i*38;p.x+=(tx-p.x)*.06;p.cd--;if(e&&p.cd<=0&&Math.abs(e.x-p.x)<(p.k=='hawk'?260:110)){p.cd=p.k=='golem'?100:75;dm(e,p.m*.7);FX.push({t:'sl',x:e.x,br:0,c:'#fff',l:10,m:10})}})}
 
 function cbar(x,y,w,h,v,col,t){g.fillStyle='#000a';g.fillRect(x,y,w,h);g.fillStyle=col;g.fillRect(x,y,w*cl(v,0,1),h);g.strokeStyle='#b8964e';g.lineWidth=2;g.strokeRect(x,y,w,h);if(t){g.fillStyle='#fff';g.font='bold 13px KTH Serif,Songti SC,STKaiti,KaiTi,serif';g.textAlign='center';g.fillText(t,x+w/2,y+h-4)}}
@@ -20,9 +37,9 @@ function vilClean(){
   FX=FX.filter(f=>--f.l>0)}
 function step(){fr++;ZC.tick();if(vil&&!bo&&started)vstep();if(!vil)_vPrev=0;if(vil||!started){if(vil)try{vilClean()}catch(e){}if(P.act)actEnd();return}if(fr%90===0)sv();if(over){if(P.act)actEnd();if(--over===0)init();return}
 ZC.cds();cd=cd.map(v=>v-1);if(!(window.QL>=1)||(fr&1))bt.forEach((b,i)=>b.style.setProperty('--c',cl(cd[i]/(SK[i][3]*1.6),0,1)*360+'deg'));
-P.mp=Math.min(mm(),P.mp+.09);P.hp=Math.min(mx(),P.hp+.05);P.atk--;P.mv=0;if(P.pe&&--P.pe.l<=0){const f=P.pe.f;P.pe=null;f()}pstep();if(P.hp<mx()*.35&&hpP>0){hpP--;P.hp=Math.min(mx(),P.hp+mx()*.5);DT.push({x:P.x,y:130,s:'🧪+'+Math.round(mx()*.5),g:1,l:50})}if(P.mp<mm()*.2&&mpP>0){mpP--;P.mp=Math.min(mm(),P.mp+mm()*.5)}
+P.mp=Math.min(mm(),P.mp+.09);P.hp=Math.min(mx(),P.hp+.05);P.atk--;P.mv=0;if(P.pe&&--P.pe.l<=0){const f=P.pe.f;P.pe=null;try{f()}catch(e){autoLogErr(e)}}pstep();if(P.hp<mx()*.35&&hpP>0){hpP--;P.hp=Math.min(mx(),P.hp+mx()*.5);DT.push({x:P.x,y:130,s:'🧪+'+Math.round(mx()*.5),g:1,l:50})}if(P.mp<mm()*.2&&mpP>0){mpP--;P.mp=Math.min(mm(),P.mp+mm()*.5)}
 const t=near(2e3);let dir=0;
-if(auto){if(t){const T0=TK(),dd=t.x-P.x,ds=T0=='w'?DS[T0]:Math.min(DS[T0],vw()*.5);dir=Math.abs(dd)>ds+8?(Math.abs(dd)<vw()*(T0=='w'?.95:.55)?Math.sign(dd):0):(T0!='w'&&Math.abs(dd)<ds-120&&canRet(-Math.sign(dd))?-Math.sign(dd):0);for(const i of[4,3,2,1,0]){const kk=SK[i];if((kk[4]==3&&P.hp>mx()*.5)||(kk[4]==10&&P.hp>mx()*.7))continue;if(kk[4]==6&&PETS.length>=2)continue;cast(i)}if(E.length>=3||E.some(e=>e.b))cast(5);ZC.zauto()}else dir=0}
+if(auto){if(t){const T0=TK(),dd=t.x-P.x,ds=T0=='w'?DS[T0]:Math.min(DS[T0],vw()*.5);dir=Math.abs(dd)>ds+8?(Math.abs(dd)<vw()*(T0=='w'?.95:.55)?Math.sign(dd):0):(T0!='w'&&Math.abs(dd)<ds-120&&canRet(-Math.sign(dd))?-Math.sign(dd):0);autoRun()}else dir=0}
 if(!auto)dir=mvDir;if((P.pe&&CHR[cur].t!='w')||P.act)dir=0;if(!P.act)P.x=cl(P.x,40,W/s-40);if(dir){const nx=cl(P.x+dir*1.6,40,W/s-40);if(nx!==P.x||!auto){P.x=nx;P.d=(auto&&t&&dir*(t.x-P.x)<0)?-dir:dir;P.mv=1}else if(t)P.d=Math.sign(t.x-P.x)||P.d}else if(t)P.d=Math.sign(t.x-P.x)||P.d;
 const T=TK(),iv=Math.max(ANI[T]+16,{w:72,a:64,m:88}[T]);if(!P.pe&&!P.act&&P.atk<=0&&fr%iv===0&&near(DS[T]+70)){const D=Math.max(10,ANI[T]);an(D);P.ln='';P.pe={l:D,f:()=>basic(T)}}
 SLT.forEach((v,i)=>{if(!E.some(e=>e.sn==i)){if(SLT[i]>0)SLT[i]--;else spawn(i)}});

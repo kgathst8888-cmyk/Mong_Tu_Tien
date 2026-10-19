@@ -158,7 +158,8 @@ function offline(sec,kind){
  if(n<=0)return;
  try{if(window.LCS&&LCS.off)LCS.off(n)}catch(e){}/* Fix253: hấp thụ nguyên tố dị linh căn khi treo offline */
  try{QE('kill',n)}catch(e){}/* Fix296: treo offline vẫn tính quái cho nhiệm vụ (Vòng Lặp Vô Tận) */
- var tvG=0,xp=xpPer(L)*n;if(window.TGQ&&TGQ.addXp)TGQ.addXp(xp);else P.xp+=xp;
+ var tvG=0,xp=xpPer(L)*n;var addX=function(){if(window.TGQ&&TGQ.addXp)TGQ.addXp(xp);else P.xp+=xp};
+ try{if(window.CSH&&CSH.offXp)CSH.offXp(t,addX);else addX()}catch(e){addX()}/* Fix328: buff % EXP (vé/bùa) tính theo thời gian offline */
  try{tvG=tvOff(L,n,t);if(tvG>0)ZC.gain(tvG)}catch(e){tvG=0}
  try{var pt=pet();if(pt&&pt.lv<pcap(pt)){pt.xp+=n*(1+L/10);pcheck(pt)}}catch(e){}
  var rw=award(n,L);

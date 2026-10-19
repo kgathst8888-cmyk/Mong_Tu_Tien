@@ -8,6 +8,7 @@
 const TW_HP0=75,TW_HPS=5.5;      // Máu boss = Trùm Hầm Ngục ×(TW_HP0 + n*TW_HPS)/60  (n=0..89)
 const TW_A0=1.3,TW_AS=.10;       // Sát thương boss gây ra = ×(TW_A0 + n*TW_AS) so với Trùm Hầm Ngục
 const TW_DFS=.012;               // Giáp boss tăng thêm mỗi boss
+const TW_DFM=.8;                // Fix322: nhân giáp boss Tháp (giảm 20%; 1 = như cũ)
 const TW_B10=1.25;               // Boss 10 mỗi tầng (Tháp Chủ) máu ×1.25, sát thương ×1.15
 const TW_DROP5=.01;              // Tỉ lệ rơi trang bị Thiên Thần (Boss 1-9 mỗi tầng)
 const TW_GOLD=600;               // Vàng thưởng = TW_GOLD × cấp boss × (1+n/30)
@@ -71,7 +72,7 @@ function twGo(n){const st=twS();if(!started||!vil||n>89)return;const al=st.p>=90
  twClose();bo=0;bag.style.display='none';const l0=lg;lg=0;vil=0;vt=null;vgo=-1;E=[];PETS=[];PJ=[];FX=[];P.pe=null;P.atk=0;P.x=120;P.hp=mx();P.mp=mm();SLT=[9e9,9e9,9e9,9e9,9e9];
  dg={t:0,n:20,kill:20,tw:1,tn:n,lg0:l0};DT.push({x:P.x,y:200,s:'🗼 Tháp Thí Luyện · Tầng '+((n/10|0)+1)+' · Boss '+(n%10+1),c:TW_COL[n/10|0],g:1,l:140})}
 function twSpawn(){dgSp('boss');const e=E[E.length-1],n=dg.tn,k=n%10==9;
- e.max=e.hp=e.max/60*twHp(n);e.df*=1+n*TW_DFS;e.tw=1;e.tn=n;e.twN=twName(n);e.twA=twAt(n);e.twS=n/90*.9;
+ e.max=e.hp=e.max/60*twHp(n);e.df*=(1+n*TW_DFS)*TW_DFM;e.tw=1;e.tn=n;e.twN=twName(n);e.twA=twAt(n);e.twS=n/90*.9;
  DT.push({x:P.x,y:220,s:'🗼 '+e.twN+(k?' · THÁP CHỦ':'')+' xuất hiện!',c:TW_COL[n/10|0],g:1,l:170})}
 function twBack(w){const st=twS();twF=Math.min(8,(w.tn/10|0)+(w.tn%10==9&&st.p>w.tn?1:0));lg=w.lg0|0;vil=1;vt=null;vgo=-1;P.x=cl(P.x,40,vw()-40);P.hp=mx();P.mp=mm();dgHud()}
 

@@ -6,7 +6,8 @@
  * - Ghép Bí Ngô Ma Quái: 20 Bí Ngô + 20 Linh Thạch + 5.000.000 vàng. Mở ra quà ngẫu nhiên (bảng RW_GHOST).
  * - Linh Thạch nhận từ sự kiện là KHOÁ (LT.earnKS: không trần ngày). Cần đăng nhập ☁ để ghép / mở (vì có Linh Thạch).
  * - Mảnh Cánh Cấp 4: game chưa có cánh cấp 4 → chỉ cộng vào bộ đếm hw.wf4 (hiện trong bảng), nối vào hệ thống cánh sau.
- * Dữ liệu theo nhân vật: PS[cur].hw = {sg,fl,ml,pk,gp,c1,c2,c3,wf4}. Chỉnh tỉ lệ/phần thưởng: khối CF, RW_*.
+ * Móc quà (Fix320): đếm tích luỹ đã dùng PS[cur].hw.u1/u2/u3 (mở Kẹo Ngọt/Dẻo/Thối) + upk (Bí Ngô đã dùng ghép); cờ đã nhận hw.cl. Bảng MS: mốc 100/500.
+ * Dữ liệu theo nhân vật: PS[cur].hw = {sg,fl,ml,pk,gp,c1,c2,c3,wf4,u1,u2,u3,upk,cl}. Chỉnh tỉ lệ/phần thưởng: khối CF, RW_*.
  * Phụ thuộc (gọi lúc chạy): drop, vdraw, vstep, ng, LT, CSH, GEMX, HL, gen, BAG, capN, sell, gold, P, PS, cur. Nạp TRƯỚC world/61-lang-gian-rong.js để vẽ trong camera làng. */
 (function(){
 'use strict';
@@ -29,12 +30,19 @@ var RW_ROT={exp:15000,t:[[5,'lt',5],[30,'g',50000],[20,'g',100000],[45,'eq',0]]}
 var RW_GHOST=[[.2,'dh',1],[10,'wf4',1],[20,'lt',50],[10,'ham',1],[5,'gem',2],[5,'sh',2],[24.9,'g',10000000],[24.9,'g',20000000]];
 var EQ_W=[[50,0],[28,1],[15,2],[7,3]];          /* trang bị từ Thường (trắng) tới Sử Thi */
 var CANDY=[{k:'c1',n:'Kẹo Ngọt',e:'🍭',c:'#ff9ad5',R:RW_SWEET},{k:'c2',n:'Kẹo Dẻo',e:'🍬',c:'#9fe0ff',R:RW_CHEW},{k:'c3',n:'Kẹo Thối',e:'🤢',c:'#b6d86a',R:RW_ROT}];
+/* móc quà tích luỹ: k = bộ đếm đã dùng (u1 Ngọt · u2 Dẻo · u3 Thối · upk Bí Ngô đã dùng để ghép), m = [mốc, loại, số lượng] (loại như applyR; lt luôn là Linh Thạch KHOÁ) */
+var MS=[
+  {k:'u3',n:'Kẹo Thối',e:'🤢',c:'#b6d86a',m:[[100,'lt',100],[500,'sh',5]]},
+  {k:'u2',n:'Kẹo Dẻo',e:'🍬',c:'#9fe0ff',m:[[100,'lt',300],[500,'sh',10]]},
+  {k:'u1',n:'Kẹo Ngọt',e:'🍭',c:'#ff9ad5',m:[[100,'lt',500],[500,'sh',20]]},
+  {k:'upk',n:'Bí Ngô',e:'🎃',c:'#ff9a2e',m:[[100,'lt',1000],[500,'dh',1]]}
+];
 var MATS=[{k:'sg',n:'Đường',e:'🍚'},{k:'fl',n:'Bột Mì',e:'🌾'},{k:'ml',n:'Mạch Nha',e:'🍯'}];
 
 function active(){var t=Date.now();return t>=CF.start&&t<CF.end}
-function H(){var p=PS[cur];if(!p)return{sg:0,fl:0,ml:0,pk:0,gp:0,c1:0,c2:0,c3:0,wf4:0};
-  if(!p.hw)p.hw={sg:0,fl:0,ml:0,pk:0,gp:0,c1:0,c2:0,c3:0,wf4:0};
-  ['sg','fl','ml','pk','gp','c1','c2','c3','wf4'].forEach(function(k){if(p.hw[k]==null)p.hw[k]=0});return p.hw}
+function H(){var p=PS[cur];if(!p)return{sg:0,fl:0,ml:0,pk:0,gp:0,c1:0,c2:0,c3:0,wf4:0,u1:0,u2:0,u3:0,upk:0,cl:{}};
+  if(!p.hw)p.hw={sg:0,fl:0,ml:0,pk:0,gp:0,c1:0,c2:0,c3:0,wf4:0,u1:0,u2:0,u3:0,upk:0,cl:{}};
+  ['sg','fl','ml','pk','gp','c1','c2','c3','wf4','u1','u2','u3','upk'].forEach(function(k){if(p.hw[k]==null)p.hw[k]=0});if(!p.hw.cl||typeof p.hw.cl!=='object')p.hw.cl={};return p.hw}
 function nf(n){try{return fmtN(n)}catch(e){return String(n)}}
 function save(){try{if(typeof sv==='function')sv()}catch(e){}}
 function say(t,c){try{DT.push({x:P.x,y:200,s:t,c:c||'#ffb347',g:1,l:130})}catch(e){}}
@@ -74,6 +82,27 @@ function applyR(it){
   return''}
 function needLogin(){if(!logged()||!window.LT||!LT.spend){msg('☁ Cần đăng nhập để dùng chức năng có Linh Thạch.');return true}return false}
 
+function msKey(d,i){return d.k+'_'+d.m[i][0]}
+function msText(r){return applyR([0,r[1],r[2]])}
+function claimMs(di,mi){
+  var d=MS[di],r=d&&d.m[mi];if(!r)return;
+  var h=H(),key=msKey(d,mi);
+  if(h.cl[key]){msg('Mốc này đã nhận rồi.');return}
+  if(h[d.k]<r[0]){msg('Chưa đủ mốc: '+d.n+' '+h[d.k]+'/'+r[0]+'.');return}
+  if(r[1]==='lt'&&needLogin())return;
+  h.cl[key]=1;
+  var t=msText(r);save();
+  msg('🎁 Móc quà '+d.e+' '+d.n+' ('+r[0]+'): '+t);say('🎁 Móc quà '+d.n+' '+r[0]+' · '+t,d.c)}
+function claimAll(){
+  var h=H(),n=0,out=[],hasLt=false,di,mi;
+  for(di=0;di<MS.length;di++)for(mi=0;mi<MS[di].m.length;mi++){var r=MS[di].m[mi];if(!h.cl[msKey(MS[di],mi)]&&h[MS[di].k]>=r[0]&&r[1]==='lt')hasLt=true}
+  if(hasLt&&needLogin())return;
+  for(di=0;di<MS.length;di++)for(mi=0;mi<MS[di].m.length;mi++){
+    var d=MS[di],rr=d.m[mi],key=msKey(d,mi);
+    if(!h.cl[key]&&h[d.k]>=rr[0]){h.cl[key]=1;n++;out.push(d.e+rr[0]+': '+msText(rr))}}
+  if(!n){msg('Chưa có mốc nào đủ điều kiện để nhận.');return}
+  save();msg('🎁 Nhận '+n+' móc quà · '+out.join(' · '));say('🎁 Nhận '+n+' móc quà Halloween','#ffd76a')}
+
 var el=null,mg='',busy=false,go=0,on=false;
 function msg(t){mg=t;if(on)render()}
 
@@ -82,7 +111,7 @@ function openCandy(i,all){
   if(n<=0){msg('Không có '+d.n);return}
   if(needLogin())return;
   var tot={},exp=0,j,lines=[];
-  h[d.k]-=n;
+  h[d.k]-=n;h['u'+d.k.charAt(1)]+=n;
   for(j=0;j<n;j++){exp+=d.R.exp;var r=pick(d.R.t),s=applyR(r);tot[s]=(tot[s]||0)+1}
   P.xp+=exp;
   Object.keys(tot).forEach(function(s){lines.push(s+(tot[s]>1?' ×'+tot[s]:''))});
@@ -120,7 +149,7 @@ async function craftGhost(){
     if(!r||!r.ok){msg(r&&r.err==='poor'?'Thiếu Linh Thạch (cần '+CF.ghostLT+').':'Không trừ được Linh Thạch, thử lại.');busy=false;return}
     h=H();
     if(h.pk<CF.needPump||gold<CF.ghostGold){msg('Bí Ngô/vàng đã thay đổi, thử lại.');busy=false;return}
-    h.pk-=CF.needPump;gold-=CF.ghostGold;h.gp++;save();
+    h.pk-=CF.needPump;h.upk+=CF.needPump;gold-=CF.ghostGold;h.gp++;save();
     msg('👻 Ghép thành công 1 Bí Ngô Ma Quái!');say('👻 Bí Ngô Ma Quái!','#d9a8ff')
   }catch(e){msg('Lỗi mạng, thử lại.')}
   busy=false;if(on)render()}
@@ -150,6 +179,15 @@ function render(){
    +'<button onclick="HALW.ghost()" style="width:100%;margin-top:4px;padding:6px">👻 Ghép Bí Ngô Ma Quái</button>'
    +'<div style="display:flex;align-items:center;gap:6px;font-size:12px;margin-top:4px"><span style="flex:1;color:#d9a8ff">👻 Bí Ngô Ma Quái ×'+h.gp+'</span><button onclick="HALW.openG(0)">Mở 1</button><button onclick="HALW.openG(1)">Mở hết</button></div>'
    +(h.wf4?'<div style="font-size:12px;margin-top:4px">🪽 Mảnh Cánh Cấp 4: <b>'+h.wf4+'</b> (chờ cập nhật)</div>':'')+'</div>';
+  o+='<div style="margin:8px 0;border-top:1px dashed #ff9a2e88;padding-top:6px"><b>④ 🎁 Móc quà sự kiện</b><div style="font-size:11px;opacity:.8">Tính theo số lượng ĐÃ DÙNG (mở kẹo / Bí Ngô đã dùng để ghép). Linh Thạch là 🔒 khoá.</div>';
+  MS.forEach(function(d,di){
+    o+='<div style="margin-top:5px;font-size:12px"><span style="color:'+d.c+'">'+d.e+' '+d.n+' đã dùng: <b>'+h[d.k]+'</b></span>';
+    d.m.forEach(function(r,mi){
+      var got=!!h.cl[msKey(d,mi)],ok=h[d.k]>=r[0],rt=r[1]==='lt'?'🔒 '+nf(r[2])+' Linh Thạch khoá':r[1]==='sh'?'💠 '+r[2]+' Mảnh Thánh':'🔮 Ngọc Định Hồn ×'+r[2];
+      o+='<div style="display:flex;align-items:center;gap:6px;margin-top:2px"><span style="flex:1;opacity:'+(got?.55:1)+'">'+r[0]+' → '+rt+' <span style="opacity:.7">('+Math.min(h[d.k],r[0])+'/'+r[0]+')</span></span>'
+        +(got?'<button disabled style="padding:2px 8px">✔ Đã nhận</button>':'<button '+(ok?'':'disabled ')+'onclick="HALW.claim('+di+','+mi+')" style="padding:2px 8px">Nhận</button>')+'</div>'});
+    o+='</div>'});
+  o+='<button onclick="HALW.claimAll()" style="width:100%;margin-top:6px;padding:6px">🎁 Nhận tất cả móc quà đủ điều kiện</button></div>';
   el.innerHTML=o}
 function mk(){
   if(el)return;
@@ -304,5 +342,5 @@ c.addEventListener('pointerdown',function(e){
 var _st=step;step=function(){if(on&&(!active()||!vil))close();_st()};
 try{var _ng=ng;ng=function(){close();PS.forEach(function(x){delete x.hw});_ng()}}catch(e){}
 
-window.HALW={on:active,cfg:CF,open:open,close:close,craft:craftCandy,ghost:craftGhost,eat:openCandy,openG:openGhost,data:H};
+window.HALW={on:active,cfg:CF,open:open,close:close,craft:craftCandy,ghost:craftGhost,eat:openCandy,openG:openGhost,claim:claimMs,claimAll:claimAll,ms:MS,data:H};
 })();

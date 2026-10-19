@@ -155,7 +155,18 @@ function useTicket(k){
   note='✅ Đã dùng '+NAMES[k]+' — còn '+clk(left(k));say(NAMES[k],'#9fffb0');save();render()}
 /* Hook tại chỗ ghi: mọi lần P.xp / cv.q TĂNG đều được cộng thêm 20% khi vé còn hiệu lực (giảm/lên cấp đi qua nguyên vẹn).
    P và PS[i].cv bị thay đối tượng ở vài nơi (init, ng, tải save, đấu trường) nên cài lại định kỳ. */
-function expPct(){var m=0;['vx','x5','x7'].forEach(function(k){if(left(k)>0&&CFG.xp[k]>m)m=CFG.xp[k]});return m}
+var OFFP=null;/* Fix328: % EXP tạm thời khi cộng EXP treo offline (null = tính theo vé đang còn hạn) */
+function expPct(){if(OFFP!=null)return OFFP;var m=0;['vx','x5','x7'].forEach(function(k){if(left(k)>0&&CFG.xp[k]>m)m=CFG.xp[k]});return m}
+/* Fix328: EXP treo offline — buff % EXP tính theo thời gian vé còn hiệu lực TRONG khoảng offline [now-sec, now] (giả định vé đã chạy từ lúc rời đi; vé hết hạn giữa chừng chỉ tính phần còn hạn) */
+function offXp(sec,fn){
+  var avg=0;
+  try{
+    sec=+sec||0;var now=Date.now(),ws=now-sec*1000,d=D(),L=[];
+    ['vx','x5','x7'].forEach(function(k){var ex=+d[TK[k]]||0,c=Math.max(0,Math.min(sec,(ex-ws)/1000));if(c>0)L.push([CFG.xp[k],c])});
+    L.sort(function(a,b){return b[0]-a[0]});
+    var m=0,tot=0;L.forEach(function(r){if(r[1]>m){tot+=r[0]*(r[1]-m);m=r[1]}});
+    avg=sec>0?tot/sec:0}catch(e){avg=0}
+  OFFP=avg;try{fn()}finally{OFFP=null}}
 function tuPct(){return left('vt')>0?CFG.tkPct:0}
 function hook(o,key,pf){
   if(!o)return;var ds=Object.getOwnPropertyDescriptor(o,key);if(ds&&ds.get&&ds.get.__csh)return;
@@ -263,7 +274,7 @@ function chest(t){
 }
 
 setInterval(function(){try{if(!open)return;var need=false;[].forEach.call(el.querySelectorAll('[data-tk]'),function(b){var l=left(b.getAttribute('data-tk'));b.textContent=clk(l);if(l<=0)need=true});if(need)render()}catch(e){}},1000);
-window.CSH={useChoose:useChoose,pickFrom:pickFrom,pickTo:pickTo,pickOk:pickOk,pickClose:pickClose,holyBtn:holyBtn,ticket:useTicket,left:left,soul:soul,show:show,close:close,tab:setTab,buy:buy,chest:chest,arm:arm,cfg:CFG,
+window.CSH={useChoose:useChoose,pickFrom:pickFrom,pickTo:pickTo,pickOk:pickOk,pickClose:pickClose,holyBtn:holyBtn,ticket:useTicket,left:left,offXp:offXp,soul:soul,show:show,close:close,tab:setTab,buy:buy,chest:chest,arm:arm,cfg:CFG,
   count:cnt,
   use:function(k){if(cnt(k)<1)return false;D()[k]--;save();return true},
   give:function(k,n){n=n|0;if(n>0&&k in D()){D()[k]+=n;save()}},

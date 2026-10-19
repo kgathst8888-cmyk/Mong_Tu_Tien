@@ -34,7 +34,8 @@ const HB=[
  {id:'truc',n:'Tị Lôi Trúc',   e:'🎋',c:'#c0a0ff',g:480,y:[2,4],d:[.05,.25,.18,.15,.40],u:'Tị Lôi Đan (giảm sát thương lôi kiếp)'},
  {id:'cot', n:'Cốt Linh Thảo', e:'🦴',c:'#e8d8a8',g:540,y:[2,4],d:[.06,.28,.20,.18,.42],u:'Tôi Thể Đan (chuyển cấp Phàm Nhân → Đạo Thể)'}
 ];
-HB.forEach(b=>{b.g=Math.round(b.g*2.5*CFG.growMul);if(b.y[1]>=4)b.y=[b.y[0]-1,b.y[1]-1];else b.y=[Math.max(1,b.y[0]-1),b.y[1]];b.d=b.d.map(v=>+(v*.6).toFixed(3))});
+const SEED_MUL=.9;   /* Fix324: nhân tỉ lệ rơi hạt giống (trước .6; tăng +50%) */
+HB.forEach(b=>{b.g=Math.round(b.g*2.5*CFG.growMul);if(b.y[1]>=4)b.y=[b.y[0]-1,b.y[1]-1];else b.y=[Math.max(1,b.y[0]-1),b.y[1]];b.d=b.d.map(v=>Math.min(1,+(v*SEED_MUL).toFixed(3)))});
 const HM={};HB.forEach(b=>HM[b.id]=b);
 const BN=['Tinh Anh','Boss Thế Giới','Boss Sử Thi','Trùm Hầm Ngục','Ma Thần'];
 /* Đan dược. k: tv = tu vi · a/d/h/m = thuộc tính · td = giảm sát thương lôi kiếp */
