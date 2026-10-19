@@ -21,7 +21,12 @@ if(CF.shake===undefined)CF.shake=true;
 if(!CF.power)CF.power=1.25;   /* hệ số cỡ hiệu ứng (1 = như thiết kế gốc) */
 if(!CF.q)CF.q=(window.TGFX.CF&&window.TGFX.CF.q)||1;
 var R=window.TG8SK.R,PI=Math.PI,TAU=PI*2,GS={},LF=-999;
-function Q(n){return Math.max(2,Math.round(n*CF.q))}
+if(!CF.maxOv)CF.maxOv=2;   /* Fix329: số lớp phủ kỹ năng vẽ ĐỒNG THỜI (cast thừa chỉ vẽ hiệu ứng gốc 82/83) */
+if(!CF.maxHit)CF.maxHit=3; /* Fix329: số lớp phủ trúng đòn đồng thời (AoE trúng nhiều quái không còn vẽ N tiểu cảnh) */
+var LOV=[],LHT=[];
+function slot(L,it,mx){if(it.__ok!==undefined)return it.__ok;var i=0,o=[];for(;i<L.length;i++)if(fr-L[i].__f<4)o.push(L[i]);L.length=0;o.forEach(function(x){L.push(x)});
+ it.__f=fr;it.__ok=L.length<mx;if(it.__ok)L.push(it);return it.__ok}
+function Q(n){var l=LOV.length+LHT.length;return Math.max(2,Math.round(n*CF.q*(l>3?.5:l>1?.75:1)))}
 function nn(n,o){return Q(o&&o.lite?Math.ceil(n*.45):n)}
 function rnd(i){var x=Math.sin(i*127.1+311.7)*43758.5453;return x-Math.floor(x)}
 function ea(p){return 1-(1-p)*(1-p)}
@@ -158,13 +163,13 @@ function ult(sp,F,p,o,st){
 function wrap(name){var orig=R[name],sp=SP[name];if(!orig||!sp||orig.__u)return;
  var nf=function(F){var rec=orig(F);if(!CF.enable)return rec;
   var o=theme(name,F),st={f:0,seed:(Math.random()*997)|0},m0=rec.main||rec.draw,d0=rec.draw||rec.main;
-  function ov(p){try{ult(sp,F,p,o,st)}catch(e){}}
+  function ov(p){st.__f=fr;if(!slot(LOV,st,CF.maxOv))return;try{ult(sp,F,p,o,st)}catch(e){}}
   return{life:rec.life,aura:rec.aura,main:function(p){m0(p);ov(p)},draw:function(p){d0(p);ov(p)}}};
  nf.__u=1;R[name]=nf}
 Object.keys(SP).forEach(wrap);
 /* ---------- nâng cấp hiệu ứng TRÚNG ĐÒN (bọc TGFX.hitFx; 82 vẽ qua window.TGFX.hitFx, 83 qua TGX.hitFx) ---------- */
 var HC2={fire:'#ffd76a',ice:'#e8fbff',leaf:'#b6ff9a',blade:'#fff4c0',wisp:'#d9a0ff',spark:'#ffffff'};
-function hitUlt(it,p){if(!CF.enable||p>=1)return;
+function hitUlt(it,p){if(!CF.enable||p>=1)return;it.__f=fr;if(!slot(LHT,it,CF.maxHit))return;
  var E=it.E||{k:'spark'},k=E.k,gy=(it.h||60)*.5,cr=!!it.crit,o={c:it.c,c2:HC2[k]||'#ffffff',rs:cr?.75:.5,lite:1},a=1-p,e=ea(p);
  dring(0,gy,(30+120*e)*(cr?1.4:1),it.c,a*.8,3);
  (ER[k]||ER.spark)(0,gy,p,o);

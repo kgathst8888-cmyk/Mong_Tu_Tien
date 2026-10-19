@@ -38,7 +38,13 @@ function openB(i){bo=1;tab=i<4?2+i:6;sel=null;msg='';bag.style.display='flex';ui
 let fzc=0;function fzt(i){const it=BAG[i];if(!it||it.r<3||it.r>4)return;fzc=0;const k=fz.indexOf(i);if(k>=0)fz.splice(k,1);else{if(fz.length&&BAG[fz[0]]&&BAG[fz[0]].r!=it.r){msg='Ba món phải cùng phẩm chất';ui();return}if(fz.length>=3)fz.shift();fz.push(i)}msg='';ui()}
 const fcost=(a,b)=>Math.round(300*Math.max(a.l,b.l)*(a.r-2));
 function fuse(){const a=BAG[fz[0]],b=BAG[fz[1]],c3=BAG[fz[2]];if(fz.length<3||!a||!b||!c3){msg='Chọn đủ 3 món';ui();return}const c=fcost(a,b);if(gold<c){msg='Không đủ vàng ('+c+')';ui();return}if(!fzc){fzc=1;msg='⚠ Bấm lần nữa để xác nhận: nếu thất bại sẽ MẤT CẢ 3 món!';ui();return}fzc=0;gold-=c;const ok=R()<.1,its=[a,b,c3];[...fz].sort((x,y)=>y-x).forEach(i=>BAG.splice(i,1));fz=[];if(ok){const r=a.r+1,it=gen(Math.max(a.l,b.l,c3.l),r,a.s,Math.max(a.mp|0,b.mp|0,c3.mp|0));if(its.some(x=>x.c))it.c=1;BAG.push(it);msg='🌟 Đột phá thành công! '+RN[r]+': '+it.n}else msg='💥 Dung hợp thất bại, mất 3 món trang bị.';ui()}
-function pk(k,i){const it=k=='b'?BAG[i]:null;if(qs&&it&&it.r<3&&!it.c&&!it.u&&!it.ttl){const v=sell(it);gold+=v;BAG.splice(i,1);sel=null;msg='💰 +'+v;ui();return}sel={k,i};msg='';ui()}
+/* Fix330: bấm ô trang bị TRỐNG → tự chọn món hợp ô tốt nhất trong túi (hiện nút Mặc) hoặc báo lý do */
+function pkEmpty(i){const nm=(SL[i]&&SL[i][0])||'ô này',cap=window.HDAO&&HDAO.on()?1e9:P.lv,tien=window.CTHE&&CTHE.on()&&CTHE.cfg;let bj=-1,bs=-1,nHoly=0,nAny=0,nLv=0;
+ BAG.forEach((it,j)=>{if(!it||tgt(it)!=i&&!(i==8&&it.s==7))return;nAny++;if(tien&&(it.r|0)<tien.holyR)return;nHoly++;if(it.l>cap&&!it.c){nLv++;return}const v=sc(it);if(v>bs){bs=v;bj=j}});
+ if(bj>=0){sel={k:'b',i:bj};msg='👆 Món tốt nhất cho ô '+nm+' trong túi — bấm Mặc';ui();return true}
+ const t=!nAny?'Túi chưa có món nào cho ô '+nm:tien&&!nHoly?'⛔ Tiên Nhân chỉ mặc được trang bị Thánh (ô '+nm+')':nLv?'⛔ Món cho ô '+nm+' cần cấp cao hơn Lv'+P.lv:'Không có món hợp ô '+nm;
+ msg=t;try{say(t,'#ffb0b0')}catch(e){}ui();return true}
+function pk(k,i){if(k=='e'&&!EQ[i]&&i!=10&&pkEmpty(i))return;const it=k=='b'?BAG[i]:null;if(qs&&it&&it.r<3&&!it.c&&!it.u&&!it.ttl){const v=sell(it);gold+=v;BAG.splice(i,1);sel=null;msg='💰 +'+v;ui();return}sel={k,i};msg='';ui()}
 function eq1(fs){if(!BAG[sel.i]){sel=null;ui();return}if(BAG[sel.i].l>(window.HDAO&&HDAO.on()?1e9:P.lv)&&!BAG[sel.i].c){msg='⛔ Cần Lv'+BAG[sel.i].l+' mới mặc được (hiện Lv'+P.lv+')';ui();return}eqp(BAG[sel.i],sel.i,fs);sel=null;ui()}
 function swr(){const a=EQ[7];EQ[7]=EQ[8];EQ[8]=a;sel=null;msg='💍 Đã đổi nhẫn trái ↔ phải';ui()}
 function sl1(){gold+=sell(BAG[sel.i]);BAG.splice(sel.i,1);sel=null;ui()}

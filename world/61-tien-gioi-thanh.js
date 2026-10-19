@@ -251,7 +251,8 @@ function decSpr(k,v){var U=HW/46,key='d'+k+v;if(SC[key])return SC[key];try{var _
   if(k==='rock')return spr(key,50*U,34*U,25*U,28*U,function(q){rockB(q,U,v+5)});return spr(key,44*U,50*U,22*U,44*U,function(q){cryB(q,U,v+9)})}
 function cloudSpr(v){var U=HW/46;return spr('cl'+v,380*U,150*U,190*U,75*U,function(q){var r=rng(300+v*17);for(var i=0;i<26;i++){var x=(r()-.5)*260*U,y=(r()-.5)*44*U,rx=(34+r()*54)*U,ry=(14+r()*22)*U;q.fillStyle=rg(q,x,y,1,rx,[0,'rgba(210,220,255,.34)',.6,'rgba(170,185,240,.16)',1,'rgba(150,170,230,0)']);q.beginPath();q.ellipse(x,y,rx,ry,0,0,TAU);q.fill()}},dG())}
 /* ---------- camera, đi lại ---------- */
-function camUpd(){ccx+=(hx-ccx)*.1;ccy+=(hy-ccy)*.1;OX=W/2-(ccx-ccy)*HW;OY=H*.6-(ccx+ccy)*HH}
+/* Fix331: camera bám sát nhân vật (trước đây hệ số .1 → cảnh trượt/trễ sau lưng nhân vật khi đi/dừng/tung skill). CF.camK = độ bám 0..1 (1 = dính cứng). */
+function camUpd(){var dx=hx-ccx,dy=hy-ccy,d=Math.abs(dx)+Math.abs(dy),k=CF.camK==null?.4:CF.camK;if(d<.004||k>=1){ccx=hx;ccy=hy}else{if(d>2.5)k=Math.max(k,.7);ccx+=dx*k;ccy+=dy*k}OX=W/2-(ccx-ccy)*HW;OY=H*.6-(ccx+ccy)*HH}
 function toast(t){TOAST={t:t,e:fr+150}}
 var face=1,TGV=window.TGV={sx:0,sy:1};
 function arrive(){if(pend>=0){var i=pend;pend=-1;act(i)}}
