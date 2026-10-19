@@ -1,6 +1,6 @@
 /* core/01u-wings.js — Cánh (wg*, drawWings)
    (tách từ core/01-engine.js; thứ tự nạp giữ nguyên, xem index.html) */
-const WGC=[3,4,5,20],WGG=[2e6,1e7,5e7,0],WGL=[20,100,200,1000],WGD=[.1,.08,.06,.005],WGT=[2,3,3,3],WGN=['Bạch Vũ Dực','Lam Phụng Dực','Thiên Phượng Dực','Long Vũ Thiên Thần Dực'],WGH=[72,100,110,125],WGB=[.12,-.26,-.3,-.3],WGK=['#bfe8ff','#52c8ff','#ffb050','#b58cff'],
+const WGC=[3,4,5,20],WGG=[2e6,1e7,5e7,0],WGL=[20,100,200,1000],WGD=[.1,.08,.06,.005],WGT=[2,3,3,3],WGN=['Bạch Vũ Dực','Lam Phụng Dực','Thiên Phượng Dực','Long Vũ Thiên Thần Dực'],WGH=[72,100,110,112.5],WGB=[.12,-.26,-.3,-.3],WGK=['#bfe8ff','#52c8ff','#ffb050','#b58cff'],
 WGA=[{"b":ASSET_PAYLOAD("p004"),"w":208,"h":259,"px":189.0,"py":176.0,"cx":101.6,"cy":135.0},{"b":ASSET_PAYLOAD("p005"),"w":147,"h":380,"px":141.4,"py":214.3,"cx":76.0,"cy":177.1},{"b":ASSET_PAYLOAD("p006"),"w":169,"h":380,"px":149.0,"py":215.3,"cx":93.9,"cy":187.0},{"b":window.CANH4_B64||"","w":272,"h":380,"px":267,"py":252.5,"cx":110,"cy":170}].map(o=>{const i=new Image();i.src='data:image/webp;base64,'+o.b;o.im=i;o.R=Math.hypot(Math.max(o.px,o.w-o.px),Math.max(o.py,o.h-o.py));return o}),
 WS={ph:0,sp:.075,am:.13,pt:[],lf:-1,s4:0},
 WFR=i=>i==0?wfr:i==1?wf2:i==2?wf3:wf4,WFA=(i,n)=>{if(i==0)wfr+=n;else if(i==1)wf2+=n;else if(i==2)wf3+=n;else wf4+=n};

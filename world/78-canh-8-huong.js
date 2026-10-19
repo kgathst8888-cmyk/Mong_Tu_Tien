@@ -16,14 +16,27 @@ function act(){
 }
 function cosmetic(){try{var e=eqNow(),M=FMAP();return !!(e.w&&M[e.w]&&M[e.w].draw)}catch(x){return false}}
 function upSec(){return window.VPG8.state.sec>=5}
+if(WS.g8by===undefined){WS.g8by=0;WS.g8th=0}
 var _dw=drawWings;
+/* Fix345: chất lượng tự thích ứng — đo chi phí vẽ cánh (ms/khung, trung bình trượt); nặng thì giảm số lát cắt, nhẹ kéo dài thì tăng lại.
+   Độ mượt chủ yếu nhờ pha/biên độ liên tục (Fix344), nên giảm lát cắt trên máy yếu gần như không thấy giật. WG8_CF.q = ép mức cố định 0|1|2. */
+var QL=2,QE=0,QU=0,QN=[[8,12,16],[6,8,12]],QG=[[4,6,8],[3,4,6]],pnow=window.performance&&performance.now?function(){return performance.now()}:null;
 function draw8(){
+ var t0=pnow?pnow():0;
+ try{draw8b()}finally{if(pnow){var c=pnow()-t0;QE+=(c-QE)*.1;
+  if(CF.q!==undefined)QL=CF.q;
+  else if(QL>0&&QE>(QL==2?1.5:2.6)){QL--;QU=0}
+  else if(QL<2&&QE<(QL==0?.7:1.1)){if(++QU>180){QL++;QU=0}}else QU=0}}
+}
+function draw8b(){
  var l=wl();if(!l)return;var Wg=WGA[l-1];if(!Wg.im.naturalWidth)return;
  var ST=window.VPG8.state,c=Math.cos(ST.ang),ac=Math.abs(c),
   aa=P.atk>0,mv=!!P.mv&&!aa,k=WGH[l-1]/Wg.h,t=fr,col=WGK[l-1],l4=l==4;WS.s4=l4?1:0;
- if(WS.lf!==fr){WS.lf=fr;WS.sp+=((aa?.3:mv?.2:.075)*(l4?.7:1)-WS.sp)*(l4?.05:.08);WS.am+=((aa?.4:mv?.28:.13)*(l4?.9:1)-WS.am)*(l4?.05:.08);WS.ph+=WS.sp}
- var f=wgWv(WS.ph),th0=WGB[l-1]+(mv?.05:0)-CF.spread*(1-ac),
-  by=mv?-Math.abs(Math.sin(t*.3))*2.2:Math.sin(t*(l4?.05:.08))*(l4?1.1:.7),
+ if(WS.lf!==fr){WS.lf=fr;WS.sp+=((aa?.3:mv?.2:.075)*(l4?.7:1)-WS.sp)*(l4?.035:.05);WS.am+=((aa?.4:mv?.28:.13)*(l4?.9:1)-WS.am)*(l4?.035:.05);WS.ph+=WS.sp;
+  /* Fix344: nhấp nhô + độ mở khi đi được làm mượt (trước đây |sin| gấp khúc và nhảy .05 tức thời) */
+  WS.g8by+=((mv?Math.sin(t*.15)*1.6:Math.sin(t*(l4?.05:.08))*(l4?1.1:.7))-WS.g8by)*.18;WS.g8th+=((mv?.05:0)-WS.g8th)*.08}
+ var f=wgWv(WS.ph),th0=WGB[l-1]+WS.g8th-CF.spread*(1-ac),
+  by=WS.g8by,
   sx=1-.1*Math.max(0,-f)*(WS.am/.3+.4),
   /* e = hướng cánh: +1 chìa sang TRÁI màn hình, -1 sang PHẢI; qua 0 là nhìn nghiêng mép */
   eL=c>=0?1:1+2*c, eR=c<=0?-1:-1+2*c,
@@ -39,8 +52,8 @@ function draw8(){
   for(var i=0;i<2;i++){
    var w=wings[i],near=i===1,kk=k*(near?1:.88),th=th0*(near?1:.9),am=WS.am*(near?1:.92);
    g.save();g.translate(w.ox,0);
-   if(pass===0)wgSide(Wg,w.e,kk,th,am,w.ph,near?1:.9,'source-over',sx,l4?12:8);
-   else wgSide(Wg,w.e,kk,th,am,w.ph,pul*(near?1:.8),'lighter',sx,l4?6:4);
+   if(pass===0)wgSide(Wg,w.e,kk,th,am,w.ph,near?1:.9,'source-over',sx,QN[l==4?0:1][QL]);
+   else wgSide(Wg,w.e,kk,th,am,w.ph,pul*(near?1:.8),'lighter',sx,QG[l==4?0:1][QL]);
    g.restore();
   }
  }
