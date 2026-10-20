@@ -1,0 +1,13 @@
+# Fix349 — Cửa Hàng Cống Hiến Tông Môn
+- File mới: `world/108-tong-mon-shop.js` (window.TMS) · `tong_mon_shop.sql`. Sửa: `world/106-tong-mon.js` (thêm cơ chế tab mở rộng `TMG.addTab`, hiện số dư khả dụng ở tab Tông), index.html (thêm 1 <script> sau 107, ?v=349), MODULE_MANIFEST.json. Gỡ <script> 108 → tab Shop biến mất.
+- **SQL đã được đẩy lên Supabase** (migration `tong_mon_shop_fix349`) và chạy thử trên máy chủ thật trong giao dịch tự huỷ. File SQL để lưu lại / dựng môi trường khác. Có cập nhật `tm_me` (thêm số dư `bal`) và tạo `tm_wk()` nếu chưa có (độc lập với tong_mon_boss.sql).
+- Tiêu CỐNG HIẾN để mua. Số dư khả dụng = tổng cống hiến − đã tiêu (cột mới `tm_member.spent`). Rời / bị đuổi khỏi tông thì mất số dư. Cống hiến: quyên 10.000💰 = 1, điểm danh +10.
+- Bảng giá (máy chủ quyết, `tm_shop_cat`): 3 Mảnh Nguyệt Thạch 2.000 (5/tuần) · 1 Mảnh Thánh 8.000 (2/tuần, tông Lv3) · 🎁 Rương Bí Bảo 3.000 (3/tuần) · 🎁 Rương Bí Bảo Cao Cấp 12.000 (1/tuần, tông Lv5). Giới hạn làm mới thứ Hai 00:00 giờ VN.
+- **Rương ngẫu nhiên (Fix350)** — tỉ lệ hiển thị công khai trong tab Shop, bảng `t` trong CAT (world/108), tổng mỗi rương = 100:
+  - Rương Bí Bảo: trang bị Sử Thi 52% · Thần Thoại 14% · 3 Mảnh Nguyệt Thạch 28% · **1 Mảnh Thánh 6%**.
+  - Rương Bí Bảo Cao Cấp: Thần Thoại 45% · Thiên Thần 10% · 6 Mảnh Nguyệt Thạch 20% · **1 Mảnh Thánh 20%** · **2 Mảnh Thánh 5%**.
+  - Kết quả quay ở máy khách (máy chủ chỉ trừ cống hiến, giữ giới hạn tuần, cấp tông). Mua thẳng 1 Mảnh Thánh (8.000) vẫn rẻ hơn kỳ vọng từ rương — rương là đánh cược kèm trang bị.
+- Cố ý KHÔNG bán vàng / Linh Thạch: 10.000 vàng = 1 cống hiến nên bán vàng tạo vòng lặp vàng↔cống hiến; Linh Thạch là hàng nạp thẻ.
+- Máy chủ trừ cống hiến rồi máy khách mới phát vật phẩm (status = ok). Rương ngẫu nhiên: kiểm tra túi còn chỗ TRƯỚC khi mua (kết quả có thể là trang bị). Đổi giá phải sửa CẢ `tm_shop_cat` (SQL) và bảng `CAT` (JS, chỉ để hiển thị).
+- Mức tin cậy: như các module khác — máy chủ giữ số dư, giới hạn tuần, cấp tông; vật phẩm do máy khách phát.
+- Chưa làm: hiện tên tông cạnh tên ở làng online & chat, xin gia nhập có duyệt, danh hiệu Tông Môn bán bằng cống hiến.

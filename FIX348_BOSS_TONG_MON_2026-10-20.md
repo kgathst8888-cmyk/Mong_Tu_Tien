@@ -1,0 +1,11 @@
+# Fix348 — Boss Tông Môn hằng tuần
+- File mới: `world/107-boss-tong-mon.js` (window.TMB, cấu hình window.TMB_CF) · `tong_mon_boss.sql` (chạy SAU tong_mon.sql). Sửa: `world/106-tong-mon.js` (thêm tab 🐉 Boss + API TMG.render/reopen/isOpen), index.html (thêm 1 <script> sau 106, ?v=348), MODULE_MANIFEST.json. Gỡ <script> 107 → tab Boss biến mất, Tông Môn vẫn chạy.
+- **SQL đã được đẩy lên Supabase** (migration `tong_mon_boss_fix348`) và chạy thử trên máy chủ thật trong giao dịch tự huỷ. File này để lưu lại / dựng lại môi trường khác.
+- Mỗi tuần (thứ Hai 00:00 giờ VN) mỗi tông có 1 boss xoay vòng 8 boss (Thiên Kiếp Ma Quân, Huyền Băng Cổ Long, Xích Diễm Hỏa Vương, U Minh Quỷ Mẫu, Cửu Độc Yêu Hoàng, Kim Thân La Hán, Hư Không Ma Tôn, Thần Thú Phản Thể) với MỘT thanh máu chung.
+- Mỗi tài khoản 2 lượt/ngày (giờ VN), mỗi lượt 60 giây hoặc tới khi gục; sát thương cộng vào máu chung. Mỗi lượt +500.000 + 100.000×cấp tông vàng; tông +20 exp mỗi lượt, +500 exp khi hạ boss. Vào trận là mất lượt (thoát giữa chừng vẫn mất).
+- MÁU BOSS tự co giãn: 8 × tổng "lượt sát thương cao nhất" (tm_user.bref) của các thành viên, chốt ở lượt đầu của tuần (nếu chưa ai có bref thì chốt ở lượt kế). Cả tông cần khoảng một nửa số lượt tối đa để hạ boss, ở mọi giai đoạn của game.
+- Thưởng khi boss bị hạ (nhận trong 28 ngày, mỗi tuần 1 lần, cần đóng góp ≥ 0,2% máu boss), theo hạng sát thương trong tông: Hạng 1 = 20tr💰 · 3 Mảnh Thánh · 10 Nguyệt Thạch · 12💎 khoá · 1 rương (5% Thiên Thần/10% Thần Thoại); Hạng 2-3 = 12tr💰 · 1 Thánh · 8 NT · 8💎; Hạng 4-10 = 8tr💰 · 5 NT · 5💎; còn lại = 5tr💰 · 3 NT · 3💎. Chỉnh ở TMB_CF.rw.
+- Bảng "Đua hạ boss": tông hạ boss tuần này sớm nhất. Bảng sát thương trong tông (top 30).
+- Trận đánh dùng engine hầm ngục như Boss Bất Tử nhưng cờ riêng dg.tb / e.tb; tắt x6,4 sát thương (world/89) và tăng máu (systems/67) cho boss này (máu ảo chỉ để đo sát thương). Vào trận sẽ thoát Làng Tân Thủ 2 (TT2.leave), đánh xong về cổng Làng Tân Thủ và bảng Boss tự mở lại.
+- Mức tin cậy: sát thương/vàng/Linh Thạch khoá do máy khách báo/phát (cùng mức với Boss Bất Tử, Đấu Trường); máy chủ giữ lượt, máu boss, hạng, thưởng 1 lần.
+- Chưa làm: cân chỉnh theo dữ liệu người chơi thật (hiện chỉ có 1 mẫu sát thương), kho tông / cửa hàng cống hiến, hiện tên tông ở làng online & chat.

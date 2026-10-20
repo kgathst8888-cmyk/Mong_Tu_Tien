@@ -68,6 +68,7 @@ function hookTw(){
 hookTw();
 
 /* ---------- trạng thái ---------- */
+var EXT=[];function extOf(id){for(var i=0;i<EXT.length;i++)if(EXT[i].id===id)return EXT[i];return null}
 var S={tab:'main',me:null,list:null,off:0,q:'',busy:false,note:'',loading:false,view:'find'};
 var isOpen=false,ovEl=null;
 function setLv(n){var o=D();if(!o)return;n=Math.max(0,Math.min(10,n|0));if((o.lv|0)!==n){o.lv=n;sav()}}
@@ -162,7 +163,7 @@ function search(){var el=document.getElementById('tmg-q');S.q=el?String(el.value
  document.head.appendChild(st)})();
 function bt(label,act,cls,dis){return '<button class="tmg-bt'+(cls?' '+cls:'')+'" '+(dis||S.busy?'disabled ':'')+'onclick="TMG.act('+act+')">'+label+'</button>'}
 function tabs(g){
-  var T=g?[['main','🏯 Tông Môn'],['mem','👥 Thành Viên'],['top','🏆 Xếp Hạng']]:[['find','🔎 Tìm Tông'],['new','➕ Lập Tông'],['top','🏆 Xếp Hạng']];
+  var T=g?[['main','🏯 Tông'],['mem','👥 Người']].concat(window.TMB?[['boss','🐉 Boss']]:[],EXT.map(function(x){return [x.id,x.label]}),[['top','🏆 Hạng']]):[['find','🔎 Tìm Tông'],['new','➕ Lập Tông'],['top','🏆 Xếp Hạng']];
   return '<div class="tmg-tabs">'+T.map(function(t){return '<button class="tmg-bt'+(S.tab===t[0]?' on':'')+'" onclick="TMG.act(\'tab\',\''+t[0]+'\')">'+t[1]+'</button>'}).join('')+'</div>'}
 function buffTx(l){return 'HP +'+(CF.buff.hpp*l)+'% · Sát thương +'+(CF.buff.dmgp*l)+'% · Vàng rơi +'+(CF.buff.goldp*l)+'%'}
 function listHtml(canJoin){
@@ -192,7 +193,7 @@ function render(){
     if(S.tab==='main'){
       h+='<div class="tmg-cd"><b>'+esc(g.name)+' · Cấp '+g.lv+(g.lv>=10?' (MAX)':'')+'</b>'
         +'<div class="tmg-bar"><i style="width:'+pct+'%"></i></div><small>EXP '+(g.lv>=10?'đã đầy':nf(g.exp)+' / '+nf(g.need))+'</small>'
-        +'<small>Chức của bạn: '+R.e+' '+R.n+' · Cống hiến: '+nf(g.ct)+'</small>'
+        +'<small>Chức của bạn: '+R.e+' '+R.n+' · Cống hiến: '+nf(g.ct)+(g.bal!=null?' (khả dụng '+nf(g.bal)+')':'')+'</small>'
         +'<small>✨ Buff hiện tại: '+buffTx(g.lv)+'</small>'
         +(g.lv<10?'<small>Cấp '+(g.lv+1)+': '+buffTx(g.lv+1)+'</small>':'')+'</div>';
       h+='<div class="tmg-cd"><b>📜 Điểm danh</b><small>+'+nf(CF.daily.gold+CF.daily.perLv*g.lv)+'💰 · +10 cống hiến · +60 exp tông (1 lần/ngày, giờ VN)</small>'
@@ -217,6 +218,10 @@ function render(){
           if(b)h+='<div class="tmg-row">'+b+'</div>'}
         h+='</div>'});
       h+=bt('Đóng','\'close\'');
+    }else if(extOf(S.tab)){
+      h+=extOf(S.tab).html(g)+'<div class="tmg-row">'+bt('Đóng','\'close\'')+'</div>';
+    }else if(S.tab==='boss'&&window.TMB){
+      h+=TMB.html(g)+'<div class="tmg-row">'+bt('Đóng','\'close\'')+'</div>';
     }else{
       if(!S.list&&!S.loading)loadList(0);
       h+=listHtml(false)+'<div class="tmg-row">'+bt('Đóng','\'close\'')+'</div>'}
@@ -235,7 +240,7 @@ function render(){
   var keep=null;try{var a=document.activeElement;if(a&&a.id&&ovEl.contains(a))keep={id:a.id,v:a.value}}catch(e){}
   ovEl.innerHTML=h;
   if(keep){try{var e2=document.getElementById(keep.id);if(e2){e2.value=keep.v}}catch(e){}}}
-function open(){
+function open(tab){
   var old=document.getElementById('tmg-ov');if(old)old.remove();
   ovEl=document.createElement('div');ovEl.id='tmg-ov';ovEl.className='tmg-ov';
   ovEl.addEventListener('click',function(e){if(e.target===ovEl)close()});
@@ -243,7 +248,7 @@ function open(){
   S.me=null;S.list=null;S.note='';S.busy=false;S.q='';S.off=0;S.tab='main';S.loading=false;
   render();
   if(!online())return;
-  refresh(function(r){if(r&&r.status==='ok'){S.tab=r.guild?'main':'find';if(!r.guild){S.list=null}}render()})}
+  refresh(function(r){if(r&&r.status==='ok'){S.tab=r.guild?(typeof tab==='string'?tab:'main'):'find';if(!r.guild){S.list=null}}render()})}
 function close(){isOpen=false;if(ovEl){ovEl.remove();ovEl=null}}
 function act(a,x,y){
   switch(a){
@@ -260,6 +265,8 @@ function act(a,x,y){
     case 'kick':kick(x);break;
     case 'role':role(x,y);break;
     case 'reload':S.me=null;render();refresh();break;
+    case 'boss':if(window.TMB)TMB.act(x,y);break;
+    case 'ext':{var X=extOf(x);if(X)X.act(y)}break;
     case 'close':close();break;
   }}
 
@@ -276,5 +283,7 @@ if(!hook()){var n=0,iv=setInterval(function(){if(hook()||++n>40)clearInterval(iv
 setTimeout(function(){try{if(online())refresh()}catch(e){}},6000);
 setInterval(function(){try{if(online()&&!document.hidden)refresh()}catch(e){}},Math.max(60,CF.every)*1000);
 
-window.TMG={cfg:CF,open:open,close:close,lv:lv,buff:buff,refresh:function(){refresh()},act:act};
+window.TMG={cfg:CF,open:open,close:close,lv:lv,buff:buff,refresh:function(){refresh()},act:act,
+  addTab:function(id,label,html,act){if(!extOf(id))EXT.push({id:id,label:label,html:html,act:act})},
+  render:function(){render()},reopen:function(t){open(t)},isOpen:function(){return isOpen}};
 })();

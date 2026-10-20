@@ -119,7 +119,9 @@
       "world/102-lang-tan-thu-3.js",
       "world/103-nghe-nghiep.js",
       "world/104-chien-truong-tien-ma.js",
-      "world/106-tong-mon.js"
+      "world/106-tong-mon.js",
+      "world/107-boss-tong-mon.js",
+      "world/108-tong-mon-shop.js"
     ],
     "systems": [
       "systems/08-farming-alchemy.js",
