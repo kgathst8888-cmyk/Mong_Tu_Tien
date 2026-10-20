@@ -1,0 +1,13 @@
+# Fix365 — Phí vào, hồi 1 giờ và thưởng Mảnh Thánh Khí cho 3 phụ bản (Thiên Lôi · Kính Hồ · Cốt Hải)
+- File mới: `world/121-phi-vao-phu-ban.js` (window.PBF). Nạp SAU world/117 trong index.html (?v=365), có trong MODULE_MANIFEST.json. Không sửa core/engine.
+- File sửa nhỏ: `world/117-do-kho-phu-ban.js` (thêm 1 dòng phí vào + tỉ lệ Mảnh Thánh trong bảng chọn độ khó). index.html, MODULE_MANIFEST.json.
+- Phí mỗi lần vào: **10.000.000 vàng + 20💎 Linh Thạch** (LT.spend, cần đăng nhập). Trừ vàng trước, Linh Thạch sau; Linh Thạch lỗi/thiếu thì hoàn vàng.
+- Hồi chiêu **1 giờ**, tính từ lúc trả phí thành công, lưu theo nhân vật `PS[cur].pbf = {tlc, kinhho, cothai}`. Mỗi phụ bản hồi chiêu riêng (đổi `CF.shared=true` để dùng chung 1 hồi chiêu cho cả 3).
+- Thưởng: hạ **Boss Sử Thi** (Lôi Đế Tàn Hồn / Kính Hồ Tiên Tử / Cốt Long Vương) → **5%** rơi **2 🔱 Mảnh Thánh Khí** — vật phẩm RIÊNG để chế tạo Thánh Khí (cập nhật sau), **không phải** Mảnh Thánh của Lò Luyện đồ Thánh (HL.sh không bị đụng tới). Lưu theo nhân vật ở `PS[cur].mtk`; API cho bản Thánh Khí: `MTK.get()` · `MTK.add(n)` · `MTK.spend(n)`. Hiện CHƯA có chỗ dùng/hiển thị trong túi — số đang có hiện ở bảng độ khó (Kính Hồ/Cốt Hải) và trên chữ nổi khi rơi. Không nhân theo độ khó/Lời Nguyền. Đồ rơi thường giữ nguyên.
+- Luồng vào:
+  - Thiên Lôi: bấm hàng ⚡ trong 🗺 Bản đồ → hộp xác nhận (nêu phí) → trả phí → vào.
+  - Kính Hồ / Cốt Hải: bấm nhà → kiểm tra phí/hồi chiêu NGAY (thiếu thì báo, không mở bảng) → bảng độ khó (có dòng phí) → bấm "Vào phụ bản" mới bị trừ phí.
+  - Đang đứng trong phụ bản mà bấm lại: không trừ phí. Bấm 2 lần liên tiếp: chỉ trừ 1 lần.
+- Chỉnh: `PBF.cfg` {gold, lt, cd, shared, shRate, shQty}. Thử nghiệm: `PBF.clear()` xoá hồi chiêu. Gỡ: bỏ <script> 121 (phụ bản lại miễn phí).
+- Đã chạy thử bằng bộ giả lập (28 kiểm tra): trừ phí, hồi chiêu, thiếu vàng/LT, chưa đăng nhập, lỗi mạng hoàn vàng, double-click, tỉ lệ rơi thực tế ≈5%, kho riêng tách khỏi HL.sh, MTK.add/spend.
+- Lưu ý: hồi chiêu lưu phía client (cùng cách Thánh Địa/Phụ Bản Vàng) nên người dùng đổi dữ liệu local có thể xoá được; phí Linh Thạch vẫn do máy chủ trừ.

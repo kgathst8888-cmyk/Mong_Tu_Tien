@@ -288,6 +288,7 @@ function orb(x,y,r,col,al){if(r<.5||al<=0)return;g.save();g.globalCompositeOpera
 function drawMon(m){
  var a=TG.S2(m.x,m.y),X=a[0],Y=a[1];
  if(X<-140||X>W+140||Y<-220||Y>H+180)return;
+ try{if(window.TGM&&TGM.d81(m,X,Y,s,m.z*s))return}catch(e){}   /* Fix360: 12 quái mới */
  var z=m.z*s,hh=(MS[m.k]?MS[m.k].h:60)*.7,cy=Y-z-hh*.5*s;
  g.save();g.globalAlpha=.28*Math.max(.35,1-m.z/180);g.fillStyle='#02021a';g.beginPath();g.ellipse(X,Y,22*s,9*s,0,0,TAU);g.fill();g.restore();
  orb(X,cy,36*s,'rgba(150,235,255,A)',.4+.1*Math.sin(fr*.1+m.ph));

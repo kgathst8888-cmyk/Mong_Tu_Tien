@@ -121,6 +121,7 @@ function nameOf(m){try{var n=(window.LGNMN||{})[4+m.bk];if(n&&n[m.k])return n[m.
 function draw(m){
   var a=TG.S2(m.x,m.y),X=a[0],Y=a[1];
   if(X<-170||X>W+170||Y<-260||Y>H+200)return;
+  try{if(window.TGM&&TGM.d84(m,X,Y,s,{size:CF.size,col:themeOf(m.bk)}))return}catch(e){}   /* Fix360: 12 quái mới */
   var sp=null;try{sp=LVX.lvMon(m.k,4+m.bk)||LVX.lvMon(m.k,1)}catch(e){}
   if(!sp||!sp.width)return;
   var ms=MS[m.k]||{h:60},HHm=ms.h,sc=s*((typeof SZ==='number'&&SZ)||1)*CF.size,w=sp.width/sp.height*HHm,k=m.hd,th=k*PI/4,cs=Math.cos(th),sn=Math.sin(th),

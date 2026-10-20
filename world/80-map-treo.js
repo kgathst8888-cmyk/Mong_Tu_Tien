@@ -11,7 +11,7 @@
  *      Lv1-20 / 21-40 / 41-60 / 61-80 / 81+ dùng bản đồ 61-80), nên Đạo Linh (EXP) vẫn được tính (LGMAP.expOk()).
  *  - Không có Boss/Tinh Anh: bộ đếm pq/NK (hàng đợi boss của map thường) được giữ nguyên, boss thế giới bị bỏ qua trong map này.
  *
- * Fix240 — QUÁI THEO LV + DẠNG THỂ: ngoài cấp (Lv), quái nhân hệ số theo dạng thể [Phàm, Đạo, Tiên] (CF.realmHp/Df/Atk máu·thủ·sát thương; CF.realmXp [1,1,1] = EXP lên cấp giữ 100% như map ngoài; CF.realmGold vàng). Sát thương quái: core/01e đọc e.rm. TU VI tu tiên ở map treo = CF.tvK (80%) so với map thường, cả online (bọc ZC.kill) lẫn offline.
+ * Fix240 — QUÁI THEO LV + DẠNG THỂ: ngoài cấp (Lv), quái nhân hệ số theo dạng thể [Phàm, Đạo, Tiên] (CF.realmHp/Df/Atk máu·thủ·sát thương; CF.realmXp [3,3,3] (Fix366) = EXP quái map treo gấp 3 map ngoài; CF.realmGold vàng). Sát thương quái: core/01e đọc e.rm. TU VI tu tiên ở map treo = CF.tvK (80%) so với map thường, cả online (bọc ZC.kill) lẫn offline.
  *
  * GIỜ TREO
  *  - Mỗi ngày (đổi lúc 00:00 giờ VN) có CF.freeSec = 4 giờ miễn phí. Muốn thêm: mua bằng Linh Thạch (CF.ltPerHour = 20💎/giờ, trừ ví ☁ qua LT.spend).
@@ -46,7 +46,7 @@ var CF={
  realmDf:[1,1.2,1.5],    /* thủ quái */
  realmAtk:[1,1.3,1.6],   /* sát thương quái */
  cut:.5,             /* Fix358: quái map treo giảm 50% máu · thủ · sát thương (nhân thêm vào realmHp/Df/Atk) để treo không bị chết (1 = tắt) */
- realmXp:[1,1,1],        /* EXP lên cấp: GIỮ 100% như map ngoài (không tăng theo dạng thể) */
+ realmXp:[3,3,3],        /* Fix366: EXP quái map treo ×3 so với map ngoài (offline + online + Tiên Nhân; [1,1,1] = về 100%) */
  realmGold:[1,1.5,2],    /* vàng quái */
  tvK:.8,                 /* Fix240: tu vi tu tiên ở map treo (online + offline) = 80% so với đánh quái ở bản đồ thường */
  minOffSec:60,     /* offline ngắn hơn mức này không tính */
@@ -199,7 +199,7 @@ function fit(e){
  if(!e||e.k==='pal')return;var L1=Math.max(1,P.lv|0),L0=e.lv||L1;
  var hk=rmul('realmHp'),dk=rmul('realmDf');
  e.rm=rmul('realmAtk');   /* Fix240: hệ số sát thương theo cảnh giới (core/01e đọc e.rm) */
- if(isTien()&&window.TGQ&&TGQ.stat){var st=TGQ.stat(L1);e.hp=e.max=st.hp*hk;e.df=st.df*dk;e.m=st.m;e.lv=L1;e.lgi=5;return}   /* Tiên Nhân: quái Tiên Giới (máu cố định theo TGQ_CF.hp) × cảnh giới */
+ if(isTien()&&window.TGQ&&TGQ.stat){var st=TGQ.stat(L1);e.hp=e.max=st.hp*hk;e.df=st.df*dk;e.m=st.m;e.lv=L1;e.lgi=5;e.tg12=1;return}   /* Fix360: e.tg12 → hình 12 quái (world/125) */   /* Tiên Nhân: quái Tiên Giới (máu cố định theo TGQ_CF.hp) × cảnh giới */
  if(L0!==L1){
   e.df*=(8+L1*2.2)/(8+L0*2.2);
   if(!lg){var q=(60+L1*25)/(60+L0*25);e.hp*=q;e.max*=q}   /* quái Đạo Thể có máu cố định (LGS.hpn) nên chỉ đổi thủ */
@@ -320,7 +320,7 @@ function panelHtml(){
  var pc=Math.round(freeLeft(a)/CF.freeSec*100);
  var h='<h2 style="margin:0 0 6px;color:#9dffd8;font-size:19px">⏳ Cổng Treo Máy</h2>'
  +'<div style="font-size:13px;opacity:.9">Quái <b>Lv'+P.lv+'</b> theo cấp bạn · '+who()+' → <b style="color:#ffe27a">'+mapName()+'</b>'+(isTien()&&window.TGQ?'<br>Quái Tiên Giới · EXP gấp 3 quái Đạo Thể · Tiên Nhân chỉ tăng EXP bằng quái Tiên Giới':isDao()?'<br>Quái Đạo Thể (Linh Giới) · vẫn nhận Đạo Linh':'')+'</div>'
- +'<div class="afkc" style="font-size:13px">👹 <b>Quái theo Lv &amp; dạng thể</b> (<b style="color:#ffe27a">'+rname()+'</b>)<br>Máu <b>×'+rmul('realmHp').toFixed(2)+'</b> · Thủ <b>×'+rmul('realmDf').toFixed(2)+'</b> · Sát thương <b>×'+rmul('realmAtk').toFixed(2)+'</b><br>✨ EXP lên cấp <b style="color:#9dffd8">100%</b> như map ngoài · 💰 Vàng <b>×'+rmul('realmGold').toFixed(2)+'</b><br>🧘 Tu vi cảnh giới tu tiên: <b style="color:#9dffd8">'+Math.round(CF.tvK*100)+'%</b> so với map ngoài'+(tvOn()?'':' <span style="color:#ffd98a">(cảnh giới này không tu vi qua đánh quái)</span>')+'</div>'
+ +'<div class="afkc" style="font-size:13px">👹 <b>Quái theo Lv &amp; dạng thể</b> (<b style="color:#ffe27a">'+rname()+'</b>)<br>Máu <b>×'+rmul('realmHp').toFixed(2)+'</b> · Thủ <b>×'+rmul('realmDf').toFixed(2)+'</b> · Sát thương <b>×'+rmul('realmAtk').toFixed(2)+'</b><br>✨ EXP quái <b style="color:#9dffd8">×'+rmul('realmXp')+'</b> so với map ngoài · 💰 Vàng <b>×'+rmul('realmGold').toFixed(2)+'</b><br>🧘 Tu vi cảnh giới tu tiên: <b style="color:#9dffd8">'+Math.round(CF.tvK*100)+'%</b> so với map ngoài'+(tvOn()?'':' <span style="color:#ffd98a">(cảnh giới này không tu vi qua đánh quái)</span>')+'</div>'
  +'<div class="afkc"><div>🕒 Miễn phí hôm nay: <b>'+hms(freeLeft(a))+'</b> / '+hms(CF.freeSec)+'</div>'
  +'<div style="height:8px;border-radius:5px;background:#2a1c10;overflow:hidden;margin:3px 0 5px"><i style="display:block;height:100%;width:'+pc+'%;background:linear-gradient(90deg,#3ad0a0,#8affd0)"></i></div>'
  +'<div>🎫 Giờ đã mua (kho): <b>'+hms(a.b)+'</b></div>'
@@ -328,8 +328,8 @@ function panelHtml(){
  +'<div class="afkc" style="font-size:13px"><b>Thưởng ước tính / giờ</b> (không rơi trang bị)<br>✨ '+nf(e.xp)+' EXP · 🧘 '+(tvOn()?nf(e.tv)+' tu vi':'— tu vi')+' · 💰 '+nf(e.gold)+'<br>🔹 ~'+e.frag+' mảnh · 🔩 ~'+e.fe+' Quặng Sắt · 🌑 ~'+e.hk+' Huyền Kim · 🪨 Đá Cường Hóa</div>'
  +'<div class="afkw">⚠️ <b>CẢNH BÁO · MAP TREO OFFLINE</b>'
   +'<ul>'
-  +'<li>Quái luôn <b>Lv'+P.lv+'</b> bằng cấp bạn và <b>mạnh theo dạng thể</b> ('+rname()+'): Đạo Thể / Tiên Nhân gặp quái trâu &amp; đau hơn, bù lại vàng nhiều hơn (EXP lên cấp vẫn 100%). Hãy chắc nhân vật đủ sức trước khi treo.</li>'
-  +'<li>🧘 <b>Tu vi cảnh giới tu tiên</b> khi treo (online lẫn offline) = <b>'+Math.round(CF.tvK*100)+'%</b> map ngoài (gồm tu vi hạ quái + tự tu luyện). EXP lên cấp vẫn <b>100%</b> như map ngoài. Tu vi dừng ở ngưỡng đột phá — bạn tự đột phá khi mở game.</li>'
+  +'<li>Quái luôn <b>Lv'+P.lv+'</b> bằng cấp bạn và <b>mạnh theo dạng thể</b> ('+rname()+'): Đạo Thể / Tiên Nhân gặp quái trâu &amp; đau hơn, bù lại vàng nhiều hơn và EXP quái gấp ×'+rmul('realmXp')+' map ngoài. Hãy chắc nhân vật đủ sức trước khi treo.</li>'
+  +'<li>🧘 <b>Tu vi cảnh giới tu tiên</b> khi treo (online lẫn offline) = <b>'+Math.round(CF.tvK*100)+'%</b> map ngoài (gồm tu vi hạ quái + tự tu luyện). EXP quái <b>×'+rmul('realmXp')+'</b> so với map ngoài. Tu vi dừng ở ngưỡng đột phá — bạn tự đột phá khi mở game.</li>'
   +'<li><b>Giờ treo bị trừ cả khi tắt game</b> (tối đa bằng số giờ còn lại). Hết giờ là dừng, phần dư không được cộng bù.</li>'
   +'<li>Offline <b>chỉ tính khi bạn còn đứng trong map</b>. Bấm 🏘 Làng, đổi map/phụ bản hoặc đổi nhân vật = <b>mất treo offline</b>.</li>'
   +'<li>Treo chỉ nhận <b>EXP · Vàng · Nguyên liệu</b>, <b>không rơi trang bị</b>. Thưởng offline tính theo công thức ('+CF.spk+' giây/quái), không có boss.</li>'
