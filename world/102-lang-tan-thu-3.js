@@ -167,7 +167,7 @@ function house(i,t){
   g.fillStyle='#ffd45a';g.beginPath();g.arc(0,-136,3.2,0,PI2);g.fill();
   g.font='bold 22px Ma Shan Zheng,'+FONT;g.textAlign='center';g.textBaseline='alphabetic';g.fillStyle=C;g.fillText(H_.ch,0,-82);
   if(typeof ln==='function'){try{ln(-52,-58,.8,t);ln(52,-58,.8,t)}catch(e){}}
-  houseFx(i,H_,t);lockFx(t);
+  houseFx(i,H_,t);if(typeof H_.open!=='function'||H_.locked)lockFx(t);
   g.restore()}
 function label(i,t){
   var H_=HOUSES[i],k=bww()/120,X=bx(i)*s,fs=Math.max(10,11.5*s),pad=fs*.55,
@@ -247,7 +247,7 @@ function scene(t){
   g.save();g.font='bold '+fs+'px '+FONT;g.textAlign='center';
   var tx='❄ Làng Tân Thủ 3 · chạm để đi',tw=g.measureText(tx).width;
   g.fillStyle='#000b';g.fillRect(cx2-tw/2-12,ty-18*Math.max(.8,s),tw+24,28*Math.max(.8,s));g.fillStyle='#d6ecff';g.fillText(tx,cx2,ty);
-  var on2='🔒 5 nhà đang tạm khoá';
+  var nLk=HOUSES.filter(function(h){return typeof h.open!=='function'||h.locked}).length,on2=nLk?'🔒 '+nLk+' nhà đang tạm khoá':'';
   if(on2){var fs2=Math.max(10,12*s),ty2=ty+34*Math.max(.8,s);g.font='bold '+fs2+'px '+FONT;g.lineWidth=3;g.strokeStyle='rgba(0,0,0,.8)';g.strokeText(on2,cx2,ty2);g.fillStyle='#ffb4a8';g.fillText(on2,cx2,ty2)}
   /* thông báo "Cập nhật sau" */
   if(note&&note.t>0){note.t--;var nf=Math.max(13,16*s),ny=gy+44*s+nf*2.4;g.globalAlpha=Math.min(1,note.t/30);g.font='bold '+nf+'px '+FONT;

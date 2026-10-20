@@ -45,6 +45,7 @@ var CF={
  realmHp:[1,1.5,2.5],    /* máu quái */
  realmDf:[1,1.2,1.5],    /* thủ quái */
  realmAtk:[1,1.3,1.6],   /* sát thương quái */
+ cut:.5,             /* Fix358: quái map treo giảm 50% máu · thủ · sát thương (nhân thêm vào realmHp/Df/Atk) để treo không bị chết (1 = tắt) */
  realmXp:[1,1,1],        /* EXP lên cấp: GIỮ 100% như map ngoài (không tăng theo dạng thể) */
  realmGold:[1,1.5,2],    /* vàng quái */
  tvK:.8,                 /* Fix240: tu vi tu tiên ở map treo (online + offline) = 80% so với đánh quái ở bản đồ thường */
@@ -64,7 +65,7 @@ function say(t,col){try{DT.push({x:P.x,y:200,s:t,c:col||'#9dffd8',g:1,l:130})}ca
 function rnd(x){var f=Math.floor(x);return f+(Math.random()<x-f?1:0)}
 /* Fix240: dạng thể 0 = Phàm Thể · 1 = Đạo Thể · 2 = Tiên Nhân → hệ số quái & EXP */
 function form(){return isTien()?2:isDao()?1:0}
-function rmul(k){var v=CF[k];return Array.isArray(v)?(+v[form()]||1):(+v||1)}
+function rmul(k){var v=CF[k],r=Array.isArray(v)?(+v[form()]||1):(+v||1);return (k==='realmHp'||k==='realmDf'||k==='realmAtk')?r*(+CF.cut||1):r}
 function rname(){return who()}
 function A(p){
  p=p||PS[cur];if(!p)return null;

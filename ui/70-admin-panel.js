@@ -446,6 +446,12 @@ function vTest(){
     +'<select id="adm-gs"><option value="-1">Ô ngẫu nhiên</option>'+slotOpts()+'</select></div>'
     +'<div class="ar"><input id="adm-gl" type="number" inputmode="numeric" min="1" max="80" placeholder="Cấp (mặc định = cấp nhân vật)"><input id="adm-gn" type="number" inputmode="numeric" min="1" max="30" placeholder="Số lượng (1)"></div>'
     +'<div class="ar"><button class="bt gr" data-a="t_gear">🎁 Tạo vào túi</button><button class="bt dg" data-a="t_clrbag">🗑 Dọn sạch túi</button></div>';
+  if(window.HALW&&HALW.data){var hw=HALW.data();
+    h+=H4+'🎃 Halloween — 🍭 '+hw.c1+' · 🍬 '+hw.c2+' · 🤢 '+hw.c3+' · 👻 '+hw.gp+'</h4>'
+      +'<div class="ar"><select id="adm-hwk"><option value="c1">🍭 Kẹo Ngọt</option><option value="c2">🍬 Kẹo Dẻo</option><option value="c3">🤢 Kẹo Thối</option><option value="gp">👻 Bí Ngô Ma Quái</option></select>'
+      +'<input id="adm-hwn" type="number" inputmode="numeric" min="1" placeholder="Số lượng"><button class="bt gr" data-a="t_hw">➕ Cộng</button></div>'
+      +'<div class="ar"><button class="bt" data-a="t_hwall" data-v="10">+10 mỗi loại</button><button class="bt" data-a="t_hwall" data-v="100">+100 mỗi loại</button></div>';
+  }
   h+=H4+'♻ Reset nhân vật</h4><div class="tq">Đưa nhân vật ĐANG CHƠI về như mới tạo (Lv1): xoá cấp, tu vi, điểm, trang bị đang mặc, túi đồ, thú, Hợp Đạo/Chuyển Thế và mọi dữ liệu hệ thống của riêng nhân vật. Xoá TOÀN BỘ: Linh Căn, Tháp, Cash Shop, vàng (về 100), nhiệm vụ, Linh Điền, Mỏ, Huyền Tinh, thư đã nhận… Chỉ giữ tên và lớp. Linh Thạch trên máy chủ không đổi.</div>'
     +'<div class="ar"><button class="bt dg" data-a="t_reset">♻ Reset nhân vật</button></div>';
   return h;
@@ -578,6 +584,13 @@ function testAct(a){
     frag=(frag|0)+n;testDone('✅ Đã cộng '+nf(n)+' mảnh');return}
   if(a==='t_pts'){n=Math.floor(+val('adm-pts'));if(!(n>0)){S.note='⚠ Nhập số điểm lớn hơn 0.';draw();return}
     PS[cur].pts=(PS[cur].pts|0)+n;testDone('✅ Đã cộng '+nf(n)+' điểm tiềm năng');return}
+  if(a==='t_hw'||a==='t_hwall'){
+    if(!(window.HALW&&HALW.data)){S.note='⚠ Chưa có module Halloween.';draw();return}
+    var hw=HALW.data(),ks,NM={c1:'Kẹo Ngọt',c2:'Kẹo Dẻo',c3:'Kẹo Thối',gp:'Bí Ngô Ma Quái'};
+    if(a==='t_hw'){n=Math.floor(+val('adm-hwn'));ks=[val('adm-hwk')]}else{n=Math.floor(+S.tvf);ks=['c1','c2','c3','gp']}
+    if(!(n>0)||!ks.every(function(k){return NM[k]})){S.note='⚠ Nhập số lượng lớn hơn 0.';draw();return}
+    ks.forEach(function(k){hw[k]=Math.min(1e9,(hw[k]|0)+n)});
+    testDone('✅ Đã cộng '+nf(n)+' '+ks.map(function(k){return NM[k]}).join(', '));return}
   if(a==='t_heal'){try{P.hp=mx();P.mp=mm()}catch(e){}testDone('✅ Đã hồi đầy HP/MP');return}
   if(a==='t_god'){setGod(!GOD);testDone(GOD?'🛡 Bất tử BẬT (tự hồi máu liên tục, tắt khi tải lại trang)':'🛡 Bất tử TẮT');return}
   if(a==='t_kill'){var k=0;try{E.forEach(function(e){if(e&&e.hp>0){e.hp=0;k++}})}catch(e){}testDone('☠ Đã hạ '+k+' quái trên màn hình');return}

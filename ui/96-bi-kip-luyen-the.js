@@ -111,6 +111,17 @@ function train(){
   sav();refresh();render()}
 function equip(u){var b=D();if(!b||!find(b,u))return;b.eq=u;sav();refresh();render()}
 function unequip(){var b=D();if(!b)return;b.eq=0;sav();refresh();render()}
+/* Bỏ bí kíp thừa (không đụng cuốn đang mang). Hỗn Mang đã luyện thành là điều kiện của Bất Diệt Thân nên cảnh báo riêng. */
+function warnTx(x){return x.k==='hm'&&x.s===1?'\n⚠ Đây là Hỗn Mang Bách Diệt Kinh đã luyện thành — bỏ đi sẽ MẤT kỹ năng Bất Diệt Thân (nếu không còn cuốn nào khác).':''}
+function dropBook(u){
+  var b=D();if(!b)return;var x=find(b,u);if(!x||b.eq===u)return;
+  if(!confirm('Bỏ '+DEF[x.k].n+(x.s===1?' (phẩm '+QN[x.q]+')':' ('+x.p+'/'+CF.need+' điểm)')+'? Không thể lấy lại.'+warnTx(x)))return;
+  b.inv.splice(b.inv.indexOf(x),1);sav();say('🗑 Đã bỏ '+DEF[x.k].n,'#ffb36b',210);render()}
+function dropAll(){
+  var b=D();if(!b)return;var L=b.inv.filter(function(x){return x.u!==b.eq});if(!L.length)return;
+  var hm=L.some(function(x){return x.k==='hm'&&x.s===1});
+  if(!confirm('Bỏ '+L.length+' bí kíp đang có (không tính cuốn đang mang)? Không thể lấy lại.'+(hm?'\n⚠ Trong đó có Hỗn Mang Bách Diệt Kinh đã luyện thành — bỏ đi sẽ MẤT kỹ năng Bất Diệt Thân (nếu không còn cuốn nào khác).':'')))return;
+  b.inv=b.inv.filter(function(x){return x.u===b.eq});sav();say('🗑 Đã bỏ '+L.length+' bí kíp','#ffb36b',210);render()}
 function buy(k){
   if(k!=='bl')return;
   if(gold<CF.price){say('💰 Không đủ vàng ('+fmt(CF.price)+')','#ff8a8a');return}
@@ -179,7 +190,8 @@ function render(){
     h+='<div class="bk-note" style="margin-top:10px"><b>Bí kíp đang có ('+rest.length+')</b></div>';
     if(!rest.length)h+='<div class="bk-note">Trống. Mua Bách Luyện Kỳ Kinh ở 🛒 Tạp Hóa (trong Làng).</div>';
     rest.forEach(function(bk){var d=DEF[bk.k];
-      h+='<div class="bk-card"><img src="'+icon(bk.k)+'"><div class="tx"><b>'+d.n+' <small style="opacity:.7">('+d.t+')</small></b><em>'+status(bk)+'</em></div><button class="bt" onclick="BK.eq('+bk.u+')">Mang</button></div>'});
+      h+='<div class="bk-card"><img src="'+icon(bk.k)+'"><div class="tx"><b>'+d.n+' <small style="opacity:.7">('+d.t+')</small></b><em>'+status(bk)+'</em></div><div style="display:flex;flex-direction:column;gap:4px"><button class="bt" onclick="BK.eq('+bk.u+')">Mang</button><button class="bt" onclick="BK.drop('+bk.u+')">🗑 Bỏ</button></div></div>'});
+    if(rest.length>1)h+='<button class="bt" style="display:block;margin:6px 0 0 auto" onclick="BK.dropAll()">🗑 Bỏ hết bí kíp thừa ('+rest.length+')</button>';
     h+='<div class="bk-sh"><b>🛡 Bất Diệt Thân (nội tại)</b> — luôn có khiên bằng '+Math.round(CF.shield.pct*100)+'% HP tối đa; khiên vỡ thì hồi chiêu '+CF.shield.cd/1000+'s rồi tự có lại.<br>'
       +(unlocked()?'<span style="color:#9fffb0">Đã học · tự động có khiên, mọi bản đồ (kể cả Tiên Giới).</span>':'<span style="opacity:.8">Kỹ năng của Hỗn Mang Bách Diệt Kinh — luyện thành là học được.</span>')+'</div>';
     h+='<div class="bk-note">Luyện: '+Math.round(CF.roll.fail/(CF.roll.fail+CF.roll.t+CF.roll.d+CF.roll.h+CF.roll.v)*100)+'% thất bại · phẩm Thiên ×1, Địa ×1.2, Huyền ×1.5, Hoàng ×2.</div>'}
@@ -217,6 +229,6 @@ setInterval(function(){
   }catch(e){}},250);
 /* ---------- chơi mới: xoá dữ liệu bí kíp ---------- */
 if(typeof ng==='function'){var _ng=ng;ng=function(){var r=_ng.apply(this,arguments);try{PS.forEach(function(x){if(x)delete x.bk});SH.amt=0;SH.cd=0}catch(e){}return r}}
-window.BK={cfg:CF,open:open,close:close,tab:function(t){tab=t;render()},eq:equip,un:unequip,train:train,buy:buy,cast:cast,give:addBook,space:function(){var b=D();return b?CF.invMax-b.inv.length:0},bonus:function(){return bonus(cur)}};
+window.BK={cfg:CF,open:open,close:close,tab:function(t){tab=t;render()},eq:equip,un:unequip,drop:dropBook,dropAll:dropAll,train:train,buy:buy,cast:cast,give:addBook,space:function(){var b=D();return b?CF.invMax-b.inv.length:0},bonus:function(){return bonus(cur)}};
 hookAll();refresh();
 })();

@@ -119,38 +119,45 @@ function openCandy(i,all){
   msg(d.e+' Mở '+n+' '+d.n+': ✨ +'+nf(exp)+' EXP · '+lines.join(' · '));
   say(d.e+' '+d.n+' ×'+n+' · +'+nf(exp)+' EXP',d.c)}
 
-async function craftCandy(){
+function maxCandy(h){return Math.max(0,Math.min(Math.floor(h.sg/CF.needMat),Math.floor(h.fl/CF.needMat),Math.floor(h.ml/CF.needMat),Math.floor(gold/CF.craftGold)))}
+async function craftCandy(all){
   if(busy)return;var h=H();
   if(h.sg<CF.needMat||h.fl<CF.needMat||h.ml<CF.needMat){msg('Thiếu nguyên liệu (cần '+CF.needMat+' mỗi loại).');return}
   if(gold<CF.craftGold){msg('Thiếu vàng (cần '+nf(CF.craftGold)+').');return}
   if(needLogin())return;
+  var n=all===true?maxCandy(h):1;if(n<1)return;
   busy=true;
   try{
-    var r=await LT.spend(CF.craftLT,'halloween-keo');
-    if(!r||!r.ok){msg(r&&r.err==='poor'?'Thiếu Linh Thạch (cần '+CF.craftLT+').':'Không trừ được Linh Thạch, thử lại.');busy=false;return}
+    var r=await LT.spend(CF.craftLT*n,'halloween-keo');
+    if(!r||!r.ok){msg(r&&r.err==='poor'?'Thiếu Linh Thạch (cần '+(CF.craftLT*n)+' để ghép '+n+' lần).':'Không trừ được Linh Thạch, thử lại.');busy=false;return}
     h=H();
-    if(h.sg<CF.needMat||h.fl<CF.needMat||h.ml<CF.needMat||gold<CF.craftGold){msg('Nguyên liệu/vàng đã thay đổi, thử lại.');busy=false;return}
-    h.sg-=CF.needMat;h.fl-=CF.needMat;h.ml-=CF.needMat;gold-=CF.craftGold;
-    var rn=Math.random(),i=rn<CF.candyP[0]?0:rn<CF.candyP[0]+CF.candyP[1]?1:2;
-    h[CANDY[i].k]++;save();
-    msg('Ghép thành công! Nhận '+CANDY[i].e+' '+CANDY[i].n+' (đã trừ '+CF.craftLT+' Linh Thạch + '+nf(CF.craftGold)+' vàng).');
-    say(CANDY[i].e+' Ghép được '+CANDY[i].n+'!',CANDY[i].c)
+    if(n>maxCandy(h)){msg('Nguyên liệu/vàng đã thay đổi, thử lại.');busy=false;return}
+    h.sg-=CF.needMat*n;h.fl-=CF.needMat*n;h.ml-=CF.needMat*n;gold-=CF.craftGold*n;
+    var got=[0,0,0],k,rn,i;
+    for(k=0;k<n;k++){rn=Math.random();i=rn<CF.candyP[0]?0:rn<CF.candyP[0]+CF.candyP[1]?1:2;got[i]++;h[CANDY[i].k]++}
+    save();
+    var tx=CANDY.map(function(d,j){return got[j]?d.e+' '+d.n+' ×'+got[j]:''}).filter(Boolean).join(' · ');
+    msg('Ghép thành công '+n+' lần! Nhận '+tx+' (đã trừ '+(CF.craftLT*n)+' Linh Thạch + '+nf(CF.craftGold*n)+' vàng).');
+    var f=got.indexOf(1);
+    say(n>1?'🍬 Ghép ×'+n+' kẹo!':CANDY[f].e+' Ghép được '+CANDY[f].n+'!',n>1?'#ffb347':CANDY[f].c)
   }catch(e){msg('Lỗi mạng, thử lại.')}
   busy=false;if(on)render()}
 
-async function craftGhost(){
+function maxGhost(h){return Math.max(0,Math.min(Math.floor(h.pk/CF.needPump),Math.floor(gold/CF.ghostGold)))}
+async function craftGhost(all){
   if(busy)return;var h=H();
   if(h.pk<CF.needPump){msg('Thiếu Bí Ngô (cần '+CF.needPump+').');return}
   if(gold<CF.ghostGold){msg('Thiếu vàng (cần '+nf(CF.ghostGold)+').');return}
   if(needLogin())return;
+  var n=all===true?maxGhost(h):1;if(n<1)return;
   busy=true;
   try{
-    var r=await LT.spend(CF.ghostLT,'halloween-bi-ngo');
-    if(!r||!r.ok){msg(r&&r.err==='poor'?'Thiếu Linh Thạch (cần '+CF.ghostLT+').':'Không trừ được Linh Thạch, thử lại.');busy=false;return}
+    var r=await LT.spend(CF.ghostLT*n,'halloween-bi-ngo');
+    if(!r||!r.ok){msg(r&&r.err==='poor'?'Thiếu Linh Thạch (cần '+(CF.ghostLT*n)+' để ghép '+n+' lần).':'Không trừ được Linh Thạch, thử lại.');busy=false;return}
     h=H();
-    if(h.pk<CF.needPump||gold<CF.ghostGold){msg('Bí Ngô/vàng đã thay đổi, thử lại.');busy=false;return}
-    h.pk-=CF.needPump;h.upk+=CF.needPump;gold-=CF.ghostGold;h.gp++;save();
-    msg('👻 Ghép thành công 1 Bí Ngô Ma Quái!');say('👻 Bí Ngô Ma Quái!','#d9a8ff')
+    if(n>maxGhost(h)){msg('Bí Ngô/vàng đã thay đổi, thử lại.');busy=false;return}
+    h.pk-=CF.needPump*n;h.upk+=CF.needPump*n;gold-=CF.ghostGold*n;h.gp+=n;save();
+    msg('👻 Ghép thành công '+n+' Bí Ngô Ma Quái! (đã trừ '+(CF.ghostLT*n)+' Linh Thạch + '+nf(CF.ghostGold*n)+' vàng)');say('👻 Bí Ngô Ma Quái ×'+n,'#d9a8ff')
   }catch(e){msg('Lỗi mạng, thử lại.')}
   busy=false;if(on)render()}
 
@@ -172,11 +179,11 @@ function render(){
   if(mg)o+='<div style="background:#2a1236;border:1px solid #ff9a2e;border-radius:6px;padding:6px;margin:4px 0;font-size:12px;color:#ffe9a0">'+mg+'</div>';
   o+='<div style="margin:6px 0"><b>① Làm kẹo</b><div style="font-size:12px">'+MATS.map(function(m){return m.e+' '+m.n+': <b style="color:'+(h[m.k]>=CF.needMat?'#7fe08a':'#ff7a7a')+'">'+h[m.k]+'</b>/'+CF.needMat}).join(' · ')+'</div>'
    +'<div style="font-size:11px;opacity:.8">+ '+CF.craftLT+' 💎 Linh Thạch + '+nf(CF.craftGold)+' vàng · ra: 🍭 Ngọt 10% · 🍬 Dẻo 20% · 🤢 Thối 70%</div>'
-   +'<button onclick="HALW.craft()" style="width:100%;margin-top:4px;padding:6px">🍬 Ghép kẹo</button></div>';
+   +'<div style="display:flex;gap:6px;margin-top:4px"><button onclick="HALW.craft()" style="flex:1;padding:6px">🍬 Ghép 1</button><button onclick="HALW.craft(true)" style="flex:1;padding:6px">🍬 Ghép tối đa (×'+maxCandy(h)+')</button></div></div>';
   o+='<div style="margin:6px 0"><b>② Kẹo đang có</b>'+CANDY.map(function(d,i){return '<div style="display:flex;align-items:center;gap:6px;font-size:12px;margin-top:3px"><span style="flex:1;color:'+d.c+'">'+d.e+' '+d.n+' ×'+h[d.k]+'</span><button onclick="HALW.eat('+i+',0)">Mở 1</button><button onclick="HALW.eat('+i+',1)">Mở hết</button></div>'}).join('')+'</div>';
   o+='<div style="margin:6px 0"><b>③ Bí ngô</b><div style="font-size:12px">🎃 Bí Ngô: <b style="color:'+(h.pk>=CF.needPump?'#7fe08a':'#ff7a7a')+'">'+h.pk+'</b>/'+CF.needPump+' (Boss rơi 5%)</div>'
    +'<div style="font-size:11px;opacity:.8">+ '+CF.ghostLT+' 💎 Linh Thạch + '+nf(CF.ghostGold)+' vàng → 👻 Bí Ngô Ma Quái</div>'
-   +'<button onclick="HALW.ghost()" style="width:100%;margin-top:4px;padding:6px">👻 Ghép Bí Ngô Ma Quái</button>'
+   +'<div style="display:flex;gap:6px;margin-top:4px"><button onclick="HALW.ghost()" style="flex:1;padding:6px">👻 Ghép 1</button><button onclick="HALW.ghost(true)" style="flex:1;padding:6px">👻 Ghép tối đa (×'+maxGhost(h)+')</button></div>'
    +'<div style="display:flex;align-items:center;gap:6px;font-size:12px;margin-top:4px"><span style="flex:1;color:#d9a8ff">👻 Bí Ngô Ma Quái ×'+h.gp+'</span><button onclick="HALW.openG(0)">Mở 1</button><button onclick="HALW.openG(1)">Mở hết</button></div>'
    +(h.wf4?'<div style="font-size:12px;margin-top:4px">🪽 Mảnh Cánh Cấp 4: <b>'+h.wf4+'</b> (chờ cập nhật)</div>':'')+'</div>';
   o+='<div style="margin:8px 0;border-top:1px dashed #ff9a2e88;padding-top:6px"><b>④ 🎁 Móc quà sự kiện</b><div style="font-size:11px;opacity:.8">Tính theo số lượng ĐÃ DÙNG (mở kẹo / Bí Ngô đã dùng để ghép). Linh Thạch là 🔒 khoá.</div>';
