@@ -137,7 +137,8 @@
       "world/123-phap-bao-thuc-tinh.js",
       "world/124-chien-cong-shop.js",
       "assets/tien-gioi-quai-art.js",
-      "world/125-tien-gioi-quai-12.js"
+      "world/125-tien-gioi-quai-12.js",
+      "world/126-do-hoa-phu-ban.js"
     ],
     "systems": [
       "systems/08-farming-alchemy.js",

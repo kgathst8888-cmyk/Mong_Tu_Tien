@@ -3,21 +3,21 @@
  * CHỈ ĐỔI HÌNH + HOẠT ẢNH. Chỉ số, AI, va chạm, EXP, rơi đồ, sát thương đều do module gốc giữ nguyên (m.k vẫn là gob/wolf/scorp/arch/mage).
  * 12 loài: Thanh Linh Hạc, Ngọc Kỳ Lân, Thiên Tinh Hồ, Linh Thú Cự Quy, Huyền Vũ, Cửu Vĩ Ma Hồ, Thiên Đình Chiến Sĩ, Cự Ma, Lôi Điện Thần Sứ, Hắc Long, Thanh Trùng, Tiên Linh.
  *   • Tầm xa (m.k = arch/mage): Hạc, Lôi Điện Thần Sứ, Thanh Trùng, Tiên Linh · Cận chiến: 8 loài còn lại. Loài chọn cố định theo id quái.
- * Hình: assets/tien-gioi-quai/<id>.png (sprite-sheet 1024×1024, nền trong suốt, 4×4 khung 256px: 0-3 đứng · 4-9 di chuyển · 10-15 tấn công).
- *   PNG không tải được (thiếu file/đường dẫn sai) → tự vẽ dự phòng bằng assets/tien-gioi-quai-art.js (cùng hình) và ghi cảnh báo vào console [TGM].
+ * Hình: assets/tien-gioi-quai/<id>.webp (sprite-sheet 1024×1024, nền trong suốt, tách từ tranh minh hoạ tham khảo + hoạt ảnh biến dạng, xem tools/tgm_build_*.py, 4×4 khung 256px: 0-3 đứng · 4-9 di chuyển · 10-15 tấn công).
+ *   WebP không tải được (thiếu file/đường dẫn sai) → tự vẽ dự phòng bằng assets/tien-gioi-quai-art.js (cùng hình) và ghi cảnh báo vào console [TGM].
  * Chỉnh/tắt: TGM_CF.enable=false (về hình cũ) · TGM_CF.path (thư mục PNG) · TGM_CF.scale (cỡ quái) · hoặc xoá 2 thẻ <script> (art + 115) trong index.html. API: window.TGM. */
 (function(){
 'use strict';
 if(typeof g==='undefined'||typeof MS==='undefined'||!window.TGMART)return;
 var CF=window.TGM_CF=window.TGM_CF||{};
 function def(k,v){if(CF[k]===undefined)CF[k]=v}
-def('enable',true);def('path','assets/tien-gioi-quai/');def('scale',1);def('png',true);def('wait',2500);
+def('enable',true);def('path','assets/tien-gioi-quai/');def('ext','webp');def('scale',1);def('png',true);def('wait',2500);
 var SP=TGMART.SP,FR=TGMART.FR,SZ_=FR.size,PI=Math.PI,TAU=PI*2;
 var RANGED_POOL=[0,8,10,11],MELEE_POOL=[1,2,3,4,5,6,7,9];
 var sheets=[],warned={},scratch=null,sc2=null;
 function warn(k,t){if(!warned[k]){warned[k]=1;try{console.warn('[TGM] '+t)}catch(e){}}}
 function sheet(i){var o=sheets[i];if(o)return o;o=sheets[i]={img:null,ok:0,bad:0,cv:null,t0:Date.now()};
- if(CF.png){var im=new Image();o.img=im;im.onload=function(){o.ok=1};im.onerror=function(){o.bad=1;warn('png'+i,'không tải được '+CF.path+SP[i].id+'.png → vẽ dự phòng')};im.src=CF.path+SP[i].id+'.png'}else o.bad=1;
+ if(CF.png){var im=new Image();o.img=im;im.onload=function(){o.ok=1};im.onerror=function(){o.bad=1;warn('png'+i,'không tải được '+CF.path+SP[i].id+'.png → vẽ dự phòng')};im.src=CF.path+SP[i].id+'.'+CF.ext}else o.bad=1;
  return o}
 function fallback(i,o){if(o.cv)return o.cv;var cv=document.createElement('canvas');cv.width=cv.height=SZ_*FR.cols;var c=cv.getContext('2d');
  for(var f=0;f<FR.n;f++){c.save();c.translate((f%FR.cols)*SZ_,Math.floor(f/FR.cols)*SZ_);c.beginPath();c.rect(0,0,SZ_,SZ_);c.clip();TGMART.draw(c,i,f);c.restore()}
@@ -34,13 +34,13 @@ function frameOf(m,fr,rg){var f,sn=m.sn|0;
   if(m.tga!==undefined&&fr-m.tga<24)f=10+Math.min(5,Math.floor((fr-m.tga)/4));
   else if(m.mv)f=4+(Math.floor(fr/5)+sn)%6;else f=(Math.floor(fr/12)+sn)%4}
  return f}
-function put(c,i,f,h,flash){var s_=srcOf(i);if(!s_)return false;var dh=h*SZ_/220*CF.scale,sx=(f%FR.cols)*SZ_,sy=Math.floor(f/FR.cols)*SZ_,dx=-dh*FR.ox/SZ_,dy=-dh*FR.oy/SZ_;
+function put(c,i,f,h,flash){var s_=srcOf(i);if(!s_)return false;var dh=h*FR.logic/220*CF.scale,sx=(f%FR.cols)*SZ_,sy=Math.floor(f/FR.cols)*SZ_,dx=-dh*FR.ox/SZ_,dy=-dh*FR.oy/SZ_;
  c.drawImage(s_,sx,sy,SZ_,SZ_,dx,dy,dh,dh);
  if(flash){c.save();c.globalCompositeOperation='lighter';c.globalAlpha=.55;c.drawImage(s_,sx,sy,SZ_,SZ_,dx,dy,dh,dh);c.restore()}return true}
 /* vẽ khung phủ tối (quay lưng) bằng canvas tạm */
 function putTint(c,i,f,h,col){var s_=srcOf(i);if(!s_)return false;if(!scratch){scratch=document.createElement('canvas');scratch.width=scratch.height=SZ_;sc2=scratch.getContext('2d')}
  sc2.clearRect(0,0,SZ_,SZ_);sc2.globalCompositeOperation='source-over';sc2.drawImage(s_,(f%FR.cols)*SZ_,Math.floor(f/FR.cols)*SZ_,SZ_,SZ_,0,0,SZ_,SZ_);sc2.globalCompositeOperation='source-atop';sc2.fillStyle=col||'rgba(14,6,44,.5)';sc2.fillRect(0,0,SZ_,SZ_);
- var dh=h*SZ_/220*CF.scale;c.drawImage(scratch,-dh*FR.ox/SZ_,-dh*FR.oy/SZ_,dh,dh);return true}
+ var dh=h*FR.logic/220*CF.scale;c.drawImage(scratch,-dh*FR.ox/SZ_,-dh*FR.oy/SZ_,dh,dh);return true}
 function plate(c,s,X,y,nm,col,hp,max,al){c.save();c.globalAlpha=al;c.font='bold '+Math.round(11*s)+'px KTH Serif,Songti SC,STKaiti,KaiTi,serif';c.textAlign='center';var tw=c.measureText(nm).width;
  c.fillStyle='rgba(0,0,0,.6)';c.fillRect(X-tw/2-3,y-11*s,tw+6,12*s);c.fillStyle=col;c.fillText(nm,X,y-1*s);
  c.fillStyle='#000a';c.fillRect(X-30*s,y+3*s,60*s,5*s);c.fillStyle='#e8c040';c.fillRect(X-30*s,y+3*s,60*s*Math.max(0,Math.min(1,hp/max)),5*s);c.restore()}
@@ -101,7 +101,7 @@ function w2d(){
 try{w2d()}catch(e){warn('w2d','không móc được foe: '+e.message)}
 
 /* kiểm tra tài nguyên: window.TGM.check() → Promise<{id,ok}> */
-function check(){return Promise.all(SP.map(function(p,i){return new Promise(function(res){var im=new Image();im.onload=function(){res({id:p.id,ok:im.naturalWidth===SZ_*FR.cols&&im.naturalHeight===SZ_*FR.cols,w:im.naturalWidth,h:im.naturalHeight})};im.onerror=function(){res({id:p.id,ok:false})};im.src=CF.path+p.id+'.png'})}))}
+function check(){return Promise.all(SP.map(function(p,i){return new Promise(function(res){var im=new Image();im.onload=function(){res({id:p.id,ok:im.naturalWidth===SZ_*FR.cols&&im.naturalHeight===SZ_*FR.cols,w:im.naturalWidth,h:im.naturalHeight})};im.onerror=function(){res({id:p.id,ok:false})};im.src=CF.path+p.id+'.'+CF.ext})}))}
 window.TGM={d81:d81,d84:d84,spOf:spOf,nameOf:nameOf,frameOf:frameOf,SP:SP,CF:CF,check:check,preload:function(){SP.forEach(function(p,i){sheet(i)})}};
 setTimeout(function(){try{window.TGM.preload()}catch(e){}},300);
 })();

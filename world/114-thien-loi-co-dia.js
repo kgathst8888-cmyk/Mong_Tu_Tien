@@ -11,6 +11,7 @@
  * - Fix359: Lôi Đế Tàn Hồn có hình riêng vẽ bằng canvas (paintBoss), đổi sắc theo pha (xanh → trắng xanh → tím hồng).
  * - Fix361 độ khó: sét dày hơn/đau hơn (period 110, warn 58, R 52, người -14%), quái ×1.8 máu ×1.4 sát thương, Boss ×2.4 máu ×1.35 sát thương, sét nhắm người mỗi ~2.8 giây.
  * - Chưa có: sprite quái thường riêng, vật phẩm rơi riêng (Lôi Tinh), cột thu lôi nạp buff.
+ * Fix369: móc PRO (TLC.setPro) cho đồ hoạ nâng cấp ở world/126-do-hoa-phu-ban.js; không có PRO thì vẽ như cũ.
  * Chỉnh: window.TLC.cfg (req, base, period, warn, R, pPct, mPct). Tắt: bỏ <script> trong index.html.
  * Phụ thuộc: gm, bgd, step, mapSel, vil, lg, dg, started, P, E, DT, W, s, g, mx, BDT (world/101, tuỳ chọn). */
 (function(){
@@ -19,6 +20,7 @@ if(typeof gm!=='function'||typeof bgd!=='function'||typeof step!=='function'||ty
 
 var CFG={req:40,base:2,period:110,warn:58,R:52,pPct:.14,mPct:.04,hp:1.8,df:1.4,eHp:1.1,eDf:1.05,bHp:2.4,bDf:1.35,bossGap:170};
 var on=false,entering=false,tick=0,nextAt=90,bolts=[],flash=0,farAt=240,farX=.5;
+var PRO=null,ST={};   /* Fix369: móc đồ hoạ nâng cấp (world/126 gọi TLC.setPro); PRO=null → vẽ hình cũ */
 
 function say(t,col){try{DT.push({x:P.x,y:200,s:t,c:col||'#ffe9a0',g:1,l:150})}catch(e){}}
 function lite(){return (window.QL|0)>=2}
@@ -95,7 +97,7 @@ step=function(){
   var r=_step.apply(this,arguments);
   try{
     tick++;
-    if(!active()){if(bolts.length)bolts=[];return r}
+    if(!active()){if(bolts.length)bolts=[];if(PRO&&PRO.idle)PRO.idle();return r}
     scaleMon();
     if(tick>=nextAt&&bolts.length<3){
       addBolt();if(Math.random()<.3)addBolt();
@@ -261,13 +263,13 @@ if(_foe){
     try{
       if(nm)m.n=nm;
       if(e.b===3&&typeof MI!=='undefined'){
-        var key=(e.tlp|0)+':'+Math.floor(tick/5);
-        if(key!==bcKey){bcKey=key;try{paintBoss(BC,e.tlp|0,tick)}catch(x){}}
+        var key=(e.tlp|0)+':'+Math.floor(tick/(lite()?10:5));
+        if(key!==bcKey){bcKey=key;try{(PRO&&PRO.paintBoss||paintBoss)(BC,e.tlp|0,tick)}catch(x){}}
         oIm=MI[e.k];oF=m.f;MI[e.k]=BC;m.f=1;sw=1;
       }
       r=_foe.apply(this,arguments);
     }finally{m.n=old;if(sw){MI[e.k]=oIm;m.f=oF}}
-    try{arcs(e,m)}catch(x){}
+    try{(PRO&&PRO.arcs||arcs)(e,m,tick)}catch(x){PRO=null}
     return r;
   };
 }
@@ -328,7 +330,7 @@ var _bgd=bgd;
 bgd=function(gy){
   _bgd.apply(this,arguments);
   if(!active())return;
-  try{drawSky(gy);drawGround(gy)}catch(e){}
+  try{if(PRO&&PRO.bg){ST.tk=tick;ST.bolts=bolts;ST.flash=flash;ST.R=CFG.R;ST.warn=CFG.warn;PRO.bg(gy,ST)}else{drawSky(gy);drawGround(gy)}}catch(e){PRO=null}
 };
 
 /* ---------- hàng trong bảng Bản đồ ---------- */
@@ -341,5 +343,5 @@ if(window.BDT&&typeof BDT.panel==='function'){
   BDT.panel=function(mr,lu,ft){return _p.call(this,String(mr||'')+row(),lu,ft)};
 }
 
-window.TLC={paintBoss:function(cv,ph,t){paintBoss(cv,ph,t)},cfg:CFG,enter:enter,on:function(){return active()},eligible:eligible};
+window.TLC={paintBoss:function(cv,ph,t){paintBoss(cv,ph,t)},setPro:function(p){PRO=p||null},cfg:CFG,enter:enter,on:function(){return active()},eligible:eligible};
 })();
