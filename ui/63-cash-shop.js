@@ -32,7 +32,10 @@ var CFG={
     {k:'x5',e:'📈',n:'Bùa EXP +50%',p:200,d:'Dùng: +50% EXP nhận được trong 2 giờ (dùng thêm = cộng dồn 2 giờ). Không cộng dồn % với Vé/Bùa EXP khác: tính mức cao nhất đang chạy'},
     {k:'x7',e:'📈',n:'Bùa EXP +70%',p:300,d:'Dùng: +70% EXP nhận được trong 2 giờ (dùng thêm = cộng dồn 2 giờ). Không cộng dồn % với Vé/Bùa EXP khác: tính mức cao nhất đang chạy'},
     {k:'rn',e:'🎫',n:'Vé Đổi Tên Nhân Vật',p:100,d:'Đổi tên nhân vật đang chơi thêm 1 lần (không tính vào lượt đổi tên miễn phí). Dùng ở tab 🎒 Kho; vé chỉ mất khi đổi tên thành công.'},
-    {k:'rh',e:'🔮',n:'Vé Reset Hồn Phách',p:500,d:'Reset lượt chọn Hồn Phách (Phật Tôn · Yêu Hoàng · Tiên Đế · Minh Vương) để chọn lại 1 lần. Giữ nguyên cảnh giới, tu vi, thần thể đã có. Dùng ở tab 🎒 Kho hoặc Túi → 🧘 Tu tiên → Hồn Phách; vé chỉ mất khi xác nhận reset.'}],
+    {k:'rh',e:'🔮',n:'Vé Reset Hồn Phách',p:500,d:'Reset lượt chọn Hồn Phách (Phật Tôn · Yêu Hoàng · Tiên Đế · Minh Vương) để chọn lại 1 lần. Giữ nguyên cảnh giới, tu vi, thần thể đã có. Dùng ở tab 🎒 Kho hoặc Túi → 🧘 Tu tiên → Hồn Phách; vé chỉ mất khi xác nhận reset.'},
+    /* Fix390: 2 vé cường hóa — KHÔNG bán (nb:1), chỉ Admin tặng qua thư. Dùng trong túi: nâng thẳng trang bị lên +11 / +15. */
+    {k:'v11',e:'🎟',n:'Vé Cường Hóa +11',p:0,nb:1,d:'Nâng THẲNG 1 trang bị (đang dưới +11) lên +11. Dùng ở bảng món đồ trong túi. Không bán, chỉ Admin tặng.'},
+    {k:'v15',e:'🎫',n:'Vé Cường Hóa +15',p:0,nb:1,d:'Nâng THẲNG 1 trang bị (đang dưới +15) lên +15. Dùng ở bảng món đồ trong túi. Không bán, chỉ Admin tặng.'}],
   tkMs:2*3600e3,                   /* thời hạn mỗi vé = 2 giờ (thời gian thật, tính cả lúc offline) */
   tkPct:.2,
   xp:{vx:.2,x5:.5,x7:.7},          /* % EXP của từng loại vé/bùa EXP (lấy mức CAO NHẤT đang còn hạn) */
@@ -44,7 +47,7 @@ var TK={vx:'xe',vt:'te',x5:'e5',x7:'e7'}; /* vé → khoá hạn trong PS[cur].c
 var BON={};CFG.lt.forEach(function(o){if(o.bon)BON[o.k]=o.bon});
 var NAMES={};CFG.lt.forEach(function(o){NAMES[o.k]=o.e+' '+o.n});
 
-function D(){var p=PS[cur];if(!p)return{b10:0,b15:0,b20:0,ham:0,g10:0,dh:0,dh2:0,tc:0};if(!p.csh)p.csh={b10:0,b15:0,b20:0,ham:0,g10:0,dh:0,dh2:0,tc:0};if(p.csh.tc==null)p.csh.tc=0;if(p.csh.dh2==null)p.csh.dh2=0;if(p.csh.rn==null)p.csh.rn=0;if(p.csh.rh==null)p.csh.rh=0;return p.csh}
+function D(){var p=PS[cur];if(!p)return{b10:0,b15:0,b20:0,ham:0,g10:0,dh:0,dh2:0,tc:0};if(!p.csh)p.csh={b10:0,b15:0,b20:0,ham:0,g10:0,dh:0,dh2:0,tc:0};if(p.csh.tc==null)p.csh.tc=0;if(p.csh.dh2==null)p.csh.dh2=0;if(p.csh.rn==null)p.csh.rn=0;if(p.csh.rh==null)p.csh.rh=0;if(p.csh.v11==null)p.csh.v11=0;if(p.csh.v15==null)p.csh.v15=0;return p.csh}
 function cnt(k){return D()[k]|0}
 function nf(n){try{return fmtN(n)}catch(e){return String(n)}}
 function say(t,c){try{DT.push({x:P.x,y:200,s:t,c:c||'#ffe9a0',g:1,l:110})}catch(e){}}
@@ -94,6 +97,7 @@ if(window.DCH&&!DCH.__csh){
     else if(cnt('dh')>0&&x)o+='<button onclick="CSH.soul()" style="border-color:#d9a8ff">🔮 Định Hồn ×'+cnt('dh')+'</button>';
     if(x&&x.dh2)o+='<span class="st" style="color:#ffb0e8">🔮 Đã Đại Định Hồn (vĩnh viễn)</span>';
     else if(x&&cnt('dh2')>0){if((x.u|0)>=11)o+='<button onclick="CSH.soul2()" style="border-color:#ffb0e8">🔮 Đại Định Hồn ×'+cnt('dh2')+'</button>';else o+='<span class="st" style="opacity:.7">🔮 Đại Định Hồn: cần trang bị +11</span>'}
+    ['v11','v15'].forEach(function(k){var t=k==='v11'?11:15;if(x&&cnt(k)>0&&(x.u|0)<t)o+='<button onclick="CSH.ve(\''+k+'\')" style="border-color:#7affb0">'+(k==='v11'?'🎟':'🎫')+' Vé +'+t+' ×'+cnt(k)+'</button>'});
     if(half)o+='<span class="st" style="opacity:.7">📜 Lên +11→+15: bùa chỉ còn ½ tác dụng</span>';
     return h+o};
 }
@@ -112,6 +116,15 @@ function soul2(){
   ask('Dùng 1 🔮 Đại Định Hồn lên '+(it.n||'trang bị')+' (+'+it.u+')?\nĐịnh hồn là VĨNH VIỄN và không thể gỡ. Cường hóa +12→+15 thất bại sẽ chỉ về +11.',function(){
     var x=curItem();if(!x||x.dh2||(x.u|0)<11||cnt('dh2')<1)return;
     D().dh2--;x.dh2=1;try{msg='🔮 Đại Định Hồn thành công! Cường hóa +12→+15 thất bại sẽ chỉ về +11.'}catch(e){}
+    save();try{ui()}catch(e){}if(open)render()})}
+/* Fix390: 🎟 Vé Cường Hóa +11 / 🎫 Vé Cường Hóa +15 — đặt thẳng cấp cường hóa của món đang chọn (chỉ khi món đang thấp hơn mốc). Không bán, chỉ Admin tặng. */
+function veUse(k){
+  var t=k==='v11'?11:k==='v15'?15:0,it=curItem();if(!t||!it||(it.u|0)>=t||cnt(k)<1)return;
+  var ask=typeof gcf==='function'?gcf:function(q,fn){if(confirm(q))fn()};
+  ask('Dùng 1 '+(k==='v11'?'🎟':'🎫')+' Vé Cường Hóa +'+t+' lên '+(it.n||'trang bị')+' (+'+(it.u|0)+' → +'+t+')?',function(){
+    var x=curItem();if(!x||(x.u|0)>=t||cnt(k)<1)return;
+    D()[k]--;x.u=t;try{msg='🎫 Vé Cường Hóa: trang bị lên thẳng +'+t+'!'}catch(e){}
+    say('🎫 Lên thẳng +'+t+'!','#9fffb0');try{if(t>=15&&window.UFX)UFX.burst(15,x)}catch(e){}
     save();try{ui()}catch(e){}if(open)render()})}
 /* ---------- 🎯 Vé Tẩy Opt Chọn (chỉ đồ Thánh: it.hl) ----------
  * Đồ Thánh có 7 opt, mỗi opt ở mức TỐI ĐA (xQ=10). Người chơi chọn 1 opt đang có + 1 opt đích (không trùng opt đang có, lấy từ OPT2.cfg.holyKeys);
@@ -228,12 +241,13 @@ function render(){
     var any=0;
     h+='<div class="cn">Kho riêng của Cash Shop — không chiếm ô túi đồ / ô trang bị. Mỗi lần cường hóa chỉ dùng được 1 loại bùa. 🔮 Ngọc Định Hồn / Đại Định Hồn dùng ở bảng món đồ trong túi.</div>';
     CFG.lt.forEach(function(o){var n=cnt(o.k);if(n<1)return;any=1;
-      var b=TK[o.k]?'<button onclick="CSH.ticket(\''+o.k+'\')">Dùng</button>':o.k==='rn'?'<button onclick=\"CSH.renameTk()\">Dùng</button>':o.k==='rh'?'<button onclick=\"CSH.soulTk()\">Dùng</button>':(o.k==='dh'||o.k==='dh2'||o.k==='tc')?'<span style="opacity:.7;font-size:11px">dùng trong túi</span>':BON[o.k]?'<button onclick="CSH.arm(\''+o.k+'\');CSH.tab(\'kho\')"'+(armed===o.k?' style="border-color:#7affb0"':'')+'>'+(armed===o.k?'✔ Đang chọn':'Chọn dùng')+'</button>':'<span style="opacity:.7;font-size:11px">dùng ở túi đồ → 💎 Đá Khảm</span>';
+      var b=TK[o.k]?'<button onclick="CSH.ticket(\''+o.k+'\')">Dùng</button>':o.k==='rn'?'<button onclick=\"CSH.renameTk()\">Dùng</button>':o.k==='rh'?'<button onclick=\"CSH.soulTk()\">Dùng</button>':(o.k==='dh'||o.k==='dh2'||o.k==='tc'||o.k==='v11'||o.k==='v15')?'<span style="opacity:.7;font-size:11px">dùng trong túi</span>':BON[o.k]?'<button onclick="CSH.arm(\''+o.k+'\');CSH.tab(\'kho\')"'+(armed===o.k?' style="border-color:#7affb0"':'')+'>'+(armed===o.k?'✔ Đang chọn':'Chọn dùng')+'</button>':'<span style="opacity:.7;font-size:11px">dùng ở túi đồ → 💎 Đá Khảm</span>';
       h+=row({e:o.e,n:o.n,d:o.d,own:n},b)});
     if(!any)h+='<div class="cn">Kho trống. Mua vật phẩm ở tab 💎 Linh Thạch.</div>';
   }else if(tab==='lt'){
     if(!ltLogged())h+='<div class="cn">☁ Cần đăng nhập tài khoản để dùng Linh Thạch.</div>';
     CFG.lt.forEach(function(o){
+      if(o.nb)return;
       h+=row({e:o.e,n:o.n,d:o.d,own:cnt(o.k)},'<button '+(busy||!ltLogged()||lt<o.p?'disabled ':'')+'onclick="CSH.buy(\''+o.k+'\')">'+o.p+'💎<br>Mua</button>')});
     h+='<div class="cn">📜 Bùa Cường Hóa: mở món đồ trong túi → chọn bùa dưới nút ⚒ Cường hóa. Bùa chỉ mất khi lượt cường hóa thực sự diễn ra.</div>';
   }else{
@@ -252,7 +266,7 @@ function setTab(t){tab=t;note='';render()}
 
 /* ---------- mua bằng Linh Thạch ---------- */
 function buy(k){
-  var o=CFG.lt.filter(function(x){return x.k===k})[0];if(!o||busy)return;
+  var o=CFG.lt.filter(function(x){return x.k===k})[0];if(!o||o.nb||busy)return;
   if(!ltLogged()){note='☁ Cần đăng nhập tài khoản để dùng Linh Thạch.';render();return}
   busy=true;note='Đang trừ '+o.p+'💎…';render();
   var who=PS[cur];
@@ -287,7 +301,7 @@ function chest(t){
 }
 
 setInterval(function(){try{if(!open)return;var need=false;[].forEach.call(el.querySelectorAll('[data-tk]'),function(b){var l=left(b.getAttribute('data-tk'));b.textContent=clk(l);if(l<=0)need=true});if(need)render()}catch(e){}},1000);
-window.CSH={useChoose:useChoose,pickFrom:pickFrom,pickTo:pickTo,pickOk:pickOk,pickClose:pickClose,holyBtn:holyBtn,ticket:useTicket,left:left,offXp:offXp,soul:soul,soul2:soul2,show:show,close:close,tab:setTab,buy:buy,chest:chest,arm:arm,cfg:CFG,
+window.CSH={useChoose:useChoose,pickFrom:pickFrom,pickTo:pickTo,pickOk:pickOk,pickClose:pickClose,holyBtn:holyBtn,ticket:useTicket,left:left,offXp:offXp,soul:soul,soul2:soul2,ve:veUse,show:show,close:close,tab:setTab,buy:buy,chest:chest,arm:arm,cfg:CFG,
   count:cnt,
   use:function(k){if(cnt(k)<1)return false;D()[k]--;save();return true},
   give:function(k,n){n=n|0;if(n>0&&k in D()){D()[k]+=n;save()}},

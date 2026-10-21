@@ -53,7 +53,7 @@ function unreadN(){var r=rdRead();return allN().filter(function(n){return !r[n.i
 /* ---------- THƯ ---------- */
 function mails(){var p=me();if(!p)return[];if(!Array.isArray(p.mail))p.mail=[];return p.mail}
 function ids(){var p=me();if(!p)return{};if(!p.mailIds||typeof p.mailIds!=='object')p.mailIds={};return p.mailIds}
-var CSHK={b10:1,b15:1,b20:1,ham:1,g10:1,dh:1,dh2:1,vx:1,vt:1,tc:1,x5:1,x7:1,rh:1};
+var CSHK={b10:1,b15:1,b20:1,ham:1,g10:1,dh:1,dh2:1,vx:1,vt:1,tc:1,x5:1,x7:1,rh:1,v11:1,v15:1};
 /* Vật phẩm mới gửi qua thư: q.it={khoá:số lượng}. t = cách cộng vào kho (xem giveIt). max = tối đa mỗi thư. */
 var ITM={
   nt:{t:'nt',e:'🌙',n:'Mảnh Nguyệt Thạch',max:1000},
@@ -84,7 +84,16 @@ var ITM={
   wf1:{t:'wf',w:0,e:'🪽',n:'Mảnh Cánh Cấp 1',max:1000},   /* Fix300: admin tặng mảnh cánh — cộng vào kho mảnh cánh (WFA, core/01u) */
   wf2:{t:'wf',w:1,e:'🪽',n:'Mảnh Cánh Cấp 2',max:1000},
   wf3:{t:'wf',w:2,e:'🪽',n:'Mảnh Cánh Cấp 3',max:1000},
-  wg4:{t:'wg',e:'🪽',n:'Cánh Cấp 4 (Long Vũ Thiên Thần Dực)',max:1}   /* Fix343: admin tặng thẳng Cánh Cấp 4 */
+  wf4:{t:'wf',w:3,e:'🪽',n:'Mảnh Cánh Cấp 4',max:1000},
+  wf5:{t:'wf',w:4,e:'🪽',n:'Mảnh Cánh Cấp 5',max:1000},   /* Fix391 */
+  wg4:{t:'wg',e:'🪽',n:'Cánh Cấp 4 (Long Vũ Thiên Thần Dực)',max:1},   /* Fix343: admin tặng thẳng Cánh Cấp 4 */
+  wg5:{t:'wg',w:5,e:'🪽',n:'Cánh Cấp 5 (Lôi Vũ Thiên Quang Dực)',max:1},   /* Fix391: admin tặng thẳng Cánh Cấp 5 */
+  hkkh:{t:'hkm',k:'kh',e:'🪞',n:'Tinh Hoa Kính Hồ (NL up Hoàng Kim)',max:100000},   /* Fix392: nguyên liệu nâng cấp Trang Sức Hoàng Kim → HKU.addMat (PS[cur].hkg.mat) */
+  hkct:{t:'hkm',k:'ct',e:'💀',n:'Cốt Long Tủy (NL up Hoàng Kim)',max:100000},
+  hc1:{t:'hw',k:'c1',e:'🍭',n:'Kẹo Ngọt',max:10000},   /* Fix392: kẹo + bí ngô Halloween → PS[cur].hw (HALW.data) */
+  hc2:{t:'hw',k:'c2',e:'🍬',n:'Kẹo Dẻo',max:10000},
+  hc3:{t:'hw',k:'c3',e:'🤢',n:'Kẹo Thối',max:10000},
+  hpk:{t:'hw',k:'pk',e:'🎃',n:'Bí Ngô',max:10000}
 };
 function normQ(q){
   if(!q||typeof q!=='object')return null;
@@ -137,6 +146,8 @@ function itErr(it){
     if((d.t==='pill'||d.t==='herb')&&!(typeof FM!=='undefined'&&FM.get))return'Chưa có Linh Điền / Luyện Đan để nhận '+d.n+'.';
     if(d.t==='bk'){if(!(window.BK&&BK.give))return'Chưa có Bí Kíp Luyện Thể để nhận '+d.n+'.';if(BK.space&&BK.space()<it[ks[i]])return'📖 Túi bí kíp không đủ chỗ — dọn bớt rồi nhận lại.'}
     if(d.t==='wf'&&typeof WFA!=='function')return'Chưa có kho mảnh cánh để nhận '+d.n+'.';
+    if(d.t==='hkm'&&!(window.HKU&&HKU.addMat))return'Chưa có Nâng Cấp Hoàng Kim để nhận '+d.n+'.';
+    if(d.t==='hw'&&!(window.HALW&&HALW.data))return'Chưa có kho Halloween để nhận '+d.n+'.';
     if(d.t==='hp'&&!(window.HONP&&HONP.chosen&&HONP.chosen()))return'🔮 Hãy chọn Hồn Phách (tab 🧘 Tu tiên trong túi) rồi nhận lại thư.';
   }
   return'';
@@ -155,7 +166,9 @@ function giveIt(k,n){
   else if(d.t==='herb'){s=FM.get();if(!s.herbs)s.herbs={};s.herbs[k]=(s.herbs[k]|0)+n}
   else if(d.t==='bk'){for(var i=0;i<n;i++)BK.give(k.slice(2),'Nhận thư')}
   else if(d.t==='wf'){WFA(d.w,n);try{dgSave()}catch(e){}}
-  else if(d.t==='wg'){if((p.wg|0)<4)p.wg=4}
+  else if(d.t==='wg'){var _w=d.w|0||4;if((p.wg|0)<_w)p.wg=_w}
+  else if(d.t==='hkm'){HKU.addMat(d.k,n)}
+  else if(d.t==='hw'){var _h=HALW.data();_h[d.k]=(_h[d.k]|0)+n}
 }
 /* trả về chuỗi lỗi nếu chưa nhận được, '' nếu thành công */
 function claimOne(m){

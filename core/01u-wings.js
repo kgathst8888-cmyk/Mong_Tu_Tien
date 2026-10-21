@@ -1,17 +1,17 @@
 /* core/01u-wings.js — Cánh (wg*, drawWings)
    (tách từ core/01-engine.js; thứ tự nạp giữ nguyên, xem index.html) */
-const WGC=[3,4,5,20],WGG=[2e6,1e7,5e7,0],WGL=[20,100,200,1000],WGD=[.1,.08,.06,.005],WGT=[2,3,3,3],WGN=['Bạch Vũ Dực','Lam Phụng Dực','Thiên Phượng Dực','Long Vũ Thiên Thần Dực'],WGH=[72,100,110,112.5],WGB=[.12,-.26,-.3,-.3],WGK=['#bfe8ff','#52c8ff','#ffb050','#b58cff'],
-WGA=[{"b":ASSET_PAYLOAD("p004"),"w":208,"h":259,"px":189.0,"py":176.0,"cx":101.6,"cy":135.0},{"b":ASSET_PAYLOAD("p005"),"w":147,"h":380,"px":141.4,"py":214.3,"cx":76.0,"cy":177.1},{"b":ASSET_PAYLOAD("p006"),"w":169,"h":380,"px":149.0,"py":215.3,"cx":93.9,"cy":187.0},{"b":window.CANH4_B64||"","w":272,"h":380,"px":267,"py":252.5,"cx":110,"cy":170}].map(o=>{const i=new Image();i.src='data:image/webp;base64,'+o.b;o.im=i;o.R=Math.hypot(Math.max(o.px,o.w-o.px),Math.max(o.py,o.h-o.py));return o}),
-WS={ph:0,sp:.075,am:.13,pt:[],lf:-1,s4:0},
-WFR=i=>i==0?wfr:i==1?wf2:i==2?wf3:wf4,WFA=(i,n)=>{if(i==0)wfr+=n;else if(i==1)wf2+=n;else if(i==2)wf3+=n;else wf4+=n};
+const WGC=[3,4,5,20,20],WGG=[2e6,1e7,5e7,0,2e8],WGL=[20,100,200,1000,5000],WGD=[.1,.08,.06,.005,.005],WGT=[2,3,3,3,3],WGN=['Bạch Vũ Dực','Lam Phụng Dực','Thiên Phượng Dực','Long Vũ Thiên Thần Dực','Lôi Vũ Thiên Quang Dực'],WGH=[72,100,110,101.25,114],WGB=[.12,-.26,-.3,-.3,-.3],WGK=['#bfe8ff','#52c8ff','#ffb050','#b58cff','#5fc4ff'],
+WGA=[{"b":ASSET_PAYLOAD("p004"),"w":208,"h":259,"px":189.0,"py":176.0,"cx":101.6,"cy":135.0},{"b":ASSET_PAYLOAD("p005"),"w":147,"h":380,"px":141.4,"py":214.3,"cx":76.0,"cy":177.1},{"b":ASSET_PAYLOAD("p006"),"w":169,"h":380,"px":149.0,"py":215.3,"cx":93.9,"cy":187.0},{"b":window.CANH4_B64||"","w":272,"h":380,"px":267,"py":252.5,"cx":110,"cy":170},{"b":window.CANH5_B64||"","w":221,"h":380,"px":206,"py":185,"cx":90,"cy":170}].map(o=>{const i=new Image();i.src='data:image/webp;base64,'+o.b;o.im=i;o.R=Math.hypot(Math.max(o.px,o.w-o.px),Math.max(o.py,o.h-o.py));return o}),
+WS={ph:0,sp:.075,am:.13,pt:[],lf:-1,s4:0,s5:0},
+WFR=i=>i==0?wfr:i==1?wf2:i==2?wf3:i==3?wf4:wf5,WFA=(i,n)=>{if(i==0)wfr+=n;else if(i==1)wf2+=n;else if(i==2)wf3+=n;else if(i==3)wf4+=n;else wf5+=n};
 {const st=document.createElement('style');st.textContent=WGA.map((o,i)=>'.wgv'+i+'{background:url(data:image/webp;base64,'+o.b+') 0 0/100% 100% no-repeat}').join('')+'.wgp{display:flex;justify-content:center;align-items:flex-end;min-width:132px;min-height:84px}.wga{animation:wgf 1.7s ease-in-out infinite}@keyframes wgf{0%,100%{transform:rotate(-5deg) scaleX(1)}38%{transform:rotate(13deg) scaleX(.94)}}.wgc{display:flex;gap:10px;align-items:center}@media (prefers-reduced-motion:reduce){.wga{animation:none}}';document.head.appendChild(st)}
 function wgUI(){const p=PS[cur],t=p.tier,l=wl();
-let h='<div class="dt">🪽 <b>Cánh</b> — '+(l?WGN[l-1]+' · Cấp '+l+'<br><small>+'+8*l+'% công · +'+8*l+'% máu · +'+4*l+'% né</small>':'chưa có')+'<br><small>Mảnh cánh rơi từ Trùm 🕳 Hầm Ngục theo cấp cánh đang có: cấp 1 · '+WGD[0]*100+'%, cấp 2 · '+WGD[1]*100+'%, cấp 3 · '+WGD[2]*100+'%, cấp 4 · '+WGD[3]*100+'%</small></div>';
-for(let i=0;i<4;i++){const Wg=WGA[i],own=l>i,nxt=l==i,ok=t>=WGT[i],hv=WFR(i),c=WGC[i],z=80/Wg.h,bw=Math.round(Wg.w*z),o=(Wg.px/Wg.w*100).toFixed(1)+'% '+(Wg.py/Wg.h*100).toFixed(1)+'%',inner='<div class="wga wgv'+i+'" style="width:'+bw+'px;height:80px;transform-origin:'+o+'"></div>';
- h+='<div class="dt" style="'+(own||nxt?'':'opacity:.6')+'"><div class="wgc"><div class="wgp"><div class="wgm">'+inner+'</div><div class="wgm" style="transform:scaleX(-1)">'+inner+'</div></div><div><b style="color:'+WGK[i]+'">Cấp '+(i+1)+' · '+WGN[i]+'</b><br><small>+'+8*(i+1)+'% công · +'+8*(i+1)+'% máu · +'+4*(i+1)+'% né</small><br>'+(own?'✅ Đã sở hữu':'Mảnh cánh cấp '+(i+1)+': <b>'+hv+'</b>/'+c+(ok?'':'<br>🔒 Cần chuyển chức lần '+WGT[i]))+(i==3?'<br>Mảnh Long Vũ Thiên Thần: <b>'+lvu+'</b>/'+LVU.need+' <small>(Kiếm Thánh rơi '+LVU.rate*100+'%)</small>':'')+(nxt?'<br><button '+(ok&&hv>=c&&(i<3||lvu>=LVU.need)?'':'disabled')+' onclick="wgMake()">⚒ Hợp thành ('+c+' mảnh'+(i==3?' · '+LVU.need+' Long Vũ':' · '+fmtN(WGG[i])+'💰')+' · '+WGL[i]+'💎)</button>':'')+(!own&&!nxt?'<br>🔒 Cần Cánh Cấp '+i+' trước':'')+'</div></div></div>'}
+let h='<div class="dt">🪽 <b>Cánh</b> — '+(l?WGN[l-1]+' · Cấp '+l+'<br><small>+'+8*l+'% công · +'+8*l+'% máu · +'+4*l+'% né</small>':'chưa có')+'<br><small>Mảnh cánh rơi từ Trùm 🕳 Hầm Ngục theo cấp cánh đang có: cấp 1 · '+WGD[0]*100+'%, cấp 2 · '+WGD[1]*100+'%, cấp 3 · '+WGD[2]*100+'%, cấp 4 · '+WGD[3]*100+'%, cấp 5 · '+WGD[4]*100+'%</small></div>';
+for(let i=0;i<5;i++){const Wg=WGA[i],own=l>i,nxt=l==i,ok=t>=WGT[i],hv=WFR(i),c=WGC[i],z=80/Wg.h,bw=Math.round(Wg.w*z),o=(Wg.px/Wg.w*100).toFixed(1)+'% '+(Wg.py/Wg.h*100).toFixed(1)+'%',inner='<div class="wga wgv'+i+'" style="width:'+bw+'px;height:80px;transform-origin:'+o+'"></div>';
+ h+='<div class="dt" style="'+(own||nxt?'':'opacity:.6')+'"><div class="wgc"><div class="wgp"><div class="wgm">'+inner+'</div><div class="wgm" style="transform:scaleX(-1)">'+inner+'</div></div><div><b style="color:'+WGK[i]+'">Cấp '+(i+1)+' · '+WGN[i]+'</b><br><small>+'+8*(i+1)+'% công · +'+8*(i+1)+'% máu · +'+4*(i+1)+'% né</small><br>'+(own?'✅ Đã sở hữu':'Mảnh cánh cấp '+(i+1)+': <b>'+hv+'</b>/'+c+(ok?'':'<br>🔒 Cần chuyển chức lần '+WGT[i]))+(i==3?'<br>Mảnh Long Vũ Thiên Thần: <b>'+lvu+'</b>/'+LVU.need+' <small>(Kiếm Thánh rơi '+LVU.rate*100+'%)</small>':'')+(nxt?'<br><button '+(ok&&hv>=c&&(i!=3||lvu>=LVU.need)?'':'disabled')+' onclick="wgMake()">⚒ Hợp thành ('+c+' mảnh'+(i==3?' · '+LVU.need+' Long Vũ':' · '+fmtN(WGG[i])+'💰')+' · '+WGL[i]+'💎)</button>':'')+(!own&&!nxt?'<br>🔒 Cần Cánh Cấp '+i+' trước':'')+'</div></div></div>'}
 return h}
 let wgBusy=0;
-function wgMake(){const p=PS[cur],l=wl();if(wgBusy||l>=4||p.tier<WGT[l]||WFR(l)<WGC[l]||(l==3&&lvu<LVU.need))return;
+function wgMake(){const p=PS[cur],l=wl();if(wgBusy||l>=5||p.tier<WGT[l]||WFR(l)<WGC[l]||(l==3&&lvu<LVU.need))return;
  const g=WGG[l],c=WGL[l];
  if(gold<g){msg='Không đủ vàng: cần '+fmtN(g)+'💰';ui();return}
  if(!window.LT||!LT.spend){msg='Chưa có ví Linh Thạch (cần module Chợ Giao Dịch)';ui();return}
@@ -29,18 +29,18 @@ function wgSide(Wg,sd,k,th,am,ph0,al,comp,sx,N){const R0=Wg.R;g.save();g.scale(s
   g.save();g.beginPath();g.arc(0,0,r1,0,6.2832);if(i)g.arc(0,0,r0,0,6.2832,true);g.clip();g.rotate(a);g.scale(sx,1);g.globalAlpha=al;g.drawImage(Wg.im,-Wg.px*k,-Wg.py*k,Wg.w*k,Wg.h*k);g.restore()}
  g.restore()}
 function drawWings(){const l=wl();if(!l)return;const Wg=WGA[l-1];if(!Wg.im.naturalWidth)return;
-const aa=P.atk>0,mv=!!P.mv&&!aa,k=WGH[l-1]/Wg.h,t=fr,col=WGK[l-1],l4=l==4;WS.s4=l4?1:0;
-if(WS.lf!==fr){WS.lf=fr;WS.sp+=((aa?.3:mv?.2:.075)*(l4?.7:1)-WS.sp)*(l4?.05:.08);WS.am+=((aa?.4:mv?.28:.13)*(l4?.9:1)-WS.am)*(l4?.05:.08);WS.ph+=WS.sp;
+const aa=P.atk>0,mv=!!P.mv&&!aa,k=WGH[l-1]/Wg.h,t=fr,col=WGK[l-1],l4=l>=4,l5=l==5,sf=l5?.6:l4?.7:1,af=l5?.8:l4?.9:1,lk=l5?.035:l4?.05:.08;WS.s4=l4?1:0;WS.s5=l5?1:0;
+if(WS.lf!==fr){WS.lf=fr;WS.sp+=((aa?.3:mv?.2:.075)*sf-WS.sp)*lk;WS.am+=((aa?.4:mv?.28:.13)*af-WS.am)*lk;WS.ph+=WS.sp;
  const kf=k*.88;if(0&&WS.pt.length<(l==3?46:30)&&R()<.07+.07*l){const sd=R()<.5?-1:1,kk=sd==P.d?kf:k,u=.5+R()*.95,dx=(Wg.cx-Wg.px)*u*kk+(R()-.5)*9,dy=(Wg.cy-Wg.py)*u*kk+(R()-.5)*9,m=l==1?70:l==2?55:50;WS.pt.push({x:P.x+sd*dx,y:52-dy,vx:(R()-.5)*.25,vy:l==1?-.14:l==2?.1:.26,l:m,m:m,r:.9+R()*1.3,c:l==3&&R()<.4?'#8fe8ff':col,e:l==1,ro:R()*6.28,sd:sd})}
  WS.pt=WS.pt.filter(q=>{q.x+=q.vx+Math.sin((q.m-q.l)*.12+q.ro)*.12;q.y+=q.vy;return--q.l>0})}
-const f=wgWv(WS.ph),th0=WGB[l-1]+(mv?.05:0),by=mv?-Math.abs(Math.sin(t*.3))*2.2:Math.sin(t*(l4?.05:.08))*(l4?1.1:.7),sx=1-.1*Math.max(0,-f)*(WS.am/.3+.4),
+const f=wgWv(WS.ph),th0=WGB[l-1]+(mv?.05:0),by=mv?-Math.abs(Math.sin(t*.3))*(l5?1.6:2.2):Math.sin(t*(l5?.04:l4?.05:.08))*(l4?1.1:.7),sx=1-.1*Math.max(0,-f)*(WS.am/.3+.4),
 ax=(P.x-cam)*s-P.d*2*s,ay=GY-(52-by)*s,pul=(.2+.09*l)*(.75+.25*Math.sin(t*.07)),rr=WGH[l-1]*.62;
 g.save();g.translate(ax,ay);g.scale(s,s);
 g.save();g.globalCompositeOperation='lighter';{const q=g.createRadialGradient(0,-4,2,0,-4,rr);q.addColorStop(0,RGBA(col,.22+.07*l));q.addColorStop(1,RGBA(col,0));g.fillStyle=q;g.beginPath();g.arc(0,-4,rr,0,6.2832);g.fill()}g.restore();
-wgSide(Wg,-P.d,k,th0,WS.am,0,1,'source-over',sx,l4?12:8);
-wgSide(Wg,P.d,k*.88,th0*.9,WS.am*.92,.35,.9,'source-over',sx,l4?12:8);
-wgSide(Wg,-P.d,k,th0,WS.am,0,pul,'lighter',sx,l4?6:4);
-wgSide(Wg,P.d,k*.88,th0*.9,WS.am*.92,.35,pul*.8,'lighter',sx,l4?6:4);
+wgSide(Wg,-P.d,k,th0,WS.am,0,1,'source-over',sx,l5?16:l4?12:8);
+wgSide(Wg,P.d,k*.88,th0*.9,WS.am*.92,.35,.9,'source-over',sx,l5?16:l4?12:8);
+wgSide(Wg,-P.d,k,th0,WS.am,0,pul,'lighter',sx,l5?8:l4?6:4);
+wgSide(Wg,P.d,k*.88,th0*.9,WS.am*.92,.35,pul*.8,'lighter',sx,l5?8:l4?6:4);
 g.restore();
 g.save();g.globalCompositeOperation='lighter';for(const q of WS.pt){const a=Math.min(1,q.l/q.m*1.6)*(q.l/q.m>.85?(1-q.l/q.m)/.15:1);g.globalAlpha=a*.9;g.fillStyle=q.c;g.beginPath();if(q.e)g.ellipse((q.x-cam)*s,GY-q.y*s,q.r*1.9*s,q.r*.7*s,q.ro+q.l*.04,0,6.2832);else g.arc((q.x-cam)*s,GY-q.y*s,q.r*s,0,6.2832);g.fill()}g.restore()}
 const _hero=hero;hero=function(){const j=!vil&&P.jy?P.jy:0;if(j){g.save();g.translate(0,-j*s)}drawWings();if(j)g.restore();_hero()};

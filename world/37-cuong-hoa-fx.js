@@ -46,6 +46,7 @@ if(typeof en1==='function'){var _en1=en1;en1=function(){var it=null,u0=0;try{it=
 var cn=0,n7=0,n10=0,eqRef=null;
 function aura(){
   if((window.QL|0)>=2)return;
+  try{if(window.BT15&&BT15.on&&BT15.on())return}catch(e){} /* Fix390: Bộ Thánh +15 có hiệu ứng riêng, không chồng hào quang */
   if(EQ!==eqRef||--cn<=0){eqRef=EQ;cn=30;n7=0;n10=0;for(var i=0;i<EQ.length;i++){var u=EQ[i]&&EQ[i].u|0;if(u>=10)n10++;else if(u>=7)n7++}}
   if(!n7&&!n10)return;var X=(P.x-cam)*s,gold=n10>0,c=gold?'255,190,70':'120,230,255',c2=gold?'255,80,30':'200,250,255',n=Math.min(6,n7+n10*2),t=fr;
   g.save();g.globalCompositeOperation='lighter';g.translate(X,GY);

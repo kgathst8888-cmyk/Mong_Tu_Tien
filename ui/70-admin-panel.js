@@ -17,7 +17,7 @@ var RN=['Thường','Tinh Anh','Hiếm','Sử Thi','Thần Thoại','Thiên Th�
 function itM(){try{return window.MAIL&&window.MAIL.IT||{}}catch(e){return{}}}
 function itl(){var m=itM(),o=[];Object.keys(m).forEach(function(k){o.push([k,m[k].e+' '+m[k].n,m[k].max])});return o}
 var CSHL=[['b10','📜 Bùa Cường Hóa +10%'],['b15','📜 Bùa Cường Hóa +15%'],['b20','📜 Bùa Cường Hóa +20%'],['ham','🔨 Búa Đục Lỗ'],
-  ['g10','📜 Bùa Ghép Ngọc +10%'],['dh','🔮 Ngọc Định Hồn'],['dh2','🔮 Đại Định Hồn'],['vx','📈 Vé Tăng 20% EXP'],['vt','🧘 Vé Tăng 20% Tu Vi'],['tc','🎯 Vé Tẩy Opt Chọn'],['x5','📈 Bùa EXP +50%'],['x7','📈 Bùa EXP +70%'],['rh','🔮 Vé Reset Hồn Phách']];
+  ['g10','📜 Bùa Ghép Ngọc +10%'],['dh','🔮 Ngọc Định Hồn'],['dh2','🔮 Đại Định Hồn'],['vx','📈 Vé Tăng 20% EXP'],['vt','🧘 Vé Tăng 20% Tu Vi'],['tc','🎯 Vé Tẩy Opt Chọn'],['x5','📈 Bùa EXP +50%'],['x7','📈 Bùa EXP +70%'],['rh','🔮 Vé Reset Hồn Phách'],['v11','🎟 Vé Cường Hóa +11'],['v15','🎫 Vé Cường Hóa +15']];
 var DUR=[[1,'1 giờ'],[24,'1 ngày'],[72,'3 ngày'],[168,'7 ngày'],[720,'30 ngày'],[876000,'Vĩnh viễn']];
 var ACTL={gc_new:'🎟 Tạo mã quà',gc_set:'🎟 Bật/tắt mã quà',gc_del:'🗑 Xoá mã quà',lt:'💎 Linh Thạch',mail:'🎁 Gửi thư',mail_del:'🗑 Thu hồi thư',kick:'⏏ Đá khỏi game',notice:'📢 Đăng thông báo',notice_del:'🗑 Xoá thông báo',ban:'🔒 Khoá tài khoản',unban:'🔓 Mở khoá',chat_ban:'🤐 Cấm chat',chat_unban:'🔊 Gỡ cấm chat'};
 
@@ -185,6 +185,7 @@ function vUser(u){
     if(u.online&&u.device)h+='<small>Thiết bị: '+esc(u.device)+'</small>';
     h+='<h4>💎 Linh Thạch KHÔNG KHOÁ (hiện có '+nf(u.lt)+(u.lk?' · khoá NV1/2/3: '+(u.lks||[]).map(nf).join('/'):'')+') — cộng ở đây = tiền nạp</h4><div class="ar"><input id="adm-lt" type="number" inputmode="numeric" min="1" placeholder="Số lượng"><button class="bt gr" data-a="ltadd">➕ Cộng</button><button class="bt dg" data-a="ltsub">➖ Trừ</button></div>';
     h+='<h4>🎁 Quà</h4><div class="ar"><button class="bt" data-a="giftto">Gửi thư quà cho người này</button></div>';
+    h+='<h4>❄ Nguyên liệu Pháp Bảo Bổn Mệnh (Tuyết Ngục · cộng thẳng vào kho máy chủ)</h4><div class="ar"><input id="adm-tn-tt" type="number" inputmode="numeric" min="0" placeholder="❄ Tuyết Tinh"><input id="adm-tn-hn" type="number" inputmode="numeric" min="0" placeholder="🔷 Hàn Ngọc Tủy"><input id="adm-tn-hh" type="number" inputmode="numeric" min="0" placeholder="🌙 Huyết Nguyệt Hạch"><button class="bt gr" data-a="tnadd">➕ Cộng</button></div>';
     h+='<h4>🔒 Khoá đăng nhập</h4><div class="ar">'+durSel('adm-bh',24)+'<button class="bt dg" data-a="ban">Khoá</button><button class="bt gr" data-a="unban">Mở khoá</button></div>';
     h+='<h4>🤐 Cấm chat</h4><div class="ar">'+durSel('adm-ch',24)+'<button class="bt dg" data-a="cban">Cấm</button><button class="bt gr" data-a="cunban">Gỡ cấm</button></div>';
     if(!u.is_admin)h+='<h4>♻ Reset tài khoản</h4><div class="ar"><label style="font-size:12px"><input type="checkbox" id="adm-rslt"> xoá cả Linh Thạch</label></div><div class="ar"><button class="bt dg" data-a="rsacc">♻ Reset tài khoản</button><button class="bt" data-a="rsundo">↩ Khôi phục bản trước reset</button></div><small>Xoá toàn bộ nhân vật + dữ liệu mây của người này, đá khỏi game. Mặc định GIỮ Linh Thạch.</small>';
@@ -398,6 +399,11 @@ function onClick(e){
     var sg=a==='ltadd'?1:-1;
     if(!confirm((sg>0?'CỘNG ':'TRỪ ')+nf(n)+' Linh Thạch '+(sg>0?'cho ':'của ')+em+'?'))return;
     run('Đang xử lý…',function(){return call('admin_grant_lt',{p_uid:u.id,p_amt:sg*n}).then(function(r){S.note='✅ '+em+' còn '+nf(r)+' Linh Thạch';return query()})});return}
+  if(a==='tnadd'){
+    var tt=Math.floor(+val('adm-tn-tt'))||0,hn=Math.floor(+val('adm-tn-hn'))||0,hh=Math.floor(+val('adm-tn-hh'))||0;
+    if(tt<0||hn<0||hh<0||tt+hn+hh<=0){S.note='⚠ Nhập số nguyên liệu lớn hơn 0 (ít nhất 1 loại).';draw();return}
+    if(!confirm('CỘNG cho '+em+':\n❄ '+nf(tt)+' Tuyết Tinh · 🔷 '+nf(hn)+' Hàn Ngọc Tủy · 🌙 '+nf(hh)+' Huyết Nguyệt Hạch?'))return;
+    run('Đang xử lý…',function(){return call('admin_tang_tn',{p_uid:u.id,p_tt:tt,p_hn:hn,p_hh:hh}).then(function(r){r=parse(r)||{};S.note='✅ '+em+' có: ❄ '+nf(r.tt)+' · 🔷 '+nf(r.hn)+' · 🌙 '+nf(r.hh);return query()})});return}
   if(a==='rsacc'){
     if(u.is_admin){S.note='⚠ Không reset được tài khoản admin.';draw();return}
     var lt=!!(document.getElementById('adm-rslt')||{}).checked,nm=(parse(u.chars)||[]).map(function(x){return x.nm}).join(', ')||'(chưa có nhân vật)';
@@ -501,7 +507,7 @@ function resetChar(){
   try{MN.reset()}catch(e){}
   try{FSH.load(null)}catch(e){}
   try{QS=qsNew();QS.dk=0;QS.wk=0;qsSave()}catch(e){}
-  try{dgU=-1;wfr=0;wf2=0;wf3=0;wf4=0;lvu=0;dgSave()}catch(e){}
+  try{dgU=-1;wfr=0;wf2=0;wf3=0;wf4=0;wf5=0;lvu=0;dgSave()}catch(e){}
   try{if(window.LCT&&LCT.off)LCT.off()}catch(e){}
   try{cq=null}catch(e){}
   try{NK=0;pq=[0,0];fz=[]}catch(e){}

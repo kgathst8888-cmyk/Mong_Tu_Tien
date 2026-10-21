@@ -31,6 +31,7 @@
       "core/01s-save-load.js",
       "core/01t-dungeon.js",
       "assets/canh-cap-4.js",
+      "assets/canh-cap-5.js",
       "core/01u-wings.js",
       "core/01v-perf-boot.js"
     ],
@@ -117,6 +118,7 @@
       "ui/95-trang-suc-mon-phai.js",
       "ui/97-o-linh-can.js",
       "ui/103-nang-cap-hoang-kim.js",
+      "ui/104-canh5-loi-dien.js",
       "world/99-mon-phai-co-che-rieng.js",
       "world/99-mon-phai-than-thong.js",
       "world/100-lang-tan-thu-2.js",
@@ -140,7 +142,8 @@
       "world/124-chien-cong-shop.js",
       "assets/tien-gioi-quai-art.js",
       "world/125-tien-gioi-quai-12.js",
-      "world/126-do-hoa-phu-ban.js"
+      "world/126-do-hoa-phu-ban.js",
+      "world/129-bo-thanh-15-fx.js"
     ],
     "systems": [
       "systems/08-farming-alchemy.js",
