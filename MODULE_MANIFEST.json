@@ -153,6 +153,7 @@
       "systems/12b-cloud-guard.js",
       "systems/18-linh-can.js",
       "systems/19-arena.js",
+      "systems/19b-arena-plus.js",
       "systems/20-quest-hud.js",
       "systems/21-bulk-fuse.js",
       "systems/28-chat.js",

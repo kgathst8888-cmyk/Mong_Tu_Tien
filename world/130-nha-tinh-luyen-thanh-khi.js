@@ -7,7 +7,7 @@
  *       📜 Thiên Đạo Phù Văn   ×1 = Thần Văn 100 + Tảo Địa Tinh 10.000
  *     Mỗi lần GHÉP ×1 nguyên liệu chính tốn 💰 1.000.000 vàng (CF.fuseGold) — nút Ghép 1 / Ghép 10 / Ghép tối đa (≤100/lần).
  *   • Dung hợp Thánh Khí: đặt đủ 4 loại (mỗi loại ×100) vào 4 ô → trừ 100 mỗi loại, tốn 💎 2.000 Linh Thạch + 💰 500.000.000 vàng → ra 1 trong 4 món Thánh Khí (ngẫu nhiên).
- *     4 món Thánh Khí hiện là CHỖ TRỐNG (tên/chỉ số cập nhật sau) — CF.items.
+ *     4 món Thánh Khí: Kiếm · Cung · Khiên · Trượng (chọn/nâng cấp ở world/131) — CF.items.
  *   • Nguồn rơi (nguyên liệu thô):
  *       Nghiệp Hoả      : Boss Phụ Bản 1 · Hầm Ngục, 50% rơi 1 viên           (CF.nghiep)
  *       Long Hồn        : Boss Phụ Bản 2 · Địa Long Điện, ngẫu nhiên 1–5       (CF.longhon)
@@ -48,9 +48,9 @@ var CF=window.TKL_CF={
     {id:'hoa', e:'🔥',n:'Thần Hoả Tinh Phách',c:'#ff8a4a',need:{nh:10,dt:1000}},
     {id:'long',e:'🐉',n:'Long Hồn Thần Lân',c:'#7dffc0',need:{lh:100,vr:10000}},
     {id:'van', e:'📜',n:'Thiên Đạo Phù Văn',c:'#d0a0ff',need:{tv:100,td:10000}}],
-  items:[ /* 4 món Thánh Khí — chỗ trống, cập nhật sau */
-    {e:'⚔',n:'Thánh Khí I',c:'#ffd27a'},{e:'🛡',n:'Thánh Khí II',c:'#9fdcff'},
-    {e:'🔱',n:'Thánh Khí III',c:'#ff9ab0'},{e:'🔮',n:'Thánh Khí IV',c:'#c8a0ff'}]
+  items:[ /* 4 món Thánh Khí (Fix395: chọn/nâng cấp ở ô ✨ Thánh Khí trong Túi — world/131; thứ tự khớp cột k1..k4 của tk_user) */
+    {e:'⚔️',n:'Thánh Kiếm',c:'#ffd27a'},{e:'🏹',n:'Thánh Cung',c:'#ffe27a'},
+    {e:'🛡️',n:'Thánh Khiên',c:'#ffcf6a'},{e:'🪄',n:'Thánh Trượng (Gậy phép)',c:'#ffd98a'}]
 };
 
 /* ---------- tiện ích ---------- */
@@ -176,8 +176,8 @@ function viewForge(){
       +'<div style="flex:1.4">'+btn('make','Tối đa ('+maxMake(m)+')','#2a7a6c','#9ff3e0',ok&&maxMake(m)>=1,'data-id="'+m.id+'" data-n="max"')+'</div></div></div>'});
   /* thánh khí đã có */
   h+='<div style="margin:12px 0 4px;font-weight:bold;color:'+COL+'">🏆 Thánh Khí đã luyện</div><div style="font-size:12.5px;line-height:1.7">';
-  CF.items.forEach(function(it,i){h+='<span style="margin-right:10px;white-space:nowrap">'+it.e+' <span style="color:'+it.c+'">'+it.n+'</span> <b>×'+KK(i)+'</b></span> '});
-  h+='</div><div style="font-size:11.5px;opacity:.7;margin-top:2px">4 món Thánh Khí sẽ được cập nhật sau (tên, chỉ số, cách dùng).</div>';
+  CF.items.forEach(function(it,i){h+='<span style="margin-right:10px;white-space:nowrap">'+(it.ic?'<img src="'+it.ic+'" style="width:22px;height:22px;vertical-align:middle">':it.e)+' <span style="color:'+it.c+'">'+it.n+'</span> <b>×'+KK(i)+'</b></span> '});
+  h+='</div><div style="font-size:11.5px;opacity:.7;margin-top:2px">Mở ô ✨ Thánh Khí trong Túi (cột trái nhân vật) để chọn 1 món cho nhân vật và nâng cấp tối đa 10 cấp.</div>';
   /* nguồn nguyên liệu thô */
   h+='<div style="font-size:11.5px;opacity:.75;margin-top:8px;line-height:1.55">Nguồn: 🔥 Nghiệp Hoả — Boss Hầm Ngục (50%) · 🐲 Long Hồn — Boss Địa Long Điện (1–5) · 📖 Thần Văn — Boss Phụ Bản Ma Thần (1–10) · 🪨 Đá Thành Thiết, 🐉 Vảy Rồng, 🌿 Tảo Địa Tinh — quái thường · 🔩 Quặng Sắt, 🌑 Huyền Kim — khai khoáng.</div>';
   h+='<div style="min-height:18px;font-size:13px;color:#ffd98a;text-align:center;margin-top:6px">'+(S.note||'')+'</div>'
@@ -250,7 +250,7 @@ function fuse(){
         setMe(res);S.slot=[0,0,0,0];
         var it=CF.items[res.idx|0]||CF.items[0];
         sav();say('🔥 Luyện thành '+it.n+'!',it.c,200);
-        return msg('🔥 Luyện thành '+it.e+' '+it.n+'! (Thánh Khí sẽ cập nhật sau)')}
+        return msg('🔥 Luyện thành '+it.e+' '+it.n+'! Mở ô ✨ Thánh Khí trong Túi để chọn cho nhân vật.')}
       addG(CF.forgeGold);try{LT.earnKS(CF.forgeLt)}catch(e){}sav();
       setMe(res);
       msg(errTx(res)+' — đã hoàn vàng và '+nf(CF.forgeLt)+'💎 (Linh Thạch khoá)');
@@ -271,7 +271,7 @@ function bagHook(){
     CF.mats.forEach(function(m,mi){
       NLB.add(6,cat,'tkp_'+m.id,m.e,m.n,'Nguyên liệu chính — cần ×'+CF.qty+' mỗi loại để dung hợp Thánh Khí ở Nhà Tinh Luyện.',function(){return PK(mi)})});
     CF.items.forEach(function(it,i){
-      NLB.add(6,'🏆 Thánh Khí','tkk_'+i,it.e,it.n,'Thánh Khí — chỉ số và cách dùng cập nhật sau.',function(){return KK(i)})});
+      NLB.add(6,'🏆 Thánh Khí','tkk_'+i,it.e,it.n,'Thánh Khí — mở ô ✨ Thánh Khí trong Túi để chọn cho nhân vật và nâng tối đa 10 cấp.',function(){return KK(i)})});
     return true}catch(e){}
   return false}
 (function(){var n=0,t=setInterval(function(){if(online()){clearInterval(t);fetchMe()}else if(++n>30)clearInterval(t)},2000)})();
