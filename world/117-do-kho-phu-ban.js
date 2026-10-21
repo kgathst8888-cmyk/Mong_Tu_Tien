@@ -22,7 +22,7 @@ var CFG={
       {k:'hz',e:'☠',n:'Hiểm Địa',d:'Hazard, phản đòn, bão cát +50% sát thương',hz:1.5,rw:.2}],
   maxCurse:3,matBase:2,rwCap:4,
   matKey:{kinhho:'kh',cothai:'ct'},matName:{kinhho:'🪞 Tinh Hoa Kính Hồ',cothai:'💀 Cốt Long Tủy'},
-  house:{kinhho:['TT2',3],cothai:['TT3',0]}};
+  house:{kinhho:['TT2',4],cothai:['TT3',3]}};
 var LV=CFG.LV,CU=CFG.CU;
 function nf(n){try{return Math.round(n).toLocaleString('vi-VN')}catch(e){return ''+n}}
 function x2(v){return (Math.round(v*100)/100).toString().replace('.',',')}

@@ -48,6 +48,7 @@ function apply(list,n){
     var e=others[o.id];seen[o.id]=1;
     if(!e){e=others[o.id]={id:o.id,lx:o.x*w,d:1,mv:0,em:0,emT:0,emS:0}}
     e.name=String(o.name||'Đạo Hữu');e.ci=o.ci|0;e.br=o.br|0;e.tier=o.tier|0;e.lv=o.lv|0;e.tt=o.tt|0;e.fx=clamp(+o.x||0,0,1);
+    try{e.tag=window.TMTAG?TMTAG.get(o.id):''}catch(x){e.tag=''}   /* Fix384: tên Tông Môn (world/127) */
     if(o.emo>0){if(e.emS!==o.emo||now>e.emT+1000){e.em=o.emo;e.emT=now+4000}}
     e.emS=o.emo|0;
   });
@@ -103,7 +104,7 @@ function drawOne(e){
     g.fillStyle=(CHR[ci].c||'#9ab')+'';g.globalAlpha=.8;g.beginPath();g.ellipse(X,GY-48*s,15*s,46*s,0,0,6.283);g.fill();g.restore();
   }
   /* tên + cấp (e.ly: nâng cao thêm khi nhãn kề bên bị chạm nhau) */
-  var T=CHR[ci].t,ty=GY-(T=='m'?205:178)*s-(e.ly||0)*s,fs=Math.max(10,12*s),tx='Lv.'+e.lv+' '+e.name;
+  var T=CHR[ci].t,ty=GY-(T=='m'?205:178)*s-(e.ly||0)*s,fs=Math.max(10,12*s),tx='Lv.'+e.lv+' '+(e.tag?'['+e.tag+'] ':'')+e.name;
   g.save();g.globalAlpha=1;g.font='bold '+fs+'px '+FONT;g.textAlign='center';g.textBaseline='alphabetic';
   g.lineWidth=3;g.strokeStyle='rgba(0,0,0,.85)';g.strokeText(tx,X,ty);g.fillStyle='#bfe6ff';g.fillText(tx,X,ty);
   var hasT=false;
@@ -121,7 +122,7 @@ function drawOne(e){
 function stagger(list){
   var fs=Math.max(10,12*s),edge=[-1e9,-1e9,-1e9],step=list.some(function(e){return e.tt})?28:16;g.save();g.font='bold '+fs+'px '+FONT;
   list.forEach(function(e){
-    var wd=g.measureText('Lv.'+e.lv+' '+e.name).width/s,l,t=-1,i,m=0;
+    var wd=g.measureText('Lv.'+e.lv+' '+(e.tag?'['+e.tag+'] ':'')+e.name).width/s,l,t=-1,i,m=0;
     if(e.tt&&window.PFD&&PFD.ttWidth){var tw=PFD.ttWidth(e.tt,fs)/s;if(tw>wd)wd=tw;g.font='bold '+fs+'px '+FONT}   /* nhãn rộng bằng dòng rộng nhất */
     l=e.lx-wd/2;
     for(i=0;i<3;i++){if(l>edge[i]+4){t=i;break}if(edge[i]<edge[m])m=i}
@@ -169,7 +170,7 @@ function build(){
 }
 function showCard(e){
   var C=CHR[e.ci]||{},br=(e.br>=0&&C.br&&C.br[e.br])?C.br[e.br].n:'',tn=(typeof TN!='undefined'&&TN[e.tier])||'';
-  card.innerHTML='<b>'+esc(e.name)+'</b><br>Lv.'+e.lv+' · '+esc(C.n||'')+(br?' · '+esc(br):'')+(tn?'<br>'+esc(tn):'');
+  card.innerHTML='<b>'+esc(e.name)+'</b>'+(e.tag?'<br>🏯 '+esc(e.tag):'')+'<br>Lv.'+e.lv+' · '+esc(C.n||'')+(br?' · '+esc(br):'')+(tn?'<br>'+esc(tn):'');
   card.style.display='block';cardT=Date.now()+3500;
 }
 function hook(){

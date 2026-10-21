@@ -17,15 +17,19 @@ function say(t,c){try{DT.push({x:P.x,y:170,s:t,c:c||'#ffe9a0',g:1,l:110})}catch(
 function give(k,n){n=Math.floor(n);if(n<=0)return;D()[k]+=n;say('+'+n+' '+NAME[k],k==='b'?'#c8a0ff':'#cfe8ff')}
 function f(n){try{return fmtN(n)}catch(e){return String(n)}}
 /* cấp trang bị rơi về khi THẤT BẠI ở các cấp >= +7 (đang ở cấp u, thử lên u+1): Đại Định Hồn bảo vệ +12→+15 (về +11); Định Hồn bảo vệ +8→+11 (về +7); không có thì về +0 */
-function fallTo(it){var u=it.u|0;if(u>=DH2_MIN)return it.dh2?DH2_BACK:0;if(u>=7&&u<=DH1_TOP)return it.dh?DH1_BACK:0;return 0}
-function fallTxt(it){var to=fallTo(it);return to>0?'🔮 '+((it.u|0)>=DH2_MIN?'Đại Định Hồn':'Định Hồn')+': thất bại về +'+to:'⚠ thất bại về +0'}
+/* Fix388: 🛡 Bùa Chống Rơi (PS[cur].csh.bcr, nhận từ rương Hội Chiến): khi cường hóa +10→+11 mà thất bại thì về +10 (không về +7/+0); chỉ mất 1 bùa khi thất bại */
+function bcrN(){try{return (PS[cur].csh&&PS[cur].csh.bcr)|0}catch(e){return 0}}
+function useBcr(){try{var c=PS[cur].csh;if(c&&(c.bcr|0)>0)c.bcr--}catch(e){}}
+function lbl(it){return (it.u|0)===10&&bcrN()>0?'Bùa Chống Rơi (còn '+bcrN()+')':((it.u|0)>=DH2_MIN?'Đại Định Hồn':'Định Hồn')}
+function fallTo(it){var u=it.u|0;if(u===10&&bcrN()>0)return 10;if(u>=DH2_MIN)return it.dh2?DH2_BACK:0;if(u>=7&&u<=DH1_TOP)return it.dh?DH1_BACK:0;return 0}
+function fallTxt(it){var to=fallTo(it);return to>0?'🔮 '+lbl(it)+': thất bại về +'+to:'⚠ thất bại về +0'}
 function doEn(it,asyn){
   if(!it||it.u>=MAXU)return;var hi=it.u>=7,k=hi?'b':'a',c=Math.round(cost(it)*(window.NGH?NGH.rdGold():1)),d=D(),nd=hi?HI:1;
   if(gold<c){msg='Không đủ vàng!';ui();return}
   if(d[k]<nd){msg='Thiếu '+NAME[k]+(hi?' (cần '+nd+', có '+d[k]+'; rơi từ Boss, hoặc mua ở Thợ Rèn)':'');ui();return}
   gold-=c;d[k]-=nd;try{window.NGH&&NGH.xp('rd',8)}catch(e){}
   if(Math.random()*100<RT[it.u]+(window.NGH?NGH.rdRate():0)){it.u++;try{QE('enhok')}catch(e){}msg='✅ Cường hóa thành công! +'+it.u;if(asyn&&(it.u===7||it.u===10||it.u===15)&&window.UFX)UFX.burst(it.u,it)}
-  else if(hi){var to=fallTo(it),big=(it.u|0)>=DH2_MIN;it.u=to;msg=to>0?'💥 Thất bại! 🔮 '+(big?'Đại Định Hồn':'Định Hồn')+' giữ trang bị ở +'+to:'💥 Thất bại! Trang bị rơi về +0'}
+  else if(hi){var bc=(it.u|0)===10&&bcrN()>0,to=fallTo(it),big=(it.u|0)>=DH2_MIN;if(bc)useBcr();it.u=to;msg=bc?'💥 Thất bại! 🛡 Bùa Chống Rơi giữ trang bị ở +10 (còn '+bcrN()+' bùa)':to>0?'💥 Thất bại! 🔮 '+(big?'Đại Định Hồn':'Định Hồn')+' giữ trang bị ở +'+to:'💥 Thất bại! Trang bị rơi về +0'}
   else{var dn=it.u>=5;if(dn)it.u--;msg='❌ Thất bại'+(dn?', tụt về +'+it.u:'')}
   P.hp=Math.min(P.hp,mx());ui()}
 en1=function(){
@@ -33,7 +37,7 @@ en1=function(){
   var it=cur_();if(!it)return;
   if(it.u>=7&&it.u<MAXU&&D().b>=HI&&gold>=Math.round(cost(it)*(window.NGH?NGH.rdGold():1))){
     var ask=typeof gcf==='function'?gcf:function(t,fn){if(confirm(t))fn()};
-    ask('Cường hóa +'+(it.u+1)+' bằng Đá Cao Cấp ('+(RT[it.u]+(window.NGH?NGH.rdRate():0))+'%).\n'+(fallTo(it)>0?'🔮 '+((it.u|0)>=DH2_MIN?'Đại Định Hồn':'Định Hồn')+': thất bại về +'+fallTo(it)+'.':'⚠ THẤT BẠI SẼ VỀ +0!')+'\nTiếp tục?',function(){doEn(it,true)});return}
+    ask('Cường hóa +'+(it.u+1)+' bằng Đá Cao Cấp ('+(RT[it.u]+(window.NGH?NGH.rdRate():0))+'%).\n'+(fallTo(it)>0?'🔮 '+lbl(it)+': thất bại về +'+fallTo(it)+'.':'⚠ THẤT BẠI SẼ VỀ +0!')+'\nTiếp tục?',function(){doEn(it,true)});return}
   doEn(it,false)};
 /* rơi đá từ quái: Boss/Ma Thần/Kiếm Thánh rơi đá cao cấp */
 function roll(e){var b=e.b|0,a=0,h=0,r=Math.random;

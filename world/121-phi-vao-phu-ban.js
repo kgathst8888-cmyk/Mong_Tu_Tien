@@ -18,7 +18,7 @@ if(typeof started==='undefined'||typeof P==='undefined'||typeof PS==='undefined'
 
 var CF={gold:10000000,lt:20,cd:3600000,shared:false,shRate:.05,shQty:2,shName:'🔱 Mảnh Thánh Khí',
   names:{tlc:'⚡ Thiên Lôi Cổ Địa',kinhho:'🪞 Huyễn Cảnh Kính Hồ',cothai:'💀 Cốt Hải Sa Mạc'},
-  houses:{kinhho:['TT2',3],cothai:['TT3',0]}};
+  houses:{kinhho:['TT2',4],cothai:['TT3',3]}};
 var busy=0;
 
 /* Mảnh Thánh Khí: kho riêng theo nhân vật, tách khỏi Mảnh Thánh (HL.sh) của Lò Luyện */

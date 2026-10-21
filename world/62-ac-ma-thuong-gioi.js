@@ -191,7 +191,9 @@ if(GIDX<0)GIDX=LCT.gates.push(G)-1;else{LCT.gates[GIDX].go=ask}
 if(window.LGART&&typeof LGART.gx==='function'&&typeof LGART.gate==='function'&&typeof LGART.ok==='function'){(function(){
 var GPX=880,GPY=-122,GIW=1320,GLB=-270,GK=.72;   /* GPX/GPY: vị trí chân cổng (px ảnh gốc 1320 của world/58); GLB: độ cao nhãn; GK: hệ số thu nhỏ.
    Fix219: cổng bay lên bên trái mặt trăng (trăng ở ảnh (1010,-170); tâm xoáy cổng = GPY-66*GK ≈ -170) */
-function geo(){var L=LGART.L;if(!L)return null;var sw=L.sw,by=L.dy+GPY*sw;return{sw:sw,pcy:by-66*GK*sw,prx:30*GK*sw,pry:58*GK*sw,ly:Math.max(L.dy+GLB*sw,60)}}
+/* Fix387: màn ngang/desktop (rộng, thấp) ảnh nền phóng to theo bề rộng nên cổng trên trời trôi ra ngoài mép trên → hạ cổng xuống để nhãn luôn hiện (>= 50px từ mép trên) */
+function shY(L){var t=L.dy+GLB*L.sw;return t<50?50-t:0}
+function geo(){var L=LGART.L;if(!L)return null;var sw=L.sw,sh=shY(L),by=L.dy+GPY*sw+sh;return{sw:sw,pcy:by-66*GK*sw,prx:30*GK*sw,pry:58*GK*sw,ly:Math.max(L.dy+GLB*sw+sh,60)}}
 /* vùng chạm riêng (cổng ở trên trời nên không dùng vùng chạm sát đất mặc định của world/10): nhãn + xoáy cổng */
 G.hit=function(px,py,x){var o=geo();if(!o)return false;return Math.abs(px-x)<Math.max(o.prx*2.2,38)&&py>o.ly-30&&py<o.pcy+Math.max(o.pry*1.35,44)};
 var _gx=LGART.gx;LGART.gx=function(i){return i===GIDX?GPX/GIW*LGART.ww():_gx.apply(this,arguments)};
@@ -215,7 +217,7 @@ LGART.gate=function(Gt,i,x,t,tgt){
  if(i!==GIDX)return _gate.apply(this,arguments);
  var L=LGART.L;if(!LGART.ok()||!L)return true;
  if(x<-260||x>L.W+260)return true;
- var sw=L.sw,by=L.dy+GPY*sw,K=GK,rx=50*K*sw,ry=14*K*sw,pu=.5+.5*Math.sin(t*.07),rgb=G.rgb,j,lite=(window.QL|0)>=2;
+ var sw=L.sw,sh=shY(L),by=L.dy+GPY*sw+sh,K=GK,rx=50*K*sw,ry=14*K*sw,pu=.5+.5*Math.sin(t*.07),rgb=G.rgb,j,lite=(window.QL|0)>=2;
  var pcy=by-66*K*sw,prx=30*K*sw,pry=58*K*sw;
  /* 1) trận pháp dưới chân + hào quang đỏ */
  g.save();g.globalCompositeOperation='lighter';
@@ -241,7 +243,7 @@ LGART.gate=function(Gt,i,x,t,tgt){
  g.restore();
  /* 4) đốm lửa bay lên quanh cổng */
  if(!lite){g.save();g.globalCompositeOperation='lighter';for(j=0;j<5;j++){var u=((t*.007+gtRnd(j+5))%1);g.fillStyle=j%3?'rgba(255,150,100,'+(.9*Math.sin(u*3.1416))+')':'rgba(255,220,120,'+(.9*Math.sin(u*3.1416))+')';g.beginPath();g.arc(x+(gtRnd(j+11)-.5)*rx*1.5+Math.sin(u*6+j)*4*sw,by-u*150*K*sw,Math.max(.8,1.8*sw*(1-u*.5)),0,6.2832);g.fill()}g.restore()}
- var fs=PORT?Math.max(6.5,Math.min(8.5,9*s)):Math.max(8,Math.min(10,6.5*s)),ly=Math.max(L.dy+GLB*sw,60),cx=gtBanner(x,ly,fs);
+ var fs=PORT?Math.max(6.5,Math.min(8.5,9*s)):Math.max(8,Math.min(10,6.5*s)),ly=Math.max(L.dy+GLB*sw+sh,60),cx=gtBanner(x,ly,fs);
  g.save();g.fillStyle='#ff8a7a';g.font='bold '+fs+'px sans-serif';g.textAlign='center';g.fillText('▼',cx,ly+fs*2.2+Math.sin(t*.12+i)*3);g.restore();
  return true};
 })()}

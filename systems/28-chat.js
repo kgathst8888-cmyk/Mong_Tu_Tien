@@ -50,11 +50,12 @@ function build(){
   ['keydown','keyup','keypress'].forEach(function(t){inp.addEventListener(t,function(e){e.stopPropagation();if(t=='keydown'&&e.key=='Enter')send()})});
   ['pointerdown','touchstart'].forEach(function(t){pn.addEventListener(t,function(e){e.stopPropagation()})});
 }
+function tn(m){return (m.tag?'<i style="color:#e0b04a;font-style:normal;font-size:.9em">['+esc(m.tag)+']</i> ':'')+esc(m.name)}   /* Fix384: tên Tông Môn */
 function prep(m){if(m._p)return m;m._p=1;var q=window.PFD?PFD.parse(m.msg):{msg:String(m.msg||''),av:0,fr:0,tt:0};m.msg=q.msg;m.av=q.av;m.fr=q.fr;m.tt=q.tt;return m}
 function hidePeek(){clearTimeout(peekT);if(peek)peek.style.display='none'}
 function showPeek(m){
   if(open||!peek)return;
-  prep(m);peek.innerHTML=(window.PFD?PFD.avHTML(m.av,m.fr,20,m.name):'')+'<b>'+esc(m.name)+'</b>: <span>'+esc(m.msg)+'</span>';
+  prep(m);peek.innerHTML=(window.PFD?PFD.avHTML(m.av,m.fr,20,m.name):'')+'<b>'+tn(m)+'</b>: <span>'+esc(m.msg)+'</span>';
   peek.style.display='block';clearTimeout(peekT);peekT=setTimeout(hidePeek,6000);
 }
 function setNote(t){errMsg=t||'';note.style.display=t?'block':'none';note.textContent=t||''}
@@ -66,8 +67,8 @@ function add(m){
   var d=document.createElement('div');if(m.me)d.className='me';
   var t=new Date(m.ts*1000),hm=('0'+t.getHours()).slice(-2)+':'+('0'+t.getMinutes()).slice(-2);
   var A=window.PFD,rp=m.me?'':'<a href="#" data-id="'+m.id+'" title="Báo cáo">⚑</a>';
-  if(A){d.className=(m.me?'me ':'')+'pfrow';d.innerHTML=A.avHTML(m.av,m.fr,34,m.name)+'<span class="pfbd"><span class="pfhd">'+A.ttHTML(m.tt)+'<b>'+esc(m.name)+'</b><small>'+hm+'</small>'+rp+'</span><span class="pfmsg">'+esc(m.msg)+'</span></span>'}
-  else d.innerHTML='<b>'+esc(m.name)+'</b>: '+esc(m.msg)+'<small>'+hm+'</small>'+rp;
+  if(A){d.className=(m.me?'me ':'')+'pfrow';d.innerHTML=A.avHTML(m.av,m.fr,34,m.name)+'<span class="pfbd"><span class="pfhd">'+A.ttHTML(m.tt)+'<b>'+tn(m)+'</b><small>'+hm+'</small>'+rp+'</span><span class="pfmsg">'+esc(m.msg)+'</span></span>'}
+  else d.innerHTML='<b>'+tn(m)+'</b>: '+esc(m.msg)+'<small>'+hm+'</small>'+rp;
   list.appendChild(d);
   while(list.children.length>KEEP)list.removeChild(list.firstChild);
   if(open&&near)list.scrollTop=list.scrollHeight;

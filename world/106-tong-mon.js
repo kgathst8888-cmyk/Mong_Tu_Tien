@@ -50,7 +50,7 @@ function errTx(r){
   var s=r&&r.status;
   return s==='login'||s==='auth'?'☁ Cần đăng nhập tài khoản':s==='nosql'?'⚠ Tông Môn chưa kích hoạt trên máy chủ (cần chạy tong_mon.sql)':
     s==='net'?'Lỗi mạng, thử lại sau':s==='in'?'Bạn đã ở trong một tông môn':s==='none'?'Bạn chưa có tông môn':
-    s==='cool'?'Chờ '+hms(r.secs)+' nữa mới vào tông môn khác':s==='dup'?'Tên tông môn đã có người dùng':
+    s==='closed'?'Tông môn đang đóng cửa, không nhận người mới':s==='cool'?'Chờ '+hms(r.secs)+' nữa mới vào tông môn khác':s==='dup'?'Tên tông môn đã có người dùng':
     s==='bad'?'Dữ liệu không hợp lệ (tên 2–12 ký tự, không dùng < > & " \' ` \\ / { } [ ] %)':s==='full'?'Đã đầy':
     s==='gone'?'Không còn tồn tại':s==='perm'?'Bạn không đủ quyền':s==='self'?'Không thể làm với chính mình':
     s==='leader'?'Tông Chủ phải nhường ngôi trước khi rời (hoặc giải tán)':s==='cap'?'Vượt hạn mức quyên góp hôm nay (còn '+nf(r.left||0)+'💰)':
@@ -69,7 +69,7 @@ hookTw();
 
 /* ---------- trạng thái ---------- */
 var EXT=[];function extOf(id){for(var i=0;i<EXT.length;i++)if(EXT[i].id===id)return EXT[i];return null}
-var S={tab:'main',me:null,list:null,off:0,q:'',busy:false,note:'',loading:false,view:'find'};
+var S={tab:'main',me:null,list:null,off:0,q:'',busy:false,note:'',loading:false,view:'find',apps:null,appsLoading:false};
 var isOpen=false,ovEl=null;
 function setLv(n){var o=D();if(!o)return;n=Math.max(0,Math.min(10,n|0));if((o.lv|0)!==n){o.lv=n;sav()}}
 function refresh(cb){
@@ -106,7 +106,23 @@ function join(id){
   if(S.busy)return;S.busy=true;S.note='⏳ Đang gia nhập...';render();
   rpc('tm_join',{p_gid:id|0,p_pname:pname()}).then(function(r){
     if(r&&r.status==='ok'){say('🏯 Gia nhập tông môn!',COL);S.tab='main';done('✅ Đã gia nhập tông môn!')}
+    else if(r&&r.status==='applied'){S.list=null;done('📨 Đã gửi đơn xin vào '+r.guild+'. Chờ Tông Chủ / Trưởng Lão duyệt (tối đa 3 ngày).')}
     else done(errTx(r))})}
+function loadApps(){
+  if(S.appsLoading)return;S.appsLoading=true;
+  rpc('tm_apps').then(function(r){S.appsLoading=false;S.apps=r;render()})}
+function appDo(aid,ok){
+  if(S.busy)return;S.busy=true;S.note='⏳ Đang xử lý...';render();
+  rpc('tm_app_do',{p_aid:aid|0,p_ok:!!ok}).then(function(r){
+    S.apps=null;
+    if(r&&r.status==='ok')done(r.res==='yes'?'✅ Đã duyệt vào tông':'Đã từ chối đơn');else done(errTx(r))})}
+function setMode(m){
+  if(S.busy)return;S.busy=true;S.note='⏳ Đang đổi...';render();
+  rpc('tm_mode',{p_mode:m}).then(function(r){
+    if(r&&r.status==='ok')done('✅ Chế độ vào tông: '+(m==='open'?'Mở cửa':m==='apply'?'Xin vào (duyệt)':'Đóng cửa'));else done(errTx(r))})}
+function cancelApp(){
+  if(S.busy)return;S.busy=true;S.note='⏳ Đang huỷ...';render();
+  rpc('tm_apply_cancel').then(function(r){done(r&&r.status==='ok'?'Đã huỷ đơn xin vào':errTx(r))})}
 function checkin(){
   if(S.busy)return;S.busy=true;S.note='⏳ Đang điểm danh...';render();
   rpc('tm_checkin').then(function(r){
@@ -152,7 +168,7 @@ function search(){var el=document.getElementById('tmg-q');S.q=el?String(el.value
  st.textContent='.tmg-ov{position:fixed;inset:0;z-index:99999;background:#000a;display:flex;align-items:center;justify-content:center;padding:12px}'
  +'.tmg-bx{width:100%;max-width:400px;max-height:92vh;overflow-y:auto;-webkit-overflow-scrolling:touch;background:#15110a;border:2px solid '+COL+';border-radius:14px;padding:12px 14px;color:#f3ead2;font-family:'+FONT+';box-shadow:0 0 24px #e0b04a44}'
  +'.tmg-bx h3{margin:0 0 4px;font-size:18px;color:#ffe9a8}.tmg-bx small{display:block;opacity:.85;line-height:1.4}'
- +'.tmg-tabs{display:flex;gap:6px;margin:8px 0}.tmg-tabs button{flex:1}'
+ +'.tmg-tabs{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.tmg-tabs button{flex:1 1 22%;min-width:0;padding:6px 2px;font-size:12px}'
  +'.tmg-bt{padding:6px 10px;border-radius:8px;border:1px solid '+COL+';background:#2a2110;color:#fff2c9;font-size:13px;font-family:inherit}'
  +'.tmg-bt.on{background:#6a4d12}.tmg-bt.dn{border-color:#a05a5a;background:#321a1a}.tmg-bt.sm{padding:3px 7px;font-size:12px}.tmg-bt[disabled]{opacity:.45}'
  +'.tmg-cd{border:1px solid #5a4a22;border-radius:10px;background:#1e180d;padding:8px 10px;margin:7px 0}'
@@ -163,7 +179,7 @@ function search(){var el=document.getElementById('tmg-q');S.q=el?String(el.value
  document.head.appendChild(st)})();
 function bt(label,act,cls,dis){return '<button class="tmg-bt'+(cls?' '+cls:'')+'" '+(dis||S.busy?'disabled ':'')+'onclick="TMG.act('+act+')">'+label+'</button>'}
 function tabs(g){
-  var T=g?[['main','🏯 Tông'],['mem','👥 Người']].concat(window.TMB?[['boss','🐉 Boss']]:[],EXT.map(function(x){return [x.id,x.label]}),[['top','🏆 Hạng']]):[['find','🔎 Tìm Tông'],['new','➕ Lập Tông'],['top','🏆 Xếp Hạng']];
+  var T=g?[['main','🏯 Tông'],['mem','👥 Người']].concat(EXT.map(function(x){return [x.id,x.label]}),[['top','🏆 Hạng']]):[['find','🔎 Tìm Tông'],['new','➕ Lập Tông'],['top','🏆 Xếp Hạng']];
   return '<div class="tmg-tabs">'+T.map(function(t){return '<button class="tmg-bt'+(S.tab===t[0]?' on':'')+'" onclick="TMG.act(\'tab\',\''+t[0]+'\')">'+t[1]+'</button>'}).join('')+'</div>'}
 function buffTx(l){return 'HP +'+(CF.buff.hpp*l)+'% · Sát thương +'+(CF.buff.dmgp*l)+'% · Vàng rơi +'+(CF.buff.goldp*l)+'%'}
 function listHtml(canJoin){
@@ -177,7 +193,8 @@ function listHtml(canJoin){
   a.forEach(function(x,i){
     h+='<div class="tmg-cd"><b>#'+(S.off+i+1)+' '+esc(x.name)+'</b> · Lv.'+(x.lv|0)+' · '+(x.cnt|0)+'/'+(x.max|0)
       +'<small>Tông Chủ: '+esc(x.leader||'?')+(x.notice?' — '+esc(x.notice):'')+'</small>'
-      +(canJoin?'<div class="tmg-row">'+bt('Gia nhập','\'join\','+(x.id|0),'',(x.cnt|0)>=(x.max|0))+'</div>':'')+'</div>'});
+      +'<small>'+(x.mode==='apply'?'📨 Xin vào (cần duyệt)':x.mode==='closed'?'🔒 Đóng cửa':'🟢 Mở cửa')+'</small>'
+      +(canJoin?'<div class="tmg-row">'+bt(x.mode==='apply'?'Xin vào':x.mode==='closed'?'Đóng cửa':'Gia nhập','\'join\','+(x.id|0),'',(x.cnt|0)>=(x.max|0)||x.mode==='closed')+'</div>':'')+'</div>'});
   h+='<div class="tmg-row">'+bt('◀ Trước','\'page\',-1','',S.off<=0)+bt('Sau ▶','\'page\',1','',!more)+'</div>';
   return h}
 function render(){
@@ -195,6 +212,7 @@ function render(){
         +'<div class="tmg-bar"><i style="width:'+pct+'%"></i></div><small>EXP '+(g.lv>=10?'đã đầy':nf(g.exp)+' / '+nf(g.need))+'</small>'
         +'<small>Chức của bạn: '+R.e+' '+R.n+' · Cống hiến: '+nf(g.ct)+(g.bal!=null?' (khả dụng '+nf(g.bal)+')':'')+'</small>'
         +'<small>✨ Buff hiện tại: '+buffTx(g.lv)+'</small>'
+        +((g.role==='chu'||g.role==='lao')&&g.apps>0?'<small style="color:#ffd96a">📨 '+g.apps+' đơn xin vào đang chờ — vào tab Người để duyệt</small>':'')
         +(g.lv<10?'<small>Cấp '+(g.lv+1)+': '+buffTx(g.lv+1)+'</small>':'')+'</div>';
       h+='<div class="tmg-cd"><b>📜 Điểm danh</b><small>+'+nf(CF.daily.gold+CF.daily.perLv*g.lv)+'💰 · +10 cống hiến · +60 exp tông (1 lần/ngày, giờ VN)</small>'
         +'<div class="tmg-row">'+bt(g.ck?'✔ Đã điểm danh':'Điểm danh','\'checkin\'','',g.ck)+'</div></div>';
@@ -205,6 +223,14 @@ function render(){
         +(mng?'<div class="tmg-row"><input id="tmg-nt" class="tmg-in" maxlength="80" placeholder="Nội dung (tối đa 80 ký tự)" value="'+esc(g.notice)+'">'+bt('Lưu','\'notice\'')+'</div>':'')+'</div>';
       h+='<div class="tmg-row">'+(g.role==='chu'?bt('Giải tán','\'disband\'','dn'):bt('Rời tông','\'leave\'','dn'))+bt('Đóng','\'close\'')+'</div>';
     }else if(S.tab==='mem'){
+      if(g.role==='chu'){
+        h+='<div class="tmg-cd"><b>🚪 Chế độ vào tông</b><div class="tmg-row">'
+          +[['open','🟢 Mở cửa'],['apply','📨 Duyệt'],['closed','🔒 Đóng']].map(function(o){return bt(o[1],'\'mode\',\''+o[0]+'\'',g.mode===o[0]?'on':'',g.mode===o[0])}).join('')+'</div></div>'}
+      if(mng){
+        if(!S.apps&&!S.appsLoading)loadApps();
+        var A=S.apps&&S.apps.status==='ok'?S.apps.list||[]:[];
+        h+='<div class="tmg-cd"><b>📨 Đơn xin vào ('+A.length+')</b>'+(S.appsLoading&&!S.apps?'<small>⏳ Đang tải...</small>':'')
+          +(A.length?A.map(function(a){return '<div class="tmg-row"><span style="flex:1">'+esc(a.name)+' <small style="display:inline">· '+(a.ago|0)+' giờ trước</small></span>'+bt('✔','\'appdo\','+(a.aid|0)+',1','sm on')+bt('✖','\'appdo\','+(a.aid|0)+',0','sm dn')+'</div>'}).join(''):(S.apps?'<small>Không có đơn nào.</small>':''))+'</div>'}
       (M.members||[]).forEach(function(m){
         var r=ROLE[m.role]||ROLE.de,mine=m.mid===g.me,on=(m.ago|0)<=5;
         h+='<div class="tmg-cd"><b style="color:'+r.c+'">'+r.e+' '+esc(m.name||'?')+(mine?' (bạn)':'')+'</b> · '+r.n
@@ -220,14 +246,13 @@ function render(){
       h+=bt('Đóng','\'close\'');
     }else if(extOf(S.tab)){
       h+=extOf(S.tab).html(g)+'<div class="tmg-row">'+bt('Đóng','\'close\'')+'</div>';
-    }else if(S.tab==='boss'&&window.TMB){
-      h+=TMB.html(g)+'<div class="tmg-row">'+bt('Đóng','\'close\'')+'</div>';
     }else{
       if(!S.list&&!S.loading)loadList(0);
       h+=listHtml(false)+'<div class="tmg-row">'+bt('Đóng','\'close\'')+'</div>'}
   }else{
     h+='<small>Chưa có tông môn. Gia nhập một tông hoặc tự lập để nhận buff HP / sát thương / vàng rơi.</small>'+tabs(false)
-      +'<div class="tmg-nt">'+esc(S.note)+(M.cool>0?' ⏳ Chờ '+hms(M.cool)+' nữa mới vào tông khác.':'')+'</div>';
+      +'<div class="tmg-nt">'+esc(S.note)+(M.cool>0?' ⏳ Chờ '+hms(M.cool)+' nữa mới vào tông khác.':'')+'</div>'
+      +(M.applied?'<div class="tmg-cd"><b>📨 Đang chờ duyệt</b><small>Đơn xin vào <b>'+esc(M.applied)+'</b> — tối đa 3 ngày.</small><div class="tmg-row">'+bt('Huỷ đơn','\'cancelapp\'','dn')+'</div></div>':'');
     if(S.tab==='new'){
       h+='<div class="tmg-cd"><b>➕ Lập tông môn</b><small>Phí: '+nf(CF.create.gold)+'💰 + '+CF.create.lt+'💎 (bạn có '+nf(G())+'💰). Tên 2–12 ký tự, không trùng.</small>'
         +'<div class="tmg-row"><input id="tmg-name" class="tmg-in" maxlength="12" placeholder="Tên tông môn">'+bt('Lập','\'create\'')+'</div></div>'}
@@ -265,8 +290,10 @@ function act(a,x,y){
     case 'kick':kick(x);break;
     case 'role':role(x,y);break;
     case 'reload':S.me=null;render();refresh();break;
-    case 'boss':if(window.TMB)TMB.act(x,y);break;
     case 'ext':{var X=extOf(x);if(X)X.act(y)}break;
+    case 'appdo':appDo(x,y);break;
+    case 'mode':setMode(x);break;
+    case 'cancelapp':cancelApp();break;
     case 'close':close();break;
   }}
 
@@ -285,5 +312,5 @@ setInterval(function(){try{if(online()&&!document.hidden)refresh()}catch(e){}},M
 
 window.TMG={cfg:CF,open:open,close:close,lv:lv,buff:buff,refresh:function(){refresh()},act:act,
   addTab:function(id,label,html,act){if(!extOf(id))EXT.push({id:id,label:label,html:html,act:act})},
-  render:function(){render()},reopen:function(t){open(t)},isOpen:function(){return isOpen}};
+  tab:function(){return S.tab},members:function(){return (S.me&&S.me.members)||[]},render:function(){render()},reopen:function(t){open(t)},isOpen:function(){return isOpen}};
 })();

@@ -41,11 +41,12 @@ var CF={
   rsMax:3,                 /* số lần hồi sinh tối đa mỗi trận (khớp hcb_k('respawns')); chết lần thứ rsMax+1 → về Làng */
   rsHp:1,                  /* hồi sinh với bao nhiêu % máu (1 = đầy) */
   rsInv:180,               /* bất tử sau khi hồi sinh (frame, 60 frame = 1 giây) */
+  perP:2,                  /* Fix388: số rương mỗi người được mở (khớp hcb_k('per_p')) */
   rsX:120                  /* vị trí hồi sinh (mép trái bản đồ, xa boss) */
 };
 var FONT='KTH Serif,Songti SC,STKaiti,KaiTi,serif';
 var S={off:0,st:null,stAt:0,busy:false,nextAt:0,fail:0,err:'',acc:0,boss:null,hooked:false,lastHp:0,walk:-1,opening:false,
-       oth:{},myChest:-1,kc:0,claimBusy:false,vClaim:0,entering:false,note:'',noteT:0,evSeen:-1};
+       oth:{},mine:{},myN:0,kc:0,claimBusy:false,vClaim:0,entering:false,note:'',noteT:0,evSeen:-1};
 var gGo=0,ov=null,box=null,tmr=0,resEl=null;
 
 /* ---------- tiện ích ---------- */
@@ -58,8 +59,14 @@ function inMap(){return !!(dg&&dg.wb)}
 function say(t,col,y){try{DT.push({x:P.x,y:y||200,s:t,c:col||'#ffd98a',g:1,l:130})}catch(e){}}
 function fmt(sec){sec=Math.max(0,Math.floor(sec));var h=Math.floor(sec/3600),m=Math.floor(sec%3600/60),q=sec%60;return(h?h+':'+(m<10?'0':''):'')+m+':'+(q<10?'0':'')+q}
 function nowS(){return(Date.now()+S.off)/1000}
-function slotT(){return (Math.floor(nowS())+25200)%10800}
-function curEv(){return Math.floor((Math.floor(nowS())+25200)/10800)}
+/* Fix388: lịch cố định 12:00 · 15:00 · 20:00 (giờ VN). ev = floor(giây-VN-bắt-đầu-lượt / 10800) → vẫn tăng dần, khớp SQL hcb_cur() */
+var SCH=[43200,54000,72000];
+function slotInfo(){var e=nowS()+25200,d=Math.floor(e/86400),sd=e-d*86400,i=2;
+  if(sd<SCH[0])return{ev:Math.floor(((d-1)*86400+SCH[2])/10800),t:sd+86400-SCH[2],nx:SCH[0]-sd};
+  while(sd<SCH[i])i--;
+  return{ev:Math.floor((d*86400+SCH[i])/10800),t:sd-SCH[i],nx:(i===2?86400+SCH[0]:SCH[i+1])-sd}}
+function slotT(){return Math.floor(slotInfo().t)}
+function curEv(){return slotInfo().ev}
 /* pha hiện tại suy từ đồng hồ (đã hiệu chỉnh theo máy chủ) + trạng thái boss đã biết */
 function phase(){
   var t=slotT(),st=S.st;
@@ -68,7 +75,7 @@ function phase(){
 function leftIn(ph){var t=slotT();
   if(ph==='gather')return 300-t;if(ph==='boss')return 1200-t;
   if(ph==='chest'&&S.st)return(S.st.left||0)-(Date.now()-S.stAt)/1000;
-  return 10800-t}
+  return slotInfo().nx}
 function stateText(ph){
   ph=ph||phase();
   if(ph==='gather')return{a:'Tập trung · còn '+fmt(leftIn(ph)),b:'chạm để vào'};
@@ -87,7 +94,7 @@ function applyState(r){
     if(!e){e=S.oth[o.id]={id:o.id,lx:o.x*w,tx:o.x*w,d:1,mv:0}}
     e.name=String(o.name||'Đạo Hữu');e.ci=o.ci|0;e.br=o.br|0;e.tier=o.tier|0;e.lv=o.lv|0;e.fx=clampN(+o.x||0,0,1)});
   for(var k in S.oth)if(!seen[k])delete S.oth[k];
-  if(r.my&&r.my.chest!=null)S.myChest=r.my.chest|0;
+  if(r.my){S.mine={};(r.my.mine||[]).forEach(function(q){S.mine[q]=1});S.myN=r.my.opened|0}
   /* đồng bộ boss cục bộ */
   if(inMap()&&S.boss&&S.hooked){
     track();
@@ -139,7 +146,10 @@ function showResult(r){
 
 /* ---------- boss: máu chung ---------- */
 function setRaw(e,v){e._raw=1;try{e.hp=v}finally{e._raw=0}}
-function track(){var e=S.boss;if(!e||!S.hooked||e._dead)return;var h=e.hp;if(h<S.lastHp&&e.max>0)S.acc+=(S.lastHp-h)/e.max*1e6;S.lastHp=h}
+function track(){var e=S.boss;if(!e||!S.hooked||e._dead)return;var h=e.hp;if(h<S.lastHp&&e.max>0)S.acc+=(S.lastHp-h)/e.max*1e6;S.lastHp=h;
+  /* Fix388: máu cục bộ bị chặn ở 1 nên phần sát thương cuối (<1 đơn vị) không bao giờ được báo → máy chủ kẹt ở 99,99x% và boss không chết.
+     Khi máu cục bộ đã chạm đáy, báo nốt toàn bộ phần máu còn lại theo máy chủ (máy chủ tự chặn trần & chỉ trừ tối đa phần còn lại). */
+  if(h<=1.5&&e.max>0&&S.st){var need=1e6-(+S.st.dmg||0)+2;if(need>S.acc)S.acc=need}}
 function hookBoss(e){
   var M=Math.max(1,+(S.st&&S.st.m)||1),h=e.hp;
   e._M=M;e._raw=0;e._dead=0;
@@ -171,7 +181,7 @@ var _drop=drop;drop=function(e){
 var CY={p:6,pe:4.2,enrage:480,warn:1.4,rad:140,mu:1,n:3,ne:5,step:.55};
 function rngS(a){a>>>=0;return function(){a=(a+0x6D2B79F5)>>>0;var t=a;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}}
 function bossX(){return vw()-110}
-function bossT(){return((nowS()+25200)%10800)-300}            /* giây kể từ lúc boss xuất hiện */
+function bossT(){return slotInfo().t-300}            /* giây kể từ lúc boss xuất hiện */
 function cycOf(T){return T<CY.enrage?{n:Math.floor(T/CY.p),a:Math.floor(T/CY.p)*CY.p,k:CY.n}:{n:80+Math.floor((T-CY.enrage)/CY.pe),a:CY.enrage+Math.floor((T-CY.enrage)/CY.pe)*CY.pe,k:CY.ne}}
 function cycAt(n){return n<80?{n:n,a:n*CY.p,k:CY.n}:{n:n,a:CY.enrage+(n-80)*CY.pe,k:CY.ne}}
 function pillarsOf(n){var c=cycAt(n),r=rngS((S.evSeen|0)*7919+n*104729+17),L=[],j,f;
@@ -217,7 +227,7 @@ async function enter(){
     bo=0;try{bag.style.display='none'}catch(e){}
     var l0=lg,v0=vil;lg=0;vil=0;vt=null;vgo=-1;E=[];PETS=[];PJ=[];FX=[];P.pe=null;P.atk=0;P.x=120;P.hp=mx();P.mp=mm();SLT=[9e9,9e9,9e9,9e9,9e9];
     try{if(typeof LCT!=='undefined'&&LCT.on())LCT.off()}catch(e){}
-    S.boss=null;S.hooked=false;S.acc=0;S.walk=-1;S.kc=0;S.myChest=(r.my&&r.my.chest!=null)?(r.my.chest|0):-1;S.evSeen=r.ev;S.oth={};
+    S.boss=null;S.hooked=false;S.acc=0;S.walk=-1;S.kc=0;S.mine={};((r.my&&r.my.mine)||[]).forEach(function(q){S.mine[q]=1});S.myN=(r.my&&r.my.opened)|0;S.evSeen=r.ev;S.oth={};
     dg={t:0,n:20,kill:20,mt:1,wb:1,lg0:l0,v0:v0,ev:r.ev};
     S.nextAt=Date.now()+CF.poll;
     DT.push({x:P.x,y:200,s:'⚔ Vào Hội Chiến Boss!',c:'#ffd36a',g:1,l:140});
@@ -336,7 +346,7 @@ function drawOthers(){
   all.forEach(function(e){drawOther(e,!!full[e.id])})}
 function chestTaken(i){return !!(S.st&&S.st.chests&&S.st.chests.indexOf(i)>=0)}
 function drawChest(i){
-  var X=chestX(i)*s,Y=GY+chestDY(i)*s,mine=(S.myChest===i),tk=chestTaken(i)||mine,w=26*s,h=18*s,t=fr;
+  var X=chestX(i)*s,Y=GY+chestDY(i)*s,mine=!!(S.mine&&S.mine[i]),tk=chestTaken(i)||mine,w=26*s,h=18*s,t=fr;
   g.save();g.translate(X,Y);
   g.fillStyle='rgba(0,0,0,.35)';g.beginPath();g.ellipse(0,2*s,w*.62,4*s,0,0,6.283);g.fill();
   if(!tk){g.globalCompositeOperation='lighter';var q=g.createRadialGradient(0,-h*.6,2,0,-h*.6,w*1.1);q.addColorStop(0,'rgba(255,220,120,'+(.45+.2*Math.sin(t*.08+i)).toFixed(2)+')');q.addColorStop(1,'rgba(255,200,80,0)');g.fillStyle=q;g.beginPath();g.arc(0,-h*.6,w*1.1,0,6.283);g.fill();g.globalCompositeOperation='source-over'}
@@ -363,8 +373,8 @@ var _draw=draw;draw=function(){
     if(dg&&dg.wb){
       var st=S.st,ph=st?(slotT()<300&&!st.killed?'gather':st.phase):phase(),tx='';
       if(ph==='gather')tx='⏳ Tập trung — Boss xuất hiện sau '+fmt(300-slotT());
-      else if(ph==='chest'&&S.myChest<0)tx='🎁 Chạm vào 1 rương để mở · còn '+fmt(leftIn('chest'));
-      else if(ph==='chest')tx='🎁 Bạn đã mở rương · còn '+fmt(leftIn('chest'));
+      else if(ph==='chest'&&(S.myN|0)<CF.perP)tx='🎁 Chạm rương để mở ('+(S.myN|0)+'/'+CF.perP+') · còn '+fmt(leftIn('chest'));
+      else if(ph==='chest')tx='🎁 Bạn đã mở đủ '+CF.perP+' rương · còn '+fmt(leftIn('chest'));
       if(tx){g.save();g.setTransform(DPR,0,0,DPR,0,0);g.font='bold '+Math.max(14,17*s)+'px '+FONT;g.textAlign='center';g.lineWidth=5;g.strokeStyle='rgba(0,0,0,.85)';
         var cx=W/2,cy=GY-(PORT?170:140)*s;g.strokeText(tx,cx,cy);g.fillStyle='#ffe27a';g.fillText(tx,cx,cy);g.restore()}}
   }catch(x){}};
@@ -373,25 +383,39 @@ c.addEventListener('pointerdown',function(e){
   var i=chestAt(e.offsetX,e.offsetY);
   if(i>=0){S.walk=i;e.stopPropagation()}},true);
 
+/* Fix388: áp phần thưởng ngẫu nhiên do máy chủ tung (LT khoá đã được máy chủ cộng sẵn) */
+function applyRw(L){
+  var p=PS[cur],o=[];if(!p||!L)return;
+  L.forEach(function(w,k){try{
+    if(w.t==='lt'){o.push('🔒 +'+w.n+' Linh Thạch khoá');try{window.LT&&LT.refresh&&LT.refresh()}catch(e){}}
+    else if(w.t==='da'){var kk=w.k==='b'?'b':'a';try{if(window.DCH){var dd=DCH.get();dd[kk]=(dd[kk]|0)+w.n}}catch(e){}o.push((kk==='b'?'💠 Đá Cường Hóa Cấp 2':'🪨 Đá Cường Hóa Cấp 1')+' ×'+w.n)}
+    else if(w.t==='g'){gold+=w.n;o.push('💰 +'+nf(w.n)+' vàng')}
+    else if(w.t==='mc'){if(typeof WFA==='function'){WFA(3,w.n|0||1);try{dgSave()}catch(e){}}o.push('🪽 Mảnh Cánh Cấp 4 ×'+(w.n|0||1))}
+    else if(w.t==='lv'){if((p.wg|0)<4){p.wg=4;o.push('🪽 Long Vũ Thiên Thần Dực!')}else{gold+=10000000;o.push('🪽 Đã có Long Vũ → đổi 💰 +10.000.000')}}
+    else if(w.t==='bua'){if(!p.csh)p.csh={b10:0,b15:0,b20:0,ham:0,g10:0,dh:0,dh2:0,tc:0};p.csh.bcr=(p.csh.bcr|0)+1;o.push('🛡 Bùa Chống Rơi ×1')}
+  }catch(e){try{console.error('[HCB rw]',e)}catch(x){}}});
+  o.forEach(function(t,k){say(t,'#ffe27a',266+k*22)});
+  try{sv()}catch(e){}}
 async function openChest(i){
   if(S.opening)return;S.opening=true;
   try{
     var st=S.st;
-    if(S.myChest>=0){say('Bạn đã mở 1 rương rồi','#ffb0a0');return}
+    if((S.myN|0)>=CF.perP){say('Bạn đã mở đủ '+CF.perP+' rương','#ffb0a0');return}
     if(chestTaken(i)){say('Rương này đã có người mở','#ffb0a0');return}
     if(!(st&&st.my&&st.my.ok)){say('Cần đóng góp đủ sát thương mới được mở rương','#ffb0a0');return}
     if(BAG.length>=capN()){say('🎒 Túi đầy! Dọn túi rồi chạm rương lại','#ffb0a0');return}
     var r=await KCL.rpc('hcb_chest',{p_slot:cur|0,p_idx:i});
     var s2=r&&r.status;
     if(s2==='ok'){
-      S.myChest=i;if(S.st){S.st.chests=(S.st.chests||[]).concat([i])}
+      S.mine[i]=1;S.myN=(r.opened|0)||((S.myN|0)+1);if(S.st){S.st.chests=(S.st.chests||[]).concat([i])}
       var it=gen(P.lv,5,undefined,4);
       if(BAG.length<capN()){BAG.push(it)}else{gold+=sell(it)}
       try{DT.push({x:chestX(i),y:200,s:'✨ '+SL[it.s][1]+' '+it.n,c:RC[5],l:200,g:1})}catch(e){}
       say('🎁 Mở rương: trang bị Thiên Thần!','#ff9ae8',240);
+      applyRw(r.rw);
       try{sv()}catch(e){}
     }else if(s2==='taken'){if(S.st)S.st.chests=(S.st.chests||[]).concat([i]);say('Rương này vừa có người mở','#ffb0a0')}
-    else if(s2==='had'){S.myChest=(r.chest|0);say('Bạn đã mở 1 rương rồi','#ffb0a0')}
+    else if(s2==='had'){S.myN=CF.perP;say('Bạn đã mở đủ '+CF.perP+' rương','#ffb0a0')}
     else if(s2==='no_part')say('Cần đóng góp đủ sát thương mới được mở rương','#ffb0a0');
     else if(s2==='closed'||s2==='no_boss')say('Rương đã đóng','#ffb0a0');
     else say('Không mở được rương, thử lại','#ffb0a0');
@@ -455,14 +479,14 @@ function panelHtml(){
   var ph=phase(),tt=stateText(ph),st=S.st,on=(ph==='gather'||ph==='boss');
   var col=ph==='boss'?'#ff9a8a':ph==='gather'||ph==='chest'?'#ffe27a':'#aab6d6';
   var h='<div style="text-align:center;font-size:18px;color:#ffd36a;letter-spacing:1px">⚔ HỘI CHIẾN BOSS</div>'
-   +'<div style="text-align:center;font-size:12px;opacity:.75;margin-bottom:6px">Nhiều người chơi cùng đánh 1 Boss · mở mỗi 3 giờ</div>'
+   +'<div style="text-align:center;font-size:12px;opacity:.75;margin-bottom:6px">Nhiều người chơi cùng đánh 1 Boss · mở 3 lần mỗi ngày</div>'
    +'<div style="text-align:center;border:1px solid #6a5a3a;border-radius:10px;padding:8px;margin:6px 0;background:#0e0a14"><div id="hcb-st" style="font-size:16px;color:'+col+'">'+esc(tt.a)+'</div>'
    +(st&&st.ev===curEv()&&(ph==='gather'||ph==='boss')?'<div style="font-size:12px;opacity:.8;margin-top:2px">👥 '+(st.n|0)+' người đang trong bản đồ · Boss còn '+clampN(100-(st.dmg||0)/1e4,0,100).toFixed(1)+'% máu</div>':'')
    +'</div>'
-   +'<div style="font-size:12.5px;margin:6px 0"><b style="color:#ffd36a">📅 Lịch</b>: 00:00 · 03:00 · 06:00 · 09:00 · 12:00 · 15:00 · 18:00 · 21:00 (giờ VN).<br>Mỗi lần 20 phút: <b>5 phút tập trung</b> → <b>15 phút Boss xuất hiện</b>.</div>'
+   +'<div style="font-size:12.5px;margin:6px 0"><b style="color:#ffd36a">📅 Lịch</b>: <b>12:00 · 15:00 · 20:00</b> (giờ VN).<br>Mỗi lần 20 phút: <b>5 phút tập trung</b> → <b>15 phút Boss xuất hiện</b>.</div>'
    +'<div style="font-size:12.5px;margin:6px 0"><b style="color:#ffd36a">🎁 Phần thưởng</b><br>'
    +'• Không hạ được Boss: <b>'+nf(CF.gold)+' 💰</b> + <b>'+CF.ltC+' 🔒 Linh Thạch khoá</b> (cho người có đóng góp).<br>'
-   +'• Hạ được Boss: <b>'+CF.chests+' rương</b> rơi trên đất — chạm để mở, mỗi người <b>1 rương</b> = 1 trang bị <b style="color:#ff7ae0">Thiên Thần</b> ngẫu nhiên.<br>'
+   +'• Hạ được Boss: <b>'+CF.chests+' rương</b> rơi trên đất — chạm để mở, mỗi người mở được <b>'+CF.perP+' rương</b>. Mỗi rương = 1 trang bị <b style="color:#ff7ae0">Thiên Thần</b> + 2 phần thưởng ngẫu nhiên (🔒 Linh Thạch khoá 10–50 · 🪨 Đá cấp 1–2 · 💰 2–10 triệu · 🪽 Mảnh Cánh 4 5% · 🪽 Long Vũ Thiên Dực 5% · 🛡 Bùa Chống Rơi 2%).<br>'
    +'• Người <b>kết liễu</b> Boss: <b>+'+CF.ltK+' 🔒</b> · người <b>sát thương cao nhất</b>: <b>+'+CF.ltT+' 🔒</b> Linh Thạch khoá.</div>'
    +'<div id="hcb-msg" style="font-size:12.5px;color:#ffb0a0;min-height:16px;text-align:center">'+esc(S.note||'')+'</div>'
    +'<div style="display:flex;gap:8px;margin-top:8px"><button id="hcb-go" style="flex:1;padding:10px;border-radius:10px;border:1px solid #d8b25a;font:bold 14px '+FONT+';'

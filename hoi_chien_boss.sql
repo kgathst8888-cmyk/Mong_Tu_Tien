@@ -3,10 +3,11 @@
 -- Chạy 1 lần: Supabase → SQL Editor → New query → dán toàn bộ → Run. Chạy lại được.
 -- CẦN CHẠY TRƯỚC: linh_thach_khoa.sql (dùng bảng cho_lock / cho_wallet / hàm _lks).
 --
--- Lịch (giờ Việt Nam, tính theo đồng hồ MÁY CHỦ): 00:00, 03:00, 06:00 ... 21:00 mỗi ngày.
+-- Lịch (giờ Việt Nam, tính theo đồng hồ MÁY CHỦ): 12:00, 15:00, 20:00 mỗi ngày (Fix388; trước đây 3 giờ / lần).
 --   mỗi lần tồn tại 20 phút:  0–5 phút  = TẬP TRUNG (chưa có boss)
 --                             5–20 phút = BOSS XUẤT HIỆN
---   Boss bị hạ sớm → 20 rương rơi trên đất, mở được trong 120 giây rồi đóng.
+--   Boss bị hạ sớm → 20 rương rơi trên đất, mở được trong 120 giây rồi đóng. Mỗi người mở tối đa 2 rương (hcb_k('per_p')).
+--   Mỗi rương: 1 trang bị Thiên Thần (máy khách tạo) + 2 phần thưởng ngẫu nhiên do máy chủ tung (hàm hcb_roll).
 -- Phần thưởng (máy chủ tự chống nhận trùng, không tin máy khách):
 --   • Có đóng góp (>= min_dmg) mà boss KHÔNG bị hạ        → 3.000.000 vàng + 5 Linh Thạch khoá
 --   • Boss bị hạ: mỗi người mở được 1 rương (1 trang bị Thiên Thần ngẫu nhiên, máy khách tạo)
@@ -52,6 +53,19 @@ create table if not exists public.hcb_player(
   primary key(ev, uid, slot)
 );
 alter table public.hcb_player add column if not exists deaths smallint not null default 0;
+
+-- Fix388: mỗi người mở được nhiều rương → mỗi rương đã mở ghi 1 dòng (idx chỉ 1 người mở được)
+create table if not exists public.hcb_open(
+  ev   bigint   not null,
+  idx  smallint not null,
+  uid  uuid     not null,
+  slot smallint not null,
+  ts   timestamptz not null default now(),
+  primary key(ev, idx)
+);
+create index if not exists hcb_open_player on public.hcb_open(ev, uid, slot);
+alter table public.hcb_open enable row level security;
+revoke all on public.hcb_open from anon, authenticated;
 create unique index if not exists hcb_player_chest_uq on public.hcb_player(ev, chest) where chest is not null;
 create index if not exists hcb_player_ts on public.hcb_player(ev, ts desc);
 
@@ -78,6 +92,7 @@ language sql immutable as $$
     when 'lt_c'       then 5
     when 'lt_k'       then 20
     when 'lt_t'       then 20
+    when 'per_p'      then 2         -- số rương mỗi người được mở
     when 'respawns'   then 3         -- số lần hồi sinh tối đa mỗi trận (chết lần thứ 4 → về làng)
     else 0 end $$;
 
@@ -91,6 +106,45 @@ language sql stable as $$
     when p_t < public.hcb_k('gather') then 'gather'
     when p_t < public.hcb_k('total')  then 'boss'
     else 'closed' end $$;
+
+-- Fix388: lượt hiện tại theo lịch 12:00 / 15:00 / 20:00 (giờ VN).
+--   ev = floor(giây-VN lúc bắt đầu lượt / 10800) → vẫn tăng dần (12h→ngày*8+4, 15h→+5, 20h→+6), không đụng số cũ
+--   t  = giây kể từ lúc lượt bắt đầu (>= 1200 là đã đóng) · nx = giây tới lượt kế tiếp
+create or replace function public.hcb_cur() returns table(ev bigint, t int, nx int)
+language sql stable as $$
+  with x as (select floor(extract(epoch from now()))::bigint + 25200 as e),
+       d as (select e, e / 86400 as dd, (e % 86400)::int as sd from x),
+       c as (select e, dd, sd,
+                    case when sd >= 72000 then 72000 when sd >= 54000 then 54000 when sd >= 43200 then 43200 else null end as st from d)
+  select case when st is null then ((dd - 1) * 86400 + 72000) / 10800 else (dd * 86400 + st) / 10800 end,
+         (case when st is null then sd + 86400 - 72000 else sd - st end)::int,
+         (case when st is null then 43200 - sd when st = 43200 then 54000 - sd when st = 54000 then 72000 - sd else 86400 + 43200 - sd end)::int
+    from c $$;
+
+-- Fix388: tung 1 phần thưởng ngẫu nhiên cho rương (p_ex = loại đã ra ở lần tung trước, để 2 phần thưởng khác loại)
+--   bua 2% (Bùa Chống Rơi x1) · lv 5% (Long Vũ Thiên Dực x1) · mc 5% (Mảnh Cánh Cấp 4 x1)
+--   còn lại 88% chia đều: lt (10–50 Linh Thạch khoá) · da (Đá cấp 1 hoặc 2, x1–2) · g (2–10 triệu vàng)
+create or replace function public.hcb_roll(p_ex text default '') returns json
+language plpgsql volatile as $$
+declare v_r double precision; v_t text; v_i int := 0;
+begin
+  loop
+    v_i := v_i + 1; v_r := random() * 100;
+    if    v_r < 2  then v_t := 'bua';
+    elsif v_r < 7  then v_t := 'lv';
+    elsif v_r < 12 then v_t := 'mc';
+    else v_t := (array['lt','da','g'])[1 + floor(random() * 3)::int];
+    end if;
+    exit when v_t <> coalesce(p_ex, '') or v_i >= 12;
+  end loop;
+  return case v_t
+    when 'lt'  then json_build_object('t','lt','n', 10 + floor(random() * 41)::int)
+    when 'da'  then json_build_object('t','da','k', case when random() < .5 then 'a' else 'b' end,'n', 1 + floor(random() * 2)::int)
+    when 'g'   then json_build_object('t','g','n', (2 + floor(random() * 9)::int) * 1000000)
+    when 'mc'  then json_build_object('t','mc','n', 1)
+    when 'lv'  then json_build_object('t','lv','n', 1)
+    else            json_build_object('t','bua','n', 1) end;
+end $$;
 
 -- ---------------------------------------------------------------------
 -- Báo hiện diện + gửi sát thương + nhận toàn bộ trạng thái (1 lượt gọi)
@@ -107,14 +161,15 @@ declare
   v_u    uuid     := auth.uid();
   v_s    smallint := greatest(0, least(2, coalesce(p_slot, 0)));
   v_e    bigint   := floor(extract(epoch from now()))::bigint + 25200;      -- giờ VN (UTC+7)
-  v_ev   bigint   := v_e / 10800;
-  v_t    int      := (v_e % 10800)::int;
+  v_ev   bigint   := (select c.ev from public.hcb_cur() c);
+  v_t    int      := (select c.t  from public.hcb_cur() c);
+  v_nx   int      := (select c.nx from public.hcb_cur() c);
   v_n text; v_ci int; v_br int; v_tier int; v_lv int; v_x real;
   v_m real; v_dmgT bigint; v_kat timestamptz; v_killer text;
   v_ph text; v_left int; v_cnt int; v_tot int; v_rank int;
   v_have boolean; v_mydmg bigint := 0; v_mychest smallint; v_myrep timestamptz; v_myts timestamptz;
   v_add bigint := 0; v_cap bigint; v_dt double precision; v_in numeric;
-  v_top json; v_oth json; v_chests json;
+  v_top json; v_oth json; v_chests json; v_mine json := '[]'::json; v_opened int := 0;
 begin
   if v_u is null then return json_build_object('status','auth'); end if;
 
@@ -163,6 +218,11 @@ begin
       update public.hcb_event set dmg = v_dmgT where ev = v_ev;
       update public.hcb_player set dmg = v_mydmg, rep = now() where ev = v_ev and uid = v_u and slot = v_s;
       v_myrep := now();
+      if v_dmgT >= 999980 and v_dmgT < 1000000 then           -- Fix388: sót < 0,002% máu do làm tròn phía máy khách → coi như hạ (tránh boss hết máu không chết)
+        v_mydmg := v_mydmg + (1000000 - v_dmgT); v_dmgT := 1000000;
+        update public.hcb_event set dmg = v_dmgT where ev = v_ev;
+        update public.hcb_player set dmg = v_mydmg where ev = v_ev and uid = v_u and slot = v_s;
+      end if;
       if v_dmgT >= 1000000 then                               -- người trừ nốt = người kết liễu
         v_kat := now(); v_killer := v_n;
         update public.hcb_event set killed_at = v_kat, killer = v_n, k_uid = v_u, k_slot = v_s where ev = v_ev;
@@ -215,16 +275,18 @@ begin
      order by abs(x - v_x), uid, slot
      limit 24) t;
 
-  select coalesce(json_agg(chest), '[]'::json) into v_chests
-    from public.hcb_player where ev = v_ev and chest is not null;
+  select coalesce(json_agg(idx order by idx), '[]'::json) into v_chests
+    from public.hcb_open where ev = v_ev;
+  select coalesce(json_agg(idx order by idx), '[]'::json), count(*)::int into v_mine, v_opened
+    from public.hcb_open where ev = v_ev and uid = v_u and slot = v_s;
 
   return json_build_object(
     'status','ok','sv', extract(epoch from now()),'ev', v_ev,'phase', v_ph,'t', v_t,
-    'left', v_left,'next', (public.hcb_k('slot')::int - v_t),
+    'left', v_left,'next', v_nx,
     'm', coalesce(v_m, 0),'dmg', v_dmgT,'n', v_cnt,'tot', v_tot,
     'killed', v_kat is not null,'killer', v_killer,
     'joined', v_have,
-    'my', json_build_object('dmg', coalesce(v_mydmg,0),'rank', v_rank,'chest', v_mychest,
+    'my', json_build_object('dmg', coalesce(v_mydmg,0),'rank', v_rank,'chest', v_mychest,'mine', v_mine,'opened', v_opened,
                             'ok', coalesce(v_mydmg,0) >= public.hcb_k('min_dmg')),
     'top', v_top,'oth', v_oth,'chests', v_chests);
 end $$;
@@ -237,30 +299,43 @@ language plpgsql security definer set search_path = public as $$
 declare
   v_u    uuid     := auth.uid();
   v_s    smallint := greatest(0, least(2, coalesce(p_slot, 0)));
-  v_e    bigint   := floor(extract(epoch from now()))::bigint + 25200;
-  v_ev   bigint   := v_e / 10800;
-  v_t    int      := (v_e % 10800)::int;
-  v_kat timestamptz; v_have boolean; v_dmg bigint; v_chest smallint;
+  v_ev   bigint   := (select c.ev from public.hcb_cur() c);
+  v_t    int      := (select c.t  from public.hcb_cur() c);
+  v_kat timestamptz; v_have boolean; v_dmg bigint; v_cnt int;
+  v_r1 json; v_r2 json; v_lt bigint := 0;
 begin
   if v_u is null then return json_build_object('status','auth'); end if;
   select killed_at into v_kat from public.hcb_event where ev = v_ev for update;
   if not found or v_kat is null then return json_build_object('status','no_boss'); end if;
   if public.hcb_phase(v_t, v_kat) <> 'chest' then return json_build_object('status','closed'); end if;
 
-  select true, dmg, chest into v_have, v_dmg, v_chest
+  select true, dmg into v_have, v_dmg
     from public.hcb_player where ev = v_ev and uid = v_u and slot = v_s;
   if not coalesce(v_have, false) or v_dmg < public.hcb_k('min_dmg') then
     return json_build_object('status','no_part');             -- chưa đóng góp đủ nên không được mở rương
   end if;
-  if v_chest is not null then return json_build_object('status','had','chest', v_chest); end if;
+  select count(*)::int into v_cnt from public.hcb_open where ev = v_ev and uid = v_u and slot = v_s;
+  if v_cnt >= public.hcb_k('per_p') then return json_build_object('status','had','opened', v_cnt); end if;
   if p_idx is null or p_idx < 0 or p_idx >= public.hcb_k('chests') then return json_build_object('status','bad'); end if;
 
   begin
-    update public.hcb_player set chest = p_idx where ev = v_ev and uid = v_u and slot = v_s;
+    insert into public.hcb_open(ev, idx, uid, slot) values (v_ev, p_idx, v_u, v_s);
   exception when unique_violation then
     return json_build_object('status','taken');
   end;
-  return json_build_object('status','ok','chest', p_idx);
+  update public.hcb_player set chest = coalesce(chest, p_idx) where ev = v_ev and uid = v_u and slot = v_s;
+
+  -- Fix388: 2 phần thưởng ngẫu nhiên (khác loại nhau). Linh Thạch khoá cộng thẳng vào cho_lock; phần còn lại máy khách áp theo kết quả trả về.
+  v_r1 := public.hcb_roll('');
+  v_r2 := public.hcb_roll(v_r1->>'t');
+  if v_r1->>'t' = 'lt' then v_lt := v_lt + (v_r1->>'n')::bigint; end if;
+  if v_r2->>'t' = 'lt' then v_lt := v_lt + (v_r2->>'n')::bigint; end if;
+  if v_lt > 0 then
+    insert into public.cho_wallet(uid) values (v_u) on conflict do nothing;
+    insert into public.cho_lock(uid, slot, n) values (v_u, v_s, v_lt)
+      on conflict (uid, slot) do update set n = public.cho_lock.n + excluded.n;
+  end if;
+  return json_build_object('status','ok','chest', p_idx,'opened', v_cnt + 1,'rw', json_build_array(v_r1, v_r2));
 end $$;
 
 -- ---------------------------------------------------------------------
@@ -275,8 +350,9 @@ declare
   v_u    uuid     := auth.uid();
   v_s    smallint := greatest(0, least(2, coalesce(p_slot, 0)));
   v_e    bigint   := floor(extract(epoch from now()))::bigint + 25200;
-  v_ev   bigint   := v_e / 10800;
-  v_t    int      := (v_e % 10800)::int;
+  v_ev   bigint   := (select c.ev from public.hcb_cur() c);
+  v_t    int      := (select c.t  from public.hcb_cur() c);
+  v_nx   int      := (select c.nx from public.hcb_cur() c);
   r record;
   v_gold bigint := 0; v_lt bigint := 0; v_ltc bigint := 0; v_ltk bigint := 0; v_ltt bigint := 0; v_c int := 0; v_k int := 0; v_tp int := 0;
   v_tu uuid; v_ts smallint; v_closed boolean;
@@ -341,7 +417,7 @@ create or replace function public.hcb_leave(p_slot int default 0) returns json
 language plpgsql security definer set search_path = public as $$
 declare
   v_u  uuid := auth.uid();
-  v_ev bigint := (floor(extract(epoch from now()))::bigint + 25200) / 10800;
+  v_ev bigint := (select c.ev from public.hcb_cur() c);
 begin
   if v_u is null then return json_build_object('status','auth'); end if;
   update public.hcb_player set ts = now() - interval '1 minute'
@@ -350,10 +426,13 @@ begin
 end $$;
 
 revoke all on function public.hcb_ping(int,text,int,int,int,int,real,numeric,boolean) from public, anon;
+revoke all on function public.hcb_cur()  from public, anon;
+revoke all on function public.hcb_roll(text)  from public, anon;
 revoke all on function public.hcb_chest(int,int)  from public, anon;
 revoke all on function public.hcb_claim(int)      from public, anon;
 revoke all on function public.hcb_leave(int)      from public, anon;
 grant execute on function public.hcb_ping(int,text,int,int,int,int,real,numeric,boolean) to authenticated;
+grant execute on function public.hcb_cur()  to authenticated;
 grant execute on function public.hcb_chest(int,int)  to authenticated;
 grant execute on function public.hcb_claim(int)      to authenticated;
 grant execute on function public.hcb_leave(int)      to authenticated;
@@ -366,7 +445,7 @@ language plpgsql security definer set search_path = public as $$
 declare
   v_u  uuid     := auth.uid();
   v_s  smallint := greatest(0, least(2, coalesce(p_slot, 0)));
-  v_ev bigint   := (floor(extract(epoch from now()))::bigint + 25200) / 10800;
+  v_ev bigint   := (select c.ev from public.hcb_cur() c);
   v_d  smallint;
 begin
   if v_u is null then return json_build_object('status','auth'); end if;
@@ -383,7 +462,7 @@ language plpgsql security definer set search_path = public as $$
 declare
   v_u  uuid     := auth.uid();
   v_s  smallint := greatest(0, least(2, coalesce(p_slot, 0)));
-  v_ev bigint   := (floor(extract(epoch from now()))::bigint + 25200) / 10800;
+  v_ev bigint   := (select c.ev from public.hcb_cur() c);
   v_d  smallint := 0;
 begin
   if v_u is null then return json_build_object('status','auth'); end if;

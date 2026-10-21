@@ -75,6 +75,7 @@ function make(cfg){
     enter:function(){
       if(!started)return;
       if(!eligibleM(M)){say('🔒 Cần Lv'+cfg.req+' để vào '+cfg.label,'#ff9a8a');return}
+      try{if(api.__tt&&api.__tt.on&&api.__tt.on())api.__tt.leave()}catch(e){}
       entering=true;try{gm(cfg.base)}finally{entering=false}
       maps.forEach(function(o){if(o!==M)o.on=false});
       M.on=true;M.hz.length=0;M.bgMiss=0;M.bgNo=0;
@@ -203,7 +204,7 @@ function bindHouse(TT,idx,api,look){
     var k;for(k in look)H[k]=look[k];
     H.open=function(){
       if(!api.eligible()){say('🔒 Cần Lv'+api.cfg.req+' để vào '+api.cfg.label,'#ff9a8a');return}
-      try{TT.leave()}catch(e){}
+      api.__tt=TT;
       api.enter();
     };
     return true;

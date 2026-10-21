@@ -6,6 +6,8 @@
  *   • Máy chủ trừ cống hiến trước, máy khách phát vật phẩm sau khi nhận status = ok. Rương ngẫu nhiên (ch3, ch4): kiểm tra túi còn chỗ TRƯỚC khi mua (kết quả có thể là trang bị). Tỉ lệ hiển thị công khai trong tab Shop.
  *   • Cố ý KHÔNG bán vàng / Linh Thạch: 10.000 vàng = 1 cống hiến nên bán vàng sẽ tạo vòng lặp vàng↔cống hiến, còn Linh Thạch là hàng nạp thẻ.
  * Móc: TMG.addTab('shop', ...) (world/106). Dùng: HL.addNT / HL.addSH / gen / BAG / capN — đều có try/catch. API: TMS.cfg · TMS.html · TMS.act
+ * 🏅 Danh hiệu (Fix381, cần tong_mon_shop2.sql): 3 danh hiệu PFD id 31-33 mua 1 lần/tài khoản (5.000 · 25.000 tông Lv4 · 80.000 tông Lv8). Máy chủ giữ giới hạn trọn đời,
+ *   game tự cấp cho mọi nhân vật khi mở tab Shop (syncTitles) và đăng ký danh hiệu vào PFD.TT khi nạp (để người khác thấy danh hiệu bạn đeo trong chat / làng).
  * Gỡ <script> → tab Shop biến mất, Tông Môn vẫn chạy. */
 (function(){
 'use strict';
@@ -16,7 +18,19 @@ var CAT=[
    t:[{p:52,k:'eq',r:3},{p:14,k:'eq',r:4},{p:28,k:'nt',q:3},{p:6,k:'sh',q:1}]},
   {id:'sh1',e:'💠',n:'1 Mảnh Thánh',             cost:8000, lim:2,minlv:3},
   {id:'ch4',e:'🎁',n:'Rương Bí Bảo Cao Cấp (ngẫu nhiên)',cost:12000,lim:1,minlv:5,
-   t:[{p:45,k:'eq',r:4},{p:10,k:'eq',r:5},{p:20,k:'nt',q:6},{p:20,k:'sh',q:1},{p:5,k:'sh',q:2}]}];
+   t:[{p:45,k:'eq',r:4},{p:10,k:'eq',r:5},{p:20,k:'nt',q:6},{p:20,k:'sh',q:1},{p:5,k:'sh',q:2}]},
+  /* Danh hiệu: mua 1 LẦN / TÀI KHOẢN (life) — máy chủ giữ giới hạn trọn đời; game tự cấp cho MỌI nhân vật của tài khoản (xem syncTitles). */
+  {id:'ttl1',e:'🏅',n:'Danh hiệu «Đệ Tử Tông Môn»',cost:5000, lim:1,minlv:1,life:1,ttl:31},
+  {id:'ttl2',e:'🏅',n:'Danh hiệu «Hộ Pháp Tông Môn»',cost:25000,lim:1,minlv:4,life:1,ttl:32},
+  {id:'ttl3',e:'👑',n:'Danh hiệu «Tông Sư Chi Danh»',cost:80000,lim:1,minlv:8,life:1,ttl:33}];
+/* Danh hiệu cấp qua PFD (world/51b): id 31-33, chỉ số thấp hơn «Cửu Thiên Chí Tôn» (+8% / +8% / +15% bạo thương). */
+var TTL=[{id:31,n:'Đệ Tử Tông Môn',c:'#e0b04a',r:3,g:1,x:{hpp:3,dmgp:3,goldp:3}},
+         {id:32,n:'Hộ Pháp Tông Môn',c:'#ffb36a',r:4,g:1,x:{hpp:5,dmgp:5,crit:2,cdmg:8}},
+         {id:33,n:'Tông Sư Chi Danh',c:'#ffe27a',r:5,g:1,x:{hpp:7,dmgp:7,cdmg:12,sdmg:4,goldp:5}}];
+try{if(window.PFD&&PFD.TT){TTL.forEach(function(t){if(!PFD.TT.some(function(x){return x.id===t.id}))PFD.TT.push(t)})}}catch(e){}
+function syncTitles(I){
+  try{if(!window.PFD||!I||I.status!=='ok')return;
+    CAT.forEach(function(c){if(c.ttl&&(I.buys||{})[c.id]>0&&!PFD.owned('t',c.ttl))PFD.grant('t',c.ttl)})}catch(e){}}
 /* k: eq = 1 trang bị độ hiếm r (0 Thường · 1 Tinh Anh · 2 Hiếm · 3 Sử Thi · 4 Thần Thoại · 5 Thiên Thần) · nt = q Mảnh Nguyệt Thạch · sh = q Mảnh Thánh. p = trọng số (tổng mỗi rương = 100 → %). */
 var CF=window.TMS_CF={cat:CAT,mapMin:2};
 var RN=['Thường','Tinh Anh','Hiếm','Sử Thi','Thần Thoại','Thiên Thần'];
@@ -45,7 +59,7 @@ function err(r){
 var S={info:null,busy:false,loading:false,note:''};
 function load(){
   if(S.loading)return;S.loading=true;
-  rpc('tm_shop_info').then(function(r){S.loading=false;S.info=r;if(TMG.isOpen())TMG.render()})}
+  rpc('tm_shop_info').then(function(r){S.loading=false;S.info=r;syncTitles(r);if(TMG.isOpen())TMG.render()})}
 function bt(label,a,cls,dis){
   return '<button class="tmg-bt'+(cls?' '+cls:'')+'" '+(dis||S.busy?'disabled ':'')+'onclick="TMG.act(\'ext\',\'shop\',\''+a+'\')">'+label+'</button>'}
 
@@ -59,10 +73,12 @@ function html(g){
     +'<small>Số dư khả dụng: <b style="color:#ffe9a8">'+nf(bal)+'</b> cống hiến · Tông Lv.'+glv+'</small>'
     +'<small>Cống hiến: quyên 10.000💰 = 1, điểm danh +10. Rời / bị đuổi khỏi tông thì mất số dư. Giới hạn mua làm mới thứ Hai 00:00.</small></div>';
   CAT.forEach(function(c){
-    var n=buys[c.id]|0,left=Math.max(0,c.lim-n),lock=glv<c.minlv,poor=bal<c.cost;
-    var why=lock?'Cần tông Lv.'+c.minlv:left<=0?'Hết lượt tuần này':poor?'Thiếu '+nf(c.cost-bal):'';
+    var n=buys[c.id]|0,left=Math.max(0,c.lim-n),lock=glv<c.minlv,poor=bal<c.cost,own=c.life&&n>0;
+    var why=own?'✔ Đã sở hữu':lock?'Cần tông Lv.'+c.minlv:left<=0?'Hết lượt tuần này':poor?'Thiếu '+nf(c.cost-bal):'';
+    var X=c.ttl?TTL.filter(function(t){return t.id===c.ttl})[0]:null;
     h+='<div class="tmg-cd"><b>'+c.e+' '+esc(c.n)+'</b>'+(c.t?'<small>Ngẫu nhiên: '+oOdds(c.t)+'</small>':'')
-      +'<small>Giá <b>'+nf(c.cost)+'</b> cống hiến · còn <b>'+left+'/'+c.lim+'</b> lượt tuần này'+(c.minlv>1?' · yêu cầu tông Lv.'+c.minlv:'')+'</small>'
+      +(X?'<small style="color:'+X.c+'">Chỉ số: '+Object.keys(X.x).map(function(k){return ({hpp:'HP',dmgp:'Sát thương',crit:'Chí mạng',cdmg:'Bạo thương',sdmg:'ST kỹ năng',goldp:'Vàng rơi'}[k]||k)+' +'+X.x[k]+'%'}).join(' · ')+'</small>':'')
+      +'<small>Giá <b>'+nf(c.cost)+'</b> cống hiến · '+(c.life?'mua 1 lần / tài khoản (mọi nhân vật đều có)':'còn <b>'+left+'/'+c.lim+'</b> lượt tuần này')+(c.minlv>1?' · yêu cầu tông Lv.'+c.minlv:'')+'</small>'
       +'<div class="tmg-row">'+bt(why?esc(why):'Mua','buy:'+c.id,why?'':'on',!!why)+'</div></div>'});
   h+='<div class="tmg-row">'+bt('↻ Làm mới','reload','sm')+'</div>';
   return h}
@@ -83,6 +99,7 @@ function buy(id){
     try{
       if(id==='nt3'){HL.addNT(3);msg='🌙 +3 Mảnh Nguyệt Thạch'}
       else if(id==='sh1'){HL.addSH(1);msg='💠 +1 Mảnh Thánh'}
+      else if(c.ttl){PFD.grant('t',c.ttl);msg='🏅 Nhận danh hiệu <b>'+esc(TTL.filter(function(t){return t.id===c.ttl})[0].n)+'</b> — mở bảng Hồ Sơ để đeo'}
       else if(c.t){
         var o=roll(c.t);
         if(o.k==='nt'){HL.addNT(o.q);msg='🎁 Trúng 🌙 <b>'+o.q+' Mảnh Nguyệt Thạch</b>'}
