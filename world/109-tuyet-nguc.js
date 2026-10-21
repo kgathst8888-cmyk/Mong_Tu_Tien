@@ -173,6 +173,8 @@ function spawnBoss(){
   var m=CF.hpMul(t);e.hp*=m;e.max*=m;e.tng=t;
   say('❄ Tuyết Ngục Quân Chủ xuất hiện!',COL,220);return true}
 
+/* Fix370: chỉ coi là trận/boss Tuyết Ngục khi KHÔNG phải trận/boss Tháp (cờ tw) — tránh Tuyết Ngục chiếm nhầm boss tháp */
+function isTN(o){return !!(o&&o.tng&&!o.tw)}
 var RES=null;
 function claim(w){
   rpc('tn_claim',{}).then(function(r){
@@ -233,28 +235,28 @@ function showRes(r){
 
 /* ---------- móc vào engine (chỉ xử lý khi dg.tng, còn lại chuyển tiếp) ---------- */
 var _tick=dgTick;dgTick=function(){
-  if(!dg||!dg.tng)return _tick.apply(this,arguments);
+  if(!isTN(dg))return _tick.apply(this,arguments);
   if(over||vil||!started)return;
   SLT=[9e9,9e9,9e9,9e9,9e9];dg.t++;
   if(!dg.bs&&dg.t>45){dg.bs=1;dg.sp=spawnBoss()?1:0}
   if(dg.bs&&!dg.sp&&!dg.fin)finish(dg,'error');
   if(dg.bs&&dg.sp&&!dg.fin){
-    var b=E.find(function(e){return e.tng});
+    var b=E.find(function(e){return isTN(e)});
     if(!b)finish(dg,'win');
     else if(++dg.bt>=dg.tt)finish(dg,'time')}
   if(dg.fin&&--dg.out<=0)dgExit()};
-var _exit=dgExit;dgExit=function(){var w=dg&&dg.tng?dg:null;if(w&&!w.fin)finish(w,'leave');_exit.apply(this,arguments);if(w){back(w);showRes(w.res)}};
-var _init=init;init=function(){var w=dg&&dg.tng?dg:null;if(w&&!w.fin)finish(w,'dead');_init.apply(this,arguments);if(w){back(w);showRes(w.res)}};
+var _exit=dgExit;dgExit=function(){var w=isTN(dg)?dg:null;if(w&&!w.fin)finish(w,'leave');_exit.apply(this,arguments);if(w){back(w);showRes(w.res)}};
+var _init=init;init=function(){var w=isTN(dg)?dg:null;if(w&&!w.fin)finish(w,'dead');_init.apply(this,arguments);if(w){back(w);showRes(w.res)}};
 var _hurt=dgHurt;dgHurt=function(e,mu){
-  if(e&&e.tng)mu*=CF.atkMul(e.tng)*(e.hp<e.max*CF.rage?CF.rageMul:1);
+  if(isTN(e))mu*=CF.atkMul(e.tng)*(e.hp<e.max*CF.rage?CF.rageMul:1);
   return _hurt.call(this,e,mu)};
 var _hud=dgHud;dgHud=function(){_hud.apply(this,arguments);
-  try{if(dg&&dg.tng){
-    var b=E.find(function(e){return e.tng}),sec=Math.max(0,Math.ceil((dg.tt-dg.bt)/60)),pct=b?Math.max(0,Math.min(100,b.hp/b.max*100)):0;
+  try{if(isTN(dg)){
+    var b=E.find(function(e){return isTN(e)}),sec=Math.max(0,Math.ceil((dg.tt-dg.bt)/60)),pct=b?Math.max(0,Math.min(100,b.hp/b.max*100)):0;
     dgh.innerHTML='<div class="dgt" style="color:'+COL+'">❄ Tuyết Ngục · Tầng '+dg.tng+(dg.bs&&!dg.fin?' · ⏱ '+sec+'s':'')+'</div>'+(b?'<div class="dgp"><i style="width:'+pct+'%"></i></div>':'')}}catch(x){}};
-var _drop=drop;drop=function(e){if(e&&e.tng)return;return _drop.apply(this,arguments)};   /* boss Tuyết Ngục KHÔNG rơi đồ Hầm Ngục — thưởng do máy chủ cấp */
+var _drop=drop;drop=function(e){if(isTN(e))return;return _drop.apply(this,arguments)};   /* boss Tuyết Ngục KHÔNG rơi đồ Hầm Ngục — thưởng do máy chủ cấp */
 var _foe=dgFoe;dgFoe=function(e){
-  if(!e.tng)return _foe.apply(this,arguments);
+  if(!isTN(e))return _foe.apply(this,arguments);
   var X=(e.x-cam)*s,Y=GY-((e.y||0)+110)*s,R0=140*s;
   g.save();g.globalCompositeOperation='lighter';var q=g.createRadialGradient(X,Y,R0*.1,X,Y,R0*1.5);q.addColorStop(0,'rgba(140,210,255,.6)');q.addColorStop(.5,'rgba(90,160,255,.27)');q.addColorStop(1,'rgba(60,120,255,0)');
   g.globalAlpha=.75+.2*Math.sin(fr*.1);g.fillStyle=q;g.beginPath();g.arc(X,Y,R0*1.5,0,6.283);g.fill();g.restore();
@@ -262,7 +264,7 @@ var _foe=dgFoe;dgFoe=function(e){
   g.save();g.font='bold '+Math.max(12,14*s)+'px '+FONT;g.textAlign='center';g.lineWidth=4;g.strokeStyle='#000c';
   var ty=GY-((e.y||0)+268)*s,tx='Tuyết Ngục Quân Chủ · Tầng '+e.tng;g.strokeText(tx,X,ty);g.fillStyle=COL;g.fillText(tx,X,ty);g.restore()};
 var _bg=bgd;bgd=function(gy){
-  if(dg&&dg.tng){try{
+  if(isTN(dg)){try{
     xbg(gy,3);g.save();g.fillStyle='rgba(18,44,90,.46)';g.fillRect(0,0,W,H);
     if((window.QL|0)<2){g.fillStyle='rgba(235,245,255,.75)';
       for(var i=0;i<34;i++){var x=((i*97.3+fr*(.35+(i%5)*.12))%(W+40))-20,y=((i*61.7+fr*(.9+(i%4)*.35))%(H+20))-10,r=(1+(i%3))*Math.max(.7,s*.9);g.fillRect(x,y,r,r)}}

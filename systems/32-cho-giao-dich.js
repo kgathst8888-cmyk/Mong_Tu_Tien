@@ -140,9 +140,17 @@ async function load(){
   }catch(e){setNote(nice(e))}
   busy=false;draw();updBadge();
 }
+/* Fix379: sổ ghi nhớ hòm nhận ĐÃ vào túi nhưng CHƯA ack được với máy chủ (mất mạng/tắt game giữa chừng).
+   Lỗi cũ: ack lỗi bị nuốt → món vẫn nằm trong hòm nhận; người chơi bán/hợp/tháo món đó rồi mở lại chợ → nhận LẠI 1 bản nữa (nhân bản đồ). */
+var ACK_KEY='kthm_cho_ack';
+function ackGet(){try{var a=JSON.parse(localStorage.getItem(ACK_KEY)||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}}
+function ackSet(a){try{localStorage.setItem(ACK_KEY,JSON.stringify(a.slice(-300)))}catch(e){}}
+function wait_(ms){return new Promise(function(r){setTimeout(r,ms)})}
+async function ackRetry(ids){for(var k=0;k<3;k++){try{await call('cho_ack',{p_ids:ids});return true}catch(e){await wait_(700*(k+1))}}return false}
 async function claim(inbox){
-  var ids=[],left=0;
+  var ids=[],left=0,pend=ackGet(),again=[];
   inbox.forEach(function(q){
+    if(pend.indexOf(q.id)>=0){again.push(q.id);return}   /* đã nhận lần trước, chỉ ack lại — KHÔNG phát thêm */
     if(q.item&&typeof q.item==='object'&&window.ANTIDUPE&&ANTIDUPE.has(q.item)){ids.push(q.id);try{DT.push({x:P.x,y:200,s:'⚠ Bỏ bản sao trùng mã trong hòm nhận',c:'#ff8a7a',l:140})}catch(e){}return}   /* đã có món này trong túi/đang mặc → không nhận thêm bản nữa */
     if(q.item&&typeof q.item==='object'&&q.item.gm&&window.GEMX){var gi=q.item;delete gi._mk;GEMX.back(gi);ids.push(q.id)}   /* đá khảm: về kho đá, không cần chỗ trong túi */
     else if(q.item&&typeof q.item==='object'&&q.item.ts&&window.TTHONG){var ti=q.item;delete ti._mk;if(TTHONG.back(ti))ids.push(q.id);else left++}   /* mảnh sách: về kho mảnh riêng */
@@ -150,10 +158,12 @@ async function claim(inbox){
     else if(BAG.length<capN()&&q.item&&typeof q.item==='object'){var it=q.item;delete it._mk;if(window.ANTIDUPE)ANTIDUPE.uid(it);BAG.push(it);ids.push(q.id)}else left++;
   });
   lastInbox=left;
-  if(ids.length){
-    sv_();uiRefresh();
-    try{await call('cho_ack',{p_ids:ids})}catch(e){}
-    setNote('📬 Nhận '+ids.length+' món vào túi.');
+  if(ids.length){ackSet(pend.concat(ids));sv_();uiRefresh()}   /* ghi sổ TRƯỚC khi gọi mạng */
+  var allAck=ids.concat(again);
+  if(allAck.length){
+    var okA=await ackRetry(allAck);
+    if(okA)ackSet(ackGet().filter(function(x){return allAck.indexOf(x)<0}));
+    if(ids.length)setNote('📬 Nhận '+ids.length+' món vào túi.');
   }
   if(left)setNote('Túi đầy — còn '+left+' món trong hòm nhận, dọn túi rồi mở lại chợ.');
 }

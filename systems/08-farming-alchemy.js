@@ -60,7 +60,7 @@ Object.entries({tv1:.75,tv2:.65,pa:.60,pd:.60,ph:.60,pm:.60,pt:.60,tt:.55}).forE
 PM.pt.sc=2;PM.pt.mn=.80;
 const sce=p=>Math.min(1,Math.max(p.mn||CFG.scMin,p.sc*CFG.scMul-CFG.scRealm*Math.max(0,ZC.rI()))+(p.k=='rl'?CFG.rlBonus:0)+(window.NGH?NGH.ldSc():0));
 const KN={a:'Công',d:'Thủ',h:'HP',m:'MP'};
-const fresh=()=>({seeds:{},herbs:{},pills:{},np:CFG.plots0,plots:Array(CFG.plots0).fill(null),sel:'chi',na:{until:0,on:0,last:0,pm:{}}});
+const fresh=()=>({seeds:{},herbs:{},pills:{},np:CFG.plots0,plots:Array(CFG.plots0).fill(null),sel:'chi',na:{until:0,on:0,last:0,pm:{},pz:0,left:0,mode:'smart'}});
 let S=fresh();
 const ft=s=>{s=Math.max(0,Math.ceil(s));const m=Math.floor(s/60),x=s%60;return m+':'+String(x).padStart(2,'0')};
 const gc=p=>Math.round((CFG.gold[p.id]||p.g0||0)*Math.pow(ZC.rI()+2,2)*(window.NGH?NGH.ldGold():1));
@@ -249,10 +249,29 @@ const any=()=>ZC.pa()>1||ZC.pd()>1||ZC.ph()>1||ZC.pm()>1;
    Mua thời gian (10💎/ngày) ở systems/33-nguyen-anh-trong-cay.js. Hàm này chạy bù cả lúc offline:
    với mỗi ô, thu hoạch đúng lúc chín (không héo) rồi gieo lại (đúng loại cũ; ô trống thì loại đang chọn) cho tới khi hết hạt hoặc hết hạn. */
 const NA={day:86400000,maxIter:400};
+/* Fix374: chọn hạt gieo cho ô i.
+   keep  = như cũ (đúng loại vừa thu → loại đang chọn).
+   smart = ưu tiên loại dược thảo đang THIẾU nhất so với nhu cầu luyện đan (tổng rc của mọi loại đan, trừ kho + cây đang trồng/đã gieo),
+           hoà thì chọn loại chín nhanh hơn; nếu kho đã đủ hết thì quay về loại cũ/loại đang chọn; hết hạt loại này tự chuyển sang loại khác còn hạt. */
+function naNeed(){const nd={};PL.forEach(p=>Object.keys(p.rc).forEach(h=>{nd[h]=(nd[h]|0)+p.rc[h]*5}));return nd}
+function naPick(n,i,pw){
+ const has=id=>id&&HM[id]&&S.seeds[id]>0;
+ const prev=n.pm[i],keep=has(prev)?prev:(has(S.sel)?S.sel:null);
+ if(n.mode=='keep')return keep;
+ const nd=naNeed(),grow_={};S.plots.forEach(p=>{if(p)grow_[p.id]=(grow_[p.id]|0)+1});
+ let best=null,bs=0;
+ Object.keys(HM).forEach(id=>{
+  if(!has(id))return;const b=HM[id],ay=(b.y[0]+b.y[1])/2;
+  const sc=(nd[id]|0)-(S.herbs[id]|0)-((grow_[id]|0)+(pw[id]|0))*ay;
+  const r=sc-b.g/1e6;/*hoà → ưu tiên chín nhanh*/
+  if(sc>0&&(best==null||r>bs)){best=id;bs=r}
+ });
+ return best||keep||Object.keys(HM).filter(has).sort((a,b)=>(S.seeds[b]|0)-(S.seeds[a]|0))[0]||null;
+}
 function naRun(){
  const n=S.na;if(!n||!n.on)return null;
  const now=Date.now(),up=Math.min(now,n.until),t0=Math.min(n.last||up,up);
- const o={h:{},s:{}};let c=0,pl=0,out=0;
+ const o={h:{},s:{}};let c=0,pl=0,out=0;const pw={};/*Fix374: số cây đã gieo trong lượt chạy này, để chia đều loại hạt*/
  for(let i=0;i<S.plots.length;i++){
   let cur=t0,g=0;
   while(g++<NA.maxIter){
@@ -262,23 +281,33 @@ function naRun(){
     n.pm[i]=p.id;c+=harvOne(i,o,rt);cur=rt;
    }
    if(!S.plots[i]){
-    let id=n.pm[i];if(!(id&&HM[id]&&S.seeds[id]>0))id=S.sel;
-    if(!(HM[id]&&S.seeds[id]>0)){out++;break}
+    let id=naPick(n,i,pw);
+    if(!id){out++;break}
+    pw[id]=(pw[id]|0)+1;
     S.seeds[id]--;S.plots[i]={id,t0:cur};pl++;
    }
   }
  }
- n.last=up;const exp=now>=n.until;if(exp)n.on=0;
+ n.last=up;const exp=now>=n.until;if(exp){n.on=0;n.pz=0;n.left=0}
  if(c||pl||exp)save();
  return{c,pl,out,exp,tx:c?harvTx(o):''};
 }
+
+/* Fix374: nút TẮT/BẬT. Tắt = tạm dừng, thời gian thuê còn lại được giữ nguyên (không bị trừ). Bật lại = chạy tiếp. */
+function naToggle(){
+ const n=S.na,now=Date.now();
+ if(n.on){naRun();n.left=Math.max(0,n.until-now);n.on=0;n.pz=n.left>0?1:0;save();return 'off'}
+ if(n.pz&&n.left>0){n.until=now+n.left;n.last=now;n.left=0;n.pz=0;n.on=1;save();return 'on'}
+ return 'none';
+}
+function naMode(m){S.na.mode=m=='keep'?'keep':'smart';save()}
 
 /* ---------- Lưu / tải ---------- */
 function ld(o){
  S=fresh();on=false;
  if(o&&typeof o=='object'){
   S.seeds=o.seeds||{};S.herbs=o.herbs||{};S.pills=o.pills||{};if(typeof o.sect=='string')S.sect=o.sect;/*Fix132: môn phái Vạn Pháp Tháp*/S.sel=HM[o.sel]?o.sel:'chi';
-   if(o.na&&typeof o.na=='object')S.na={until:+o.na.until||0,on:o.na.on?1:0,last:+o.na.last||0,pm:(o.na.pm&&typeof o.na.pm=='object')?o.na.pm:{}};/*Fix242: Nguyên Anh trồng cây*/
+   if(o.na&&typeof o.na=='object')S.na={until:+o.na.until||0,on:o.na.on?1:0,last:+o.na.last||0,pm:(o.na.pm&&typeof o.na.pm=='object')?o.na.pm:{},pz:o.na.pz?1:0,left:+o.na.left||0,mode:o.na.mode=='keep'?'keep':'smart'};/*Fix242: Nguyên Anh trồng cây*/
   S.np=Math.max(CFG.plots0,Math.min(CFG.plotsMax,o.np|0||CFG.plots0));
   S.plots=Array(S.np).fill(null);(o.plots||[]).forEach((p,i)=>{if(i<S.np&&p&&HM[p.id])S.plots[i]={id:p.id,t0:+p.t0||Date.now()}});
  }
@@ -301,7 +330,7 @@ setInterval(()=>{
  }catch(e){}
 },1000);
 
-return{isOn:()=>on,setOn:v=>{on=!!v},note,nt:()=>NT,tickNote:()=>{if(NT.t>0)NT.t--},tap:tapPlot,get:()=>S,ft,HM,seedDrop,sel,plant,plantAll,harv,harvAll,buyPlot,farmUI,alchUI,brew,use,useAllTv,tvBar,sumTxt,any,rdy,save:sv_,load:ld,reset:()=>{S=fresh();on=false},HB,PL,PM,na:()=>S.na,naRun,NA}
+return{isOn:()=>on,setOn:v=>{on=!!v},note,nt:()=>NT,tickNote:()=>{if(NT.t>0)NT.t--},tap:tapPlot,get:()=>S,ft,HM,seedDrop,sel,plant,plantAll,harv,harvAll,buyPlot,farmUI,alchUI,brew,use,useAllTv,tvBar,sumTxt,any,rdy,save:sv_,load:ld,reset:()=>{S=fresh();on=false},HB,PL,PM,na:()=>S.na,naRun,naToggle,naMode,NA}
 })();
 /* Rơi hạt giống ở mọi Boss: bọc hàm drop() sau cùng để bao trùm Boss thường, Trùm Hầm Ngục, Ma Thần */
 (()=>{const _d=drop;drop=function(e){_d(e);try{FM.seedDrop(e)}catch(x){}}})();

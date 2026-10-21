@@ -1,5 +1,5 @@
 /* ===== 🪞 HUYỄN CẢNH KÍNH HỒ (world/115-huyen-canh-kinh-ho.js · Fix361) =====
- * Phụ bản Lv60: vào bằng "Nhà Bí Ẩn (1)" của Làng Tân Thủ 2 (đổi tên thành Huyễn Cảnh Kính Hồ). Dùng chỉ số quái/rơi đồ của map Nhân Giới số 3.
+ * Phụ bản Lv60: vào bằng "Nhà Bí Ẩn (2)" (TT2.houses[4]) của Làng Tân Thủ 2 (đổi tên thành Huyễn Cảnh Kính Hồ). Dùng chỉ số quái/rơi đồ của map Nhân Giới số 3.
  * Cơ chế:
  *  - Quái "Ảnh" (~22% quái thường, tên có tiền tố "Ảnh", viền tím lung linh): đánh trúng thì phản lại 20% sát thương gây ra
  *    (tối đa 6% máu tối đa của nhân vật mỗi khung, không chết vì phản đòn).
@@ -187,7 +187,7 @@ var api=PBC.make({
   }
 });
 
-/* ---------- gắn vào Nhà Bí Ẩn (1) của Làng Tân Thủ 2 ---------- */
-PBC.bindHouse(window.TT2,3,api,{l1:'Huyễn Cảnh',l2:'Kính Hồ · Lv60',full:'Huyễn Cảnh Kính Hồ',ch:'鏡',col:'#4a6ab8'});
+/* ---------- gắn vào Nhà Bí Ẩn (2) = TT2.houses[4] của Làng Tân Thủ 2 (houses[3] là Tông Môn) ---------- */
+PBC.bindHouse(window.TT2,4,api,{l1:'Huyễn Cảnh',l2:'Kính Hồ · Lv60',full:'Huyễn Cảnh Kính Hồ',ch:'鏡',col:'#4a6ab8'});
 window.KHO={api:api,paintBoss:paintBoss,enter:api.enter,on:api.on};
 })();

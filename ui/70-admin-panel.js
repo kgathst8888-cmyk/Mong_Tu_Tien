@@ -17,7 +17,7 @@ var RN=['Thường','Tinh Anh','Hiếm','Sử Thi','Thần Thoại','Thiên Th�
 function itM(){try{return window.MAIL&&window.MAIL.IT||{}}catch(e){return{}}}
 function itl(){var m=itM(),o=[];Object.keys(m).forEach(function(k){o.push([k,m[k].e+' '+m[k].n,m[k].max])});return o}
 var CSHL=[['b10','📜 Bùa Cường Hóa +10%'],['b15','📜 Bùa Cường Hóa +15%'],['b20','📜 Bùa Cường Hóa +20%'],['ham','🔨 Búa Đục Lỗ'],
-  ['g10','📜 Bùa Ghép Ngọc +10%'],['dh','🔮 Ngọc Định Hồn'],['vx','📈 Vé Tăng 20% EXP'],['vt','🧘 Vé Tăng 20% Tu Vi'],['tc','🎯 Vé Tẩy Opt Chọn'],['x5','📈 Bùa EXP +50%'],['x7','📈 Bùa EXP +70%'],['rh','🔮 Vé Reset Hồn Phách']];
+  ['g10','📜 Bùa Ghép Ngọc +10%'],['dh','🔮 Ngọc Định Hồn'],['dh2','🔮 Đại Định Hồn'],['vx','📈 Vé Tăng 20% EXP'],['vt','🧘 Vé Tăng 20% Tu Vi'],['tc','🎯 Vé Tẩy Opt Chọn'],['x5','📈 Bùa EXP +50%'],['x7','📈 Bùa EXP +70%'],['rh','🔮 Vé Reset Hồn Phách']];
 var DUR=[[1,'1 giờ'],[24,'1 ngày'],[72,'3 ngày'],[168,'7 ngày'],[720,'30 ngày'],[876000,'Vĩnh viễn']];
 var ACTL={gc_new:'🎟 Tạo mã quà',gc_set:'🎟 Bật/tắt mã quà',gc_del:'🗑 Xoá mã quà',lt:'💎 Linh Thạch',mail:'🎁 Gửi thư',mail_del:'🗑 Thu hồi thư',kick:'⏏ Đá khỏi game',notice:'📢 Đăng thông báo',notice_del:'🗑 Xoá thông báo',ban:'🔒 Khoá tài khoản',unban:'🔓 Mở khoá',chat_ban:'🤐 Cấm chat',chat_unban:'🔊 Gỡ cấm chat'};
 

@@ -53,7 +53,7 @@ function unreadN(){var r=rdRead();return allN().filter(function(n){return !r[n.i
 /* ---------- THƯ ---------- */
 function mails(){var p=me();if(!p)return[];if(!Array.isArray(p.mail))p.mail=[];return p.mail}
 function ids(){var p=me();if(!p)return{};if(!p.mailIds||typeof p.mailIds!=='object')p.mailIds={};return p.mailIds}
-var CSHK={b10:1,b15:1,b20:1,ham:1,g10:1,dh:1,vx:1,vt:1,tc:1,x5:1,x7:1,rh:1};
+var CSHK={b10:1,b15:1,b20:1,ham:1,g10:1,dh:1,dh2:1,vx:1,vt:1,tc:1,x5:1,x7:1,rh:1};
 /* Vật phẩm mới gửi qua thư: q.it={khoá:số lượng}. t = cách cộng vào kho (xem giveIt). max = tối đa mỗi thư. */
 var ITM={
   nt:{t:'nt',e:'🌙',n:'Mảnh Nguyệt Thạch',max:1000},

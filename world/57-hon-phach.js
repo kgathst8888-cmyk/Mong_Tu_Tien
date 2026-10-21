@@ -18,7 +18,7 @@ if(typeof LCT==='undefined'||!LCT.gates||!LCT.gates[3]||typeof vdraw!=='function
 
 var CF={
  theMax:10,                                    /* cấp tối đa của "Đúc thần thể" */
- need:[200,400,800,1600,3200,6400,12800,25600],   /* tu vi = số hồn phách đã nạp (1 quái thường = 1, 1 Boss = 5) */
+ need:[5000,30000,60000,120000,240000,480000,960000,1920000],   /* tu vi = số hồn phách đã nạp (1 quái thường = 1, 1 Boss = 5) */
  stat:.10,dropN:1,dropB:5,
  shardChance:.01,shardPer:10,pillPer:10      /* Mảnh Đúc Thần Thể: 1% mỗi Boss · 10 mảnh = 1 viên · 10 viên = đúc 1 cấp thần thể */, /* tu vi để đột phá từ cảnh giới r lên r+1 (8 lần đột phá) */
  gate:3,                                       /* chỉ số cổng trong LCT.gates (cổng 4) */
@@ -57,7 +57,7 @@ function choose(t){
 function addXp(n){var d=chosen();if(!d||maxed(d))return false;d.x=(d.x|0)+Math.max(0,n|0);save();return true}
 function forge(n){var d=chosen();if(!d)return false;d.b=Math.min(CF.theMax,(d.b|0)+Math.max(0,(n===undefined?1:n)|0));save();return true}
 /* chỉ số cộng thẳng vào nhân vật: mỗi CẢNH GIỚI +CF.stat (10%) HP / sát thương / phòng thủ (tiểu cảnh không tăng) */
-function sm(){var d=chosen();return d?1+CF.stat*Math.min(8,d.r|0):1}
+function sm(){var d=chosen();return d?(1+CF.stat*Math.min(8,d.r|0))*(1+(window.BQX&&BQX.resBonus?BQX.resBonus():0)):1}   /* Fix378: + cộng hưởng hồn phách phụ (world/57b) */
 function statPct(){return Math.round((sm()-1)*100)}
 /* hồn phách rơi: quái thường +dropN, Boss +dropB (nhặt vào túi hồn phách, rồi nạp tại Bế Quan Đài) */
 /* Mảnh Đúc Thần Thể (rơi từ Boss) → ghép viên → đúc thần thể. Không liên quan cảnh giới/tu vi. */
@@ -183,6 +183,7 @@ function draw(){
   var t=fr,gy=GY,d=chosen(),art=false;
   try{art=!!(window.BQART&&BQART.paint(g,W,H,s,gy,t,{sel:d?d.t:-1,col:d?SOULS[d.t].c:'#9fe0c0',r:d?d.r:0}))}catch(e){art=false}
   if(!art)drawOld(t,gy);
+  try{if(window.BQX)BQX.deco(g,W,H,s,gy,t,d)}catch(e){}
   drawSoul(t);
   if(vt!=null){var a=(t%40)/40;g.strokeStyle='rgba(255,230,140,'+(1-a)+')';g.lineWidth=3;g.beginPath();g.ellipse(vt*s,gy+12*s,(10+a*22)*s,(4+a*8)*s,0,0,6.28);g.stroke()}
   try{drawEP();hero();nameTag()}catch(e){}
@@ -239,7 +240,7 @@ function renderPanel(){
    '<div style="border:1px solid #b8641e;border-radius:9px;padding:8px;margin:6px 0;background:#201008"><div style="font-size:13.5px">🔥 <b>Đúc thần thể</b>: cấp <b>'+(d.b|0)+' / '+CF.theMax+'</b></div>'+bar((d.b|0)/CF.theMax*100,'linear-gradient(90deg,#b8641e,#ffd76a)')+'<div style="font-size:12.5px">🧩 Mảnh: <b>'+(d.m|0)+'</b> <span style="opacity:.7">(cần '+CF.shardPer+' ghép 1 viên)</span><br>💠 Viên: <b>'+(d.v|0)+'</b> <span style="opacity:.7">(cần '+CF.pillPer+' viên đúc 1 cấp)</span></div>'+'<div style="display:flex;gap:6px;margin-top:6px"><button data-a="cr" style="flex:1;padding:9px;border:0;border-radius:9px;background:#5a3a1a;color:#fff;opacity:'+((d.m|0)>=CF.shardPer?1:.5)+'">🧩 Ghép viên</button><button data-a="an" style="flex:1;padding:9px;border:0;border-radius:9px;background:#8a4a14;color:#fff;opacity:'+((d.v|0)>=CF.pillPer&&(d.b|0)<CF.theMax?1:.5)+'">🔥 Đúc thần thể</button></div>'+'<div style="font-size:11.5px;opacity:.65;margin-top:4px">Mảnh Đúc Thần Thể rơi '+Math.round(CF.shardChance*100)+'% từ mọi Boss. Hiệu lực thần thể: cập nhật sau.</div></div>'+
    '<div style="font-size:12px;opacity:.8;margin:2px 0 8px">Hạ quái nhặt <b>hồn phách</b> (quái thường 1, Boss 5), nạp tại đây để tăng tu vi. Mỗi <b>cảnh giới</b> +'+Math.round(CF.stat*100)+'% HP / sát thương / phòng thủ cho nhân vật (hiện +'+statPct()+'%), tiểu cảnh không tăng. Đạt <b>'+REALMS[8]+'</b> sẽ hiện hiệu ứng phía sau hồn phách. Đúc thần thể <b>không liên quan</b> cảnh giới/tu vi (hiệu lực: cập nhật sau).</div>'+
    (window.HONSK?HONSK.info():'')+'<div style="display:flex;gap:6px"><button data-a="dp" style="flex:1;padding:10px;border:0;border-radius:9px;background:#3a2a50;color:#fff">🔮 Nạp hồn phách ('+nf(d.bag|0)+')</button></div>'+
-   '<button data-a="bt" style="width:100%;margin-top:6px;padding:10px;border:0;border-radius:9px;background:'+(cb.ok?'#7a4ad0':'#333')+';color:#fff;font-weight:700;opacity:'+(cb.ok?1:.6)+'">⚡ Đột phá cảnh giới'+(cb.ok?'':' — '+cb.why)+'</button>'+
+   (window.BQX&&BQX.btn?BQX.btn():'')+'<button data-a="bt" style="width:100%;margin-top:6px;padding:10px;border:0;border-radius:9px;background:'+(cb.ok?'#7a4ad0':'#333')+';color:#fff;font-weight:700;opacity:'+(cb.ok?1:.6)+'">⚡ Đột phá cảnh giới'+(cb.ok?'':' — '+cb.why)+'</button>'+
    '<div style="font-size:11.5px;opacity:.65;margin-top:6px;text-align:center">Tu vi cần để đột phá cảnh giới: '+nf(nd)+' · Hiệu lực thần thể: cập nhật sau</div></div>';
   ov.onclick=function(e){var a=e.target.closest&&e.target.closest('[data-a]');if(!a){if(e.target===ov)closePanel();return}
     var k=a.dataset.a;if(k==='x')closePanel();else if(k==='dp'){deposit();renderPanel()}else if(k==='cr'){craft();renderPanel()}else if(k==='an'){anvil();renderPanel()}else if(k==='bt'){if(breakthrough())renderPanel();else renderPanel()}}}

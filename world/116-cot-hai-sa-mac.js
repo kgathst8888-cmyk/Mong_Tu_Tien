@@ -1,5 +1,5 @@
 /* ===== 💀 CỐT HẢI SA MẠC (world/116-cot-hai-sa-mac.js · Fix361) =====
- * Phụ bản Lv100: vào bằng "Nhà Số 1" của Làng Tân Thủ 3 (đổi tên thành Cốt Hải Sa Mạc, mở khoá riêng nhà này).
+ * Phụ bản Lv100: vào bằng "Nhà Số 4" (TT3.houses[3]) của Làng Tân Thủ 3 (đổi tên thành Cốt Hải Sa Mạc, mở khoá riêng nhà này).
  * Dùng chỉ số quái/rơi đồ của map Nhân Giới số 4. Cơ chế:
  *  - Bão cát theo chu kỳ: yên 12–16 giây → báo trước 3 giây → bão 8 giây. Khi bão: tầm nhìn bị che (lớp phủ cát riêng, chỉ sáng quanh nhân vật),
  *    nhân vật mất 0.6% máu tối đa mỗi giây (không chết vì cát), quái bị chậm 50%.
@@ -190,6 +190,7 @@ var api=PBC.make({
 });
 
 /* ---------- gắn vào Nhà Số 1 của Làng Tân Thủ 3 ---------- */
-PBC.bindHouse(window.TT3,0,api,{l1:'Cốt Hải',l2:'Sa Mạc · Lv100',full:'Cốt Hải Sa Mạc',ch:'骨',col:'#b8864a'});
+/* Fix371: dùng Nhà Số 4 (TT3.houses[3]); houses[0] là Tuyết Ngục */
+PBC.bindHouse(window.TT3,3,api,{l1:'Cốt Hải',l2:'Sa Mạc · Lv100',full:'Cốt Hải Sa Mạc',ch:'骨',col:'#b8864a'});
 window.CHS={api:api,paintBoss:paintBoss,enter:api.enter,on:api.on};
 })();

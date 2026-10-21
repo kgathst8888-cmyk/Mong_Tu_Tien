@@ -35,12 +35,12 @@ function burst(u,it){
   var o=document.createElement('div');o.id='ufx';var h=low?'':'<div class="fl" style="background:radial-gradient(circle at 50% 46%,'+c2+'cc 0,'+c1+'55 35%,transparent 70%)"></div>';
   for(var i=0;i<3;i++)h+='<div class="rg" style="border-color:'+(i%2?c2:c1)+';animation-delay:'+(i*.18)+'s"></div>';
   var n=low?8:gold?36:24;for(i=0;i<n;i++){var a=Math.random()*6.283,d=120+Math.random()*(gold?320:240);h+='<div class="sp" style="background:'+(i%3?c1:c2)+';box-shadow:0 0 8px '+c1+';--dx:'+Math.round(Math.cos(a)*d)+'px;--dy:'+Math.round(Math.sin(a)*d-60)+'px;animation-delay:'+(Math.random()*.25).toFixed(2)+'s"></div>'}
-  h+='<div class="tx" style="color:'+c1+'">'+(gold?'🔥 +10 · THẦN KHÍ HIỂN HÓA':'✨ +7 · LINH QUANG HIỆN THẾ')+'<small>'+(it&&it.n?it.n:'')+'</small></div>';
+  h+='<div class="tx" style="color:'+c1+'">'+(u>=15?'🔥 +15 · ĐẠI VIÊN MÃN':gold?'🔥 +10 · THẦN KHÍ HIỂN HÓA':'✨ +7 · LINH QUANG HIỆN THẾ')+'<small>'+(it&&it.n?it.n:'')+'</small></div>';
   o.innerHTML=h;document.body.appendChild(o);
   try{var an=getComputedStyle(o.querySelector('.tx')).animationName;if(!an||an==='none'){[].slice.call(o.querySelectorAll('.fl,.rg,.sp')).forEach(function(x){x.remove()});o.querySelector('.tx').style.opacity=1}}catch(e){}setTimeout(function(){if(o.parentNode)o.remove()},2100);
-  try{DT.push({x:P.x,y:190,s:gold?'🔥 Cường hóa +10!':'✨ Cường hóa +7!',c:c1,g:1,l:140})}catch(e){}}
+  try{DT.push({x:P.x,y:190,s:u>=15?'🔥 Cường hóa +15!':gold?'🔥 Cường hóa +10!':'✨ Cường hóa +7!',c:c1,g:1,l:140})}catch(e){}}
 if(typeof en1==='function'){var _en1=en1;en1=function(){var it=null,u0=0;try{it=sel&&sel.k==='e'?EQ[sel.i]:BAG[sel.i];u0=it?it.u|0:0}catch(e){}
-  var r=_en1.apply(this,arguments);try{if(it&&(it.u|0)>u0&&(it.u===7||it.u===10))burst(it.u,it)}catch(e){}return r}}
+  var r=_en1.apply(this,arguments);try{if(it&&(it.u|0)>u0&&(it.u===7||it.u===10||it.u===15))burst(it.u,it)}catch(e){}return r}}
 
 /* ---------- hào quang nhân vật ---------- */
 var cn=0,n7=0,n10=0,eqRef=null;
