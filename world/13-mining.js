@@ -12,8 +12,10 @@ const FONT='KTH Serif,Songti SC,STKaiti,KaiTi,serif',PI=Math.PI,ORD=['au','fe','
 const CFG={
  capMs:8*3600e3,                 /* tối đa 8 giờ thu thập khi vắng mặt */
  goldMul:12,                     /* nhân lượng vàng mỗi nhát cuốc */
- rate:{au:1000,fe:2,hk:.5},      /* vàng: gốc 1000/phút (trước 300), nhân thêm theo cấp: (1+Lv/auLv) */
+ rate:{au:20000,fe:2,hk:.5},     /* vàng: gốc 20000/phút (Fix375: ×20 so với 1000), nhân thêm theo cấp: (1+Lv/auLv) */
  auLv:100,         /* tốc độ tự động mỗi phút, nhân (cảnh giới − Nguyên Anh + 1) */
+ gbRate:.01,                      /* Fix375: xác suất rơi Túi Vàng MỖI PHÚT khi Nguyên Anh đang thu thập */
+ gbVals:[1e6,2e6,3e6],           /* giá trị Túi Vàng ngẫu nhiên: 1 / 2 / 3 triệu vàng */
  swing:36                         /* số khung hình mỗi nhát cuốc */
 };
 /* nâng cấp mỏ: tối đa Lv5, 50 Linh Thạch / lần, chờ 1 giờ */
@@ -23,7 +25,7 @@ const VN={
  fe:{n:'Quặng Sắt', e:'🔩',c:'#cfc4b8',hits:8, resp:60e3},
  hk:{n:'Huyền Kim', e:'🌑',c:'#a58bff',hits:12,resp:120e3}
 };
-const fresh=()=>({fe:0,hk:0,gm:0,auto:null,last:Date.now(),acc:{au:0,fe:0,hk:0},at:{au:0,fe:0,hk:0},ml:{au:1,fe:1,hk:1},ut:{au:0,fe:0,hk:0}});
+const fresh=()=>({fe:0,hk:0,gm:0,auto:null,last:Date.now(),acc:{au:0,fe:0,hk:0},at:{au:0,fe:0,hk:0},ml:{au:1,fe:1,hk:1},ut:{au:0,fe:0,hk:0},gb:[0,0,0],gbm:0});
 let broken=false;
 let S=fresh(),on=false,NT={s:'',c:'#ffe9a0',t:0},pend=null,back=0,mine=null,chips=[];
 const dur={au:VN.au.hits,fe:VN.fe.hits,hk:VN.hk.hits},until={au:0,fe:0,hk:0},PR=[],PU=[];
@@ -42,6 +44,9 @@ function tick(){
  const raw=now-S.last;if(raw<1000)return;
  const dt=Math.min(raw,CFG.capMs);S.last=now;
  const k=S.auto;S.acc[k]+=rtOf(k)*dt/60000;
+ /* Fix375: Túi Vàng rơi ngẫu nhiên (1%/phút), cất vào Túi 6 */
+ S.gbm=(+S.gbm||0)+dt/60000;let gbN=0;
+ {const mm=Math.min(480,Math.floor(S.gbm));S.gbm-=Math.floor(S.gbm);for(let i=0;i<mm;i++)if(Math.random()<CFG.gbRate){const t=Math.floor(Math.random()*3);S.gb[t]=(S.gb[t]|0)+1;gbN++;const m='👝 Nguyên Anh nhặt được Túi Vàng '+(CFG.gbVals[t]/1e6)+' Triệu (xem Túi 6)';note(m,'#ffd24a');if(!on)try{DT.push({x:P.x,y:215,s:m,c:'#ffd24a',g:1,l:220})}catch(e){}}}
  const n=Math.floor(S.acc[k]);
  if(n>=1){S.acc[k]-=n;give(k,n);S.at[k]+=n;
   if(raw>180000){const m='🧿 Nguyên Anh đã thu thập '+fmtN(n)+' '+VN[k].n+' khi bạn vắng mặt';note(m,VN[k].c);if(!on)try{DT.push({x:P.x,y:190,s:m,c:VN[k].c,g:1,l:220})}catch(e){}}}
@@ -356,11 +361,12 @@ function ui_(){
 /* ---------- Lưu / tải ---------- */
 function ld(o){S=fresh();on=false;pend=null;mine=null;
  if(o&&typeof o=='object'){S.fe=o.fe|0;S.hk=o.hk|0;S.gm=o.gm|0;S.auto=VN[o.auto]?o.auto:null;S.last=+o.last||Date.now();
+  S.gb=[0,1,2].map(i=>Math.max(0,(o.gb&&o.gb[i])|0));S.gbm=+o.gbm||0;
   ORD.forEach(k=>{S.ml[k]=Math.max(1,Math.min(CFG.up.max,((o.ml&&o.ml[k])|0)||1));S.ut[k]=+(o.ut&&o.ut[k])||0});
   ['au','fe','hk'].forEach(k=>{S.acc[k]=+(o.acc&&o.acc[k])||0;S.at[k]=(o.at&&o.at[k])|0})}
  ORD.forEach(k=>{dur[k]=VN[k].hits;until[k]=0});
 }
 const save=()=>JSON.parse(JSON.stringify(S));
-return{isOn:()=>on,isBroken:()=>broken,ui:ui_,go,setAuto,tick,save,load:ld,reset:()=>ld(null),get:()=>S,VN,upgrade:upStart,dbg:{hit,upTick,mulAu,addOf,rtOf}}
+return{isOn:()=>on,isBroken:()=>broken,ui:ui_,go,setAuto,tick,save,load:ld,reset:()=>ld(null),get:()=>S,VN,upgrade:upStart,gbVals:CFG.gbVals,openGb:(t,all)=>{t|=0;if(t<0||t>2)return 0;const c=all?(S.gb[t]|0):Math.min(1,S.gb[t]|0);if(c<=0)return 0;S.gb[t]-=c;gold+=c*CFG.gbVals[t];try{sv()}catch(e){}return c*CFG.gbVals[t]},dbg:{hit,upTick,mulAu,addOf,rtOf}}
 })();
 (()=>{const _n=ng;ng=function(){try{MN.reset()}catch(x){}_n()}})();

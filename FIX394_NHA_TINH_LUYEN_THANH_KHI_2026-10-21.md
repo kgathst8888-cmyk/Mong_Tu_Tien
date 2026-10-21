@@ -1,0 +1,13 @@
+# Fix394 — Nhà Tinh Luyện · Luyện Thánh Khí (Làng Tân Thủ 3 · Nhà Số 5)
+- File mới: `world/130-nha-tinh-luyen-thanh-khi.js` (window.TKL, cấu hình `TKL_CF`). Sửa: `index.html` (thêm `<script>` sau world/129). **Chạy `thanh_khi.sql` 1 lần trong Supabase** (an toàn chạy lại; không phụ thuộc file SQL khác).
+- Nhà Số 5 (`TT3.houses[4]`) → "Nhà Tinh Luyện". Hiện có 1 tính năng: ⚒ Luyện Thánh Khí (tính năng khác: "cập nhật sau").
+- 4 nguyên liệu chính: mỗi lần ghép ra ×1, tốn 1.000.000 vàng (nút Ghép 1 / 10 / Tối đa, ≤100 mỗi lần):
+  - Thánh Tinh Nguyên = Huyền Kim 10.000 + Quặng Sắt 10.000
+  - Thần Hoả Tinh Phách = Nghiệp Hoả 10 + Đá Thành Thiết 1.000
+  - Long Hồn Thần Lân = Long Hồn 100 + Vảy Rồng 10.000
+  - Thiên Đạo Phù Văn = Thần Văn 100 + Tảo Địa Tinh 10.000
+- Dung hợp: 4 ô, mỗi ô 1 loại, cần ×100 mỗi loại (trừ 100 mỗi loại) → tốn 2.000 💎 + 500.000.000 💰 → ra 1 trong 4 Thánh Khí (ngẫu nhiên; 4 món là chỗ trống, cập nhật sau — `TKL_CF.items`).
+- Nguồn rơi: Nghiệp Hoả (boss Hầm Ngục, 50%) · Long Hồn (boss Địa Long Điện, 1–5) · Thần Văn (boss Phụ Bản Ma Thần, 1–10) · Đá Thành Thiết / Vảy Rồng / Tảo Địa Tinh (quái thường, tỉ lệ `TKL_CF.mob`, mặc định 1 viên/lần hạ).
+- Dữ liệu: nguyên liệu thô ở `PS[cur].tl` (save máy khách); GÓI nguyên liệu chính + THÁNH KHÍ ở máy chủ, bảng `tk_user` (RPC `tk_me` · `tk_make(kind)` · `tk_fuse()`; máy chủ quay món ngẫu nhiên). Vàng/💎/nguyên liệu thô trừ ở máy khách trước, lỗi thì hoàn.
+- Giới hạn: nguyên liệu thô vẫn nằm trong save nên về lý thuyết vẫn sửa được; nhưng gói và Thánh Khí thì không tự thêm được.
+- Nguyên liệu hiện trong Túi 7 ⚗ (mục "Thánh Khí") qua `NLB.add` (ui/105).
