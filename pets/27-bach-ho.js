@@ -11,7 +11,7 @@ const PTG=(()=>{
 const U=window.PTG_URIS||[];
 const IM=U.map(u=>{const i=new Image();i.src=u;return i});
 const GXN=15,GRY=15,PI=Math.PI;
-const HH=[48,86,106,120];                      /* chiều cao hiển thị theo cấp */
+const HH=[48,86,106,120].map((v,i)=>v*(window.PETSZ||[1,.8,.8,.8])[i]);   /* Fix419: cấp 2,3,4 nhỏ lại 20% */                      /* chiều cao hiển thị theo cấp */
 const FL=[0,0,1,0];                            /* 1 = hình gốc quay sang trái */
 const TL=[{u:.3,a:.45,b:.95},{u:.3,a:.45,b:.95},{u:.2,a:.5,b:.95},{u:.26,a:.5,b:.92}];   /* vùng đuôi trên ảnh */
 const COL=['#cfeaff','#a8dcff','#8fd0ff','#ffe9a0'],COL2=['#ffffff','#f0f9ff','#d8efff','#fff6d0'];
@@ -136,6 +136,7 @@ function strike(e,M,p,big){
 
 /* ---------- Bước điều khiển (thay epstep cho Bạch Hổ) ---------- */
 function step(p,T,K,M,e){
+ try{const kt=window.PETKIT&&PETKIT[0];kt&&kt.tick&&kt.tick(p,p.ev)}catch(x){}
  const ev=p.ev;
  if(EP.fp===undefined||EP.fa===undefined||EP.gl===undefined)Object.assign(EP,{fp:0,fa:.6,gl:0,ly:EP.y||0,mt:0,na:0,si:0,bn:[],rb:EP.rb||0,q:[],sw:.4,skn:0,evo:0});
  if(EP.rb>0)EP.rb--;
@@ -179,7 +180,7 @@ function step(p,T,K,M,e){
   if(spec)mt=2;else if(ev>=1&&dist>=78&&dist<210&&(EP.na%3==2||R()<.22))mt=1;else if(dist<76)mt=0;
   if(mt<0)return;
   EP.na++;EP.ox=EP.x;EP.tg=e;EP.tgx=e.x;EP.hit=0;EP.kind=spec?1:0;EP.mt=mt;
-  if(spec){const lst=[0,1,2,3].slice(0,ev+1);let sn=lst[EP.si++%lst.length];if(sn==2&&P.hp>mx()*.9&&lst.length>1)sn=lst[EP.si++%lst.length];EP.skn=sn;EP.sk=Math.round(PSK[0].cd*(1-.06*ev))}
+  if(spec){const kk=window.PETKIT&&PETKIT[0],lst=(kk&&kk.order?kk.order(ev):[0,1,2,3].slice(0,ev+1)),hl=(kk&&kk.heal)||[2];let sn=lst[EP.si++%lst.length];if(hl.includes(sn)&&P.hp>mx()*.9&&lst.length>1)sn=lst[EP.si++%lst.length];EP.skn=sn;EP.sk=Math.round(kk&&kk.cd?kk.cd(ev):PSK[0].cd*(1-.06*ev))}
   EP.atT=mt==1?40:mt==2?44:24;EP.at=EP.atT;EP.cd=Math.max(22,T.cd-ev*4);
  }
 }

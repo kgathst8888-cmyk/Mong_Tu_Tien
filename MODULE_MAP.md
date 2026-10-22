@@ -165,3 +165,4 @@ Tạo tự động bởi `python3 tools/symbols.py`. Cột KB = dung lượng, "
 | 159 | `ui/96-bi-kip-luyen-the.js` | 17 | 0 | 📖 BÍ KÍP LUYỆN THỂ (ui/96-bi-kip-luyen-the.js) — Fix247 — nạp SAU ui/95-trang-suc-mon-phai.js ===== * 4 bí kíp (Sơ → Đỉnh cấp). Mang vào ô 📖 (bên trái |
 | 160 | `ui/97-o-linh-can.js` | 13 | 0 |  |
 | 161 | `ui/99-ma-qua.js` | 11 | 0 | 🎟 MÃ QUÀ TẶNG (ui/99-ma-qua.js) ===== * Nút 🎟 ở hàng icon trái (sau ✨ Sự kiện): bấm → nhập mã → máy chủ kiểm tra → nhận quà. * - Máy chủ (ma_qua.sql,  |
+| + | `world/134-thon-tan-thu-chi-tiet.js` | - | 0 | 🌾 Thôn Tân Thủ: lớp chi tiết mặt đất (đường đá, cỏ hoa, vườn rau, ao sen, gà, bướm) — nạp sau world/65; xem FIX418_THON_TAN_THU_CHI_TIET |

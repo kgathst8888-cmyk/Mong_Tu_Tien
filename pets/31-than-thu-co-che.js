@@ -53,6 +53,9 @@ function bolt(x0,x1,y0,kind,c1,c2){
 /* ---------- bộ máy dùng chung (cùng khung với Chu Tước) ---------- */
 function make(c){
  const HH=c.HH,AL=c.AL,EM=[];
+ /* Fix419: bộ kỹ năng riêng từng thú (pets/32-bo-ky-nang-rieng.js) — nếu có PETKIT[k] thì dùng, không thì giữ cơ chế cũ */
+ const KIT=()=>window.PETKIT&&window.PETKIT[c.k]||null;
+ const SK=(...a)=>{const k=KIT();return (k&&k.skill?k.skill:c.skill)(...a)};
  function ember(x,y,vx,vy,l,col,r,st){EM.push({x,y,vx,vy,l,l0:l,c:col,r,st})}
  function spark(x,y,r,a,col){g.save();g.globalAlpha=a;g.fillStyle=col;g.beginPath();g.moveTo(x,y-r);g.quadraticCurveTo(x,y,x+r,y);g.quadraticCurveTo(x,y,x,y+r);g.quadraticCurveTo(x,y,x-r,y);g.quadraticCurveTo(x,y,x,y-r);g.fill();g.restore()}
  function ring(x,y,hh,ev,t){
@@ -99,6 +102,7 @@ function make(c){
  }
  function step(p,T,K,M,e){
   const ev=p.ev;
+  try{const kt=KIT();kt&&kt.tick&&kt.tick(p,ev)}catch(x){}
   if(EP.fp===undefined||EP.kk!==c.k)Object.assign(EP,{fp:0,fa:.6,gl:0,ly:EP.y||0,mt:0,na:0,si:0,rb:EP.rb||0,q:[],sw:.4,skn:0,kk:c.k});
   if(EP.rb>0)EP.rb--;
   for(let i=EP.q.length-1;i>=0;i--){const q=EP.q[i];if(--q.t<=0){EP.q.splice(i,1);try{q.f()}catch(x){}}}
@@ -116,7 +120,7 @@ function make(c){
     if(u>=.5&&!EP.hit){EP.hit=1;if(tg&&E.includes(tg)){dm(tg,M*1.5);c.onHit(tg,ev,M,2);try{c.hit(ev,tg.x)}catch(x){}try{c.dive(ev,tg.x)}catch(x){}}}
    }else if(EP.mt==2){
     const w=Math.sin(Math.min(1,u)*3.1416);EP.y=gnd?0:base0+w*28;EP.gl+=(0-EP.gl)*.2;EP.fa+=(1.15-EP.fa)*.2;
-    if(u>=.45&&!EP.hit){EP.hit=1;try{c.skill(ev,EP.x,M,p,EP.skn)}catch(x){console.error('[thần thú] skill',x)}}
+    if(u>=.45&&!EP.hit){EP.hit=1;try{SK(ev,EP.x,M,p,EP.skn)}catch(x){console.error('[thần thú] skill',x)}}
    }else{
     const w=Math.sin(Math.min(1,u)*3.1416);EP.y=gnd?0:base0+w*6;EP.gl+=(0-EP.gl)*.2;EP.fa+=(1.0-EP.fa)*.2;
     EP.x-=side*.35*w;
@@ -145,20 +149,20 @@ function make(c){
    let mt=0;if(spec)mt=2;else if(ev>=1&&dist<210&&(EP.na%3==2||R()<.18))mt=1;
    EP.na++;
    EP.ox=EP.x;EP.tg=e;EP.tgx=e.x;EP.hit=0;EP.kind=spec?1:0;EP.mt=mt;
-   if(spec){const lst=[0,1,2,3].slice(0,ev+1);let sn=lst[EP.si++%lst.length];for(let g2=0;g2<4&&c.heal.includes(sn)&&P.hp>mx()*.9&&lst.length>1;g2++)sn=lst[EP.si++%lst.length];EP.skn=sn;EP.sk=Math.round(PSK[c.k].cd*(1-.06*ev))}
+   if(spec){const kk=KIT(),lst=(kk&&kk.order?kk.order(ev):[0,1,2,3].slice(0,ev+1)),hl=(kk&&kk.heal)||c.heal;let sn=lst[EP.si++%lst.length];for(let g2=0;g2<4&&hl.includes(sn)&&P.hp>mx()*.9&&lst.length>1;g2++)sn=lst[EP.si++%lst.length];EP.skn=sn;EP.sk=Math.round((kk&&kk.cd?kk.cd(ev):PSK[c.k].cd*(1-.06*ev)))}
    EP.atT=mt==1?46:mt==2?44:30;EP.at=EP.atT;EP.cd=Math.max(24,T.cd-ev*5);
    if(mt==0)volley(e,p,M);
   }
  }
  function rebirth(){
   const p=pet();if(!p||p.k!=c.k||p.ev<3||(EP.rb|0)>0)return false;
-  EP.rb=c.reb.cd;P.hp=Math.max(1,Math.round(mx()*c.reb.hp));
-  DT.push({x:P.x,y:150,s:c.reb.txt,c:c.COL2[3],g:1,l:130});
-  try{c.skill(3,P.x,pm(p),p,4)}catch(x){}
+  const RB=(KIT()&&KIT().reb)||c.reb;EP.rb=RB.cd;P.hp=Math.max(1,Math.round(mx()*RB.hp));
+  DT.push({x:P.x,y:150,s:RB.txt,c:c.COL2[3],g:1,l:130});
+  try{SK(3,P.x,pm(p),p,4)}catch(x){}
   return true;
  }
  function skillsHtml(p){
-  return '<br>🌟 <b>Kỹ năng '+c.title+'</b>'+c.SKL.map(k=>{const on=p.ev>=k.ev;return `<br><small style="opacity:${on?1:.45};color:${on?c.hi:'#aaa'}">${on?c.ic:'🔒'} <b>${k.n}</b>${on?'':' (Tiến hóa '+(k.ev+1)+')'}: ${k.d}</small>`}).join('')+(p.ev>=3?`<br><small>${c.reb.short}: ${(EP.rb|0)>0?'hồi chiêu '+Math.ceil(EP.rb/60)+'s':'<b style="color:#7fe08a">sẵn sàng</b>'}</small>`:'');
+  return '<br>🌟 <b>Kỹ năng '+c.title+'</b>'+((KIT()&&KIT().SKL)||c.SKL).map(k=>{const on=p.ev>=k.ev;return `<br><small style="opacity:${on?1:.45};color:${on?c.hi:'#aaa'}">${on?c.ic:'🔒'} <b>${k.n}</b>${on?'':' (Tiến hóa '+(k.ev+1)+')'}: ${k.d}</small>`}).join('')+(p.ev>=3?`<br><small>${((KIT()&&KIT().reb)||c.reb).short}: ${(EP.rb|0)>0?'hồi chiêu '+Math.ceil(EP.rb/60)+'s':'<b style="color:#7fe08a">sẵn sàng</b>'}</small>`:'');
  }
  function can(p){
   if(p.ev>=3||p.lv<pcap(p))return false;const r=c.EVO[p.ev];
@@ -170,17 +174,19 @@ function make(c){
   return 'Cần: '+ok(p.lv>=pcap(p),'cấp '+p.lv+'/'+pcap(p))+' · '+ok(ZC.rI()>=r.r,'cảnh giới '+r.rn+'+')+' · '+ok(gold>=r.g,fmtN(r.g)+'💰')+'<br>'+Object.keys(r.hb).map(h=>ok(hbq(h)>=r.hb[h],HN[h]+' '+hbq(h)+'/'+r.hb[h])).join(' · ')+'<br><small style="opacity:.75">Dược thảo trồng ở bản đồ Linh Điền (🌱), tiến hóa ở 🏘 Làng.</small>';
  }
  const pay=p=>{const r=c.EVO[p.ev];Object.keys(r.hb).forEach(h=>{FM.get().herbs[h]-=r.hb[h]})};
- return{draw,step,skill:(ev,x,M,p,sn)=>c.skill(ev,x,M,p,sn),rebirth,img:ev=>c.icon(ev),col:ev=>c.COL[ev],pay,skillsHtml,can,evoHtml};
+ return{draw,step,skill:(ev,x,M,p,sn)=>SK(ev,x,M,p,sn),rebirth,img:ev=>c.icon(ev),col:ev=>c.COL[ev],pay,skillsHtml,can,evoHtml};
 }
 
 /* ===================================================================
    THANH LONG (ô 3) — 4 cấp theo 4 hình: Sương Giá → Liệt Hỏa → Lôi Thủy → Tinh Hà
    =================================================================== */
+/* Fix419: hình thái cấp 2,3,4 (ev 1..3) nhỏ lại 20% — Chu Tước không đổi */
+window.PETSZ=window.PETSZ||[1,.8,.8,.8];
 const TLK=['frost','fire','thunder','star'],TL_C1=['#bfe3ff','#ff5a3a','#4fe0e8','#8a96ff'],TL_C2=['#f2fbff','#ffd070','#ffd870','#e8dcff'];
-const TL_RATE=[{frz:.14},{brn:.32},{stn:.16},{frz:.18,brn:.18}];   /* tỉ lệ gây trạng thái của đòn thú theo cấp (đòn thường); bổ nhào ×1.8 */
+const TL_RATE=[{slow:1},{stn:.12},{stn:.16},{stn:.2,slow:1}];   /* Fix419: Thanh Long thiên về gió–sét (làm chậm / choáng); bỏng thuộc Chu Tước, đóng băng thuộc Huyền Vũ */   /* tỉ lệ gây trạng thái của đòn thú theo cấp (đòn thường); bổ nhào ×1.8 */
 const TL=make({
  k:2,title:'Thanh Long',ic:'🐉',hi:'#bfe9ff',
- HH:DRH.slice(),AL:[56,64,72,80],COL:TL_C1,COL2:TL_C2,
+ HH:DRH.map((v,i)=>v*PETSZ[i]),AL:[56,64,72,80],COL:TL_C1,COL2:TL_C2,
  EVO:[{g:9000,  hb:{truc:12,chi:6},                    r:1,rn:'Trúc Cơ'},
       {g:60000, hb:{truc:36,sam:10,chi:20},            r:2,rn:'Kim Đan'},
       {g:300000,hb:{truc:90,sam:30,hoa:20,lien:20},    r:3,rn:'Nguyên Anh'}],
@@ -193,18 +199,18 @@ const TL=make({
  heal:[2],reb:{cd:7200,hp:.35,txt:'🐉 Long Hồn Hộ Thể!',short:'Long Hồn Hộ Thể'},
  size:ev=>({w:DRZ[ev][0],h:DRZ[ev][1]}),icon:ev=>DRU[ev],
  body:(ev,ww,hh,mvf,atk,at,t)=>drDraw(ev,ww,hh,mvf,atk,at,t),
- shoot:(ev,x0,x1,y0)=>{const d=DRG[ev],mo=(d.face>0?d.mx-.5:.5-d.mx)*DRH[ev]*d.w/d.h;bolt(x0+EP.d*mo,x1,y0+DRH[ev]*.1,TLK[ev],TL_C1[ev],TL_C2[ev])},
+ shoot:(ev,x0,x1,y0)=>{const d=DRG[ev],mo=(d.face>0?d.mx-.5:.5-d.mx)*DRH[ev]*PETSZ[ev]*d.w/d.h;bolt(x0+EP.d*mo,x1,y0+DRH[ev]*PETSZ[ev]*.1,TLK[ev],TL_C1[ev],TL_C2[ev])},
  hit:(ev,x)=>{const c1=TL_C1[ev],c2=TL_C2[ev],h=window.PFH;h.flare(x,52,c1,95+ev*18,16);
   if(ev==0){h.bst(x,52,16,'#e8f6ff',6,22,3,{k:'s',g:.05});h.rg(x,70,c1,16)}
   else if(ev==1){h.bst(x,40,16,'#ffb060',5,24,4,{f:.94});for(let i=0;i<6;i++)h.fp(x+(R()-.5)*26,10+R()*20,{c:i%2?c1:c2,r:5+R()*4,l:26,vy:1.2+R(),f:.97,sh:1})}
   else if(ev==2){zig(x,300,52,c2,12);h.rg(x,80,c1,18);h.bst(x,50,12,'#fff3b0',7,16,3,{k:'s'})}
   else{h.bst(x,56,18,c2,7,24,3,{k:'s'});h.rg(x,90,c1,20)}},
  dive:(ev,x)=>{const h=window.PFH,c1=TL_C1[ev];h.gwave(x,c1,90+ev*14,22);h.shake(3+ev)},
- onHit:(e,ev,M,m)=>{const r=TL_RATE[ev],f=m==2?1.8:1;if(r.frz)stat(e,'frz',r.frz*f);if(r.brn)stat(e,'brn',r.brn*f);if(r.stn)stat(e,'stn',r.stn*f)},
+ onHit:(e,ev,M,m)=>{const r=TL_RATE[ev],f=m==2?1.8:1;if(r.slow)e.sl=Math.max(e.sl||0,90);if(r.frz)stat(e,'frz',r.frz*f);if(r.brn)stat(e,'brn',r.brn*f);if(r.stn)stat(e,'stn',r.stn*f)},
  skill:(ev,x,M,p,sn)=>{
   const h=window.PFH;if(!h)return;const {later,gwave,flare,flash,shake,fx,bst,rg,vcol,fp,heal,rain}=h;
   const d=EP.d||1,mm=M*PSK[2].m,c1=TL_C1[sn==4?3:sn],c2=TL_C2[sn==4?3:sn],r=210+ev*30;
-  const my=(EP.y||0)+DRH[ev]*.55;
+  const my=(EP.y||0)+DRH[ev]*PETSZ[ev]*.55;
   if(sn==0){            /* Phong Hàn Tức: quạt băng, làm chậm + đóng băng */
    cone(x,my,d,r+120,'frost',c1,c2,36);
    tgs(x,r+160).filter(e=>(e.x-x)*d>-30).forEach(e=>later(6+Math.round(Math.abs(e.x-x)/(r+120)*10),()=>{if(!E.includes(e))return;dm(e,mm,true);gwave(e.x,c1,110,26);vcol(e.x,'rgba(191,227,255,.75)',44,22);bst(e.x,52,14,'#e8f6ff',6,20,3,{k:'s'});stat(e,'frz',.5)}));
@@ -240,7 +246,7 @@ const HV_C1=['#9fe0ff','#6fe0c8','#59a0ff','#ffd36a'],HV_C2=['#e6f7ff','#d8fff4'
 const HV_RATE=[{slow:1},{frz:.18},{frz:.2,stn:.1},{frz:.24,stn:.14}];
 const HV=make({
  k:3,title:'Huyền Vũ',ic:'💧',hi:'#bfeeff',ground:1,
- HH:HVH.map(v=>v*1.25),AL:[44,50,56,62],COL:HV_C1,COL2:HV_C2,
+ HH:HVH.map((v,i)=>v*1.25*PETSZ[i]),AL:[44,50,56,62],COL:HV_C1,COL2:HV_C2,
  EVO:[{g:8000,  hb:{lien:12,chi:6},                    r:1,rn:'Trúc Cơ'},
       {g:60000, hb:{lien:36,sam:10,chi:20},            r:2,rn:'Kim Đan'},
       {g:300000,hb:{lien:90,sam:30,truc:20,hoa:20},    r:3,rn:'Nguyên Anh'}],
@@ -253,7 +259,7 @@ const HV=make({
  heal:[0,2],reb:{cd:7200,hp:.4,txt:'💧 Huyền Vũ Bất Diệt!',short:'Huyền Vũ Bất Diệt'},
  size:ev=>({w:HVZ[ev][0],h:HVZ[ev][1]}),icon:ev=>HVU[ev],
  body:(ev,ww,hh,mvf,atk,at,t)=>hvDraw(HVI[ev],ww,hh,ev,at,atk,EP.kind,mvf,t),
- shoot:(ev,x0,x1,y0)=>{const HH=HVH[ev]*1.25,W=HH*HVZ[ev][0]/HVZ[ev][1],xm=x0+EP.d*((HVM[ev][0]-.5)*W+HH*.05),ym=EP.y+HH*(1-HVM[ev][1]);bolt(xm,x1,ym,'water',HV_C1[ev],HV_C2[ev]);try{window.PFH.flare(xm,ym,HV_C2[ev],30+ev*7,7)}catch(e){}},
+ shoot:(ev,x0,x1,y0)=>{const HH=HVH[ev]*1.25*PETSZ[ev],W=HH*HVZ[ev][0]/HVZ[ev][1],xm=x0+EP.d*((HVM[ev][0]-.5)*W+HH*.05),ym=EP.y+HH*(1-HVM[ev][1]);bolt(xm,x1,ym,'water',HV_C1[ev],HV_C2[ev]);try{window.PFH.flare(xm,ym,HV_C2[ev],30+ev*7,7)}catch(e){}},
  hit:(ev,x)=>{const c1=HV_C1[ev],c2=HV_C2[ev],h=window.PFH;h.flare(x,52,c1,90+ev*18,16);h.rg(x,70+ev*8,c1,16);h.bst(x,46,12+ev*3,c2,5,18,3,{k:'s'});if(ev>=2)h.gwave(x,c1,50+ev*12,22)},
  dive:(ev,x)=>{const h=window.PFH,c1=HV_C1[ev];for(let i=0;i<3;i++)h.later(i*3,()=>h.fx({t:'claw',x:x+(i-1)*22,c:c1,l:14}));h.gwave(x,c1,100+ev*14,24);h.shake(3+ev)},
  onHit:(e,ev,M,m)=>{const r=HV_RATE[ev],f=m==2?1.8:1;if(r.slow)e.sl=Math.max(e.sl||0,90);if(r.frz)stat(e,'frz',r.frz*f);if(r.stn)stat(e,'stn',r.stn*f)},

@@ -73,6 +73,7 @@
       "world/53d-ma-dao-than-thong-fx.js",
       "world/54-than-thong-sat-thuong.js",
       "world/56-thon-tan-thu.js",
+      "world/134-thon-tan-thu-chi-tiet.js",
       "world/57-hon-phach.js",
       "world/58-linh-gioi-city-art.js",
       "world/59-hon-phach-than-thong.js",
@@ -185,7 +186,8 @@
       "pets/27-bach-ho.js",
       "pets/23-summon-beasts.js",
       "pets/24-than-thu-bay.js",
-      "pets/31-than-thu-co-che.js"
+      "pets/31-than-thu-co-che.js",
+      "pets/32-bo-ky-nang-rieng.js"
     ],
     "equipment": [
       "equipment/14-cosmetics-shop.js",
