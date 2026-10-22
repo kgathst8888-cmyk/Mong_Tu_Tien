@@ -286,7 +286,7 @@ function drawGate(){
   g.strokeText(tx,x,by);g.fillStyle=ok?'#d8f2ff':'#8a96b0';g.fillText(tx,x,by);
   g.restore();
 }
-var _gd=gateDraw;gateDraw=function(){_gd.apply(this,arguments);try{drawGate()}catch(x){}};
+var _gd=gateDraw;gateDraw=function(){_gd.apply(this,arguments);try{drawGate()}catch(x){if(!window.__lmdWarn){window.__lmdWarn=1;try{console.warn('[LMD] drawGate',x)}catch(y){}}}};
 c.addEventListener('pointerdown',function(e){
   gGo=0;if(!inMainVillage()||bo)return;
   var px=e.offsetX/s,py=e.offsetY;
@@ -324,6 +324,24 @@ function openPanel(){
   document.getElementById('lmd-x').onclick=closePanel;
   document.getElementById('lmd-go').onclick=function(){if(!ok)return;closePanel();api.enter()};
 }
+
+/* ---------- Fix414: nút nổi 🌀 Linh Mạch (dự phòng khi cổng canvas bị khuất / không thấy) ---------- */
+var fb=null;
+function fbEl(){
+  if(fb)return fb;
+  fb=document.createElement('div');fb.id='lmd-fab';fb.textContent='🌀 Linh Mạch';
+  fb.style.cssText='position:fixed;left:8px;top:calc(232px + env(safe-area-inset-top,0px));z-index:9001;display:none;padding:6px 10px;border-radius:16px;font:bold 12.5px sans-serif;color:#d8f6ff;background:rgba(10,40,70,.82);border:1.5px solid #7fdcff;box-shadow:0 0 8px #4fb8ff88;cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:manipulation';
+  fb.addEventListener('pointerdown',function(e){e.stopPropagation()});
+  fb.addEventListener('click',function(e){e.stopPropagation();try{openPanel()}catch(x){try{console.warn('[LMD] openPanel',x)}catch(y){}}});
+  document.body.appendChild(fb);return fb;
+}
+setInterval(function(){
+  try{
+    var show=inMainVillage()&&!bo&&!(ov&&ov.style.display!=='none'&&ov.style.display!=='');
+    var el=fbEl();el.style.display=show?'block':'none';
+    el.style.opacity=canEnter()?'1':'.6';
+  }catch(e){}
+},500);
 
 window.LMD={api:api,cfg:CF,state:S,enter:api.enter,on:api.on,open:openPanel};
 })();
