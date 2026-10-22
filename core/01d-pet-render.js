@@ -1,7 +1,8 @@
 /* core/01d-pet-render.js — glowSpr/glowDraw, pm, vẽ Huyền Vũ/Rồng, epstep, drawEP (vòng thú nuôi gốc)
    (tách từ core/01-engine.js; thứ tự nạp giữ nguyên, xem index.html) */
 function glowSpr(c){let o=GLC[c];if(!o){o=document.createElement('canvas');o.width=o.height=96;const q=o.getContext('2d'),r=q.createRadialGradient(48,48,0,48,48,48);r.addColorStop(0,RGBA(c,.9));r.addColorStop(.35,RGBA(c,.38));r.addColorStop(1,RGBA(c,0));q.fillStyle=r;q.fillRect(0,0,96,96);GLC[c]=o}return o}
-function glowDraw(x,y,r,c,a){g.save();g.globalCompositeOperation='lighter';g.globalAlpha=a;g.drawImage(glowSpr(c),x-r,y-r,r*2,r*2);g.restore()}
+/* Fix424: bỏ save/restore, bỏ qua quầng quá mờ / quá nhỏ (quầng cộng sáng là phần tốn fill-rate nhất khi vẽ thú) */
+function glowDraw(x,y,r,c,a){if(!(a>.012)||!(r>.6))return;const o=g.globalCompositeOperation,oa=g.globalAlpha;g.globalCompositeOperation='lighter';g.globalAlpha=a;g.drawImage(glowSpr(c),x-r,y-r,r*2,r*2);g.globalCompositeOperation=o;g.globalAlpha=oa}
 function pm(p){return PT4[p.k].m*(1+.06*(p.lv-1))*(1+.35*p.ev)}
 
 /* ===== Huyền Vũ: tư thế cắn / gồng khiên + vẽ lát cắt (rắn uốn lượn) ===== */
@@ -37,7 +38,7 @@ function hvDraw(im,ww,hh,ev,at,atk,kind,mvf,t){
      sx=1-.004*br+.045*lg*(mt==0?1:0)-.02*rt+.07*cr-.03*jp+.07*ip+.06*sl-.02*rs,
      tx=Math.sin(ph)*hh*.012*mv-lg*hh*.012*(mt==0?1:0),ty=-Math.cos(ph*2)*hh*.007*mv;
  const kx=ww/iw,ky=hh/ih,stride=hh*.05,lift=hh*.04,amp=(1.1+ev*.55+mv*1.6)*s,HD=HV_HEAD[ev]||HV_HEAD[0],occ=hvOcc(im,C,R);
- const pass=(al,comp)=>{g.save();if(comp)g.globalCompositeOperation=comp;if(al<1)g.globalAlpha=al;
+ const pass=(al,comp,G)=>{G.save();if(comp)G.globalCompositeOperation=comp;if(al<1)G.globalAlpha=al;
   for(let j=0;j<R;j++){const y0=Math.floor(j*ih/R),y1=j==R-1?ih:Math.min(ih,Math.floor((j+1)*ih/R)+1),v=(y0+y1)/2/ih,vh=1-v,lw=ss(.58,.92,v),
     up=ev>=1?ss(0,1,Math.max(0,(.5-v)/.5)):0,up2=up*up,hv=1-ss(HD[2],HD[3],v);
    for(let i=0;i<C;i++){if(!occ[j*C+i])continue;const x0=Math.floor(i*iw/C),x1=i==C-1?iw:Math.min(iw,Math.floor((i+1)*iw/C)+1),u=(x0+x1)/2/iw;let dx=0,dy=0;
@@ -49,10 +50,14 @@ function hvDraw(im,ww,hh,ev,at,atk,kind,mvf,t){
     if(up2>0){dx+=Math.sin(t*.075-vh*4.2+ph*.6)*amp*up2*1.6+Math.sin(t*.11+vh*2)*.55*s*up-fv*.9*s*up2;
      dx+=hh*up2*(.1*lg-.06*rt+.03*rs);dy-=hh*up2*.05*rs}
     if(ev>=1&&u<.3&&v>.6)dy+=Math.sin(t*.09+ph)*hh*.006*(1-u/.3);
-    g.drawImage(im,x0,y0,x1-x0,y1-y0,-ww/2+x0*kx+dx,-hh+y0*ky+dy,(x1-x0)*kx+1,(y1-y0)*ky+1)}}
-  g.restore()};
+    G.drawImage(im,x0,y0,x1-x0,y1-y0,-ww/2+x0*kx+dx,-hh+y0*ky+dy,(x1-x0)*kx+1,(y1-y0)*ky+1)}}
+  G.restore()};
  g.save();g.translate(tx,ty);g.rotate(rot);g.scale(sx,sy);
- pass(1);
+ /* Fix424: lưới biến dạng vẽ vào ảnh đệm, làm mới 30Hz (khung xen kẽ chỉ dán 1 ảnh) — tắt: window.PETPERF_OFF=true */
+ if(window.PETPERF_OFF)pass(1,null,g);else{const hc=EP.__hvc||(EP.__hvc={cv:document.createElement('canvas'),t:-99,w:0,h:0,ev:-1}),W=Math.ceil(ww*1.7),H=Math.ceil(hh*1.5),oy=Math.round(hh*1.2);
+  if(hc.w!==W||hc.h!==H||hc.ev!==ev){hc.cv.width=W;hc.cv.height=H;hc.w=W;hc.h=H;hc.ev=ev;hc.t=-99}
+  if(fr-hc.t>=2||fr<hc.t){const c2=hc.cv.getContext('2d');c2.setTransform(1,0,0,1,0,0);c2.clearRect(0,0,W,H);c2.translate(W/2,oy);pass(1,null,c2);hc.t=fr}
+  g.drawImage(hc.cv,-W/2,-oy)}
  const gl=.3*(rs+sl*1.4)+.18*ip;if(gl>.02){g.save();g.globalCompositeOperation='lighter';g.globalAlpha=Math.min(.5,gl);g.drawImage(im,-ww/2,-hh,ww,hh);g.restore()}
  g.restore()}
 function hvFx(cx,by,hh,ww,col,bc,k,atk,at,t){
@@ -100,28 +105,35 @@ if(e&&EP.cd<=0&&EP.at<=0&&Math.abs(e.x-EP.x)<T.rg+30){
 else if(k==3&&EP.sk<=0&&EP.at<=0&&(P.hp<mx()*.85||E.length)){EP.ox=EP.x;EP.tg=null;EP.tgx=EP.x;EP.hit=0;EP.kind=1;EP.atT=54;EP.at=54;EP.sk=Math.round(PSK[3].cd*(1-.05*ev))}}
 
 /* ---- Rồng: vẽ thân + cánh vỗ uyển chuyển ---- */
-function drDraw(ev,ww,hh,mvf,atk,at,t){
+function drDrawBody(G,ev,ww,hh,mvf,atk,at,t){
  const M=DRG[ev],D=DRI[ev];if(!D.b.naturalWidth)return;
- const kk=hh/M.h;g.save();g.translate(-ww/2,-hh);g.scale(kk,kk);
- if(M.face<0){g.translate(M.w,0);g.scale(-1,1)}
+ const kk=hh/M.h;G.save();G.translate(-ww/2,-hh);G.scale(kk,kk);
+ if(M.face<0){G.translate(M.w,0);G.scale(-1,1)}
  const dt=Math.max(0,Math.min(4,fr-(EP.lw==null?fr:EP.lw)));EP.lw=fr;
  EP.wp=(EP.wp||0)+dt*(.115+mvf*.05+(atk?.07:0));
  const ph=EP.wp,aw=atk?Math.sin(at*3.1416):0,amp=.36+ev*.025+mvf*.1;
  const up=.12+amp*(Math.sin(ph)+.3*Math.sin(2*ph-.9))+aw*.28,lag=.5*amp*Math.sin(ph-1.15);
- g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';
+ G.imageSmoothingEnabled=true;G.imageSmoothingQuality='high';
  M.wings.forEach((w,j)=>{const img=D.w[j];if(!img||!img.naturalWidth)return;
   const sg=Math.cos(w.ph)>=0?-1:1,N=Math.max(8,Math.round(w.len/4.5)),iw=img.naturalWidth,ih=img.naturalHeight,sw=(iw-w.wx)/N;
-  g.save();g.translate(w.hx,w.hy);
-  if(w.wx>.5){g.save();g.rotate(w.ph+sg*up*.55);g.drawImage(img,0,0,w.wx,ih,-w.wx,-w.wy,w.wx+.6,ih);g.restore()}
+  G.save();G.translate(w.hx,w.hy);
+  if(w.wx>.5){G.save();G.rotate(w.ph+sg*up*.55);G.drawImage(img,0,0,w.wx,ih,-w.wx,-w.wy,w.wx+.6,ih);G.restore()}
   let px=0,py=0;
   for(let i=0;i<N;i++){const u=(i+.5)/N,a=w.ph+sg*(up*(.55+.45*u)+lag*u*u*1.4);
-   g.save();g.translate(px,py);g.rotate(a);g.drawImage(img,w.wx+i*sw,0,sw+.8,ih,0,-w.wy,sw+.8,ih);g.restore();
+   G.save();G.translate(px,py);G.rotate(a);G.drawImage(img,w.wx+i*sw,0,sw+.8,ih,0,-w.wy,sw+.8,ih);G.restore();
    px+=Math.cos(a)*sw;py+=Math.sin(a)*sw}
-  g.restore()});
+  G.restore()});
  const NB=16,iw=D.b.naturalWidth,ih=D.b.naturalHeight,am2=1.2+mvf*2.2+(atk?1.5:0);
  for(let i=0;i<NB;i++){const v=(i+.5)/NB,wv=Math.sin(ph*.8-v*4.5)*am2*Math.pow(Math.max(0,(v-.5)/.5),1.2)*1.4,y0=Math.floor(i*ih/NB);
-  g.drawImage(D.b,0,y0,iw,Math.min(Math.ceil(ih/NB)+1,ih-y0),wv,y0*(M.h/ih),M.w,M.h/NB+1)}
- g.restore()}
+  G.drawImage(D.b,0,y0,iw,Math.min(Math.ceil(ih/NB)+1,ih-y0),wv,y0*(M.h/ih),M.w,M.h/NB+1)}
+ G.restore()}
+function drDraw(ev,ww,hh,mvf,atk,at,t){
+ if(window.PETPERF_OFF||!DRI[ev].b.naturalWidth)return drDrawBody(g,ev,ww,hh,mvf,atk,at,t);
+ /* Fix424: cánh + thân biến dạng vẽ vào ảnh đệm, làm mới 30Hz */
+ const dc=EP.__drc||(EP.__drc={cv:document.createElement('canvas'),t:-99,w:0,h:0,ev:-1}),W=Math.ceil(ww*3),H=Math.ceil(hh*2.4),oy=Math.round(hh*1.8);
+ if(dc.w!==W||dc.h!==H||dc.ev!==ev){dc.cv.width=W;dc.cv.height=H;dc.w=W;dc.h=H;dc.ev=ev;dc.t=-99}
+ if(fr-dc.t>=2||fr<dc.t){const c2=dc.cv.getContext('2d');c2.setTransform(1,0,0,1,0,0);c2.clearRect(0,0,W,H);c2.translate(W/2,oy);drDrawBody(c2,ev,ww,hh,mvf,atk,at,t);dc.t=fr}
+ g.drawImage(dc.cv,-W/2,-oy)}
 function drawEP(){const p=pet();if(!p||EP.t===undefined||EP.ps!==p.k)return;const k=p.k,ev=p.ev,K=PK[k],im=k==3?HVI[ev]:k==2?DRI[ev].b:PTI[k],sz=k==3?HVZ[ev]:k==2?DRZ[ev]:PSZ[k],col=pcol(k,ev),bc=K.bc,t=fr;if(!im.naturalWidth)return;if(k==1&&typeof PHX!='undefined'){PHX.draw();return}if(k==0&&typeof PTG!='undefined'){PTG.draw();return}if(k>1&&typeof PETX!='undefined'&&PETX[k]){PETX[k].draw();return}
 const hh=(k==3?HVH[ev]:k==2?DRH[ev]:(K.h+ev*7)*PSC)*s,ww=hh*sz[0]/sz[1],at=EP.at>0?1-EP.at/EP.atT:0,cx=(EP.x-cam)*s,by=GY-EP.y*s,mvf=Math.min(1,Math.abs(EP.vx)/2.2),atk=EP.at>0;
 g.save();

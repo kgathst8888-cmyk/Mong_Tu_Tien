@@ -28,19 +28,19 @@ const sstep=(a,b,x)=>{const t=Math.max(0,Math.min(1,(x-a)/(b-a)));return t*t*(3-
 
 /* tia sét gấp khúc giữa 2 điểm (toạ độ thế giới; y tính từ mặt đất lên) */
 function zap(x0,y0,x1,y1,col,l,w){
- FXD({x:x0,l,fn:(f,p,X,gy)=>{const a=1-p*p,n=Math.floor(p*9),N=9;g.save();g.strokeStyle=col;g.shadowColor=col;g.shadowBlur=10;g.lineWidth=(w||2.4)*s;g.globalAlpha=a;g.lineJoin='round';
-  for(let b=0;b<2;b++){g.beginPath();g.moveTo(sX(x0),gy-y0*s);for(let j=1;j<=N;j++){const q=Math.sin((n+b*5+j)*91.7)*43758.5,rr=q-Math.floor(q),t=j/N;g.lineTo(sX(x0+(x1-x0)*t)+(rr-.5)*30*s*(j<N?1:0),gy-(y0+(y1-y0)*t)*s)}g.stroke()}
+ FXD({x:x0,l,fn:(f,p,X,gy)=>{const a=1-p*p,n=Math.floor(p*9),N=9;g.save();g.strokeStyle=col;g.lineWidth=(w||2.4)*s;g.globalAlpha=a;g.lineJoin='round';
+  for(let b=0;b<2;b++){g.beginPath();g.moveTo(sX(x0),gy-y0*s);for(let j=1;j<=N;j++){const q=Math.sin((n+b*5+j)*91.7)*43758.5,rr=q-Math.floor(q),t=j/N;g.lineTo(sX(x0+(x1-x0)*t)+(rr-.5)*30*s*(j<N?1:0),gy-(y0+(y1-y0)*t)*s)}g.save();g.globalAlpha=a*.25;g.lineWidth=(w||2.4)*s*3.2;g.stroke();g.restore();g.stroke()}
   g.restore()}});
 }
 /* lưỡi gió hình trăng khuyết bay ngang */
 function blade(x0,x1,y,col,l){
- FXD({x:x0,l,fn:(f,p,X,gy)=>{const u=Math.min(1,p*1.2),cx=sX(x0+(x1-x0)*u),a=p>.7?(1-p)/.3:1,d=x1>=x0?1:-1;g.save();g.translate(cx,gy-y*s);g.scale(d,1);g.globalAlpha=a*.9;g.strokeStyle=col;g.shadowColor=col;g.shadowBlur=12;g.lineCap='round';
+ FXD({x:x0,l,fn:(f,p,X,gy)=>{const u=Math.min(1,p*1.2),cx=sX(x0+(x1-x0)*u),a=p>.7?(1-p)/.3:1,d=x1>=x0?1:-1;g.save();g.translate(cx,gy-y*s);g.scale(d,1);g.globalAlpha=a*.9;g.strokeStyle=col;g.lineCap='round';
   for(let i=0;i<3;i++){g.lineWidth=(5-i*1.4)*s;g.beginPath();g.arc(-14*s*i,0,(26-i*4)*s,-1.0,1.0);g.stroke()}
   g.restore()}});
 }
 /* vệt chém trắng của bóng hổ */
 function streak(x0,x1,y,col,l){
- FXD({x:x0,l,fn:(f,p,X,gy)=>{const a=1-p,u=sstep(0,.5,p);g.save();g.globalAlpha=a;g.strokeStyle=col;g.shadowColor=col;g.shadowBlur=14;g.lineCap='round';g.lineWidth=(6-4*p)*s;g.beginPath();g.moveTo(sX(x0),gy-y*s);g.lineTo(sX(x0+(x1-x0)*u),gy-(y-26*u)*s);g.stroke();g.restore()}});
+ FXD({x:x0,l,fn:(f,p,X,gy)=>{const a=1-p,u=sstep(0,.5,p);g.save();g.globalAlpha=a;g.strokeStyle=col;g.lineCap='round';g.beginPath();g.moveTo(sX(x0),gy-y*s);g.lineTo(sX(x0+(x1-x0)*u),gy-(y-26*u)*s);g.globalAlpha=a*.28;g.lineWidth=(6-4*p)*s*3;g.stroke();g.globalAlpha=a;g.lineWidth=(6-4*p)*s;g.stroke();g.restore()}});
 }
 
 /* ===================================================================

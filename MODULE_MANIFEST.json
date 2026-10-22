@@ -74,6 +74,7 @@
       "world/54-than-thong-sat-thuong.js",
       "world/56-thon-tan-thu.js",
       "world/134-thon-tan-thu-chi-tiet.js",
+      "world/135-thon-tan-thu-nha-chi-tiet.js",
       "world/57-hon-phach.js",
       "world/58-linh-gioi-city-art.js",
       "world/59-hon-phach-than-thong.js",
@@ -145,7 +146,9 @@
       "assets/tien-gioi-quai-art.js",
       "world/125-tien-gioi-quai-12.js",
       "world/126-do-hoa-phu-ban.js",
-      "world/129-bo-thanh-15-fx.js"
+      "world/129-bo-thanh-15-fx.js",
+      "world/136-cuu-u-luyen-nguc.js",
+      "world/137-skill-fx-realism.js"
     ],
     "systems": [
       "systems/08-farming-alchemy.js",
@@ -187,7 +190,9 @@
       "pets/23-summon-beasts.js",
       "pets/24-than-thu-bay.js",
       "pets/31-than-thu-co-che.js",
-      "pets/32-bo-ky-nang-rieng.js"
+      "pets/32-bo-ky-nang-rieng.js",
+      "pets/33-fx-than-thu.js",
+      "pets/34-toi-uu-hieu-nang.js"
     ],
     "equipment": [
       "equipment/14-cosmetics-shop.js",
