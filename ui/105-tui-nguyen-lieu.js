@@ -21,7 +21,7 @@ add(5,'🔨 Cường hoá','da_b','💠','Đá Cường Hóa Cao Cấp','Cườn
 for(var i=0;i<5;i++)(function(i){add(5,'🪽 Cánh','w'+i,'🪽','Mảnh Cánh Cấp '+(i+1),'Hợp thành Cánh cấp '+(i+1)+' ở tab 🪽 Cánh.',WG[i])})(i);
 add(5,'🪽 Cánh','lvu','🐉','Mảnh Long Vũ Thiên Thần','Dùng để hợp Cánh Cấp 4.',function(){return lvu});
 var GBN=['1 Triệu','2 Triệu','3 Triệu'];
-for(var t=0;t<3;t++)(function(t){add(5,'🎁 Rương thưởng','gb'+t,'👝','Túi Vàng '+GBN[t],'Nguyên Anh đào khoáng nhặt được (1%/phút). Mở để chuyển thành 💰 '+GBN[t]+' vàng.',
+for(var t=0;t<3;t++)(function(t){add(5,'🎁 Rương thưởng','gb'+t,'👝','Túi Vàng '+GBN[t],'Nguyên Anh đào khoáng nhặt được (0,3%/phút). Mở để chuyển thành 💰 '+GBN[t]+' vàng.',
   function(){try{return MN.get().gb[t]|0}catch(e){return 0}},
   function(all){var g=MN.openGb(t,all);if(g)return '👝 Đã chuyển '+n(g)+' vàng vào rương nhân vật 💰';return ''})})(t);
 /* ===== Túi 7 ===== */

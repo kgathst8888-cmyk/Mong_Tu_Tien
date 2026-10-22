@@ -648,7 +648,7 @@ function scene(t){
   /* chữ hướng dẫn + trạng thái online */
   var fs=Math.max(12,14*s),ty=gy+(H-gy)*.55,cx2=(window.VWD&&VWD.cx)?VWD.cx():W/2;
   g.save();g.font='bold '+fs+'px '+FONT;g.textAlign='center';
-  var tx='❄ Làng Tân Thủ 3 · chạm để đi',tw=g.measureText(tx).width;
+  var tx='❄ Làng Tân Thủ 3 · chạm để đi · bản 400',tw=g.measureText(tx).width;
   g.fillStyle='#000b';g.fillRect(cx2-tw/2-12,ty-18*Math.max(.8,s),tw+24,28*Math.max(.8,s));g.fillStyle='#d6ecff';g.fillText(tx,cx2,ty);
   var nLk=HOUSES.filter(function(h){return typeof h.open!=='function'||h.locked}).length,on2=nLk?'🔒 '+nLk+' nhà đang tạm khoá':'';
   if(on2){var fs2=Math.max(10,12*s),ty2=ty+34*Math.max(.8,s);g.font='bold '+fs2+'px '+FONT;g.lineWidth=3;g.strokeStyle='rgba(0,0,0,.8)';g.strokeText(on2,cx2,ty2);g.fillStyle='#ffb4a8';g.fillText(on2,cx2,ty2)}

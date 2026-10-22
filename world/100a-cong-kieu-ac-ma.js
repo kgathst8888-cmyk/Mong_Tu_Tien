@@ -42,6 +42,8 @@ GTK.plate=function(x,yc,sw,a,b,colA,colB,rgb){
   g.save();g.textBaseline='middle';
   g.font='700 '+fs+'px '+F;var w1=g.measureText(nm).width;g.font='600 '+(fs*.78)+'px '+F;var w2=g.measureText(b).width;
   var icw=fs*1.18,bw=Math.max(w1,w2)+icw*2+fs*1.3,bh=fs*2.7,bx=x-bw/2,by=yc-bh/2;
+  /* Fix406: kẹp bảng tên cổng trong khung hình (điện thoại dọc bị cắt mép trái/phải) */
+  var SW=(typeof W==='number'&&W>0)?W:g.canvas.width;if(bw<SW-8)bx=Math.max(4,Math.min(SW-bw-4,bx));else bx=(SW-bw)/2;x=bx+bw/2;
   g.fillStyle='rgba(0,0,0,.34)';rr(bx,by+2,bw,bh,bh*.32);g.fill();g.fillStyle='rgba(18,12,22,.88)';rr(bx,by,bw,bh,bh*.32);g.fill();
   g.lineWidth=1.2;g.strokeStyle='rgba('+rgb+',.9)';g.stroke();
   g.beginPath();g.arc(bx+icw+fs*.2,yc,icw*.78,0,PI2);g.fillStyle='rgba(12,8,16,.95)';g.fill();g.strokeStyle='rgb('+rgb+')';g.lineWidth=1.4;g.stroke();

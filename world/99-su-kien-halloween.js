@@ -1,4 +1,4 @@
-/* ===== 🎃 SỰ KIỆN HALLOWEEN (world/99-su-kien-halloween.js, Fix261, Fix393: bảng quà dạng thẻ + tab, icon vẽ chi tiết, làng Halloween nhiều chi tiết hơn) =====
+/* ===== 🎃 SỰ KIỆN HALLOWEEN (world/99-su-kien-halloween.js, Fix261, Fix394: Boss Halloween 30 phút/lần, Fix393: bảng quà dạng thẻ + tab, icon vẽ chi tiết, làng Halloween nhiều chi tiết hơn) =====
  * Thời gian: 18/10/2026 00:00 → hết 31/10/2026 (giờ VN, UTC+7). Hết hạn: trang trí + Sứ Giả Halloween tự biến mất, ngừng rơi đồ. Chỉnh ở CF.start / CF.end.
  * - Làng Tân Thủ: bí ngô + bộ xương Halloween (vẽ bằng canvas) và NPC 🎃 Sứ Giả Halloween (chạm → tự đi tới → mở bảng).
  * - Rơi: mọi quái thường/Tinh Anh: mỗi loại Đường / Bột Mì / Mạch Nha 5% (tung độc lập, rơi 1). Mọi Boss: 5% rơi 1 Bí Ngô.
@@ -6,7 +6,7 @@
  * - Ghép Bí Ngô Ma Quái: 20 Bí Ngô + 20 Linh Thạch + 5.000.000 vàng. Mở ra quà ngẫu nhiên (bảng RW_GHOST).
  * - Linh Thạch nhận từ sự kiện là KHOÁ (LT.earnKS: không trần ngày). Cần đăng nhập ☁ để ghép / mở (vì có Linh Thạch).
  * - Mảnh Cánh Cấp 4: game chưa có cánh cấp 4 → chỉ cộng vào bộ đếm hw.wf4 (hiện trong bảng), nối vào hệ thống cánh sau.
- * Móc quà (Fix320): đếm tích luỹ đã dùng PS[cur].hw.u1/u2/u3 (mở Kẹo Ngọt/Dẻo/Thối) + upk (Bí Ngô đã dùng ghép); cờ đã nhận hw.cl. Bảng MS: mốc 100/500.
+ * Móc quà (Fix320): đếm tích luỹ đã dùng PS[cur].hw.u1/u2/u3 (mở Kẹo Ngọt/Dẻo/Thối) + upk (Bí Ngô đã dùng ghép); cờ đã nhận hw.cl. Bảng MSQ: mốc 100/500.
  * Dữ liệu theo nhân vật: PS[cur].hw = {sg,fl,ml,pk,gp,c1,c2,c3,wf4,u1,u2,u3,upk,cl}. Chỉnh tỉ lệ/phần thưởng: khối CF, RW_*.
  * Phụ thuộc (gọi lúc chạy): drop, vdraw, vstep, ng, LT, CSH, GEMX, HL, gen, BAG, capN, sell, gold, P, PS, cur. Nạp TRƯỚC world/61-lang-gian-rong.js để vẽ trong camera làng. */
 (function(){
@@ -31,7 +31,7 @@ var RW_GHOST=[[.2,'dh',1],[10,'wf4',1],[20,'lt',50],[10,'ham',1],[5,'gem',2],[5,
 var EQ_W=[[50,0],[28,1],[15,2],[7,3]];          /* trang bị từ Thường (trắng) tới Sử Thi */
 var CANDY=[{k:'c1',n:'Kẹo Ngọt',e:'🍭',c:'#ff9ad5',R:RW_SWEET},{k:'c2',n:'Kẹo Dẻo',e:'🍬',c:'#9fe0ff',R:RW_CHEW},{k:'c3',n:'Kẹo Thối',e:'🤢',c:'#b6d86a',R:RW_ROT}];
 /* móc quà tích luỹ: k = bộ đếm đã dùng (u1 Ngọt · u2 Dẻo · u3 Thối · upk Bí Ngô đã dùng để ghép), m = [mốc, loại, số lượng] (loại như applyR; lt luôn là Linh Thạch KHOÁ) */
-var MS=[
+var MSQ=[
   {k:'u3',n:'Kẹo Thối',e:'🤢',c:'#b6d86a',m:[[100,'lt',100],[500,'sh',5]]},
   {k:'u2',n:'Kẹo Dẻo',e:'🍬',c:'#9fe0ff',m:[[100,'lt',300],[500,'sh',10]]},
   {k:'u1',n:'Kẹo Ngọt',e:'🍭',c:'#ff9ad5',m:[[100,'lt',500],[500,'sh',20]]},
@@ -57,7 +57,7 @@ drop=function(e){
   try{
     if(active()&&e&&!e.td){
       var h=H(),x=e.x||P.x;
-      if(isBoss(e)){if(Math.random()<CF.pumpRate){h.pk++;DT.push({x:x,y:250,s:'🎃 +1 Bí Ngô',c:'#ff9a2e',g:1,l:170});save()}}
+      if(e.hwb){}else if(isBoss(e)){if(Math.random()<CF.pumpRate){h.pk++;DT.push({x:x,y:250,s:'🎃 +1 Bí Ngô',c:'#ff9a2e',g:1,l:170});save()}}
       else{var got=0;MATS.forEach(function(m,i){if(Math.random()<CF.matRate){h[m.k]++;got=1;DT.push({x:x,y:200+i*22,s:m.e+' +1 '+m.n,c:'#ffd27a',g:1,l:150})}});if(got)save()}
     }
   }catch(x){try{console.error('[halloween-drop]',x)}catch(y){}}
@@ -85,7 +85,7 @@ function needLogin(){if(!logged()||!window.LT||!LT.spend){msg('☁ Cần đăng 
 function msKey(d,i){return d.k+'_'+d.m[i][0]}
 function msText(r){return applyR([0,r[1],r[2]])}
 function claimMs(di,mi){
-  var d=MS[di],r=d&&d.m[mi];if(!r)return;
+  var d=MSQ[di],r=d&&d.m[mi];if(!r)return;
   var h=H(),key=msKey(d,mi);
   if(h.cl[key]){msg('Mốc này đã nhận rồi.');return}
   if(h[d.k]<r[0]){msg('Chưa đủ mốc: '+d.n+' '+h[d.k]+'/'+r[0]+'.');return}
@@ -95,10 +95,10 @@ function claimMs(di,mi){
   msg('🎁 Móc quà '+d.e+' '+d.n+' ('+r[0]+'): '+t);say('🎁 Móc quà '+d.n+' '+r[0]+' · '+t,d.c)}
 function claimAll(){
   var h=H(),n=0,out=[],hasLt=false,di,mi;
-  for(di=0;di<MS.length;di++)for(mi=0;mi<MS[di].m.length;mi++){var r=MS[di].m[mi];if(!h.cl[msKey(MS[di],mi)]&&h[MS[di].k]>=r[0]&&r[1]==='lt')hasLt=true}
+  for(di=0;di<MSQ.length;di++)for(mi=0;mi<MSQ[di].m.length;mi++){var r=MSQ[di].m[mi];if(!h.cl[msKey(MSQ[di],mi)]&&h[MSQ[di].k]>=r[0]&&r[1]==='lt')hasLt=true}
   if(hasLt&&needLogin())return;
-  for(di=0;di<MS.length;di++)for(mi=0;mi<MS[di].m.length;mi++){
-    var d=MS[di],rr=d.m[mi],key=msKey(d,mi);
+  for(di=0;di<MSQ.length;di++)for(mi=0;mi<MSQ[di].m.length;mi++){
+    var d=MSQ[di],rr=d.m[mi],key=msKey(d,mi);
     if(!h.cl[key]&&h[d.k]>=rr[0]){h.cl[key]=1;n++;out.push(d.e+rr[0]+': '+msText(rr))}}
   if(!n){msg('Chưa có mốc nào đủ điều kiện để nhận.');return}
   save();msg('🎁 Nhận '+n+' móc quà · '+out.join(' · '));say('🎁 Nhận '+n+' móc quà Halloween','#ffd76a')}
@@ -209,7 +209,7 @@ function bar(v,max,c){var p=Math.max(0,Math.min(1,v/max))*100;return '<div class
 function im(k){return '<img alt="" src="'+ico(k)+'">'}
 function chips(a){return a.map(function(x){return '<span class="ch">'+x+'</span>'}).join('')}
 function rwLabel(r){return r[1]==='lt'?'🔒 '+nf(r[2])+' LT khoá':r[1]==='sh'?'💠 '+r[2]+' Mảnh Thánh':'🔮 Ngọc Định Hồn'+(r[2]>1?' ×'+r[2]:'')}
-function readyN(h){var n=0;MS.forEach(function(d){d.m.forEach(function(r,mi){if(!h.cl[msKey(d,mi)]&&h[d.k]>=r[0])n++})});return n}
+function readyN(h){var n=0;MSQ.forEach(function(d){d.m.forEach(function(r,mi){if(!h.cl[msKey(d,mi)]&&h[d.k]>=r[0])n++})});return n}
 function setTab(i){tab=i;render()}
 function render(){
   if(!el)return;css();var h=H(),o='',rn=readyN(h);
@@ -230,7 +230,7 @@ function render(){
      +(h.wf4?'<div style="font-size:11.5px;margin-top:6px">🪽 Mảnh Cánh Cấp 4: <b>'+h.wf4+'</b></div>':'')+'</div>';
   }else{
     o+='<div style="font-size:11px;opacity:.75;margin:2px 2px 0">Tính theo số đã dùng. Linh Thạch là 🔒 khoá.</div>';
-    MS.forEach(function(d,di){
+    MSQ.forEach(function(d,di){
       var mx=d.m[d.m.length-1][0],key=d.k==='upk'?'pk':'c'+d.k.charAt(1);
       o+='<div class="cd"><div class="rw">'+im(key)+'<div class="nm"><b style="color:'+d.c+'">'+d.n+'</b><small>đã dùng '+h[d.k]+' / '+mx+'</small></div></div>'
        +'<div class="tk"><i style="width:'+Math.min(100,h[d.k]/mx*100)+'%"></i>'+d.m.map(function(r){return '<b class="'+(h[d.k]>=r[0]?'ok':'')+'" style="left:'+(r[0]/mx*100)+'%"></b>'}).join('')+'</div>'
@@ -532,8 +532,96 @@ c.addEventListener('pointerdown',function(e){
   go=0;if(on||!inVillage())return;
   var px=e.offsetX,py=e.offsetY,u=s,nx=npcX()*s;
   if(Math.abs(px-nx)<32*u&&py>GY-130*u&&py<GY+36*u){vt=cl(npcX(),40,vw()-40);vgo=-1;go=1;try{gateGo=0;twGoF=0}catch(x){}}});
-var _st=step;step=function(){if(on&&(!active()||!vil))close();_st()};
+var _st=step;step=function(){if(on&&(!active()||!vil))close();_st();try{bossTick()}catch(e){}};
 try{var _ng=ng;ng=function(){close();PS.forEach(function(x){delete x.hw});_ng()}}catch(e){}
 
-window.HALW={tab:setTab,on:active,cfg:CF,open:open,close:close,craft:craftCandy,ghost:craftGhost,eat:openCandy,openG:openGhost,claim:claimMs,claimAll:claimAll,ms:MS,data:H};
+/* ---------- 👑 BOSS HALLOWEEN NGẪU NHIÊN (Fix394) ----------
+ * Cứ 30 phút (giờ thật, tính theo nhân vật) có 1 Boss "Vua Bí Ngô" xuất hiện ngẫu nhiên ở bản đồ quái (mảng E: map thường + Linh Giới).
+ * Chỉ xuất hiện khi người chơi đang đứng ở bản đồ quái (không phải làng/phụ bản/Tiên Giới/map treo); tới giờ mà chưa ở map quái thì chờ,
+ * vào map quái là xuất hiện. Boss biến mất mà chưa bị hạ (đổi map) → xuất hiện lại sau ~3s, không tính vào chu kỳ 30 phút.
+ * Hạ boss: +1 Bí Ngô Ma Quái (mở được ngay ở Sứ Giả), +5 Kẹo (mỗi viên tung ngẫu nhiên Ngọt/Dẻo/Thối theo CF.candyP, y như ghép kẹo). Chỉnh ở khối BO. Dữ liệu: PS[cur].hw.bn (mốc giờ xuất hiện kế tiếp). */
+var BO={every:30*60e3,pump:1,candy:5,slot:4,hpMul:1.6,dfMul:1.15,retry:3000};
+var bossImg=null,bossRef=null;
+function bossSprite(){
+  if(bossImg)return bossImg;
+  var cv=document.createElement('canvas');cv.width=240;cv.height=356;var g=cv.getContext('2d'),i;g.translate(0,26);
+  /* hào quang */
+  var rg=g.createRadialGradient(120,150,10,120,150,120);rg.addColorStop(0,'rgba(255,154,46,.45)');rg.addColorStop(1,'rgba(255,154,46,0)');g.fillStyle=rg;g.fillRect(0,-26,240,356);
+  /* lưỡi hái */
+  g.strokeStyle='#4a3320';g.lineWidth=7;g.lineCap='round';g.beginPath();g.moveTo(206,326);g.lineTo(196,60);g.stroke();
+  g.fillStyle='#cfd6e6';g.beginPath();g.moveTo(196,58);g.quadraticCurveTo(150,26,112,64);g.quadraticCurveTo(152,48,194,74);g.closePath();g.fill();
+  /* áo choàng */
+  var cg=g.createLinearGradient(0,130,0,326);cg.addColorStop(0,'#3a1a5e');cg.addColorStop(1,'#12061c');g.fillStyle=cg;
+  g.beginPath();g.moveTo(70,135);g.quadraticCurveTo(30,230,18,322);
+  for(i=0;i<6;i++)g.lineTo(18+i*34+17,i%2?322:304);
+  g.lineTo(222,322);g.quadraticCurveTo(210,230,170,135);g.closePath();g.fill();
+  g.strokeStyle='#ff9a2e';g.lineWidth=2;g.stroke();
+  /* tay vuốt */
+  g.fillStyle='#2a1238';g.beginPath();g.ellipse(176,196,16,22,-.3,0,6.3);g.fill();
+  g.fillStyle='#d9ffb0';for(i=0;i<3;i++){g.beginPath();g.moveTo(170+i*8,212);g.lineTo(172+i*8,230);g.lineTo(177+i*8,212);g.fill()}
+  /* đầu bí ngô */
+  var hg=g.createRadialGradient(112,92,8,120,100,86);hg.addColorStop(0,'#ffcf6a');hg.addColorStop(.55,'#ff8a1e');hg.addColorStop(1,'#b34a06');
+  g.fillStyle=hg;g.strokeStyle='#5a2400';g.lineWidth=3;
+  [-52,-26,0,26,52].forEach(function(o){g.beginPath();g.ellipse(120+o*.55,100,Math.abs(60-Math.abs(o)*.55),66,0,0,6.3);if(o===0){g.fill()}else{g.globalAlpha=.9;g.fill();g.globalAlpha=1}g.stroke()});
+  g.beginPath();g.ellipse(120,100,60,66,0,0,6.3);g.fill();g.stroke();
+  g.strokeStyle='rgba(90,36,0,.5)';g.lineWidth=2;[-32,-14,14,32].forEach(function(o){g.beginPath();g.ellipse(120+o*.6,100,Math.abs(54-Math.abs(o)*.8),64,0,-1.2,1.2);g.stroke()});
+  /* cuống */
+  g.fillStyle='#3d7a22';g.beginPath();g.moveTo(112,36);g.quadraticCurveTo(114,14,134,8);g.lineTo(138,18);g.quadraticCurveTo(124,24,126,38);g.closePath();g.fill();
+  /* mắt + miệng phát sáng */
+  g.shadowColor='#ffe45a';g.shadowBlur=16;g.fillStyle='#ffee66';
+  g.beginPath();g.moveTo(80,86);g.lineTo(104,78);g.lineTo(98,106);g.closePath();g.fill();
+  g.beginPath();g.moveTo(160,86);g.lineTo(136,78);g.lineTo(142,106);g.closePath();g.fill();
+  g.beginPath();g.moveTo(86,124);g.quadraticCurveTo(120,160,154,124);
+  for(i=0;i<5;i++)g.lineTo(148-i*14,i%2?126:138);g.closePath();g.fill();
+  g.shadowBlur=0;g.fillStyle='#7a1a00';g.beginPath();g.arc(94,95,4,0,6.3);g.arc(146,95,4,0,6.3);g.fill();
+  /* mũ phù thuỷ */
+  g.fillStyle='#1c0b2c';g.strokeStyle='#ff9a2e';g.lineWidth=2;
+  g.beginPath();g.ellipse(120,44,70,13,0,0,6.3);g.fill();g.stroke();
+  g.beginPath();g.moveTo(84,42);g.quadraticCurveTo(110,-4,150,-6);g.quadraticCurveTo(138,20,156,42);g.closePath();g.fill();g.stroke();
+  g.fillStyle='#ff9a2e';g.fillRect(90,32,62,7);
+  var im=new Image();im.src=cv.toDataURL('image/png');bossImg=im;return im}
+function bossReady(){
+  try{if(!MS.hwboss)MS.hwboss={n:'🎃 Vua Bí Ngô',h:210,f:1,hm:1,rg:110};MI.hwboss=bossSprite();return true}catch(e){return false}}
+function inHuntMap(){
+  try{return typeof vil!=='undefined'&&!vil&&started&&!(typeof over!=='undefined'&&over)&&!(typeof dg!=='undefined'&&dg)&&!busyMap()&&Array.isArray(E)&&!E.some(function(e){return e.dg})}catch(e){return false}}
+function spawnBoss(){
+  if(!bossReady())return false;
+  var L=cl(P.lv+Math.floor(Math.random()*5)-2+3,LR[mapSel][0],LR[mapSel][1]),m=MS.hwboss,
+    h=3*(60+L*25)*(1+mi()*.5)*m.hm*(8+mi()*1.5)*(typeof lg!=='undefined'&&lg?2.2:1)*cqM()*BO.hpMul,
+    df=(8+L*2.2)*(1+mi()*.4)*1.8*(typeof lg!=='undefined'&&lg?1.35:1)*(1+(cqM()-1)/2)*BO.dfMul,
+    sxx=P.x>vw()*.55?-80:vw()+80,sn=BO.slot;
+  E=E.filter(function(e){return e.sn!==sn});
+  var e={k:'hwboss',sn:sn,x:sxx,hp:h,max:h,df:df,b:3,m:mi(),lv:L,cd:30,sl:0,fl:0,in:6,hh:m.h,rg:m.rg,hwb:1};
+  E.push(e);bossRef=e;
+  try{SLT[sn]=540}catch(x){}
+  DT.push({x:P.x,y:230,s:'🎃 Vua Bí Ngô Halloween xuất hiện!',c:'#ff9a2e',l:200});
+  for(var j=0;j<14;j++)PT.push({x:sxx,y:30,vx:(Math.random()-.5)*3,vy:-Math.random()*3,l:30,c:'#ff9a2e'});
+  return true}
+function bossReward(e){
+  var h=H(),x=e.x||P.x,i,got=[0,0,0],r,idx;
+  h.gp+=BO.pump;                                           /* Bí Ngô Ma Quái (h.gp), KHÔNG phải Bí Ngô thường (h.pk) */
+  for(i=0;i<BO.candy;i++){r=Math.random();idx=r<CF.candyP[0]?0:r<CF.candyP[0]+CF.candyP[1]?1:2;got[idx]++;h[CANDY[idx].k]++}
+  DT.push({x:x,y:260,s:'👻 +'+BO.pump+' Bí Ngô Ma Quái',c:'#d9a8ff',g:1,l:190});
+  DT.push({x:x,y:232,s:'🍬 +'+BO.candy+' Kẹo · '+CANDY.map(function(d,j){return got[j]?d.e+got[j]:''}).filter(Boolean).join(' '),c:'#ffd76a',g:1,l:190});
+  save()}
+function bossTick(){
+  if(!active())return;
+  var now=Date.now();
+  if(bossRef){
+    if(E.indexOf(bossRef)>=0)return;                       /* còn sống */
+    if(bossRef.hp>0){bossRef=null;H().bn=now+BO.retry;save()}   /* biến mất mà chưa chết (đổi map) → xuất hiện lại sau ~3s, không tính vào chu kỳ 30 phút */
+    else bossRef=null;
+    return}
+  if(!inHuntMap())return;
+  var h=H();
+  if(!h.bn||h.bn>now+BO.every)h.bn=now;                    /* lần đầu / đồng hồ lệch → xuất hiện ngay khi vào map quái */
+  if(now<h.bn)return;
+  if(spawnBoss()){h.bn=now+BO.every;save()}}
+var _dropB=drop;
+drop=function(e){
+  var r=_dropB.apply(this,arguments);
+  try{if(e&&e.hwb&&!e.hwd&&active()){e.hwd=1;bossReward(e)}}catch(x){try{console.error('[halloween-boss]',x)}catch(y){}}
+  return r};
+
+window.HALW={tab:setTab,on:active,cfg:CF,open:open,close:close,craft:craftCandy,ghost:craftGhost,eat:openCandy,openG:openGhost,claim:claimMs,claimAll:claimAll,ms:MSQ,data:H,boss:spawnBoss,bossCfg:BO};
 })();

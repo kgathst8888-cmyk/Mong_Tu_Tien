@@ -11,7 +11,7 @@
 (function(){
 'use strict';
 if(typeof PS==='undefined'||typeof ZC==='undefined'||!window.HDAO||!window.TG||typeof MN==='undefined')return;
-var CF={lv:100,gold:200000000,lt:1000,fe:50000,hk:50000,rate0:.5,step:.1,loseOnFail:true,xpK:20,pts:20,holyR:6};
+var CF={lv:100,gold:200000000,lt:1000,fe:50000,hk:50000,rate0:.5,step:.1,loseOnFail:true,xpK:4,pts:20,holyR:6};
 var ov=null,busy=false;
 function st(){try{return PS[cur]&&PS[cur].ct}catch(e){return null}}
 function on(){var c=st();return !!(c&&c.d)}
@@ -22,7 +22,7 @@ function fails(){try{return PS[cur].cf|0}catch(e){return 0}}
 function rate(){return Math.min(1,CF.rate0+CF.step*fails())}
 function pct(r){return Math.round(r*100)}
 
-/* EXP lên cấp Tiên Nhân = ×CF.xpK so với Đạo Thể (engine nx() gọi HDAO.xm()) */
+/* EXP lên cấp Tiên Nhân = ×CF.xpK so với Đạo Thể (engine nx() gọi HDAO.xm()). Fix410: Đạo Thể xpMul 25 → xpK 4 để Tiên Nhân vẫn giữ tổng ×100 như cũ (5×20) */
 var _xm=HDAO.xm;
 HDAO.xm=function(){var v=_xm.apply(this,arguments);return on()?v*CF.xpK:v};
 

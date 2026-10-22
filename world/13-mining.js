@@ -14,7 +14,8 @@ const CFG={
  goldMul:12,                     /* nhân lượng vàng mỗi nhát cuốc */
  rate:{au:20000,fe:2,hk:.5},     /* vàng: gốc 20000/phút (Fix375: ×20 so với 1000), nhân thêm theo cấp: (1+Lv/auLv) */
  auLv:100,         /* tốc độ tự động mỗi phút, nhân (cảnh giới − Nguyên Anh + 1) */
- gbRate:.01,                      /* Fix375: xác suất rơi Túi Vàng MỖI PHÚT khi Nguyên Anh đang thu thập */
+ auTbl:[30000,40000,50000,60000,70000], /* Fix404: vàng/phút CỐ ĐỊNH của Nguyên Anh thu thập Mỏ Vàng theo cấp mỏ Lv1..5 (không nhân cấp nhân vật/cảnh giới/bonus) */
+ gbRate:.003,                      /* Fix403: xác suất rơi Túi Vàng MỖI PHÚT khi Nguyên Anh đang thu thập (giảm ~3,3 lần: 1% → 0,3%) */
  gbVals:[1e6,2e6,3e6],           /* giá trị Túi Vàng ngẫu nhiên: 1 / 2 / 3 triệu vàng */
  swing:36                         /* số khung hình mỗi nhát cuốc */
 };
@@ -32,7 +33,7 @@ const dur={au:VN.au.hits,fe:VN.fe.hits,hk:VN.hk.hits},until={au:0,fe:0,hk:0},PR=
 const tier=()=>{try{return ZC.rI()+1}catch(e){return 0}};
 const canAuto=()=>{try{return ZC.rI()>=3}catch(e){return false}};
 const rk=()=>Math.max(1,ZC.rI()-2);
-const rtOf=k=>(window.NGH?NGH.mm():1)*CFG.rate[k]*rk()*(k=='au'?(1+Math.min((typeof P!='undefined'&&P?P.lv:1),100)/CFG.auLv)*(typeof gP=='function'?gP(1):1)*mulAu():1)+(k=='au'?0:addOf(k));
+const rtOf=k=>k=='au'?CFG.auTbl[lvOf('au')-1]:(window.NGH?NGH.mm():1)*CFG.rate[k]*rk()*(k=='au'?(1+Math.min((typeof P!='undefined'&&P?P.lv:1),100)/CFG.auLv)*(typeof gP=='function'?gP(1):1)*mulAu():1)+(k=='au'?0:addOf(k));
 const note=(m,c)=>{NT={s:String(m).replace(/<[^>]+>/g,''),c:c||'#ffe9a0',t:170}};
 const rt=x=>x<10?String(+x.toFixed(1)).replace('.',','):fmtN(x);
 const give=(k,n)=>{if(k=='au'){gold+=n;S.gm+=n}else S[k]+=n};
@@ -44,7 +45,7 @@ function tick(){
  const raw=now-S.last;if(raw<1000)return;
  const dt=Math.min(raw,CFG.capMs);S.last=now;
  const k=S.auto;S.acc[k]+=rtOf(k)*dt/60000;
- /* Fix375: Túi Vàng rơi ngẫu nhiên (1%/phút), cất vào Túi 6 */
+ /* Fix375: Túi Vàng rơi ngẫu nhiên (Fix403: 0,3%/phút), cất vào Túi 6 */
  S.gbm=(+S.gbm||0)+dt/60000;let gbN=0;
  {const mm=Math.min(480,Math.floor(S.gbm));S.gbm-=Math.floor(S.gbm);for(let i=0;i<mm;i++)if(Math.random()<CFG.gbRate){const t=Math.floor(Math.random()*3);S.gb[t]=(S.gb[t]|0)+1;gbN++;const m='👝 Nguyên Anh nhặt được Túi Vàng '+(CFG.gbVals[t]/1e6)+' Triệu (xem Túi 6)';note(m,'#ffd24a');if(!on)try{DT.push({x:P.x,y:215,s:m,c:'#ffd24a',g:1,l:220})}catch(e){}}}
  const n=Math.floor(S.acc[k]);
@@ -68,7 +69,7 @@ const addOf=k=>lvOf(k)-1;
 const upLeft=k=>Math.max(0,(+(S.ut&&S.ut[k])||0)-Date.now());
 const ltOk=()=>{try{return !!(window.LT&&LT.logged&&LT.logged()&&LT.spend)}catch(e){return false}};
 const clk=ms=>{const t=Math.ceil(ms/1000),hr=Math.floor(t/3600),mi=Math.floor(t%3600/60),sec=t%60;return (hr?hr+':'+String(mi).padStart(2,'0'):mi)+':'+String(sec).padStart(2,'0')};
-const effTx=(k,l)=>k=='au'?'×'+Math.pow(2,l-1)+' số lượng vàng':'+'+(l-1)+' số lượng';
+const effTx=(k,l)=>k=='au'?fmtN(CFG.auTbl[l-1])+' vàng/phút (thu thập) · đào tay ×'+Math.pow(2,l-1):'+'+(l-1)+' số lượng';
 let upBusy=false;
 function upStart(k){
  if(!VN[k]||upBusy)return;
@@ -92,7 +93,7 @@ function upTick(){
    try{sv()}catch(e){}}});
 }
 function upUI(){
- let h='<div class="dt"><div class="fmh">⬆ <b>Nâng cấp mỏ</b></div><div class="st" style="opacity:.85">Cấp 1 → '+CFG.up.max+'. Mỗi lần nâng tốn <b>'+CFG.up.cost+' 💎 Linh Thạch</b>, chờ <b>'+Math.round(CFG.up.ms/60000)+' phút</b>. Mỏ Vàng: <b>×2</b> số lượng mỗi cấp. Quặng Sắt, Huyền Kim: <b>+1</b> số lượng mỗi cấp (đào tay và thu thập tự động).'+(ltOk()?'':' <b style="color:#ff9a8a">Cần đăng nhập ☁ để dùng Linh Thạch.</b>')+'</div>';
+ let h='<div class="dt"><div class="fmh">⬆ <b>Nâng cấp mỏ</b></div><div class="st" style="opacity:.85">Cấp 1 → '+CFG.up.max+'. Mỗi lần nâng tốn <b>'+CFG.up.cost+' 💎 Linh Thạch</b>, chờ <b>'+Math.round(CFG.up.ms/60000)+' phút</b>. Mỏ Vàng: Nguyên Anh thu thập <b>30.000 / 40.000 / 50.000 / 60.000 / 70.000</b> vàng/phút theo cấp (cố định), đào tay <b>×2</b> mỗi cấp. Quặng Sắt, Huyền Kim: <b>+1</b> số lượng mỗi cấp (đào tay và thu thập tự động).'+(ltOk()?'':' <b style="color:#ff9a8a">Cần đăng nhập ☁ để dùng Linh Thạch.</b>')+'</div>';
  ORD.forEach(k=>{const l=lvOf(k),left=upLeft(k),top=l>=CFG.up.max;
   h+='<div class="st" style="border-top:1px solid #4a3a28;padding-top:5px;margin-top:5px"><b style="color:'+VN[k].c+'">'+VN[k].e+' '+VN[k].n+'</b> · Cấp <b>'+l+'/'+CFG.up.max+'</b><br><span style="opacity:.9">Hiện tại: '+effTx(k,l)+(top?'':' → <span style="color:#7be07a">'+effTx(k,l+1)+'</span>')+'</span><br>'
    +(top?'<span style="opacity:.7">Đã đạt cấp tối đa</span>':left>0?'<button disabled>⏳ Đang nâng lên Lv'+(l+1)+': '+clk(left)+'</button>':'<button onclick="MN.upgrade(\''+k+'\')"'+(upBusy?' disabled':'')+'>⬆ Nâng lên Lv'+(l+1)+' ('+CFG.up.cost+'💎 · '+Math.round(CFG.up.ms/60000)+' phút)</button>')+'</div>'});
@@ -175,13 +176,13 @@ function go(){
  setTimeout(()=>{try{enter()}catch(e){fail(e)}},0)
 }
 function leave(){
- on=false;vil=false;vt=null;vgo=-1;pend=null;back=0;mine=null;
+ on=false;vil=false;vt=null;vgo=-1;pend=null;back=0;mine=null;CC=null;CK='';PR.length=0;PU.length=0;
  try{P.x=cl(mtGeo(GY).ax/s,40,vw()-40)}catch(e){P.x=120}
  try{DT.push({x:P.x,y:190,s:'Trở ra '+MP[0].n,g:1,l:90})}catch(e){}
 }
 
 /* ---------- Đào ---------- */
-function burst(x,y,k,n){const c={au:['#ffd24a','#fff0a0','#b8860b'],fe:['#cfc4b8','#a0502a','#6a6258'],hk:['#a58bff','#4a2a9a','#e0d8ff']}[k];for(let i=0;i<n;i++)PR.push({x,y,vx:(R()-.5)*5*s,vy:-(1.5+R()*4)*s,l:30+R()*20,c:c[i%3],z:(1.5+R()*2.5)*s})}
+function burst(x,y,k,n){if(PR.length>140)return;const c={au:['#ffd24a','#fff0a0','#b8860b'],fe:['#cfc4b8','#a0502a','#6a6258'],hk:['#a58bff','#4a2a9a','#e0d8ff']}[k];for(let i=0;i<n;i++)PR.push({x,y,vx:(R()-.5)*5*s,vy:-(1.5+R()*4)*s,l:30+R()*20,c:c[i%3],z:(1.5+R()*2.5)*s})}
 function popup(m,x,y,c){PU.push({m,x,y,l:70,c})}
 function hit(k){
  const i=ORD.indexOf(k),X=VX(i)*s,Y=GY-RV()*.7,t=tier();let m='';
@@ -228,25 +229,51 @@ function veinDraw(i,now){
   txt(VN[k].e+' '+VN[k].n,X,Y-r*1.22,Math.max(10,12*s),VN[k].c,1)}
  else{const rem=until[k]-now;if(rem<=0)dur[k]=VN[k].hits;else pill('⏳ '+ft(rem),X,Y-r*.7,Math.max(10,12*s),'rgba(10,30,50,.7)','#bff4ff')}
 }
-function cave(gy){
- const t=fr,u=s;
+/* Fix405: nền hầm (tĩnh) vẽ 1 lần vào canvas phụ, mỗi khung chỉ drawImage + phần động (ánh đèn, bụi) */
+let CC=null,CK='';
+function cBase(g,gy){
+ const u=s;
  let q=g.createLinearGradient(0,0,0,gy);q.addColorStop(0,'#0d0a08');q.addColorStop(.55,'#241a12');q.addColorStop(1,'#3a2a1c');g.fillStyle=q;g.fillRect(0,0,W,H);
  /* vách đá nhiều lớp */
  for(let l=0;l<3;l++){g.fillStyle=['rgba(70,52,38,.55)','rgba(52,38,28,.6)','rgba(38,28,20,.7)'][l];g.beginPath();g.moveTo(0,gy);for(let x=0;x<=W+10;x+=10)g.lineTo(x,gy-(90+l*34+30*Math.sin(x*.012+l*2)+18*Math.sin(x*.031+l))*u);g.lineTo(W,gy);g.fill()}
  g.strokeStyle='rgba(0,0,0,.25)';g.lineWidth=1;for(let i=0;i<14;i++){const x=(i*173)%W,y=(i*59)%(gy*.8);g.beginPath();g.moveTo(x,y);g.lineTo(x+18*u,y+30*u);g.lineTo(x+8*u,y+62*u);g.stroke()}
  /* nhũ đá */
  g.fillStyle='#17110c';for(let x=-10;x<W+20;x+=34*u){const h=(26+((x/u*7)%40))*u;g.beginPath();g.moveTo(x,0);g.lineTo(x+30*u,0);g.lineTo(x+15*u,h);g.closePath();g.fill()}
- /* xà gỗ + đèn lồng */
+ /* xà gỗ + thân đèn lồng (ánh sáng vẽ động ở cDyn) */
  [.22,.5,.78].forEach((a,i)=>{const x=vw()*a*u;g.fillStyle='#4a3018';g.fillRect(x-4*u,gy-190*u,8*u,190*u);g.fillRect(x-60*u,gy-196*u,120*u,8*u);g.fillStyle='#6a4a28';g.fillRect(x-60*u,gy-196*u,120*u,2.5*u);
-  const ly=gy-150*u,fl=.8+.2*Math.sin(t*.12+i*3);glw(x,ly,95*u,.4*fl,'rgba(255,170,70,A)');g.fillStyle='#c0501c';g.beginPath();g.ellipse(x,ly,8*u,10*u,0,0,6.28);g.fill();g.fillStyle='#ffd280';g.beginPath();g.ellipse(x,ly,4*u,6*u,0,0,6.28);g.fill();g.strokeStyle='#2a1a0a';g.lineWidth=1.4;g.beginPath();g.moveTo(x,gy-194*u);g.lineTo(x,ly-10*u);g.stroke()});
+  const ly=gy-150*u;g.fillStyle='#c0501c';g.beginPath();g.ellipse(x,ly,8*u,10*u,0,0,6.28);g.fill();g.fillStyle='#ffd280';g.beginPath();g.ellipse(x,ly,4*u,6*u,0,0,6.28);g.fill();g.strokeStyle='#2a1a0a';g.lineWidth=1.4;g.beginPath();g.moveTo(x,gy-194*u);g.lineTo(x,ly-10*u);g.stroke()});
  /* nền hầm + ray */
  q=g.createLinearGradient(0,gy,0,H);q.addColorStop(0,'#4a3a2a');q.addColorStop(1,'#16100a');g.fillStyle=q;g.fillRect(0,gy,W,H-gy);
  g.fillStyle='rgba(255,255,255,.08)';g.fillRect(0,gy,W,3*u);
  g.strokeStyle='#6a6058';g.lineWidth=Math.max(1.5,2.2*u);const ry=gy+(H-gy)*.2;g.beginPath();g.moveTo(0,ry);g.lineTo(W,ry);g.moveTo(0,ry+7*u);g.lineTo(W,ry+7*u);g.stroke();
  g.fillStyle='#3a2a1a';for(let x=0;x<W;x+=26*u)g.fillRect(x,ry-2*u,7*u,12*u);
- /* bụi lơ lửng */
- for(let i=0;i<24;i++){const x=(i*113+t*.15*(1+i%3))%W,y=(i*47+Math.sin(t*.02+i)*20)%gy;g.fillStyle='rgba(255,220,160,'+(.12+.1*Math.sin(t*.05+i))+')';dot(x,y,(1+i%3*.6)*u)}
- q=g.createRadialGradient(W/2,H*.5,Math.min(W,H)*.3,W/2,H*.5,Math.max(W,H)*.75);q.addColorStop(0,'rgba(0,0,0,0)');q.addColorStop(1,'rgba(0,0,0,.55)');g.fillStyle=q;g.fillRect(0,0,W,H);
+}
+function cVig(g){
+ const q=g.createRadialGradient(W/2,H*.5,Math.min(W,H)*.3,W/2,H*.5,Math.max(W,H)*.75);q.addColorStop(0,'rgba(0,0,0,0)');q.addColorStop(1,'rgba(0,0,0,.55)');g.fillStyle=q;g.fillRect(0,0,W,H);
+}
+function cDyn(gy){
+ const t=fr,u=s;
+ /* ánh đèn lồng nhấp nháy */
+ [.22,.5,.78].forEach((a,i)=>{const x=vw()*a*u,ly=gy-150*u,fl=.8+.2*Math.sin(t*.12+i*3);glw(x,ly,95*u,.4*fl,'rgba(255,170,70,A)')});
+ /* bụi lơ lửng (máy yếu: ít hạt hơn) */
+ const nd=(window.QL|0)>=1?12:24;
+ for(let i=0;i<nd;i++){const x=(i*113+t*.15*(1+i%3))%W,y=(i*47+Math.sin(t*.02+i)*20)%gy;g.fillStyle='rgba(255,220,160,'+(.12+.1*Math.sin(t*.05+i))+')';dot(x,y,(1+i%3*.6)*u)}
+}
+function cMake(gy){
+ const k=W+'|'+H+'|'+DPR+'|'+gy+'|'+s+'|'+vw();
+ if(CC&&CK===k)return CC;
+ CC=null;CK='';
+ const mk=()=>{const c=document.createElement('canvas');c.width=Math.max(1,Math.round(W*DPR));c.height=Math.max(1,Math.round(H*DPR));const x=c.getContext('2d');if(!x)throw 0;x.setTransform(DPR,0,0,DPR,0,0);return{c,x}};
+ const A=mk(),V=mk();
+ cBase(A.x,gy);cVig(V.x);
+ CC={a:A.c,v:V.c};CK=k;return CC;
+}
+function cave(gy){
+ let C=null;
+ try{C=cMake(gy)}catch(e){CC=null;CK='';C=null}
+ if(C){g.drawImage(C.a,0,0,W,H);cDyn(gy);g.drawImage(C.v,0,0,W,H);return}
+ /* dự phòng: vẽ trực tiếp như cũ nếu không tạo được canvas phụ */
+ cBase(g,gy);cDyn(gy);cVig(g);
 }
 function pick(){
  if(!mine)return;
@@ -352,7 +379,7 @@ function ui_(){
  h+='<div class="dt fmpl"><div class="fmh">🧿 <b>Nguyên Anh thu thập tự động</b>'+(S.auto?'<span class="fmc">'+VN[S.auto].e+' '+VN[S.auto].n+'</span>':'')+'</div>';
  if(!ok)h+='<div class="st">🔒 Đạt cảnh giới <b>Nguyên Anh</b> để mở. Quặng sắt và Huyền Kim nhận được sẽ dùng cho các tính năng cập nhật sau.</div></div>';
  else{
-  h+='<div class="st">Chọn 1 loại. Tốc độ phụ thuộc cảnh giới hiện tại.</div><div class="fmb">'+ORD.map(x=>`<button${S.auto==x?' style="border-color:'+VN[x].c+';box-shadow:0 0 6px '+VN[x].c+'"':''} onclick="MN.setAuto('${x}')">${VN[x].e} ${VN[x].n}<br><small>+${rt(rtOf(x))}/phút</small></button>`).join('')+`<button onclick="MN.setAuto(null)" ${S.auto?'':'disabled'}>⏹ Dừng</button></div>`;
+  h+='<div class="st">Chọn 1 loại. Mỏ Vàng: tốc độ cố định theo cấp mỏ; Quặng Sắt/Huyền Kim phụ thuộc cảnh giới.</div><div class="fmb">'+ORD.map(x=>`<button${S.auto==x?' style="border-color:'+VN[x].c+';box-shadow:0 0 6px '+VN[x].c+'"':''} onclick="MN.setAuto('${x}')">${VN[x].e} ${VN[x].n}<br><small>+${rt(rtOf(x))}/phút</small></button>`).join('')+`<button onclick="MN.setAuto(null)" ${S.auto?'':'disabled'}>⏹ Dừng</button></div>`;
   h+='<div class="st">Đã thu thập: 🪙 '+fmtN(S.at.au)+' · 🔩 '+fmtN(S.at.fe)+' · 🌑 '+fmtN(S.at.hk)+'</div></div>';
  }
  return h;

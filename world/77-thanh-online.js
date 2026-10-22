@@ -133,16 +133,24 @@ function paint(e,mode,sx,sy,K){
     P=e.P;cur=ci;EQ=ap.eq||EQS[ci]||[];
     if(hd)hd.on=function(){return !!ap.dt};
     if(mode===2){s=os*K;P.x=sx/s;cam=0;GY=sy}else{P.x=e.lx}
-    /* thú nuôi: đi theo sau chủ */
+    /* thú nuôi: đi theo sau chủ (Fix407: trạng thái riêng từng thú — không dùng chung mảng với thú của mình; có hoạt ảnh bay/nhún) */
     if(ap.pet&&ap.tier>0){
-      var tx=P.x-50*(P.d||1),ep=e.ep;
-      if(!ep||ep.ps!==ap.pet.k){ep=e.ep=Object.assign({},eb,{t:fr,y:(PK&&PK[ap.pet.k]&&PK[ap.pet.k].al)||0,vx:0,d:1,at:0,atT:1,kind:0,sk:180,ph:0,hit:0,ps:ap.pet.k,x:tx,ox:tx,tgx:tx,tg:null})}
-      if(e._pf!==fr){e._pf=fr;var nx=mode===2?tx:ep.x+(tx-ep.x)*.14;ep.vx=nx-ep.x;ep.x=nx;ep.ox=nx;ep.tgx=nx;ep.d=ep.vx<-.05?-1:ep.vx>.05?1:ep.d;ep.t++;ep.ph+=.1+Math.min(Math.abs(ep.vx),3)*.12;ep.at=0;ep.tg=null}
+      var tx=P.x-50*(P.d||1),ep=e.ep,al=(PK&&PK[ap.pet.k]&&PK[ap.pet.k].al)||0;
+      if(!ep||ep.ps!==ap.pet.k){ep=e.ep={t:fr,x:tx,ox:tx,tgx:tx,y:al,ly:al,vx:0,d:1,at:0,atT:1,kind:0,sk:180,ph:0,hit:0,ps:ap.pet.k,tg:null,
+        fp:0,fa:.6,gl:0,mt:0,na:0,si:0,rb:0,sw:.4,skn:0,evo:0,cd:0,bn:[],q:[],tr:[]}}
+      if(e._pf!==fr){e._pf=fr;
+        if(mode!==2&&Math.abs(tx-ep.x)>240)ep.x=tx;   /* chủ dịch chuyển xa → thú không bay ngang cả màn hình */
+        var nx=mode===2?tx:ep.x+(tx-ep.x)*.14;ep.vx=nx-ep.x;ep.x=nx;ep.ox=nx;ep.tgx=nx;ep.d=ep.vx<-.05?-1:ep.vx>.05?1:ep.d;
+        ep.t++;ep.at=0;ep.tg=null;
+        var mvf=Math.min(1,Math.abs(ep.vx)/2.2);ep.ph+=.1+mvf*.3;
+        ep.ly=ep.y;
+        ep.y=al>0?al+Math.sin(ep.t*.03)*7+Math.sin(ep.t*.011+1)*5:Math.abs(Math.sin(ep.ph*1.05))*10*mvf;   /* bay lơ lửng / nhảy bước */
+        ep.fp+=.34;ep.sw+=(1-ep.sw)*.1;ep.fa+=(.6-ep.fa)*.1;ep.gl+=(0-ep.gl)*.2}
       Object.assign(EP,ep);try{drawEP()}catch(x){}Object.assign(ep,EP)}
     hero();
     if(window.FABAO&&FABAO.ghost&&ap.dt&&ap.fb)FABAO.ghost(e.ar,fr);
   }catch(x){}finally{
-    s=os;P=oP;cur=oC;EQ=oE;cam=oCam;GY=oGY;if(hd)hd.on=oOn;Object.assign(EP,eb);
+    s=os;P=oP;cur=oC;EQ=oE;cam=oCam;GY=oGY;if(hd)hd.on=oOn;Object.assign(EP,eb);for(var ek in EP)if(!(ek in eb))delete EP[ek];   /* Fix407: xoá trường thú của người khác để lại */
     ps.br=bk.br;ps.tier=bk.tier;ps.wg=bk.wg;ps.fa=bk.fa;ps.vp=bk.vp;ps.fb=bk.fb;ps.hpc=bk.hpc;ps.yc=bk.yc;ps.cv=bk.cv;ps.pet=bk.pet}
   label(e,ci,mode,sx,sy,K)}
 function label(e,ci,mode,sx,sy,K){

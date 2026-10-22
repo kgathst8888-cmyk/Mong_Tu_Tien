@@ -5,7 +5,7 @@
  *  - Tẩy luyện: về Lv1, EXP 0. Điểm tiềm năng (đã cộng + chưa cộng) giữ nguyên.
  *  - Đạo Cảnh Lv1-100 (chính là cấp nhân vật) hiển thị thêm trong tab Tu tiên. Hệ tu tiên cơ bản (tu vi, cảnh giới, đột phá) GIỮ NGUYÊN
  *    và vẫn hiển thị/đột phá ở bảng nhân vật; Đạo Thể chỉ khoá kỹ năng tu tiên (tiên thuật → Thần Thông).
- *  - EXP lên cấp ×CF.xpMul (engine: nx() nhân HDAO.xm()).
+ *  - EXP lên cấp ×CF.xpMul (engine: nx() nhân HDAO.xm()). Fix410: xpMul 5→25 (Đạo Thể cần gấp 5 lần EXP); nhân vật Đạo Thể cũ bị lùi cấp 1 lần theo tổng EXP đã tích luỹ (xem rebase()).
  *  - EXP từ quái chỉ nhận ở BẢN ĐỒ ĐẠO THỂ (Linh Giới bản đồ 2–6, LGMAP.expOk() trong world/36-linh-gioi-maps.js); nếu thiếu module 36 thì dùng mi()>=CF.mapMin=8. Mặc mọi trang bị không cần cấp (engine: so cấp dùng HDAO.on()).
  *  - Cấp trang bị tối đa CF.itemLv=80 (gen() chặn). Xoá toàn bộ trang bị cũ 1 lần (wipe, cờ CF.wipeId).
  *  - Xoá kỹ năng phàm thể: cast() bị chặn, ẩn nút #sk/#ult. Chỉ còn Thần Thông (#zk) và đánh thường.
@@ -13,7 +13,7 @@
 (function(){
 'use strict';
 if(typeof cast!=='function'||typeof ZC==='undefined'||typeof PS==='undefined')return;
-var CF={lv:100,xpMul:5,killMul:3,mapMin:8,itemLv:80,wipeId:'w80',gold:10000000,lt:300,tt:100};
+var CF={lv:100,xpMul:25,killMul:3,mapMin:8,itemLv:80,wipeId:'w80',rebaseId:'x25',oldXpMul:5,gold:10000000,lt:300,tt:100};
 function ttHave(){try{return FM.get().pills.tt|0}catch(e){return 0}}
 var ov=null,busy=false;
 function st(){try{return PS[cur]&&PS[cur].hd}catch(e){return null}}
@@ -116,6 +116,7 @@ function apply(){
   if(on()||P.lv<CF.lv)return;
   var p=PS[cur];
   p.hd={d:1,t:Date.now(),lv0:P.lv};             /* điểm tiềm năng p.pts / p.al giữ nguyên */
+  p.xrb=CF.rebaseId;                            /* Fix410: hợp đạo mới đã theo hệ số EXP mới, không cần lùi cấp */
   P.lv=1;P.xp=0;p.lv=1;p.xp=0;
   try{P.hp=mx();P.mp=mm()}catch(e){}
   try{DT.push({x:P.x,y:170,s:'☯ Hợp Đạo thành công!',g:1,l:150})}catch(e){}
@@ -124,7 +125,7 @@ function apply(){
 var lastOn=null;
 function sync(){try{var v=on();if(v!==lastOn){lastOn=v;document.body.classList.toggle('hd-on',v)}}catch(e){}}
 /* 1 timer duy nhất (1s): đồng bộ class + đợt xoá đồ cũ; bỏ qua khi tab ẩn */
-setInterval(function(){if(document.hidden)return;sync();try{if(started)wipe()}catch(e){}},1000);sync();
+setInterval(function(){if(document.hidden)return;sync();try{if(started){rebase();wipe()}}catch(e){}},1000);sync();
 
 /* EXP từ quái: chỉ nhận khi Đạo Cảnh đánh ở Linh Giới trở lên (mi()>=CF.mapMin). Chưa hợp đạo: luôn 1. */
 var lastHint=0;
@@ -134,6 +135,34 @@ function xg(){
   if(ok)return CF.killMul*((window.LGMAP&&LGMAP.expMul)?LGMAP.expMul():1);   /* killMul: EXP quái nhận cho Đạo Thể ×3 */
   if(Date.now()-lastHint>8000){lastHint=Date.now();try{DT.push({x:P.x,y:150,s:'☯ Đạo Linh chỉ tăng ở bản đồ Đạo Thể (Linh Giới 2–6)',g:1,l:90})}catch(e){}}
   return 0;
+}
+/* Fix410: EXP Đạo Thể ×5 (xpMul 5→25). Nhân vật Đạo Thể (chưa chuyển thế) hiện có bị LÙI CẤP 1 LẦN theo đúng tổng EXP đã tích luỹ
+   (tính theo hệ số cũ CF.oldXpMul): tổng = Σ EXP các cấp đã qua + EXP đang có → xếp lại cấp theo bảng EXP mới. Điểm tiềm năng giữ nguyên.
+   Cờ PS[i].xrb = CF.rebaseId (mỗi nhân vật chỉ 1 lần). Công thức nx() ở core/01c: 100·lv^1.4·xm·(lv≥21?10:1)·3 (Đạo Thể luôn ×3). */
+function nxAt(l,m){return Math.round(100*Math.pow(l,1.4)*m*(l>=21?10:1)*3)}
+function rebase(){
+  try{
+    if(!PS||!PS.some(function(q){return q&&q.xrb!==CF.rebaseId}))return false;
+    var cnt=0;
+    PS.forEach(function(q,i){
+      if(!q||q.xrb===CF.rebaseId)return;
+      q.xrb=CF.rebaseId;
+      if(!(q.hd&&q.hd.d)||(q.ct&&q.ct.d))return;           /* chỉ Đạo Thể; Tiên Nhân giữ nguyên */
+      var isC=(i===cur&&P),lv=Math.max(1,(isC?P.lv:q.lv)|0),xp=Math.max(0,Number(isC?P.xp:q.xp)||0),tot=xp,l;
+      for(l=1;l<lv;l++)tot+=nxAt(l,CF.oldXpMul);
+      var nl=1,rem=tot;
+      while(nl<CF.lv&&rem>=nxAt(nl,CF.xpMul)){rem-=nxAt(nl,CF.xpMul);nl++}
+      if(nl>=CF.lv&&lv>=CF.lv)nl=Math.min(lv,CF.lv);            /* đã Lv100: giữ nguyên nếu đủ EXP cấp tối đa */
+      if(nl>=lv)return;                                         /* không bao giờ tăng cấp */
+      if(nl>=CF.lv)rem=0;
+      q.lv=nl;q.xp=Math.floor(rem);
+      if(isC){P.lv=nl;P.xp=q.xp;try{P.hp=Math.min(P.hp,mx());P.mp=Math.min(P.mp,mm())}catch(e){}}
+      cnt++;
+    });
+    if(cnt){try{DT.push({x:P.x,y:150,s:'☯ EXP Đạo Thể ×5 — cấp đã được xếp lại theo tu vi tích luỹ',g:1,l:220})}catch(e){}}
+    try{sv()}catch(e){}try{ui()}catch(e){}
+    return cnt;
+  }catch(e){return false}
 }
 /* Đợt xoá trang bị cũ (1 lần / nhân vật, cờ PS[i].wp = CF.wipeId): xoá toàn bộ trang bị trong túi + đang mặc để nhận đồ mới
    (cấp tối đa 80). Chỉ xoá trang bị; vàng, nguyên liệu, thú, cánh... giữ nguyên. Muốn xoá lại đợt sau: đổi CF.wipeId. */
@@ -156,5 +185,5 @@ function wipe(){
     return n;
   }catch(e){return false}
 }
-window.HDAO={on:on,xm:function(){return on()?CF.xpMul:1},xg:xg,wipe:wipe,open:open,cfg:CF};
+window.HDAO={on:on,xm:function(){return on()?CF.xpMul:1},xg:xg,wipe:wipe,rebase:rebase,open:open,cfg:CF};
 })();
