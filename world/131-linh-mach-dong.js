@@ -255,7 +255,7 @@ try{Object.defineProperty(api.cfg,'req',{configurable:true,enumerable:true,get:f
 
 /* ---------- cổng riêng ở Làng Tân Thủ (cùng kiểu Cổng Hội Chiến, world/94) ---------- */
 var gGo=0,ov=null,box=null,tmr=0;
-function gx(){return gateX()+CF.gx}
+function gx(){var v=gateX()+CF.gx;return v<120?120:v}
 function gyy(){return gateY()+CF.gy*s}
 function plainVil(){try{return !window.VWD||(VWD.plain?VWD.plain():true)}catch(e){return true}}
 function inMainVillage(){
@@ -290,7 +290,7 @@ var _gd=gateDraw;gateDraw=function(){_gd.apply(this,arguments);try{drawGate()}ca
 c.addEventListener('pointerdown',function(e){
   gGo=0;if(!inMainVillage()||bo)return;
   var px=e.offsetX/s,py=e.offsetY;
-  if(Math.abs(px-gx())<38&&Math.abs(py-gyy())<57*s){vt=cl(gx(),40,vw()-40);vgo=-1;gGo=1}});
+  if(Math.abs(px-gx())<46&&Math.abs(py-gyy())<66*s){try{e.stopImmediatePropagation()}catch(x){}vt=cl(gx(),40,vw()-40);vgo=-1;gGo=1}},true);
 var _vs=vstep;vstep=function(){
   _vs.apply(this,arguments);
   if(gGo){if(mvDir)gGo=0;else if(vt==null){gGo=0;if(Math.abs(P.x-cl(gx(),40,vw()-40))<16)openPanel()}}
@@ -343,5 +343,5 @@ setInterval(function(){
   }catch(e){}
 },500);
 
-window.LMD={api:api,cfg:CF,state:S,enter:api.enter,on:api.on,open:openPanel};
+window.LMD={zone:function(){try{if(!inMainVillage())return null;var x=gx();return [x-70,x+70]}catch(e){return null}},api:api,cfg:CF,state:S,enter:api.enter,on:api.on,open:openPanel};
 })();

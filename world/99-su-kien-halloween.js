@@ -454,6 +454,7 @@ var DEC=[['t',.04,.9,-.07],['k1',.085,1],['p',.13,.8],['p',.17,.55],['t',.215,.8
 function busyMap(){return (window.LCT&&LCT.on())||(typeof FM!=='undefined'&&FM.isOn())||(typeof MN!=='undefined'&&MN.isOn())}
 function inVillage(){return typeof vil!=='undefined'&&vil&&started&&!bo&&active()&&!busyMap()&&(!window.VWD||!VWD.plain||VWD.plain())}
 function npcX(){return vw()*CF.npcX}
+function lmz(xv){try{var z=window.LMD&&LMD.zone&&LMD.zone();return !!z&&xv>z[0]&&xv<z[1]}catch(e){return false}}
 function bat(x,y,k,f){g.beginPath();g.moveTo(x,y);g.quadraticCurveTo(x-9*k,y-8*k-f*6*k,x-18*k,y-2*k-f*9*k);g.quadraticCurveTo(x-12*k,y+1*k,x-9*k,y+5*k);g.quadraticCurveTo(x-5*k,y+2*k,x,y+6*k);g.quadraticCurveTo(x+5*k,y+2*k,x+9*k,y+5*k);g.quadraticCurveTo(x+12*k,y+1*k,x+18*k,y-2*k-f*9*k);g.quadraticCurveTo(x+9*k,y-8*k-f*6*k,x,y);g.fill();g.beginPath();g.arc(x,y+1*k,3.2*k,0,6.3);g.fill()}
 function sky(gy){
   sprites();var t=fr,i,p,x,y,port=(typeof PORT!=='undefined'&&PORT);
@@ -471,7 +472,7 @@ function sky(gy){
   for(i=0;i<7;i++){x=((t*(.55+i*.09)+i*(W/7))%(W+160))-80;y=gy*(.1+(i%4)*.06)+Math.sin(t*.03+i*2)*16*s;bat(x,y,(.9+(i%3)*.25)*s,Math.sin(t*.35+i))}
   bat(mx-60*ms,my-30*ms+Math.sin(t*.04)*6*s,1.05*s,Math.sin(t*.3))}
 /* Fix393: trang trí làng chi tiết hơn — cây khô, quạ trên bia, nến, dây đèn bí ngô + nhện, vạc phù thuỷ, lá rụng. Tất cả dựng sẵn từ sprite → chỉ drawImage mỗi khung. */
-function trees(y){var k=1.05*s,i,x;g.globalAlpha=.92;[.1,.47,.8].forEach(function(p){x=vw()*p*s;g.drawImage(SP.tr,x-75*k,y-240*k,150*k,240*k)});g.globalAlpha=1}
+function trees(y){var k=1.05*s,i,x;g.globalAlpha=.92;[.1,.47,.8].forEach(function(p){if(lmz(vw()*p))return;x=vw()*p*s;g.drawImage(SP.tr,x-75*k,y-240*k,150*k,240*k)});g.globalAlpha=1}
 function tombExtra(i,x,y,w,h2,t){var cw,ch,kw,kh,cx;
   if(i%2===0){cw=44*.7*s;ch=40*.7*s;g.drawImage(SP.cr,x-cw*.15,y-h2-ch*.6,cw,ch)}
   else{kw=40*.8*s;kh=46*.8*s;cx=x+w*.66;g.drawImage(SP.cd,cx-kw/2,y-kh+2*s,kw,kh);
@@ -484,6 +485,7 @@ function extras(y,t){
     for(b=1;b<=5;b++){if(b===3)continue;tt=b/6;px=(1-tt)*(1-tt)*x0+2*(1-tt)*tt*xm+tt*tt*x1;py=(1-tt)*(1-tt)*gy0+2*(1-tt)*tt*yc+tt*tt*gy0;
       g.globalAlpha=.55+.4*Math.abs(Math.sin(t*.07+j*2+b*1.3));g.drawImage(SP['g'+(1+(j+b)%3)],px-11*s,py-11*s,22*s,22*s)}
     g.globalAlpha=1;
+    if(lmz(xm/s))continue;
     if(j%2===0){g.save();g.translate(xm,gy0+sg-2*s);g.rotate(.07*Math.sin(t*.025+j));g.drawImage(SP.la,-18*s,0,36*s,70*s);g.restore();
       g.globalAlpha=.45+.2*Math.sin(t*.1+j);g.drawImage(SP.gl,xm-40*s,gy0+sg+14*s,80*s,80*s);g.globalAlpha=1}
     else{L=34*s+10*s*Math.sin(t*.02+j);sx=xm;sy=gy0+sg+L;
@@ -504,7 +506,7 @@ function drawAll(){
   sprites();var y=GY+14*s,t=fr,i,d,sp,k,w,h2,x,a;
   g.fillStyle='rgba(46,18,86,.24)';g.fillRect(0,0,W,y+400*s);
   trees(y);
-  for(i=0;i<DEC.length;i++){d=DEC[i];sp=SP[d[0]==='p'?['p','q','r'][i%3]:d[0]];k=d[2]*s*(d[0]==='p'?.95:d[0]==='t'?.9:.8);w=sp.lw*k;h2=sp.lh*k;x=vw()*d[1]*s;
+  for(i=0;i<DEC.length;i++){d=DEC[i];if(lmz(vw()*d[1]))continue;sp=SP[d[0]==='p'?['p','q','r'][i%3]:d[0]];k=d[2]*s*(d[0]==='p'?.95:d[0]==='t'?.9:.8);w=sp.lw*k;h2=sp.lh*k;x=vw()*d[1]*s;
     if(d[0]==='p'){a=.5+.14*Math.sin(t*.12+i*1.7);g.globalAlpha=a;g.drawImage(SP.gl,x-w*.95,y-h2*.62-w*.7,w*1.9,w*1.9);g.globalAlpha=1}
     if(d[3]){g.save();g.translate(x,y);g.rotate(d[3]);g.drawImage(sp,-w/2,-h2,w,h2);g.restore()}else g.drawImage(sp,x-w/2,y-h2,w,h2);
     if(d[0]==='t')tombExtra(i,x,y,w,h2,t)}
