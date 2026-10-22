@@ -16,6 +16,7 @@ function say(t,col){try{DT.push({x:P.x,y:200,s:t,c:col||'#ffe9a0',g:1,l:150})}ca
 function lgOK(){try{return typeof lgDone==='function'&&!!lgDone()}catch(e){return false}}
 function t2OK(){try{return !!(window.TT2&&TT2.eligible())}catch(e){return false}}
 function t3OK(){try{return !!(window.TT3&&TT3.eligible())}catch(e){return false}}
+function lmOK(){try{return !!(window.LMD&&LMD.api&&LMD.api.eligible())}catch(e){return false}}
 function has(o,f){return !!(o&&typeof o[f]==='function')}
 
 /* ---------- đang ở chế độ phụ nào? ---------- */
@@ -38,14 +39,16 @@ var REQ={
   l2:{ok:t2OK,short:'Cần Lv60 Phàm Thể',need:function(){return 'Cần Lv'+((window.TT2&&TT2.req)||60)+' Phàm Thể trở lên'}},
   l3:{ok:t3OK,short:'Cần Lv100',need:function(){return 'Cần Lv'+((window.TT3&&TT3.req)||100)+' để vào Làng Tân Thủ 3'}},
   ll:{ok:lgOK,short:'Cần hạ Ma Thần',need:function(){return 'Cần hạ Ma Thần để mở cổng Linh Giới'}},
-  tg:{ok:lgOK,short:'Cần hạ Ma Thần',need:function(){return 'Cần hạ Ma Thần để mở cổng Linh Giới'}}
+  tg:{ok:lgOK,short:'Cần hạ Ma Thần',need:function(){return 'Cần hạ Ma Thần để mở cổng Linh Giới'}},
+  lm:{ok:lmOK,short:'Cần Lv80 / Đạo Thể',need:function(){return 'Cần Lv80 hoặc đã lên Đạo Thể / Tiên Nhân để vào Linh Mạch Động'}}
 };
 var DEST=[
   {k:'l1',e:'🏘',n:'Làng Tân Thủ 1',   sub:'Thôn khởi đầu'},
   {k:'l2',e:'🏯',n:'Làng Tân Thủ 2',   sub:'Chiến Trường · Nghề'},
   {k:'l3',e:'❄',n:'Làng Tân Thủ 3',   sub:'Lv100 · 5 nhà khoá'},
   {k:'ll',e:'🌀',n:'Linh Giới',        sub:'Thành thị'},
-  {k:'tg',e:'☁️',n:'Tiên Giới',        sub:'Thành thị'}
+  {k:'tg',e:'☁️',n:'Tiên Giới',        sub:'Thành thị'},
+  {k:'lm',e:'🌀',n:'Linh Mạch Động',   sub:'Farm chung · Lv80'}
 ];
 function here(k){
   var o=onOf();
@@ -53,6 +56,7 @@ function here(k){
   if(k==='ll')return o.indexOf('lct')>=0;
   if(k==='l2')return o.indexOf('tt2')>=0;
   if(k==='l3')return o.indexOf('tt3')>=0;
+  if(k==='lm')return !!(window.LMD&&LMD.api&&LMD.api.on());
   return !!vil&&!o.length;                       /* Làng 1: ở làng và không trong chế độ phụ nào */
 }
 
@@ -82,6 +86,7 @@ function go(k){
     else if(k==='l3')TT3.enter();
     else if(k==='ll')LCT.enter();
     else if(k==='tg')TG.enter();
+    else if(k==='lm')LMD.api.enter();
   }catch(e){try{console.warn('BDT',e)}catch(x){}}
 }
 

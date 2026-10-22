@@ -1,5 +1,5 @@
 /* ===== 🌀 LINH MẠCH ĐỘNG · BÃI FARM QUÁI NHIỀU NGƯỜI (world/131-linh-mach-dong.js) =====
- * Phụ bản Lv100, vào bằng CỔNG RIÊNG 🌀 ở Làng Tân Thủ (bên trái Cổng Hội Chiến, lệch CF.gx so với Cổng Ma Thần). Cần chạy linh_mach.sql 1 lần trong Supabase + đăng nhập ☁.
+ * Phụ bản Lv80, vào bằng CỔNG RIÊNG 🌀 ở Làng Tân Thủ (bên trái Cổng Hội Chiến, lệch CF.gx so với Cổng Ma Thần). Cần chạy linh_mach.sql 1 lần trong Supabase + đăng nhập ☁.
  * Chưa chạy SQL / chưa đăng nhập: vẫn farm một mình bình thường (không có người khác, không có thưởng vòng).
  *
  * Mỗi người đánh quái BẢN SAO của mình (không tranh quái, rơi đồ riêng). Cái chung là:
@@ -15,7 +15,7 @@
 'use strict';
 if(!window.PBC)return;
 var CF={ping:2500,coop:.05,coopMax:.5,tideBonus:.5,tideSec:60,springSec:90,springPct:.02,springEvery:120,bossSec:480,
-        base:4,req:100,label:'🌀 Linh Mạch Động',gx:-300,gy:0};
+        base:4,req:80,label:'🌀 Linh Mạch Động',gx:-300,gy:0};
 var S={inf:null,others:{},kills:0,acc:0,dmg:0,nextAt:0,busy:false,fail:0,err:'',boss:null,lastHp:0,lastCyc:0,claimAt:0,
        base:0,ext:0,frac:0,ui:null,uiT:0,sprT:0,seenDead:0,toast:null};
 var FONT='KTH Serif,Songti SC,STKaiti,KaiTi,serif';
