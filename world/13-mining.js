@@ -26,7 +26,7 @@ const VN={
  fe:{n:'Quặng Sắt', e:'🔩',c:'#cfc4b8',hits:8, resp:60e3},
  hk:{n:'Huyền Kim', e:'🌑',c:'#a58bff',hits:12,resp:120e3}
 };
-const fresh=()=>({fe:0,hk:0,gm:0,auto:null,last:Date.now(),acc:{au:0,fe:0,hk:0},at:{au:0,fe:0,hk:0},ml:{au:1,fe:1,hk:1},ut:{au:0,fe:0,hk:0},gb:[0,0,0],gbm:0});
+const fresh=()=>({fe:0,hk:0,gm:0,auto:null,last:Date.now(),acc:{au:0,fe:0,hk:0},at:{au:0,fe:0,hk:0},ml:{au:1,fe:1,hk:1},ut:{au:0,fe:0,hk:0},gb:[0,0,0],gbm:0,hc:0,hq:0,cd:0});
 let broken=false;
 let S=fresh(),on=false,NT={s:'',c:'#ffe9a0',t:0},pend=null,back=0,mine=null,chips=[];
 const dur={au:VN.au.hits,fe:VN.fe.hits,hk:VN.hk.hits},until={au:0,fe:0,hk:0},PR=[],PU=[];
@@ -100,6 +100,52 @@ function upUI(){
  return h+'</div>';
 }
 
+/* ---------- Fix418: chống auto click đào mỏ ----------
+   - Chỉ nhận chạm thật (isTrusted), bỏ qua sự kiện giả lập từ script
+   - Phát hiện nhịp chạm đều tăm tắp + cùng một điểm (auto click) → bắt xác minh ngay
+   - Đào tay: cứ 90-160 nhát (ngẫu nhiên) hiện bảng xác minh phép cộng; trong lúc chờ không tính nhát nào
+   - Sai / quá 30 giây: bị đưa ra khỏi hầm, khoá vào mỏ 5 phút (lưu trong S nên tải lại game không né được)
+   Nguyên Anh tự động thu thập không bị ảnh hưởng. Chỉnh ở AB.cfg. */
+const AB={el:null,tm:0,tap:[],cfg:{min:90,rnd:70,wait:30000,lock:300000,taps:10,jit:12,pos:3}};
+const abQ=()=>AB.cfg.min+Math.floor(Math.random()*AB.cfg.rnd);
+function abClose(){if(AB.el){try{AB.el.remove()}catch(e){}AB.el=null}if(AB.tm){clearTimeout(AB.tm);AB.tm=0}}
+function abFail(){
+ abClose();S.hc=0;S.hq=0;S.cd=Date.now()+AB.cfg.lock;
+ try{if(on)leave()}catch(e){on=false;vil=false}
+ try{DT.push({x:P.x,y:190,s:'🛡 Xác minh thất bại: khoá vào mỏ '+Math.round(AB.cfg.lock/60000)+' phút',c:'#ff9a8a',g:1,l:200})}catch(e){}
+ try{sv()}catch(e){}
+}
+function abOk(){abClose();S.hc=0;S.hq=abQ();note('🛡 Xác minh thành công, tiếp tục đào','#9be07a');try{sv()}catch(e){}}
+function abAsk(){
+ if(AB.el||!on)return;
+ const a=2+Math.floor(Math.random()*8),b=2+Math.floor(Math.random()*8),ans=a+b,o=[ans];
+ while(o.length<4){const v=ans+Math.floor(Math.random()*9)-4;if(v>1&&o.indexOf(v)<0)o.push(v)}
+ o.sort(()=>Math.random()-.5);
+ const d=document.createElement('div');
+ d.style.cssText='position:fixed;left:0;top:0;right:0;bottom:0;z-index:99999;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;touch-action:manipulation';
+ const bx=document.createElement('div');
+ bx.style.cssText='background:#2a1c10;border:2px solid #c9a24a;border-radius:12px;padding:18px 20px;text-align:center;color:#ffe9a0;max-width:88vw;font-family:KTH Serif,Songti SC,STKaiti,KaiTi,serif';
+ bx.innerHTML='<div style="font-size:18px;font-weight:bold;margin-bottom:6px">🛡 Xác minh người chơi</div><div style="font-size:15px;opacity:.9;margin-bottom:10px">Chạm đáp án đúng để tiếp tục đào</div><div style="font-size:26px;font-weight:bold;margin-bottom:12px">'+a+' + '+b+' = ?</div>';
+ const row=document.createElement('div');row.style.cssText='display:flex;gap:10px;justify-content:center;flex-wrap:wrap';
+ o.forEach(v=>{const bt=document.createElement('button');bt.textContent=v;bt.style.cssText='min-width:62px;padding:12px 8px;font-size:20px;font-weight:bold;border-radius:8px;border:2px solid #c9a24a;background:#4a3018;color:#ffe9a0';
+  bt.addEventListener('click',ev=>{ev.stopPropagation();if(!ev.isTrusted)return;if(v===ans)abOk();else abFail()});row.appendChild(bt)});
+ bx.appendChild(row);d.appendChild(bx);
+ d.addEventListener('pointerdown',e=>e.stopPropagation());
+ document.body.appendChild(d);AB.el=d;AB.tm=setTimeout(()=>{if(AB.el)abFail()},AB.cfg.wait);
+}
+/* ghi nhận chạm: true = chạm hợp lệ */
+function abTap(e,px,py){
+ if(!e.isTrusted)return false;
+ const T=AB.tap,C=AB.cfg;T.push({t:e.timeStamp||performance.now(),x:px,y:py});if(T.length>C.taps)T.shift();
+ if(T.length>=C.taps){
+  const iv=[];for(let i=1;i<T.length;i++)iv.push(T[i].t-T[i-1].t);
+  const m=iv.reduce((a,b)=>a+b,0)/iv.length,dv=Math.max.apply(null,iv.map(x=>Math.abs(x-m)));
+  const xs=T.map(a=>a.x),ys=T.map(a=>a.y),sp=Math.max(Math.max.apply(null,xs)-Math.min.apply(null,xs),Math.max.apply(null,ys)-Math.min.apply(null,ys));
+  if(m<3000&&dv<C.jit&&sp<C.pos){S.hq=1;T.length=0}
+ }
+ return true;
+}
+
 /* ---------- Hình học ---------- */
 const VX=i=>vw()*[.3,.5,.7][i];
 const RV=()=>Math.max(40*s,Math.min(vw()*.1,72)*s);
@@ -169,6 +215,7 @@ function enter(){
 }
 function go(){
  if(!started)return;
+ if((+S.cd||0)>Date.now()){try{DT.push({x:P.x,y:200,s:'🛡 Mỏ đang khoá do xác minh thất bại: còn '+clk(S.cd-Date.now()),c:'#ffb070',g:1,l:150})}catch(e){}return}
  if(dg||over){try{DT.push({x:P.x,y:200,s:'Hãy thoát Hầm Ngục / chờ hồi sinh rồi vào mỏ',c:'#ffd0a0',g:1,l:130})}catch(e){}return}
  try{if(bo)tg()}catch(e){}
  if(on)return;
@@ -336,7 +383,7 @@ document.addEventListener('pointerdown',e=>{
  if(e.target!==c||bo||!started)return;
  const px=e.offsetX,py=e.offsetY;
  try{
- if(on){e.stopPropagation();fhit(px,py);return}
+ if(on){e.stopPropagation();if(AB.el||!abTap(e,px,py))return;fhit(px,py);return}
  /* (đã bỏ chạm ngọn núi — vào mỏ bằng nút ⛏ trên HUD) */
  }catch(x){fail(x)}
 },true);
@@ -352,13 +399,14 @@ const _vstep=vstep;vstep=function(){
   if(back){back=0;if(Math.abs(P.x-cl(rx(),40,vw()-40))<14)leave()}
   else if(pend!=null){const i=pend;pend=null;startMine(i)}
  }
- if(mine&&vt==null){mine.t++;if(mine.t%CFG.swing==18)hit(mine.k)}
+ if(mine&&vt==null&&!AB.el){mine.t++;if(mine.t%CFG.swing==18){hit(mine.k);if(!S.hq)S.hq=abQ();if(++S.hc>=S.hq)abAsk()}}
  }catch(x){fail(x)}
 };
 const _vdraw=vdraw;vdraw=function(){if(on){try{mdraw()}catch(x){fail(x)}if(!on)_vdraw();return}_vdraw()};
 /* (đã bỏ vẽ ngọn núi ở bản đồ 1) */
 const _step=step;step=function(){
  if(on&&!vil){on=false;pend=null;mine=null;back=0}
+ if(!on&&AB.el)abClose();
  if(started&&fr%60==0){try{tick()}catch(e){}try{upTick()}catch(e){}}
  if(tab==14&&bo&&fr%120==0){try{ui()}catch(e){}}
  _step();
@@ -388,7 +436,7 @@ function ui_(){
 /* ---------- Lưu / tải ---------- */
 function ld(o){S=fresh();on=false;pend=null;mine=null;
  if(o&&typeof o=='object'){S.fe=o.fe|0;S.hk=o.hk|0;S.gm=o.gm|0;S.auto=VN[o.auto]?o.auto:null;S.last=+o.last||Date.now();
-  S.gb=[0,1,2].map(i=>Math.max(0,(o.gb&&o.gb[i])|0));S.gbm=+o.gbm||0;
+  S.gb=[0,1,2].map(i=>Math.max(0,(o.gb&&o.gb[i])|0));S.gbm=+o.gbm||0;S.hc=o.hc|0;S.hq=o.hq|0;S.cd=+o.cd||0;
   ORD.forEach(k=>{S.ml[k]=Math.max(1,Math.min(CFG.up.max,((o.ml&&o.ml[k])|0)||1));S.ut[k]=+(o.ut&&o.ut[k])||0});
   ['au','fe','hk'].forEach(k=>{S.acc[k]=+(o.acc&&o.acc[k])||0;S.at[k]=(o.at&&o.at[k])|0})}
  ORD.forEach(k=>{dur[k]=VN[k].hits;until[k]=0});
