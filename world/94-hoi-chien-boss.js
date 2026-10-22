@@ -391,7 +391,7 @@ function applyRw(L){
     else if(w.t==='da'){var kk=w.k==='b'?'b':'a';try{if(window.DCH){var dd=DCH.get();dd[kk]=(dd[kk]|0)+w.n}}catch(e){}o.push((kk==='b'?'💠 Đá Cường Hóa Cấp 2':'🪨 Đá Cường Hóa Cấp 1')+' ×'+w.n)}
     else if(w.t==='g'){gold+=w.n;o.push('💰 +'+nf(w.n)+' vàng')}
     else if(w.t==='mc'){if(typeof WFA==='function'){WFA(3,w.n|0||1);try{dgSave()}catch(e){}}o.push('🪽 Mảnh Cánh Cấp 4 ×'+(w.n|0||1))}
-    else if(w.t==='lv'){if((p.wg|0)<4){p.wg=4;o.push('🪽 Long Vũ Thiên Thần Dực!')}else{gold+=10000000;o.push('🪽 Đã có Long Vũ → đổi 💰 +10.000.000')}}
+    else if(w.t==='lv'){if(typeof WFA==='function'){WFA(3,1);try{dgSave()}catch(e){}}o.push('🪽 Mảnh Cánh Cấp 4 ×1')}   /* Fix420: không còn rơi nguyên cánh, chỉ rơi mảnh */
     else if(w.t==='bua'){if(!p.csh)p.csh={b10:0,b15:0,b20:0,ham:0,g10:0,dh:0,dh2:0,tc:0};p.csh.bcr=(p.csh.bcr|0)+1;o.push('🛡 Bùa Chống Rơi ×1')}
   }catch(e){try{console.error('[HCB rw]',e)}catch(x){}}});
   o.forEach(function(t,k){say(t,'#ffe27a',266+k*22)});
@@ -486,7 +486,7 @@ function panelHtml(){
    +'<div style="font-size:12.5px;margin:6px 0"><b style="color:#ffd36a">📅 Lịch</b>: <b>12:00 · 15:00 · 20:00</b> (giờ VN).<br>Mỗi lần 20 phút: <b>5 phút tập trung</b> → <b>15 phút Boss xuất hiện</b>.</div>'
    +'<div style="font-size:12.5px;margin:6px 0"><b style="color:#ffd36a">🎁 Phần thưởng</b><br>'
    +'• Không hạ được Boss: <b>'+nf(CF.gold)+' 💰</b> + <b>'+CF.ltC+' 🔒 Linh Thạch khoá</b> (cho người có đóng góp).<br>'
-   +'• Hạ được Boss: <b>'+CF.chests+' rương</b> rơi trên đất — chạm để mở, mỗi người mở được <b>'+CF.perP+' rương</b>. Mỗi rương = 1 trang bị <b style="color:#ff7ae0">Thiên Thần</b> + 2 phần thưởng ngẫu nhiên (🔒 Linh Thạch khoá 10–50 · 🪨 Đá cấp 1–2 · 💰 2–10 triệu · 🪽 Mảnh Cánh 4 5% · 🪽 Long Vũ Thiên Dực 5% · 🛡 Bùa Chống Rơi 2%).<br>'
+   +'• Hạ được Boss: <b>'+CF.chests+' rương</b> rơi trên đất — chạm để mở, mỗi người mở được <b>'+CF.perP+' rương</b>. Mỗi rương = 1 trang bị <b style="color:#ff7ae0">Thiên Thần</b> + 2 phần thưởng ngẫu nhiên (🔒 Linh Thạch khoá 10–50 · 🪨 Đá cấp 1–2 · 💰 2–10 triệu · 🪽 Mảnh Cánh 4 5% · 🛡 Bùa Chống Rơi 2%).<br>'
    +'• Người <b>kết liễu</b> Boss: <b>+'+CF.ltK+' 🔒</b> · người <b>sát thương cao nhất</b>: <b>+'+CF.ltT+' 🔒</b> Linh Thạch khoá.</div>'
    +'<div id="hcb-msg" style="font-size:12.5px;color:#ffb0a0;min-height:16px;text-align:center">'+esc(S.note||'')+'</div>'
    +'<div style="display:flex;gap:8px;margin-top:8px"><button id="hcb-go" style="flex:1;padding:10px;border-radius:10px;border:1px solid #d8b25a;font:bold 14px '+FONT+';'
@@ -552,5 +552,30 @@ function anTick(){
     anPaint()}catch(e){}}
 setInterval(anTick,1000);
 
-window.HCB={pillars:pillarsOf,bossT:bossT,cfg:CF,state:function(){return S},phase:phase,open:openPanel,enter:enter,inMap:inMap,claim:claim,ping:ping};
+/* ---------- Fix420: THU HỒI Long Vũ Thiên Thần Dực (Cánh Cấp 4) đã rơi nguyên cái từ rương Hội Chiến ----------
+ * Danh sách nhân vật bị thu hồi nằm ở máy chủ (bảng hcb_thuhoi, tạo bởi fix420_hcb_bo_canh_long_vu.sql).
+ * Mỗi nhân vật chỉ bị xử lý 1 lần: nếu đang có ĐÚNG Cánh Cấp 4 (wg=4) → về 0 (chưa có cánh); xong báo máy chủ đã xử lý. */
+var TH={busy:0,done:{},fail:0};
+async function thuHoi(){
+  if(TH.busy||TH.fail>=4||!started||!logged())return;
+  var sl=cur|0;if(TH.done[sl])return;
+  TH.busy=1;
+  try{
+    var r=await KCL.rpc('hcb_thuhoi',{p_slot:sl,p_ack:false});
+    if(!r||r.status==='auth')return;
+    if(r.status==='revoke'){
+      var p=PS[sl];
+      if(p&&(p.wg|0)===4){
+        p.wg=0;
+        try{sv()}catch(e){}
+        say('⚠ Long Vũ Thiên Thần Dực nhận từ rương Hội Chiến đã bị thu hồi (lỗi rơi nguyên cánh)','#ffb0a0',250);
+        try{console.info('[HCB] đã thu hồi Cánh Cấp 4 (slot '+sl+')')}catch(e){}
+      }
+      await KCL.rpc('hcb_thuhoi',{p_slot:sl,p_ack:true})}
+    TH.done[sl]=1}
+  catch(e){TH.fail++}
+  finally{TH.busy=0}}
+setInterval(function(){try{thuHoi()}catch(e){}},4000);
+
+window.HCB={pillars:pillarsOf,bossT:bossT,cfg:CF,state:function(){return S},phase:phase,open:openPanel,enter:enter,inMap:inMap,claim:claim,ping:ping,thuHoi:thuHoi};
 })();

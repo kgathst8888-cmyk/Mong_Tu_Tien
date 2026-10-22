@@ -131,8 +131,7 @@ begin
   loop
     v_i := v_i + 1; v_r := random() * 100;
     if    v_r < 2  then v_t := 'bua';
-    elsif v_r < 7  then v_t := 'lv';
-    elsif v_r < 12 then v_t := 'mc';
+    elsif v_r < 7  then v_t := 'mc';   -- Fix420: bỏ 'lv' (nguyên cánh); chỉ rơi mảnh
     else v_t := (array['lt','da','g'])[1 + floor(random() * 3)::int];
     end if;
     exit when v_t <> coalesce(p_ex, '') or v_i >= 12;
@@ -142,7 +141,6 @@ begin
     when 'da'  then json_build_object('t','da','k', case when random() < .5 then 'a' else 'b' end,'n', 1 + floor(random() * 2)::int)
     when 'g'   then json_build_object('t','g','n', (2 + floor(random() * 9)::int) * 1000000)
     when 'mc'  then json_build_object('t','mc','n', 1)
-    when 'lv'  then json_build_object('t','lv','n', 1)
     else            json_build_object('t','bua','n', 1) end;
 end $$;
 
