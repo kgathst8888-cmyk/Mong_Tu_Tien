@@ -31,7 +31,9 @@ function doEn(it,asyn){
   if(Math.random()*100<RT[it.u]+(window.NGH?NGH.rdRate():0)){it.u++;try{QE('enhok')}catch(e){}msg='✅ Cường hóa thành công! +'+it.u;if(asyn&&(it.u===7||it.u===10||it.u===15)&&window.UFX)UFX.burst(it.u,it)}
   else if(hi){var bc=(it.u|0)===10&&bcrN()>0,to=fallTo(it),big=(it.u|0)>=DH2_MIN;if(bc)useBcr();it.u=to;msg=bc?'💥 Thất bại! 🛡 Bùa Chống Rơi giữ trang bị ở +10 (còn '+bcrN()+' bùa)':to>0?'💥 Thất bại! 🔮 '+(big?'Đại Định Hồn':'Định Hồn')+' giữ trang bị ở +'+to:'💥 Thất bại! Trang bị rơi về +0'}
   else{var dn=it.u>=5;if(dn)it.u--;msg='❌ Thất bại'+(dn?', tụt về +'+it.u:'')}
-  P.hp=Math.min(P.hp,mx());ui()}
+  P.hp=Math.min(P.hp,mx());ui();
+  /* Fix429: lưu mây NGAY sau mỗi lần cường hóa (thành công hay thất bại) — không cho F5/đóng tab để huỷ kết quả xấu */
+  try{if(window.KTHM_CLOUD&&KTHM_CLOUD.saveNow)KTHM_CLOUD.saveNow()}catch(e){}}
 en1=function(){
   if(!vil){msg='Cần đến Thợ Rèn trong làng 🏘';ui();return}
   var it=cur_();if(!it)return;

@@ -148,7 +148,8 @@
       "world/126-do-hoa-phu-ban.js",
       "world/129-bo-thanh-15-fx.js",
       "world/136-cuu-u-luyen-nguc.js",
-      "world/137-skill-fx-realism.js"
+      "world/137-skill-fx-realism.js",
+      "world/138-quai-spine-nhan-gioi.js"
     ],
     "systems": [
       "systems/08-farming-alchemy.js",

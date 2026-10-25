@@ -47,8 +47,8 @@ function pkEmpty(i){const nm=(SL[i]&&SL[i][0])||'ô này',cap=window.HDAO&&HDAO.
 function pk(k,i){if(k=='e'&&!EQ[i]&&i!=10&&pkEmpty(i))return;const it=k=='b'?BAG[i]:null;if(qs&&it&&it.r<3&&!it.c&&!it.u&&!it.ttl){const v=sell(it);gold+=v;BAG.splice(i,1);sel=null;msg='💰 +'+v;ui();return}sel={k,i};msg='';ui()}
 function eq1(fs){if(!BAG[sel.i]){sel=null;ui();return}if(BAG[sel.i].l>(window.HDAO&&HDAO.on()?1e9:P.lv)&&!BAG[sel.i].c){msg='⛔ Cần Lv'+BAG[sel.i].l+' mới mặc được (hiện Lv'+P.lv+')';ui();return}eqp(BAG[sel.i],sel.i,fs);sel=null;ui()}
 function swr(){const a=EQ[7];EQ[7]=EQ[8];EQ[8]=a;sel=null;msg='💍 Đã đổi nhẫn trái ↔ phải';ui()}
-function sl1(){gold+=sell(BAG[sel.i]);BAG.splice(sel.i,1);sel=null;ui()}
-function un(){if(BAG.length<capN()){BAG.push(EQ[sel.i]);EQ[sel.i]=null;P.hp=Math.min(P.hp,mx());sel=null;ui()}}
+function sl1(){if(!sel||!BAG[sel.i]){sel=null;ui();return}gold+=sell(BAG[sel.i]);BAG.splice(sel.i,1);sel=null;ui()}
+function un(){if(!sel||!EQ[sel.i]){sel=null;ui();return}if(BAG.length<capN()){BAG.push(EQ[sel.i]);EQ[sel.i]=null;P.hp=Math.min(P.hp,mx());sel=null;ui()}else{msg='🎒 Túi đầy — dọn chỗ rồi hãy tháo trang bị';ui()}}
 function sa(n=2){if(n>=4&&!confirm('Bán toàn bộ đồ dưới Thần Thoại (Thường → Sử Thi)?\nGiữ lại: đồ chế tác, đồ đã cường hóa, nhẫn Cấp Thần Thông.'))return;let t=0,k=0;for(let j=BAG.length-1;j>=0;j--){const i=BAG[j];if(!(i.r>=n||i.c||i.u>0||i.ttl)){t+=sell(i);k++;BAG.splice(j,1)}}gold+=t;sel=null;msg='💰 Bán '+k+' món, +'+t;ui()}
 function bsort(){BAG.sort((a,b)=>(b.r-a.r)||(a.s-b.s)||(sc(b)-sc(a)));sel=null;fz.length=0;bgp=0;msg='↕ Đã sắp xếp túi: phẩm chất cao lên trước, cùng loại gom lại';ui()}
 function bclean(){let t=0,k=0;const W=i=>{if(i.s==7){const a=EQ[7],b=EQ[8];return a&&b?Math.min(sc(a),sc(b)):-1}if(i.s==10&&PS[cur].tier<1)return -1;const q=EQ[i.s];return q?sc(q):-1};for(let j=BAG.length-1;j>=0;j--){const i=BAG[j];if(SPK(i)||i.u>0||i.r>2)continue;const w=W(i);if(w>=0&&sc(i)<=w){t+=sell(i);k++;BAG.splice(j,1)}}gold+=t;sel=null;fz.length=0;msg=k?'🧹 Dọn '+k+' món yếu hơn đồ đang mặc, +'+t+'💰':'Không có món nào yếu hơn đồ đang mặc để dọn';ui()}

@@ -39,7 +39,7 @@ ZC.pd=function(){var v=_pd.apply(this,arguments);if(!on())return v;try{return v*
 function admOk(){try{return !!(window.ADMIN&&ADMIN.isAdmin&&ADMIN.isAdmin())}catch(e){return false}}
 function holy(it){return !!it&&(admOk()||(it.r|0)>=CF.holyR)}
 var _eqp=eqp;
-eqp=function(it){if(on()&&it&&!holy(it)){msg='⛔ Tiên Nhân chỉ mặc được trang bị Thánh';try{ui()}catch(e){}return}return _eqp.apply(this,arguments)};
+eqp=function(it){if(on()&&it&&!holy(it)){msg='⛔ Tiên Nhân chỉ mặc được trang bị Thánh';try{ui()}catch(e){}return false}return _eqp.apply(this,arguments)};
 function strip(){
   if(!on())return 0;var n=0;
   try{for(var i=0;i<EQ.length;i++){var it=EQ[i];if(it&&!holy(it)){BAG.push(it);EQ[i]=null;n++}}}catch(e){}

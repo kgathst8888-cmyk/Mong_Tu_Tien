@@ -262,5 +262,5 @@ function fx(t,C){if(C.ql>=2)return;var g=C.g,HW=C.HW,ZU=C.ZU,s=C.s,i,k;g.save();
  LIGHTS.forEach(function(l){var a=C.S2(l[0],l[1]);if(a[0]<-80||a[0]>C.W+80||a[1]<-80||a[1]>C.H+120)return;C.gl(a[0],a[1]-40*(HW/46),40*(HW/46),'255,190,100',.3)});
  if(C.ql<1){for(i=0;i<FF.length;i++){var c=FFC[i%FFC.length],f=FF[i],wx=c[0]+Math.sin(t*.011+f[2]*1.7)*c[2]*.7+(f[0]-.5)*c[2],wy=c[1]+Math.cos(t*.009+f[2]*2.3)*c[2]*.5+(f[1]-.5)*c[2]*.6,a=C.S2(wx,wy);if(a[0]<-20||a[0]>C.W+20||a[1]<-20||a[1]>C.H+20)continue;var z=(.5+.4*Math.sin(t*.02+f[2]))*ZU*1.3;C.gl(a[0],a[1]-z,5*s,'220,255,150',.45+.45*Math.sin(t*.07+f[2]*3));C.gl(a[0],a[1]-z,1.6*s,'255,255,220',.95)}}
  g.restore()}
-window.TGD={ground:ground,blk:blk,avoid:avoid,dec:decAll,build:build,under:under,fx:fx,dropped:function(){return DROP},houses:HOUSES,ponds:PONDS,dbg:function(k,v){var C=TG&&TG._C;return null}};
+window.TGD={ground:ground,blk:blk,avoid:avoid,dec:decAll,build:build,under:under,fx:fx,dropped:function(){return DROP},houses:HOUSES,ponds:PONDS,lights:LIGHTS,dbg:function(k,v){var C=TG&&TG._C;return null}};
 })();
