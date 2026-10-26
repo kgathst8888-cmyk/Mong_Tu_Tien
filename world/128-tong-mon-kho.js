@@ -1,5 +1,6 @@
 /* ===== 📦 KHO TÔNG MÔN (world/128-tong-mon-kho.js) — Fix382 — nạp SAU world/106 =====
  * Cần chạy tong_mon_kho.sql (sau tong_mon_xahoi.sql) 1 lần trong Supabase. Thiếu SQL → tab báo "chưa kích hoạt".
+ *   • Fix439: 💠 Mảnh Thánh KHÔNG còn quyên/phát qua kho (chống chuyển đồ Thánh từ nick clone), chặn cả ở máy chủ (fix439_tong_mon_kho_chan_manh_thanh.sql). Quà Mảnh Thánh đã phát từ trước vẫn nhận được.
  *   • Kho chung của tông chỉ chứa 🌙 Mảnh Nguyệt Thạch và 💠 Mảnh Thánh (không chứa trang bị để máy khách không bơm vật phẩm giả lên máy chủ).
  *   • Mọi thành viên QUYÊN mảnh của mình vào kho (game trừ mảnh trước, máy chủ cộng kho; lỗi → hoàn lại). Quyên KHÔNG cộng cống hiến (tránh tự quyên rồi tự nhận để đúc cống hiến).
  *   • Tông Chủ PHÁT (≤500/lần) hoặc Trưởng Lão (≤5/lần, không phát cho chính mình) mảnh trong kho cho 1 thành viên → thành "quà", người nhận tự bấm NHẬN
@@ -31,7 +32,7 @@ function err(r){
   return s==='login'||s==='auth'?'☁ Cần đăng nhập tài khoản':s==='nosql'?'⚠ Kho tông chưa kích hoạt trên máy chủ (cần chạy tong_mon_kho.sql)':
     s==='net'?'Lỗi mạng, thử lại sau':s==='none'?'Bạn chưa có tông môn':s==='perm'?'Chỉ Tông Chủ / Trưởng Lão mới phát được':
     s==='poor'?'Kho không đủ':s==='max'?'Mỗi lần phát tối đa '+(r.max|0):s==='self'?'Trưởng Lão không phát cho chính mình':
-    s==='gone'?'Không còn tồn tại':s==='bad'?'Dữ liệu không hợp lệ':'Không thực hiện được'}
+    s==='blocked'?'💠 Mảnh Thánh không được cho vào / phát từ kho tông':s==='gone'?'Không còn tồn tại':s==='bad'?'Dữ liệu không hợp lệ':'Không thực hiện được'}
 
 var S={info:null,busy:false,loading:false,note:''};
 function load(){
@@ -49,9 +50,9 @@ function html(g){
       +'<div class="tmg-row">'+bt('Nhận','claim:'+(x.id|0),'on')+'</div></div>'});
   h+='<div class="tmg-cd"><b>📦 Kho chung của tông</b>'
     +'<small>'+KN.nt+': <b style="color:#ffe9a8">'+nf(I.nt)+'</b> · '+KN.sh+': <b style="color:#ffd96a">'+nf(I.sh)+'</b></small>'
-    +'<small>Quyên không cộng cống hiến. Tông Chủ phát tối đa '+CF.max.chu+'/lần, Trưởng Lão '+CF.max.lao+'/lần.</small></div>';
+    +'<small>💠 Mảnh Thánh không được quyên / phát qua kho. Quyên không cộng cống hiến. Tông Chủ phát tối đa '+CF.max.chu+'/lần, Trưởng Lão '+CF.max.lao+'/lần.</small></div>';
   h+='<div class="tmg-cd"><b>🤲 Quyên vào kho</b>';
-  ['nt','sh'].forEach(function(k){
+  ['nt'].forEach(function(k){
     h+='<small>'+KN[k]+' (bạn có <b>'+nf(have(k))+'</b>)</small><div class="tmg-row">'
       +CF.donate[k].map(function(q){return bt('+'+q,'don:'+k+':'+q,'',have(k)<q)}).join('')
       +bt('Tất cả','don:'+k+':all','',have(k)<1)+'</div>'});
@@ -60,7 +61,7 @@ function html(g){
     var mem=TMG.members(),opts=mem.map(function(m){return '<option value="'+(m.mid|0)+'">'+esc(m.name||'?')+(m.role==='chu'?' 👑':m.role==='lao'?' 🎖':'')+'</option>'}).join('');
     h+='<div class="tmg-cd"><b>🎁 Phát cho thành viên</b>'
       +'<div class="tmg-row"><select id="tmk-to" class="tmg-in">'+opts+'</select></div>'
-      +'<div class="tmg-row"><select id="tmk-kind" class="tmg-in"><option value="nt">'+KN.nt+'</option><option value="sh">'+KN.sh+'</option></select>'
+      +'<div class="tmg-row"><select id="tmk-kind" class="tmg-in"><option value="nt">'+KN.nt+'</option></select>'
       +'<input id="tmk-qty" class="tmg-in" inputmode="numeric" maxlength="3" value="1" style="max-width:70px">'
       +bt('Phát','give','on')+'</div></div>'}
   h+='<div class="tmg-row">'+bt('↻ Làm mới','reload','sm')+'</div>';
@@ -72,7 +73,7 @@ function act(a){
   else if(k==='give')give();
   else if(k==='claim')claim(q[1])}
 function donate(kind,q){
-  if(S.busy||(kind!=='nt'&&kind!=='sh'))return;
+  if(S.busy||kind!=='nt')return;
   var n=q==='all'?Math.min(have(kind),500):(q|0);
   if(n<1||have(kind)<n){S.note='Không đủ mảnh';TMG.render();return}
   S.busy=true;S.note='⏳ Đang quyên...';
@@ -86,7 +87,7 @@ function donate(kind,q){
 function give(){
   if(S.busy)return;
   var to=document.getElementById('tmk-to'),kd=document.getElementById('tmk-kind'),qt=document.getElementById('tmk-qty');
-  var mid=to?parseInt(to.value,10):0,kind=kd?kd.value:'nt',n=qt?parseInt(String(qt.value).replace(/[^\d]/g,''),10):0;
+  var mid=to?parseInt(to.value,10):0,kind='nt',n=qt?parseInt(String(qt.value).replace(/[^\d]/g,''),10):0;
   if(!mid||!(n>=1)){S.note='Chọn người nhận và số lượng';TMG.render();return}
   S.busy=true;S.note='⏳ Đang phát...';TMG.render();
   rpc('tm_depot_give',{p_mid:mid,p_kind:kind,p_qty:n}).then(function(r){

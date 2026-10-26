@@ -7,3 +7,5 @@
 - Bọc (không sửa engine): dgTick, dm, dgHurt, drop, dgHud, dgb.onpointerdown.
 - Fix437: tăng độ khó (máu/sức đánh/thủ quái mỗi phòng, Boss máu+thủ+công, nhiều quái hơn, hồi máu giữa phòng giảm). Thưởng giữ nguyên.
 - Fix438: chợ online (systems/32-cho-giao-dich.js, toggle) chỉ mở khi HDAO.on() (đã đạt Đạo Thể). Chỉ chặn phía client.
+
+- Fix439: kho tông (world/128) KHÔNG còn nhận/phát 💠 Mảnh Thánh (chống chuyển đồ Thánh từ clone). Chạy fix439_tong_mon_kho_chan_manh_thanh.sql để chặn cả ở máy chủ.
