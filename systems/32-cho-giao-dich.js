@@ -220,8 +220,13 @@ async function post(i){
   else say('Mất mạng khi đăng — kiểm tra tab "Của tôi"; nếu không thấy, đồ sẽ ở hòm nhận.');
   load();
 }
+function dtOk(){try{return !!(window.HDAO&&window.HDAO.on&&window.HDAO.on())}catch(e){return false}}
 function toggle(v){
-  open=v===undefined?!open:v;pnl.style.display=open?'flex':'none';
+  var want=v===undefined?!open:v;
+  if(want&&!dtOk()){ /* Fix438: chỉ nhân vật đã đạt Đạo Thể (hợp đạo) trở lên mới dùng chợ online */
+    try{DT.push({x:P.x,y:200,s:'🏮 Chợ giao dịch chỉ dành cho nhân vật đã đạt Đạo Thể trở lên',c:'#ffd98a',g:1,l:200})}catch(e){}
+    return}
+  open=want;pnl.style.display=open?'flex':'none';
   if(open){tab=tab||'shop';setNote(logged()?'':'Cần đăng nhập ☁ để dùng chợ.');draw();load()}
 }
 function boot(){
