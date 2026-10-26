@@ -197,6 +197,7 @@ async function onClick(e){
 }
 async function post(i){
   var T=(typeof i==='string')&&i.charAt(0)==='t'&&window.TTHONG,G=(typeof i==='string')&&!T&&window.GEMX,it=T?TTHONG.peek(i):G?GEMX.peek(i):BAG[i];if(!it)return;
+  if(!T&&!G&&(+it.u||0)>0){say('Đồ đã cường hoá không thể treo lên chợ.');return}   /* Fix437: chặn trước khi rời túi */
   if(mine.length>=CF.max){say('Đã đạt tối đa '+CF.max+' món đang bán.');return}
   if(T){var qv=prompt('Bán bao nhiêu mảnh? (1–'+it.q+')',String(it.q));if(qv==null)return;var qn=Math.floor(Number(qv));if(!(qn>=1&&qn<=it.q)){say('Số mảnh không hợp lệ.');return}it.q=qn;it.n=TTHONG.lab(it.h,it.e,qn);delete it.tid}   /* mảnh sách: chọn số lượng */
   var v=prompt('Giá bán '+(it.n||'món này')+' (💎 Linh Thạch, '+nf(CF.minP)+' – '+nf(CF.maxP)+'). Phí '+CF.fee+'% khi bán được:','');
@@ -210,11 +211,11 @@ async function post(i){
   try{var r=await call('cho_post',{p_item:it,p_price:price,p_name:myName().slice(0,16)});ok=r&&r.status==='ok';
     if(!ok)say(r&&r.status==='full'?'Đã đạt tối đa món đang bán.':'Không đăng được món này.')}
   catch(e){
-    setNote(nice(e));if(/DUPE_ITEM|BAD_ITEM/.test(String(e&&e.message||'')))dupeBad=true;
+    setNote(nice(e));if(/DUPE_ITEM/.test(String(e&&e.message||'')))dupeBad=true;else if(/ENHANCED_ITEM/.test(String(e&&e.message||'')))say('Đồ đã cường hoá không thể treo lên chợ. Đồ được trả lại túi.');else if(/BAD_ITEM/.test(String(e&&e.message||'')))say('Máy chủ từ chối món này (đồ cường hoá quá +10 cần chạy fix436_cho_cuong_hoa_15.sql). Đồ được trả lại túi.');
     try{var me=await call('cho_me');ok=!!(me&&me.mine||[]).filter(function(m){return m.item&&m.item._mk===mk}).length}catch(e2){ok=null}
   }
   if(ok===true){say('✅ Đã đăng bán '+(it.n||'món')+' giá '+nf(price)+' 💎')}
-  else if(ok===false&&dupeBad){}   /* bản nhân bản / đồ không hợp lệ bị máy chủ từ chối: KHÔNG trả lại túi */
+  else if(ok===false&&dupeBad){}   /* bản nhân bản (DUPE_ITEM) bị máy chủ từ chối: KHÔNG trả lại túi. BAD_ITEM: máy chủ chưa lưu gì → trả lại túi như lỗi thường (Fix436, tránh mất đồ cường hoá +11..+15) */
   else if(ok===false){delete it._mk;if(T)TTHONG.back(it);else if(G)GEMX.back(it);else BAG.push(it);sv_();uiRefresh()}   /* chắc chắn chưa đăng → trả lại túi */
   else say('Mất mạng khi đăng — kiểm tra tab "Của tôi"; nếu không thấy, đồ sẽ ở hòm nhận.');
   load();

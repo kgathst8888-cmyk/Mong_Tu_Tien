@@ -85,9 +85,10 @@ const _init4=init;init=function(){const w=dg&&dg.tw?dg:null;_init4();if(w){twBac
 const _dgHurt4=dgHurt;dgHurt=function(e,mu){_dgHurt4(e,e&&e.tw?mu*e.twA:mu)};
 const _dgAI4=dgAI;dgAI=function(e){_dgAI4(e);if(e.tw&&e.k=='boss'&&e.in<=0&&e.cd>0)e.cd-=e.twS};
 const _dgHud4=dgHud;dgHud=function(){_dgHud4();if(dg&&dg.tw){const b=E.find(e=>e.k=='boss'),n=dg.tn;dgh.innerHTML='<div class="dgt" style="color:'+TW_COL[n/10|0]+'">🗼 Tầng '+((n/10|0)+1)+' · Boss '+(n%10+1)+'/10 · '+twName(n)+'</div>'+(b?'<div class="dgp"><i style="width:'+cl(b.hp/b.max*100,0,100)+'%"></i></div>':'')}};
+window.BGLOW=window.BGLOW||function(col){var C=BGLOW.c=BGLOW.c||{},c=C[col];if(!c){c=document.createElement('canvas');c.width=c.height=128;var q=c.getContext('2d'),r=q.createRadialGradient(64,64,64*.1/1.5,64,64,64);r.addColorStop(0,col+'88');r.addColorStop(.5,col+'44');r.addColorStop(1,col+'00');q.fillStyle=r;q.beginPath();q.arc(64,64,64,0,6.283);q.fill();C[col]=c}return c};/* Fix431: quầng sáng boss vẽ sẵn 1 lần/màu thay vì tạo gradient mỗi khung */
 const _dgFoe4=dgFoe;dgFoe=function(e){if(!e.tw)return _dgFoe4(e);const f=e.tn/10|0,col=TW_COL[f],X=(e.x-cam)*s,Y=GY-((e.y||0)+110)*s,R0=140*s;
- g.save();g.globalCompositeOperation='lighter';const q=g.createRadialGradient(X,Y,R0*.1,X,Y,R0*1.5);q.addColorStop(0,col+'88');q.addColorStop(.5,col+'44');q.addColorStop(1,col+'00');g.globalAlpha=.75+.2*Math.sin(fr*.1);g.fillStyle=q;g.beginPath();g.arc(X,Y,R0*1.5,0,6.283);g.fill();g.restore();
- g.save();try{if('filter' in g)g.filter='hue-rotate('+TW_HUE[f]+'deg)'}catch(x){}_dgFoe4(e);g.restore();
+ g.save();g.globalCompositeOperation='lighter';g.globalAlpha=.75+.2*Math.sin(fr*.1);g.drawImage(BGLOW(col),X-R0*1.5,Y-R0*1.5,R0*3,R0*3);g.restore();
+ g.save();try{if((window.QL|0)===0&&'filter' in g)g.filter='hue-rotate('+TW_HUE[f]+'deg)'}catch(x){}_dgFoe4(e);g.restore();
  g.save();g.font='bold '+Math.max(12,14*s)+'px KTH Serif,Songti SC,STKaiti,KaiTi,serif';g.textAlign='center';g.lineWidth=4;g.strokeStyle='#000c';const ty=GY-((e.y||0)+268)*s;g.strokeText(e.twN,X,ty);g.fillStyle=col;g.fillText(e.twN,X,ty);g.restore()};
 
 /*==== BẢN ĐỒ THÁP: "Đại Sảnh Mộc Điện" (dựng theo ảnh mẫu: sảnh gỗ bát giác nhiều tầng) ====
